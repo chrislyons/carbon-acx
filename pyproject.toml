@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "carbon-acx"
+package-mode = false
+version = "0.1.0"
+description = ""
+readme = "README.md"
+authors = ["Chris Lyons <chris@example.com>"]
+
+[tool.poetry.dependencies]
+python = ">=3.11"
+pandas = "*"
+pydantic = ">=2"
+plotly = "*"
+dash = "*"
+pyyaml = "*"
+jinja2 = "*"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "*"
+pytest-cov = "*"
+ruff = "*"
+black = "*"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 100
+
+[tool.ruff]
+line-length = 100
