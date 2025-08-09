@@ -1,2 +1,1 @@
-profile_id,office_days_per_week,default_grid_region
-p1,3,region_profile
+profile_id,name,region_code_default,grid_strategy,grid_mix_json,cohort_id,office_days_per_week,assumption_notes
