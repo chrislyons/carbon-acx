@@ -1,3 +1,1 @@
-activity_id,description
-coffee,Cup of coffee
-streaming,Streaming hour
+activity_id,category,name,default_unit,description,unit_definition,notes

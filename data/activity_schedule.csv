@@ -1,3 +1,1 @@
-profile_id,activity_id,quantity_per_week,office_only,region_override,mix_region,use_canada_average
-p1,coffee,5,True,,,
-p1,streaming,14,False,,,
+profile_id,activity_id,freq_per_day,freq_per_week,office_days_only,region_override,schedule_notes
