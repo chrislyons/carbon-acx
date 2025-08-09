@@ -1,0 +1,5 @@
+region,intensity_g_per_kwh
+region_profile,100
+region_override,200
+mix_region,150
+canada_average,120
