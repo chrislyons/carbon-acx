@@ -1,0 +1,4 @@
+profile_id,activity_id,is_office_day,frequency_per_day,units_per_activity
+p1,coffee,TRUE,1,1
+p1,streaming,FALSE,1,1
+p1,unknown,TRUE,1,1
