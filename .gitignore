@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.venv/
+calc/outputs/*
+!calc/outputs/.gitkeep
+.coverage

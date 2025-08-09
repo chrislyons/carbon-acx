@@ -1,0 +1,9 @@
+office_days_per_week: 5
+weeks_per_year: 52
+citations:
+  stacked:
+    - "Coffee study"
+  bubble:
+    - "Streaming study"
+  sankey:
+    - "Energy flow analysis"

@@ -1,0 +1,5 @@
+id,name,default_grid_intensity_g_per_kwh,office_days_per_week
+p1,Demo Profile,100,5
+p2,Profile 2,40,5
+p3,Profile 3,40,5
+p4,Profile 4,40,5

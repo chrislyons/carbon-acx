@@ -1,0 +1,5 @@
+profile_id,region_override,mix_weighted,canada_average
+p1,,,
+p2,10,20,30
+p3,,20,30
+p4,,,30
