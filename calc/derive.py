@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Dict, List, Optional
 
+import json
 import pandas as pd
 
 from . import figures
@@ -92,11 +93,15 @@ def export_view() -> pd.DataFrame:
     df = pd.DataFrame(rows)
     out_dir = Path(__file__).parent / "outputs"
     out_dir.mkdir(exist_ok=True)
-    df.to_csv(out_dir / "export_view.csv", index=False)
-    df.to_json(out_dir / "export_view.json", orient="records")
+    metadata = figures.build_metadata("export_view")
+    with (out_dir / "export_view.csv").open("w") as fh:
+        for key, value in metadata.items():
+            fh.write(f"# {key}: {value}\n")
+        df.to_csv(fh, index=False)
+    payload = {**metadata, "data": df.to_dict(orient="records")}
+    (out_dir / "export_view.json").write_text(json.dumps(payload, indent=2))
     # example figure slice
-    fig_total = figures.total_by_activity(df)
-    fig_total.to_csv(out_dir / "figure_total_by_activity.csv", index=False)
+    figures.export_total_by_activity(df, out_dir, ["coffee", "streaming"])
     return df
 
 
