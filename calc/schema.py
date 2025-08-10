@@ -11,6 +11,10 @@ from pydantic import BaseModel, ConfigDict, model_validator
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
 
+# load canonical units registry
+UNIT_REGISTRY = set(pd.read_csv(DATA_DIR / "units.csv", dtype=str)["unit"].dropna().astype(str))
+
+
 def _load_csv(path: Path, model: type[BaseModel]) -> List[BaseModel]:
     df = pd.read_csv(path, dtype=object)
     df = df.where(pd.notnull(df), None)
@@ -37,8 +41,27 @@ class RegionCode(str, Enum):
 ScopeBoundary = Literal["WTT+TTW", "cradle-to-grave", "Electricity LCA", "gate-to-gate"]
 
 
+class Activity(BaseModel):
+    activity_id: str
+    category: Optional[str] = None
+    name: Optional[str] = None
+    default_unit: Optional[str] = None
+    description: Optional[str] = None
+    unit_definition: Optional[str] = None
+    notes: Optional[str] = None
+
+    model_config = ConfigDict(extra="ignore")
+
+    @model_validator(mode="after")
+    def check_unit(self):
+        if self.default_unit and self.default_unit not in UNIT_REGISTRY:
+            raise ValueError("default_unit not in units registry")
+        return self
+
+
 class EmissionFactor(BaseModel):
     activity_id: str
+    unit: Optional[str] = None
     value_g_per_unit: Optional[float] = None
     is_grid_indexed: Optional[bool] = None
     electricity_kwh_per_unit: Optional[float] = None
@@ -52,6 +75,8 @@ class EmissionFactor(BaseModel):
 
     @model_validator(mode="after")
     def check_bounds(self):  # noqa: C901 - simple validator
+        if self.unit and self.unit not in UNIT_REGISTRY:
+            raise ValueError("unit not in units registry")
         has_value = self.value_g_per_unit is not None
         has_grid = bool(self.is_grid_indexed) or self.electricity_kwh_per_unit is not None
         if has_value and has_grid:
@@ -62,16 +87,12 @@ class EmissionFactor(BaseModel):
             if not self.is_grid_indexed:
                 raise ValueError("grid indexed factors must set is_grid_indexed=True")
             if self.electricity_kwh_per_unit is None or self.electricity_kwh_per_unit <= 0:
-                raise ValueError(
-                    "grid indexed factors require electricity_kwh_per_unit > 0"
-                )
+                raise ValueError("grid indexed factors require electricity_kwh_per_unit > 0")
         else:
             if self.is_grid_indexed:
                 raise ValueError("is_grid_indexed only allowed with grid indexed factors")
             if self.electricity_kwh_per_unit is not None:
-                raise ValueError(
-                    "electricity_kwh_per_unit only allowed for grid indexed factors"
-                )
+                raise ValueError("electricity_kwh_per_unit only allowed for grid indexed factors")
 
         if self.uncert_low_g_per_unit is not None or self.uncert_high_g_per_unit is not None:
             if (
@@ -81,9 +102,7 @@ class EmissionFactor(BaseModel):
             ):
                 raise ValueError("uncertainty bounds require value, low and high")
             if not (
-                self.uncert_low_g_per_unit
-                <= self.value_g_per_unit
-                <= self.uncert_high_g_per_unit
+                self.uncert_low_g_per_unit <= self.value_g_per_unit <= self.uncert_high_g_per_unit
             ):
                 raise ValueError("value must be within uncertainty bounds")
 
@@ -114,9 +133,7 @@ class ActivitySchedule(BaseModel):
     @model_validator(mode="after")
     def check_freq(self):
         if self.freq_per_day is not None and self.freq_per_week is not None:
-            raise ValueError(
-                "cannot specify both freq_per_day and freq_per_week on same row"
-            )
+            raise ValueError("cannot specify both freq_per_day and freq_per_week on same row")
         return self
 
 
@@ -134,6 +151,10 @@ def load_emission_factors() -> List[EmissionFactor]:
 
 def load_profiles() -> List[Profile]:
     return _load_csv(DATA_DIR / "profiles.csv", Profile)
+
+
+def load_activities() -> List[Activity]:
+    return _load_csv(DATA_DIR / "activities.csv", Activity)
 
 
 def load_activity_schedule() -> List[ActivitySchedule]:

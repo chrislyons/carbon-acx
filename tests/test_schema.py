@@ -2,7 +2,7 @@ import pytest
 from datetime import date
 from pydantic import ValidationError
 
-from calc.schema import EmissionFactor, ActivitySchedule
+from calc.schema import EmissionFactor, ActivitySchedule, Activity
 
 
 def test_fixed_vs_grid_mutual_exclusion():
@@ -78,3 +78,13 @@ def test_region_and_scope_literals():
             value_g_per_unit=1,
             scope_boundary="bad",
         )
+
+
+def test_units_registry_validation():
+    Activity(activity_id="a", default_unit="km")
+    with pytest.raises(ValidationError):
+        Activity(activity_id="b", default_unit="badunit")
+
+    EmissionFactor(activity_id="c", unit="hour", value_g_per_unit=1)
+    with pytest.raises(ValidationError):
+        EmissionFactor(activity_id="d", unit="badunit", value_g_per_unit=1)

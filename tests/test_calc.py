@@ -3,9 +3,7 @@ from calc.schema import ActivitySchedule, EmissionFactor, Profile
 
 
 def test_emission_calculation_and_nulls():
-    profile = Profile(
-        profile_id="p1", office_days_per_week=3, default_grid_region="CA-ON"
-    )
+    profile = Profile(profile_id="p1", office_days_per_week=3, default_grid_region="CA-ON")
     grid = {"CA-ON": 100}
     assert get_grid_intensity(profile, grid) == 100
 
@@ -25,7 +23,5 @@ def test_emission_calculation_and_nulls():
     emission_stream = compute_emission(sched_stream, profile, ef_stream, grid)
     assert emission_stream == 14 * 52 * 100
 
-    sched_null = ActivitySchedule(
-        profile_id="p1", activity_id="stream", quantity_per_week=None
-    )
+    sched_null = ActivitySchedule(profile_id="p1", activity_id="stream", quantity_per_week=None)
     assert compute_emission(sched_null, profile, ef_stream, grid) is None
