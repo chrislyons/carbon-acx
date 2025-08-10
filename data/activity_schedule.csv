@@ -1,1 +1,18 @@
 profile_id,activity_id,freq_per_day,freq_per_week,office_days_only,region_override,schedule_notes
+# Primary cohorts
+PRO.TO.24_39.HYBRID.2025,TRAN.TTC.SUBWAY.KM,10,,TRUE,,"Commute segments per office day"
+PRO.TO.24_39.HYBRID.2025,FOOD.COFFEE.CUP.HOT,1,,,,"Daily cup"
+PRO.TO.40_56.HYBRID.2025,TRAN.TTC.SUBWAY.KM,8,,TRUE,,"Commute segments per office day"
+PRO.TO.40_56.HYBRID.2025,FOOD.COFFEE.CUP.HOT,1,,,,"Daily cup"
+
+# Online layer demo
+ONLINE.TO.CONSUMER.2025,MEDIA.STREAM.HD.HOUR.TV,1.2,,,,"Daily streaming (HD, TV)"
+
+# Industrial layer stays inert until metered
+IND.TO.LIGHT.2025,IND.LOGI.FORKLIFT.ELEC.KWH,,,FALSE,,"Leave NULL until metered"
+
+# Sub-cohort placeholders (no frequencies yet → inert)
+PRO.TO.24_31.HYBRID.2025,TRAN.TTC.SUBWAY.KM,,,,,"SUBCOHORT placeholder"
+PRO.TO.32_39.HYBRID.2025,TRAN.TTC.SUBWAY.KM,,,,,"SUBCOHORT placeholder"
+PRO.TO.40_48.HYBRID.2025,TRAN.TTC.SUBWAY.KM,,,,,"SUBCOHORT placeholder"
+PRO.TO.49_56.HYBRID.2025,TRAN.TTC.SUBWAY.KM,,,,,"SUBCOHORT placeholder"
