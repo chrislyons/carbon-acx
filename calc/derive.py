@@ -10,6 +10,7 @@ from .schema import (
     ActivitySchedule,
     EmissionFactor,
     Profile,
+    RegionCode,
     load_activity_schedule,
     load_emission_factors,
     load_grid_intensity,
@@ -29,7 +30,7 @@ def get_grid_intensity(
     if mix_region:
         return grid_lookup.get(mix_region)
     if use_canada_average:
-        return grid_lookup.get("canada_average")
+        return grid_lookup.get(RegionCode.CA)
     if profile and profile.default_grid_region:
         return grid_lookup.get(profile.default_grid_region)
     return None
