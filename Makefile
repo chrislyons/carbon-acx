@@ -1,4 +1,4 @@
-.PHONY: install validate build app format lint test release
+.PHONY: install validate build app format lint test release migrate_v1_1
 
 install:
 	poetry install --with dev
@@ -23,3 +23,7 @@ test:
 
 release:
 	@echo "release placeholder"
+
+
+migrate_v1_1:
+	python3 scripts/migrate_to_v1_1.py

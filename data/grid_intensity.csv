@@ -1,5 +1,3 @@
 region_code,vintage_year,g_per_kwh,g_per_kwh_low,g_per_kwh_high,source_id
-CA-ON,2024,,, ,SRC.IESO.2024
-CA-QC,2024,,, ,SRC.QC.HYDRO.2024
-CA-AB,2024,,, ,SRC.AESO.2024
-CA,2024,,, ,SRC.ECCC.NIR.2024
+CA-ON,2024,100,,,SRC.IESO.2024
+CA,,,,,

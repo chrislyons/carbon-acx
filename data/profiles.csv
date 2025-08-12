@@ -1,9 +1,3 @@
-profile_id,name,region_code_default,grid_strategy,grid_mix_json,cohort_id,office_days_per_week,assumption_notes,subcohort_hook
-PRO.TO.24_39.HYBRID.2025,"Toronto Pros 24–39 — Hybrid (2025)","CA-ON","region_default",,,3,"Baseline",
-PRO.TO.40_56.HYBRID.2025,"Toronto Pros 40–56 — Hybrid (2025)","CA-ON","region_default",,,3,"Baseline",
-ONLINE.TO.CONSUMER.2025,"Online Consumer (Toronto)","CA-ON","region_default",,,,"Digital-only usage",
-IND.TO.LIGHT.2025,"Light Industrial (Toronto)","CA-ON","region_default",,,,"Ops only; embodied excluded",
-PRO.TO.24_31.HYBRID.2025,"Toronto Pros 24–31 — Hybrid (2025)","CA-ON","region_default",,,3,"SUBCOHORT: placeholder; copy schedules when ready",PRO24_31
-PRO.TO.32_39.HYBRID.2025,"Toronto Pros 32–39 — Hybrid (2025)","CA-ON","region_default",,,3,"SUBCOHORT: placeholder; copy schedules when ready",PRO32_39
-PRO.TO.40_48.HYBRID.2025,"Toronto Pros 40–48 — Hybrid (2025)","CA-ON","region_default",,,3,"SUBCOHORT: placeholder; copy schedules when ready",PRO40_48
-PRO.TO.49_56.HYBRID.2025,"Toronto Pros 49–56 — Hybrid (2025)","CA-ON","region_default",,,3,"SUBCOHORT: placeholder; copy schedules when ready",PRO49_56
+profile_id,name,region_code_default,grid_strategy,grid_mix_json,cohort_id,office_days_per_week,assumption_notes
+PRO.TO.24_39.HYBRID.2025,Toronto Pros 24–39 — Hybrid (2025),CA-ON,region_default,,,3,
+PRO.TO.40_56.HYBRID.2025,Toronto Pros 40–56 — Hybrid (2025),CA-ON,region_default,,,3,
