@@ -9,8 +9,10 @@ def create_app() -> Dash:
     return app
 
 
-def main() -> None:
-    create_app()
+def main(*, host: str = "0.0.0.0", port: int = 8050, debug: bool = False) -> Dash:
+    app = create_app()
+    app.run_server(host=host, port=port, debug=debug)
+    return app
 
 
 if __name__ == "__main__":

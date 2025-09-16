@@ -22,10 +22,10 @@ def test_export_metadata_and_references(tmp_path, monkeypatch):
     def fake_load_activity_schedule():
         return [
             ActivitySchedule(
-                profile_id="p1", activity_id="coffee", quantity_per_week=5, office_only=True
+                profile_id="p1", activity_id="coffee", freq_per_week=5, office_days_only=True
             ),
             ActivitySchedule(
-                profile_id="p1", activity_id="stream", quantity_per_week=14, office_only=False
+                profile_id="p1", activity_id="stream", freq_per_day=2
             ),
         ]
 
@@ -62,12 +62,13 @@ def test_export_metadata_and_references(tmp_path, monkeypatch):
 
 def test_emission_calculation_and_nulls():
     profile = Profile(profile_id="p1", office_days_per_week=3, default_grid_region="CA-ON")
-    grid = {"CA-ON": 100}
+    grid = {"CA-ON": 100, "CA": None, "CA-QC": 40}
     assert get_grid_intensity(profile, grid) == 100
+    assert get_grid_intensity(profile, grid, use_canada_average=True) == (100 + 40) / 2
 
     ef_coffee = EmissionFactor(activity_id="coffee", value_g_per_unit=1)
     sched_coffee = ActivitySchedule(
-        profile_id="p1", activity_id="coffee", quantity_per_week=5, office_only=True
+        profile_id="p1", activity_id="coffee", freq_per_week=5, office_days_only=True
     )
     emission = compute_emission(sched_coffee, profile, ef_coffee, grid)
     assert emission == 5 * 52 * (3 / 5) * 1
@@ -75,11 +76,9 @@ def test_emission_calculation_and_nulls():
     ef_stream = EmissionFactor(
         activity_id="stream", is_grid_indexed=True, electricity_kwh_per_unit=1
     )
-    sched_stream = ActivitySchedule(
-        profile_id="p1", activity_id="stream", quantity_per_week=14, office_only=False
-    )
+    sched_stream = ActivitySchedule(profile_id="p1", activity_id="stream", freq_per_day=2)
     emission_stream = compute_emission(sched_stream, profile, ef_stream, grid)
     assert emission_stream == 14 * 52 * 100
 
-    sched_null = ActivitySchedule(profile_id="p1", activity_id="stream", quantity_per_week=None)
+    sched_null = ActivitySchedule(profile_id="p1", activity_id="stream")
     assert compute_emission(sched_null, profile, ef_stream, grid) is None

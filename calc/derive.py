@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Mapping, Optional
 
 import json
 import pandas as pd
@@ -21,9 +21,9 @@ from .schema import (
 
 def get_grid_intensity(
     profile: Profile,
-    grid_lookup: Dict[str, float],
-    region_override: Optional[str] = None,
-    mix_region: Optional[str] = None,
+    grid_lookup: Mapping[str | RegionCode, Optional[float]],
+    region_override: Optional[str | RegionCode] = None,
+    mix_region: Optional[str | RegionCode] = None,
     use_canada_average: Optional[bool] = None,
 ) -> Optional[float]:
     if region_override:
@@ -31,25 +31,66 @@ def get_grid_intensity(
     if mix_region:
         return grid_lookup.get(mix_region)
     if use_canada_average:
-        return grid_lookup.get(RegionCode.CA)
+        fallback = grid_lookup.get(RegionCode.CA) or grid_lookup.get("CA")
+        if fallback is not None:
+            return fallback
+        values = [value for value in grid_lookup.values() if value is not None]
+        if values:
+            return sum(values) / len(values)
+        return None
     if profile and profile.default_grid_region:
         return grid_lookup.get(profile.default_grid_region)
     return None
+
+
+def _office_ratio(profile: Profile) -> Optional[float]:
+    if profile.office_days_per_week is None:
+        return None
+    return float(profile.office_days_per_week) / 5
+
+
+def _weekly_quantity(sched: ActivitySchedule, profile: Profile) -> Optional[float]:
+    if sched.quantity_per_week is not None:
+        weekly = float(sched.quantity_per_week)
+    elif sched.freq_per_week is not None:
+        weekly = float(sched.freq_per_week)
+    elif sched.freq_per_day is not None:
+        if sched.office_only or sched.office_days_only:
+            if profile.office_days_per_week is None:
+                return None
+            days = float(profile.office_days_per_week)
+        else:
+            days = 7.0
+        weekly = float(sched.freq_per_day) * days
+    else:
+        weekly = None
+
+    if weekly is None:
+        return None
+
+    ratio = _office_ratio(profile)
+    if sched.office_only and sched.freq_per_day is None:
+        if ratio is None:
+            return None
+        weekly *= ratio
+    if sched.office_days_only and sched.freq_per_day is None:
+        if ratio is None:
+            return None
+        weekly *= ratio
+
+    return weekly
 
 
 def compute_emission(
     sched: ActivitySchedule,
     profile: Profile,
     ef: EmissionFactor,
-    grid_lookup: Dict[str, float],
+    grid_lookup: Mapping[str | RegionCode, Optional[float]],
 ) -> Optional[float]:
-    if not sched.quantity_per_week:
+    weekly_quantity = _weekly_quantity(sched, profile)
+    if weekly_quantity is None:
         return None
-    quantity = float(sched.quantity_per_week) * 52
-    if sched.office_only:
-        if not profile.office_days_per_week:
-            return None
-        quantity *= float(profile.office_days_per_week) / 5
+    quantity = weekly_quantity * 52
     if ef.value_g_per_unit is not None:
         factor = float(ef.value_g_per_unit)
     elif ef.is_grid_indexed:
@@ -71,10 +112,8 @@ def compute_emission(
 def export_view() -> pd.DataFrame:
     efs = {ef.activity_id: ef for ef in load_emission_factors()}
     profiles = {p.profile_id: p for p in load_profiles()}
-    grid_lookup = {
-        gi.region: gi.intensity_g_per_kwh
-        for gi in load_grid_intensity()
-        if gi.intensity_g_per_kwh is not None
+    grid_lookup: Dict[str | RegionCode, Optional[float]] = {
+        gi.region: gi.intensity_g_per_kwh for gi in load_grid_intensity()
     }
     rows: List[dict] = []
     for sched in load_activity_schedule():
