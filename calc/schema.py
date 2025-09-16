@@ -3,22 +3,37 @@ from __future__ import annotations
 from pathlib import Path
 from datetime import date
 from enum import Enum
+from functools import lru_cache
 from typing import List, Optional, Literal
 
 import pandas as pd
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
 
 # load canonical units registry
-UNIT_REGISTRY = set(pd.read_csv(DATA_DIR / "units.csv", dtype=str)["unit"].dropna().astype(str))
+_units_df = pd.read_csv(DATA_DIR / "units.csv", dtype=str)
+_units_df.columns = [col.strip() for col in _units_df.columns]
+if "unit_code" in _units_df.columns:
+    _unit_column = "unit_code"
+elif "unit" in _units_df.columns:
+    _unit_column = "unit"
+else:
+    raise KeyError("units.csv must define a 'unit_code' column")
+UNIT_REGISTRY = set(_units_df[_unit_column].dropna().astype(str))
 
 
-def _load_csv(path: Path, model: type[BaseModel]) -> List[BaseModel]:
+@lru_cache(maxsize=None)
+def _load_csv(path: Path, model: type[BaseModel]) -> tuple[BaseModel, ...]:
     df = pd.read_csv(path, dtype=object)
     df = df.where(pd.notnull(df), None)
-    return [model(**row) for row in df.to_dict(orient="records")]
+    records = df.to_dict(orient="records")
+    return tuple(model(**row) for row in records)
+
+
+def _load_csv_list(path: Path, model: type[BaseModel]) -> List[BaseModel]:
+    return list(_load_csv(path, model))
 
 
 class RegionCode(str, Enum):
@@ -115,7 +130,9 @@ class EmissionFactor(BaseModel):
 class Profile(BaseModel):
     profile_id: str
     office_days_per_week: Optional[float] = None
-    default_grid_region: Optional[RegionCode] = None
+    default_grid_region: Optional[RegionCode] = Field(default=None, alias="region_code_default")
+
+    model_config = ConfigDict(populate_by_name=True, extra="ignore")
 
 
 class ActivitySchedule(BaseModel):
@@ -130,6 +147,8 @@ class ActivitySchedule(BaseModel):
     mix_region: Optional[RegionCode] = None
     use_canada_average: Optional[bool] = None
 
+    model_config = ConfigDict(populate_by_name=True, extra="ignore")
+
     @model_validator(mode="after")
     def check_freq(self):
         if self.freq_per_day is not None and self.freq_per_week is not None:
@@ -138,28 +157,36 @@ class ActivitySchedule(BaseModel):
 
 
 class GridIntensity(BaseModel):
-    region: RegionCode
-    intensity_g_per_kwh: Optional[float] = None
+    region: RegionCode = Field(alias="region_code")
+    intensity_g_per_kwh: Optional[float] = Field(default=None, alias="g_per_kwh")
+
+    model_config = ConfigDict(populate_by_name=True, extra="ignore")
 
 
 # Loader helpers
 
 
 def load_emission_factors() -> List[EmissionFactor]:
-    return _load_csv(DATA_DIR / "emission_factors.csv", EmissionFactor)
+    return _load_csv_list(DATA_DIR / "emission_factors.csv", EmissionFactor)
 
 
 def load_profiles() -> List[Profile]:
-    return _load_csv(DATA_DIR / "profiles.csv", Profile)
+    return _load_csv_list(DATA_DIR / "profiles.csv", Profile)
 
 
 def load_activities() -> List[Activity]:
-    return _load_csv(DATA_DIR / "activities.csv", Activity)
+    return _load_csv_list(DATA_DIR / "activities.csv", Activity)
 
 
 def load_activity_schedule() -> List[ActivitySchedule]:
-    return _load_csv(DATA_DIR / "activity_schedule.csv", ActivitySchedule)
+    return _load_csv_list(DATA_DIR / "activity_schedule.csv", ActivitySchedule)
 
 
 def load_grid_intensity() -> List[GridIntensity]:
-    return _load_csv(DATA_DIR / "grid_intensity.csv", GridIntensity)
+    return _load_csv_list(DATA_DIR / "grid_intensity.csv", GridIntensity)
+
+
+def invalidate_caches() -> None:
+    """Clear cached CSV reads for schema models."""
+
+    _load_csv.cache_clear()

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timezone
+from functools import lru_cache
 from pathlib import Path
 from typing import List
 
@@ -13,8 +14,16 @@ from .citations import load_citations
 CONFIG_PATH = Path(__file__).parent / "config.yaml"
 
 
+@lru_cache(maxsize=1)
+def _load_config() -> dict:
+    data = yaml.safe_load(CONFIG_PATH.read_text())
+    if data is None:
+        return {}
+    return data
+
+
 def build_metadata(method: str) -> dict:
-    profile = yaml.safe_load(CONFIG_PATH.read_text()).get("default_profile")
+    profile = _load_config().get("default_profile")
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "profile": profile,
@@ -48,8 +57,13 @@ def export_total_by_activity(
     return fig
 
 
+def invalidate_cache() -> None:
+    _load_config.cache_clear()
+
+
 __all__ = [
     "total_by_activity",
     "export_total_by_activity",
     "build_metadata",
+    "invalidate_cache",
 ]
