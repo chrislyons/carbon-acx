@@ -7,16 +7,8 @@ import json
 import pandas as pd
 
 from . import figures
-from .schema import (
-    ActivitySchedule,
-    EmissionFactor,
-    Profile,
-    RegionCode,
-    load_activity_schedule,
-    load_emission_factors,
-    load_grid_intensity,
-    load_profiles,
-)
+from .dal import DataStore, choose_backend
+from .schema import ActivitySchedule, EmissionFactor, Profile, RegionCode
 
 
 def get_grid_intensity(
@@ -109,14 +101,15 @@ def compute_emission(
     return quantity * factor
 
 
-def export_view() -> pd.DataFrame:
-    efs = {ef.activity_id: ef for ef in load_emission_factors()}
-    profiles = {p.profile_id: p for p in load_profiles()}
+def export_view(ds: Optional[DataStore] = None) -> pd.DataFrame:
+    datastore = ds or choose_backend()
+    efs = {ef.activity_id: ef for ef in datastore.load_emission_factors()}
+    profiles = {p.profile_id: p for p in datastore.load_profiles()}
     grid_lookup: Dict[str | RegionCode, Optional[float]] = {
-        gi.region: gi.intensity_g_per_kwh for gi in load_grid_intensity()
+        gi.region: gi.intensity_g_per_kwh for gi in datastore.load_grid_intensity()
     }
     rows: List[dict] = []
-    for sched in load_activity_schedule():
+    for sched in datastore.load_activity_schedule():
         profile = profiles.get(sched.profile_id)
         ef = efs.get(sched.activity_id)
         emission = None
@@ -145,4 +138,5 @@ def export_view() -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    export_view()
+    datastore = choose_backend()
+    export_view(datastore)
