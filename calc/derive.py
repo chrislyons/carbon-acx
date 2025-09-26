@@ -149,6 +149,7 @@ def export_view(ds: Optional[DataStore] = None) -> pd.DataFrame:
             grid_by_region[gi.region.value] = gi
     rows: List[dict] = []
     derived_rows: List[dict] = []
+    resolved_profile_ids: set[str] = set()
     for sched in datastore.load_activity_schedule():
         profile = profiles.get(sched.profile_id)
         ef = efs.get(sched.activity_id)
@@ -165,6 +166,8 @@ def export_view(ds: Optional[DataStore] = None) -> pd.DataFrame:
                 "annual_emissions_g": emission,
             }
         )
+        if sched.profile_id:
+            resolved_profile_ids.add(sched.profile_id)
         derived_rows.append(
             {
                 "profile": profile,
@@ -178,7 +181,10 @@ def export_view(ds: Optional[DataStore] = None) -> pd.DataFrame:
     out_dir = Path(__file__).parent / "outputs"
     out_dir.mkdir(exist_ok=True)
     citation_keys = sorted(collect_activity_source_keys(derived_rows))
-    metadata = figures.build_metadata("export_view")
+    resolved_profiles = sorted(resolved_profile_ids)
+    metadata = figures.build_metadata(
+        "export_view", profile_ids=resolved_profiles if resolved_profiles else None
+    )
     metadata["citation_keys"] = citation_keys
     with (out_dir / "export_view.csv").open("w") as fh:
         for key, value in metadata.items():
