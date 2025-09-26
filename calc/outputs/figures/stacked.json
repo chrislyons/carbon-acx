@@ -1,0 +1,25 @@
+{
+  "generated_at": "2025-09-26T23:53:06.402994+00:00",
+  "profile": "PRO.TO.24_39.HYBRID.2025",
+  "method": "figures.stacked",
+  "profile_resolution": {
+    "requested": "PRO.TO.24_39.HYBRID.2025",
+    "used": [
+      "PRO.TO.24_39.HYBRID.2025"
+    ]
+  },
+  "citation_keys": [
+    "SRC.DEMO"
+  ],
+  "references": [
+    "[1] Demo, \u201cDemonstration placeholder reference,\u201d 2025. Available: https://example.org/demo."
+  ],
+  "data": [
+    {
+      "category": "food",
+      "values": {
+        "mean": 156.0
+      }
+    }
+  ]
+}
