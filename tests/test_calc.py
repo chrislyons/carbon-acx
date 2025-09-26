@@ -43,11 +43,11 @@ def test_export_metadata_and_references(tmp_path, monkeypatch):
     derive_mod.export_view()
     csv_lines = (out_dir / "export_view.csv").read_text().splitlines()
     assert csv_lines[0].startswith("# generated_at: ")
-    assert csv_lines[1] == "# profile: p1"
+    assert csv_lines[1] == "# profile: PRO.TO.24_39.HYBRID.2025"
     assert csv_lines[2] == "# method: export_view"
 
     data = json.loads((out_dir / "export_view.json").read_text())
-    assert data["profile"] == "p1"
+    assert data["profile"] == "PRO.TO.24_39.HYBRID.2025"
     assert data["method"] == "export_view"
     assert "generated_at" in data
     assert isinstance(data["data"], list)

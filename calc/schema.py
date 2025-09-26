@@ -83,6 +83,7 @@ class EmissionFactor(BaseModel):
     region: Optional[RegionCode] = None
     scope_boundary: Optional[ScopeBoundary] = None
     vintage_year: Optional[int] = None
+    source_id: Optional[str] = None
     uncert_low_g_per_unit: Optional[float] = None
     uncert_high_g_per_unit: Optional[float] = None
 
@@ -159,6 +160,7 @@ class ActivitySchedule(BaseModel):
 class GridIntensity(BaseModel):
     region: RegionCode = Field(alias="region_code")
     intensity_g_per_kwh: Optional[float] = Field(default=None, alias="g_per_kwh")
+    source_id: Optional[str] = None
 
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
 
