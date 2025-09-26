@@ -1,3 +1,3 @@
 ef_id,activity_id,unit,value_g_per_unit,is_grid_indexed,electricity_kwh_per_unit,electricity_kwh_per_unit_low,electricity_kwh_per_unit_high,region,scope_boundary,gwp_horizon,vintage_year,source_id,method_notes,uncert_low_g_per_unit,uncert_high_g_per_unit
 EF.DEMO.COFFEE.FIXED,FOOD.COFFEE.CUP.HOT,cup,1,,,,,,cradle-to-grave,GWP100 (AR6),2025,SRC.DEMO,,,
-EF.DEMO.STREAM,stream,,,TRUE,0.10,,,,,,,,,,
+EF.DEMO.STREAM,stream,,,TRUE,0.10,,,,,,,SRC.DIMPACT.2021,,,

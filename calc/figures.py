@@ -9,7 +9,7 @@ from typing import List
 import pandas as pd
 import yaml
 
-from .citations import load_citations
+from . import citations
 
 CONFIG_PATH = Path(__file__).parent / "config.yaml"
 
@@ -50,7 +50,10 @@ def export_total_by_activity(
     _write_csv_with_metadata(fig, out_dir / "figure_total_by_activity.csv", metadata)
     payload = {
         **metadata,
-        "references": load_citations(citation_keys),
+        "references": [
+            citations.format_ieee(ref.numbered(idx))
+            for idx, ref in enumerate(citations.references_for(citation_keys), start=1)
+        ],
         "data": fig.to_dict(orient="records"),
     }
     (out_dir / "figure_total_by_activity.json").write_text(json.dumps(payload, indent=2))
