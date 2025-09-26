@@ -80,6 +80,8 @@ class EmissionFactor(BaseModel):
     value_g_per_unit: Optional[float] = None
     is_grid_indexed: Optional[bool] = None
     electricity_kwh_per_unit: Optional[float] = None
+    electricity_kwh_per_unit_low: Optional[float] = None
+    electricity_kwh_per_unit_high: Optional[float] = None
     region: Optional[RegionCode] = None
     scope_boundary: Optional[ScopeBoundary] = None
     vintage_year: Optional[int] = None
@@ -104,6 +106,22 @@ class EmissionFactor(BaseModel):
                 raise ValueError("grid indexed factors must set is_grid_indexed=True")
             if self.electricity_kwh_per_unit is None or self.electricity_kwh_per_unit <= 0:
                 raise ValueError("grid indexed factors require electricity_kwh_per_unit > 0")
+            if (
+                self.electricity_kwh_per_unit_low is not None
+                and self.electricity_kwh_per_unit_low <= 0
+            ):
+                raise ValueError("electricity_kwh_per_unit_low must be > 0 when provided")
+            if (
+                self.electricity_kwh_per_unit_high is not None
+                and self.electricity_kwh_per_unit_high <= 0
+            ):
+                raise ValueError("electricity_kwh_per_unit_high must be > 0 when provided")
+            if (
+                self.electricity_kwh_per_unit_low is not None
+                and self.electricity_kwh_per_unit_high is not None
+                and self.electricity_kwh_per_unit_low > self.electricity_kwh_per_unit_high
+            ):
+                raise ValueError("electricity_kwh_per_unit_low cannot exceed high bound")
         else:
             if self.is_grid_indexed:
                 raise ValueError("is_grid_indexed only allowed with grid indexed factors")
@@ -160,7 +178,10 @@ class ActivitySchedule(BaseModel):
 class GridIntensity(BaseModel):
     region: RegionCode = Field(alias="region_code")
     intensity_g_per_kwh: Optional[float] = Field(default=None, alias="g_per_kwh")
+    intensity_low_g_per_kwh: Optional[float] = Field(default=None, alias="g_per_kwh_low")
+    intensity_high_g_per_kwh: Optional[float] = Field(default=None, alias="g_per_kwh_high")
     source_id: Optional[str] = None
+    vintage_year: Optional[int] = None
 
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
 

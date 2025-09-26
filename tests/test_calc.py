@@ -31,9 +31,7 @@ def test_export_metadata_and_references(tmp_path):
                 ActivitySchedule(
                     profile_id="p1", activity_id="coffee", freq_per_week=5, office_days_only=True
                 ),
-                ActivitySchedule(
-                    profile_id="p1", activity_id="stream", freq_per_day=2
-                ),
+                ActivitySchedule(profile_id="p1", activity_id="stream", freq_per_day=2),
             ]
 
         def load_grid_intensity(self):
@@ -66,21 +64,41 @@ def test_export_metadata_and_references(tmp_path):
     assert isinstance(data["data"], list)
     assert data["citation_keys"] == ["coffee", "streaming"]
 
-    fig_payload = json.loads((out_dir / "figure_total_by_activity.json").read_text())
     expected_refs = [
         citations.format_ieee(ref.numbered(idx))
-        for idx, ref in enumerate(
-            citations.references_for(["coffee", "streaming"]), start=1
-        )
+        for idx, ref in enumerate(citations.references_for(["coffee", "streaming"]), start=1)
     ]
-    assert fig_payload["references"] == expected_refs
-    assert fig_payload["citation_keys"] == ["coffee", "streaming"]
-    assert fig_payload["profile"] == "p1"
-    assert fig_payload["profile_resolution"] == {
+
+    export_refs = (out_dir / "references" / "export_view_refs.txt").read_text().strip().splitlines()
+    assert export_refs == expected_refs
+
+    stacked_payload = json.loads((out_dir / "figures" / "stacked.json").read_text())
+    assert stacked_payload["references"] == expected_refs
+    assert stacked_payload["citation_keys"] == ["coffee", "streaming"]
+    assert stacked_payload["profile"] == "p1"
+    assert stacked_payload["profile_resolution"] == {
         "requested": "PRO.TO.24_39.HYBRID.2025",
         "used": ["p1"],
     }
-    assert fig_payload["method"] == "figures.total_by_activity"
+    assert stacked_payload["method"] == "figures.stacked"
+    assert stacked_payload["data"]
+
+    bubble_payload = json.loads((out_dir / "figures" / "bubble.json").read_text())
+    assert bubble_payload["references"] == expected_refs
+    assert all("mean" in point["values"] for point in bubble_payload["data"])
+
+    sankey_payload = json.loads((out_dir / "figures" / "sankey.json").read_text())
+    assert sankey_payload["references"] == expected_refs
+    assert isinstance(sankey_payload["data"], dict)
+    assert "nodes" in sankey_payload["data"]
+    assert "links" in sankey_payload["data"]
+
+    for name in ("stacked", "bubble", "sankey"):
+        txt = (out_dir / "references" / f"{name}_refs.txt").read_text().strip().splitlines()
+        assert txt == expected_refs
+
+    manifest = json.loads((out_dir / "manifest.json").read_text())
+    assert manifest["sources"] == ["coffee", "streaming"]
 
 
 def test_emission_calculation_and_nulls():

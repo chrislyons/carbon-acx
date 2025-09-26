@@ -1,25 +1,27 @@
 from __future__ import annotations
 
-import json
+from collections.abc import Iterable
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from functools import lru_cache
 from pathlib import Path
-from collections.abc import Iterable
-from typing import List
+from typing import Any
 
 import pandas as pd
 import yaml
-
-from . import citations
 
 CONFIG_PATH = Path(__file__).parent / "config.yaml"
 
 
 @lru_cache(maxsize=1)
 def _load_config() -> dict:
-    data = yaml.safe_load(CONFIG_PATH.read_text())
+    if not CONFIG_PATH.exists():
+        return {}
+    data = yaml.safe_load(CONFIG_PATH.read_text(encoding="utf-8"))
     if data is None:
         return {}
+    if not isinstance(data, dict):
+        raise TypeError("Configuration must be a mapping")
     return data
 
 
@@ -32,10 +34,7 @@ def build_metadata(method: str, profile_ids: Iterable[str] | None = None) -> dic
     if profile_ids is not None:
         used_profiles = [str(profile_id) for profile_id in profile_ids if profile_id]
         if used_profiles:
-            if len(used_profiles) == 1:
-                profile_value = used_profiles[0]
-            else:
-                profile_value = ", ".join(used_profiles)
+            profile_value = ", ".join(used_profiles) if len(used_profiles) > 1 else used_profiles[0]
         else:
             profile_value = None
 
@@ -54,58 +53,199 @@ def build_metadata(method: str, profile_ids: Iterable[str] | None = None) -> dic
     return metadata
 
 
-def _write_csv_with_metadata(df: pd.DataFrame, path: Path, metadata: dict) -> None:
-    with path.open("w") as fh:
-        for key, value in metadata.items():
-            fh.write(f"# {key}: {value}\n")
-        df.to_csv(fh, index=False)
+def _coerce_optional(value: Any) -> float | None:
+    if value is None:
+        return None
+    if isinstance(value, (int, float)):
+        if pd.isna(value):
+            return None
+        return float(value)
+    try:
+        num = float(value)
+    except (TypeError, ValueError):
+        return None
+    if pd.isna(num):
+        return None
+    return num
 
 
-def total_by_activity(df: pd.DataFrame) -> pd.DataFrame:
-    return df.groupby("activity_id", as_index=False)["annual_emissions_g"].sum()
+def _bounds(mean: float | None, low: float | None, high: float | None) -> dict:
+    if mean is None:
+        raise ValueError("Mean value is required for figure slices")
+    payload = {"mean": mean}
+    if low is not None:
+        payload["low"] = low
+    if high is not None:
+        payload["high"] = high
+    return payload
 
 
-def _normalize_citation_keys(
-    df: pd.DataFrame, citation_keys: Iterable[str] | None
-) -> List[str]:
-    key_set: set[str] = set()
-    if citation_keys is not None:
-        key_set.update(str(key) for key in citation_keys if key)
-    else:
-        from .api import collect_activity_source_keys
-
-        records = df.to_dict(orient="records")
-        key_set.update(collect_activity_source_keys(records))
-    return sorted(key_set)
+def _normalise_category(value: Any) -> str:
+    if value is None or (isinstance(value, float) and pd.isna(value)):
+        return "uncategorized"
+    return str(value)
 
 
-def export_total_by_activity(
-    df: pd.DataFrame, out_dir: Path, citation_keys: Iterable[str] | None = None
-) -> pd.DataFrame:
-    fig = total_by_activity(df)
-    profile_ids: list[str] | None = None
-    if "profile_id" in df.columns:
-        profile_ids = sorted(
-            {str(profile_id) for profile_id in df["profile_id"].dropna().unique() if profile_id}
-        )
-        if not profile_ids:
-            profile_ids = None
-    metadata = build_metadata(
-        "figures.total_by_activity", profile_ids=profile_ids
-    )
-    keys = _normalize_citation_keys(df, citation_keys)
-    metadata["citation_keys"] = keys
-    _write_csv_with_metadata(fig, out_dir / "figure_total_by_activity.csv", metadata)
-    payload = {
-        **metadata,
-        "references": [
-            citations.format_ieee(ref.numbered(idx))
-            for idx, ref in enumerate(citations.references_for(keys), start=1)
+def _ensure_columns(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
+    missing = [col for col in columns if col not in df.columns]
+    if missing:
+        raise KeyError(f"DataFrame missing required columns: {missing}")
+    return df
+
+
+def slice_stacked(df: pd.DataFrame) -> list[dict]:
+    if df.empty:
+        return []
+    frame = _ensure_columns(
+        df,
+        [
+            "annual_emissions_g",
+            "annual_emissions_g_low",
+            "annual_emissions_g_high",
+            "activity_category",
         ],
-        "data": fig.to_dict(orient="records"),
-    }
-    (out_dir / "figure_total_by_activity.json").write_text(json.dumps(payload, indent=2))
-    return fig
+    ).copy()
+    frame["activity_category"] = frame["activity_category"].map(_normalise_category)
+    aggregated = (
+        frame.groupby("activity_category", dropna=False)[
+            ["annual_emissions_g", "annual_emissions_g_low", "annual_emissions_g_high"]
+        ]
+        .sum(min_count=1)
+        .reset_index()
+    )
+    aggregated = aggregated.sort_values("annual_emissions_g", ascending=False)
+
+    results: list[dict] = []
+    for _, row in aggregated.iterrows():
+        mean = _coerce_optional(row["annual_emissions_g"])
+        if mean is None:
+            continue
+        low = _coerce_optional(row.get("annual_emissions_g_low"))
+        high = _coerce_optional(row.get("annual_emissions_g_high"))
+        results.append(
+            {
+                "category": row["activity_category"],
+                "values": _bounds(mean, low, high),
+            }
+        )
+    return results
+
+
+@dataclass(frozen=True)
+class BubblePoint:
+    activity_id: str
+    activity_name: str
+    category: str | None
+    values: dict
+
+
+def slice_bubble(df: pd.DataFrame) -> list[BubblePoint]:
+    if df.empty:
+        return []
+    frame = _ensure_columns(
+        df,
+        [
+            "activity_id",
+            "activity_name",
+            "activity_category",
+            "annual_emissions_g",
+            "annual_emissions_g_low",
+            "annual_emissions_g_high",
+        ],
+    ).copy()
+    frame["activity_name"] = frame.apply(
+        lambda row: row["activity_name"] if row["activity_name"] else row["activity_id"],
+        axis=1,
+    )
+    frame["activity_category"] = frame["activity_category"].map(_normalise_category)
+
+    aggregated = (
+        frame.groupby(["activity_id", "activity_name", "activity_category"], dropna=False)[
+            ["annual_emissions_g", "annual_emissions_g_low", "annual_emissions_g_high"]
+        ]
+        .sum(min_count=1)
+        .reset_index()
+    )
+    aggregated = aggregated.sort_values("annual_emissions_g", ascending=False)
+
+    results: list[BubblePoint] = []
+    for _, row in aggregated.iterrows():
+        mean = _coerce_optional(row["annual_emissions_g"])
+        if mean is None:
+            continue
+        low = _coerce_optional(row.get("annual_emissions_g_low"))
+        high = _coerce_optional(row.get("annual_emissions_g_high"))
+        results.append(
+            BubblePoint(
+                activity_id=str(row["activity_id"]),
+                activity_name=str(row["activity_name"]),
+                category=row["activity_category"],
+                values=_bounds(mean, low, high),
+            )
+        )
+    return results
+
+
+def slice_sankey(df: pd.DataFrame) -> dict:
+    if df.empty:
+        return {"nodes": [], "links": []}
+    frame = _ensure_columns(
+        df,
+        [
+            "activity_id",
+            "activity_name",
+            "activity_category",
+            "annual_emissions_g",
+            "annual_emissions_g_low",
+            "annual_emissions_g_high",
+        ],
+    ).copy()
+    frame["activity_name"] = frame.apply(
+        lambda row: row["activity_name"] if row["activity_name"] else row["activity_id"],
+        axis=1,
+    )
+    frame["activity_category"] = frame["activity_category"].map(_normalise_category)
+
+    aggregated = (
+        frame.groupby(["activity_category", "activity_id", "activity_name"], dropna=False)[
+            ["annual_emissions_g", "annual_emissions_g_low", "annual_emissions_g_high"]
+        ]
+        .sum(min_count=1)
+        .reset_index()
+    )
+    aggregated = aggregated.sort_values("annual_emissions_g", ascending=False)
+
+    nodes: dict[tuple[str, str], dict] = {}
+
+    def _ensure_node(kind: str, label: str) -> dict:
+        key = (kind, label)
+        if key not in nodes:
+            nodes[key] = {"id": f"{kind}:{label}", "type": kind, "label": label}
+        return nodes[key]
+
+    links: list[dict] = []
+    for _, row in aggregated.iterrows():
+        mean = _coerce_optional(row["annual_emissions_g"])
+        if mean is None:
+            continue
+        low = _coerce_optional(row.get("annual_emissions_g_low"))
+        high = _coerce_optional(row.get("annual_emissions_g_high"))
+        category_label = str(row["activity_category"])
+        activity_label = str(row["activity_name"])
+        source = _ensure_node("category", category_label)
+        target = _ensure_node("activity", activity_label)
+        links.append(
+            {
+                "source": source["id"],
+                "target": target["id"],
+                "activity_id": str(row["activity_id"]),
+                "category": category_label,
+                "values": _bounds(mean, low, high),
+            }
+        )
+
+    ordered_nodes = [node for _, node in sorted(nodes.items(), key=lambda item: item[1]["id"])]
+    return {"nodes": ordered_nodes, "links": links}
 
 
 def invalidate_cache() -> None:
@@ -113,8 +253,10 @@ def invalidate_cache() -> None:
 
 
 __all__ = [
-    "total_by_activity",
-    "export_total_by_activity",
+    "BubblePoint",
     "build_metadata",
     "invalidate_cache",
+    "slice_bubble",
+    "slice_sankey",
+    "slice_stacked",
 ]
