@@ -1,3 +1,4 @@
+from calc import citations
 from calc.derive import compute_emission, get_grid_intensity
 from calc.schema import ActivitySchedule, EmissionFactor, Profile
 
@@ -13,8 +14,13 @@ def test_export_metadata_and_references(tmp_path):
     class FakeStore:
         def load_emission_factors(self):
             return [
-                EmissionFactor(activity_id="coffee", value_g_per_unit=1),
-                EmissionFactor(activity_id="stream", is_grid_indexed=True, electricity_kwh_per_unit=1),
+                EmissionFactor(activity_id="coffee", value_g_per_unit=1, source_id="coffee"),
+                EmissionFactor(
+                    activity_id="stream",
+                    is_grid_indexed=True,
+                    electricity_kwh_per_unit=1,
+                    source_id="streaming",
+                ),
             ]
 
         def load_profiles(self):
@@ -50,12 +56,17 @@ def test_export_metadata_and_references(tmp_path):
     assert data["method"] == "export_view"
     assert "generated_at" in data
     assert isinstance(data["data"], list)
+    assert data["citation_keys"] == ["coffee", "streaming"]
 
     fig_payload = json.loads((out_dir / "figure_total_by_activity.json").read_text())
-    assert fig_payload["references"] == [
-        "[1] Coffee reference.",
-        "[2] Streaming reference.",
+    expected_refs = [
+        citations.format_ieee(ref.numbered(idx))
+        for idx, ref in enumerate(
+            citations.references_for(["coffee", "streaming"]), start=1
+        )
     ]
+    assert fig_payload["references"] == expected_refs
+    assert fig_payload["citation_keys"] == ["coffee", "streaming"]
     assert fig_payload["method"] == "figures.total_by_activity"
 
 
