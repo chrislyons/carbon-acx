@@ -6,10 +6,7 @@ from calc import citations
 
 def test_citation_ordering():
     refs = citations.references_for(["coffee", "streaming"])
-    formatted = [
-        citations.format_ieee(ref.numbered(idx))
-        for idx, ref in enumerate(refs, start=1)
-    ]
+    formatted = [citations.format_ieee(ref.numbered(idx)) for idx, ref in enumerate(refs, start=1)]
     assert formatted == ["[1] Coffee reference.", "[2] Streaming reference."]
 
 

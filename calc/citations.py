@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import List, Sequence
 import re
 
+from collections.abc import Mapping
+
 REFERENCES_DIR = Path(__file__).parent / "references"
 
 _IEEE_NUMBER_PREFIX = re.compile(r"^\s*\[\d+\]\s*")
@@ -34,6 +36,15 @@ def _load_reference(key: str) -> Reference:
     return Reference(key=key, citation=text)
 
 
+_REFERENCE_FIELDS = (
+    "citation_keys",
+    "source_id",
+    "source_ids",
+    "reference_id",
+    "reference_ids",
+)
+
+
 def _flatten(obj: object | None) -> List[str]:
     if obj is None:
         return []
@@ -41,17 +52,24 @@ def _flatten(obj: object | None) -> List[str]:
         return [obj.key]
     if isinstance(obj, str):
         return [obj]
+    if isinstance(obj, Mapping):
+        keys: List[str] = []
+        for field in _REFERENCE_FIELDS:
+            if field in obj and obj[field] is not None:
+                keys.extend(_flatten(obj[field]))
+        return keys
     if isinstance(obj, Sequence) and not isinstance(obj, (str, bytes, bytearray)):
         keys: List[str] = []
         for item in obj:
             keys.extend(_flatten(item))
         return keys
-    for attr in ("source_id", "source_ids", "reference_id", "reference_ids"):
+    keys: List[str] = []
+    for attr in _REFERENCE_FIELDS:
         if hasattr(obj, attr):
             value = getattr(obj, attr)
             if value is not None:
-                return _flatten(value)
-    return []
+                keys.extend(_flatten(value))
+    return keys
 
 
 def references_for(obj: object | None) -> List[Reference]:

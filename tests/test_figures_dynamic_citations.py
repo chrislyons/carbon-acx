@@ -50,11 +50,15 @@ def test_figures_use_dynamic_citations(tmp_path):
     expected_keys = ["SRC.DIMPACT.2021", "SRC.IESO.2024"]
     assert export_payload["citation_keys"] == expected_keys
 
-    fig_payload = json.loads((out_dir / "figure_total_by_activity.json").read_text())
     expected_refs = [
         citations.format_ieee(ref.numbered(idx))
         for idx, ref in enumerate(citations.references_for(expected_keys), start=1)
     ]
+    assert (
+        out_dir / "references" / "stacked_refs.txt"
+    ).read_text().strip().splitlines() == expected_refs
+
+    fig_payload = json.loads((out_dir / "figures" / "stacked.json").read_text())
     assert fig_payload["references"] == expected_refs
     assert fig_payload["citation_keys"] == expected_keys
     assert all("coffee" not in ref and "stream" not in ref for ref in fig_payload["references"])

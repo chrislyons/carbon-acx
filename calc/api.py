@@ -39,7 +39,9 @@ def _load_config(cfg_path: Path) -> dict:
     return data
 
 
-def _resolve_profile_id(config: dict, profiles: Dict[str, schema.Profile], schedules: Iterable[schema.ActivitySchedule]) -> str:
+def _resolve_profile_id(
+    config: dict, profiles: Dict[str, schema.Profile], schedules: Iterable[schema.ActivitySchedule]
+) -> str:
     profile_id = config.get("default_profile")
     if profile_id in profiles:
         return profile_id
@@ -137,9 +139,7 @@ def get_aggregates(data_dir: Path, cfg_path: Path) -> tuple[Aggregates, list[str
         ef.activity_id: ef
         for ef in schema._load_csv(data_dir / "emission_factors.csv", schema.EmissionFactor)
     }
-    grid_intensities = list(
-        schema._load_csv(data_dir / "grid_intensity.csv", schema.GridIntensity)
-    )
+    grid_intensities = list(schema._load_csv(data_dir / "grid_intensity.csv", schema.GridIntensity))
     grid_lookup: Dict[str | schema.RegionCode, float | None] = {}
     grid_by_region: Dict[str | schema.RegionCode, schema.GridIntensity] = {}
     for gi in grid_intensities:
@@ -148,7 +148,6 @@ def get_aggregates(data_dir: Path, cfg_path: Path) -> tuple[Aggregates, list[str
         if hasattr(gi.region, "value"):
             grid_lookup[gi.region.value] = gi.intensity_g_per_kwh
             grid_by_region[gi.region.value] = gi
-
 
     config = _load_config(cfg_path)
     profile_id = _resolve_profile_id(config, profiles, schedules)
