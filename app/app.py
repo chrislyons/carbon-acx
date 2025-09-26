@@ -5,11 +5,13 @@ from pathlib import Path
 from dash import Dash, html
 
 from calc.api import get_aggregates
+from calc.dal import choose_backend
 
 from .components import bubble, references, sankey, stacked
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 CFG_PATH = Path(__file__).resolve().parent.parent / "calc" / "config.yaml"
+DS = choose_backend()
 
 
 def create_app() -> Dash:

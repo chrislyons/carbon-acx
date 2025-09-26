@@ -1,3 +1,5 @@
+ACX_DATA_BACKEND ?= csv
+
 .PHONY: install validate build app format lint test release migrate_v1_1
 
 install:
@@ -6,10 +8,10 @@ install:
 validate: lint test
 
 build:
-	PYTHONPATH=. poetry run python -m calc.derive
+        ACX_DATA_BACKEND=$(ACX_DATA_BACKEND) PYTHONPATH=. poetry run python -m calc.derive
 
 app:
-	PYTHONPATH=. poetry run python -m app.app
+        ACX_DATA_BACKEND=$(ACX_DATA_BACKEND) PYTHONPATH=. poetry run python -m app.app
 
 format:
 	PYTHONPATH=. poetry run black .
