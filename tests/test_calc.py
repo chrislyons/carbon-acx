@@ -48,12 +48,20 @@ def test_export_metadata_and_references(tmp_path):
     derive_mod.export_view(FakeStore())
     csv_lines = (out_dir / "export_view.csv").read_text().splitlines()
     assert csv_lines[0].startswith("# generated_at: ")
-    assert csv_lines[1] == "# profile: PRO.TO.24_39.HYBRID.2025"
+    assert csv_lines[1] == "# profile: p1"
     assert csv_lines[2] == "# method: export_view"
+    assert (
+        csv_lines[3]
+        == "# profile_resolution: {'requested': 'PRO.TO.24_39.HYBRID.2025', 'used': ['p1']}"
+    )
 
     data = json.loads((out_dir / "export_view.json").read_text())
-    assert data["profile"] == "PRO.TO.24_39.HYBRID.2025"
+    assert data["profile"] == "p1"
     assert data["method"] == "export_view"
+    assert data["profile_resolution"] == {
+        "requested": "PRO.TO.24_39.HYBRID.2025",
+        "used": ["p1"],
+    }
     assert "generated_at" in data
     assert isinstance(data["data"], list)
     assert data["citation_keys"] == ["coffee", "streaming"]
@@ -67,6 +75,11 @@ def test_export_metadata_and_references(tmp_path):
     ]
     assert fig_payload["references"] == expected_refs
     assert fig_payload["citation_keys"] == ["coffee", "streaming"]
+    assert fig_payload["profile"] == "p1"
+    assert fig_payload["profile_resolution"] == {
+        "requested": "PRO.TO.24_39.HYBRID.2025",
+        "used": ["p1"],
+    }
     assert fig_payload["method"] == "figures.total_by_activity"
 
 

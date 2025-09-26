@@ -23,13 +23,35 @@ def _load_config() -> dict:
     return data
 
 
-def build_metadata(method: str) -> dict:
-    profile = _load_config().get("default_profile")
-    return {
+def build_metadata(method: str, profile_ids: Iterable[str] | None = None) -> dict:
+    config = _load_config()
+    requested_profile = config.get("default_profile")
+
+    used_profiles: list[str] | None = None
+    profile_value = requested_profile
+    if profile_ids is not None:
+        used_profiles = [str(profile_id) for profile_id in profile_ids if profile_id]
+        if used_profiles:
+            if len(used_profiles) == 1:
+                profile_value = used_profiles[0]
+            else:
+                profile_value = ", ".join(used_profiles)
+        else:
+            profile_value = None
+
+    metadata = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "profile": profile,
+        "profile": profile_value,
         "method": method,
     }
+
+    if used_profiles is not None:
+        metadata["profile_resolution"] = {
+            "requested": requested_profile,
+            "used": used_profiles,
+        }
+
+    return metadata
 
 
 def _write_csv_with_metadata(df: pd.DataFrame, path: Path, metadata: dict) -> None:
@@ -61,7 +83,16 @@ def export_total_by_activity(
     df: pd.DataFrame, out_dir: Path, citation_keys: Iterable[str] | None = None
 ) -> pd.DataFrame:
     fig = total_by_activity(df)
-    metadata = build_metadata("figures.total_by_activity")
+    profile_ids: list[str] | None = None
+    if "profile_id" in df.columns:
+        profile_ids = sorted(
+            {str(profile_id) for profile_id in df["profile_id"].dropna().unique() if profile_id}
+        )
+        if not profile_ids:
+            profile_ids = None
+    metadata = build_metadata(
+        "figures.total_by_activity", profile_ids=profile_ids
+    )
     keys = _normalize_citation_keys(df, citation_keys)
     metadata["citation_keys"] = keys
     _write_csv_with_metadata(fig, out_dir / "figure_total_by_activity.csv", metadata)
