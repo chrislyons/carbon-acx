@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Iterable, List, Tuple
+from collections.abc import Iterable, Mapping
+from typing import Any, Dict, List, Tuple
 
 import yaml
 
-from . import citations, derive, schema
+from . import citations, schema
 
 
 @dataclass(frozen=True)
@@ -83,6 +84,43 @@ def _collect_activity_sources(
     return sources
 
 
+def _row_value(row: object, key: str) -> Any:
+    if isinstance(row, Mapping):
+        return row.get(key)
+    return getattr(row, key, None)
+
+
+def _collect_row_sources(row: object) -> list[str]:
+    emission = _row_value(row, "annual_emissions_g")
+    if emission is None:
+        return []
+
+    keys: list[str] = []
+    candidates = (
+        "citation_keys",
+        "source_ids",
+        "source_id",
+        "emission_factor",
+        "grid_intensity",
+    )
+    for field in candidates:
+        value = _row_value(row, field)
+        if value is None:
+            continue
+        for ref in citations.references_for(value):
+            keys.append(ref.key)
+    return keys
+
+
+def collect_activity_source_keys(rows: Iterable[object]) -> set[str]:
+    """Return unique citation keys referenced by derived rows."""
+
+    keys: set[str] = set()
+    for row in rows:
+        keys.update(_collect_row_sources(row))
+    return keys
+
+
 def get_aggregates(data_dir: Path, cfg_path: Path) -> tuple[Aggregates, list[str]]:
     """Load data, compute emissions and return aggregates plus reference keys."""
 
@@ -119,6 +157,8 @@ def get_aggregates(data_dir: Path, cfg_path: Path) -> tuple[Aggregates, list[str
     by_activity: Dict[str, float] = {}
     source_keys: List[str] = []
 
+    from . import derive
+
     for sched in schedules:
         if sched.profile_id != profile_id:
             continue
@@ -153,4 +193,9 @@ def get_aggregates(data_dir: Path, cfg_path: Path) -> tuple[Aggregates, list[str
     return aggregates, reference_keys
 
 
-__all__ = ["Aggregates", "ActivityAggregate", "get_aggregates"]
+__all__ = [
+    "Aggregates",
+    "ActivityAggregate",
+    "collect_activity_source_keys",
+    "get_aggregates",
+]

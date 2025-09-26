@@ -4,6 +4,7 @@ import json
 from datetime import datetime, timezone
 from functools import lru_cache
 from pathlib import Path
+from collections.abc import Iterable
 from typing import List
 
 import pandas as pd
@@ -42,17 +43,33 @@ def total_by_activity(df: pd.DataFrame) -> pd.DataFrame:
     return df.groupby("activity_id", as_index=False)["annual_emissions_g"].sum()
 
 
+def _normalize_citation_keys(
+    df: pd.DataFrame, citation_keys: Iterable[str] | None
+) -> List[str]:
+    key_set: set[str] = set()
+    if citation_keys is not None:
+        key_set.update(str(key) for key in citation_keys if key)
+    else:
+        from .api import collect_activity_source_keys
+
+        records = df.to_dict(orient="records")
+        key_set.update(collect_activity_source_keys(records))
+    return sorted(key_set)
+
+
 def export_total_by_activity(
-    df: pd.DataFrame, out_dir: Path, citation_keys: List[str]
+    df: pd.DataFrame, out_dir: Path, citation_keys: Iterable[str] | None = None
 ) -> pd.DataFrame:
     fig = total_by_activity(df)
     metadata = build_metadata("figures.total_by_activity")
+    keys = _normalize_citation_keys(df, citation_keys)
+    metadata["citation_keys"] = keys
     _write_csv_with_metadata(fig, out_dir / "figure_total_by_activity.csv", metadata)
     payload = {
         **metadata,
         "references": [
             citations.format_ieee(ref.numbered(idx))
-            for idx, ref in enumerate(citations.references_for(citation_keys), start=1)
+            for idx, ref in enumerate(citations.references_for(keys), start=1)
         ],
         "data": fig.to_dict(orient="records"),
     }

@@ -7,8 +7,15 @@ import json
 import pandas as pd
 
 from . import figures
+from .api import collect_activity_source_keys
 from .dal import DataStore, choose_backend
-from .schema import ActivitySchedule, EmissionFactor, Profile, RegionCode
+from .schema import (
+    ActivitySchedule,
+    EmissionFactor,
+    GridIntensity,
+    Profile,
+    RegionCode,
+)
 
 
 def get_grid_intensity(
@@ -101,20 +108,56 @@ def compute_emission(
     return quantity * factor
 
 
+def _resolve_grid_row(
+    sched: ActivitySchedule,
+    profile: Profile | None,
+    grid_by_region: Mapping[str | RegionCode, GridIntensity],
+) -> Optional[GridIntensity]:
+    if sched.region_override is not None:
+        region_key = sched.region_override
+    elif sched.mix_region is not None:
+        region_key = sched.mix_region
+    elif sched.use_canada_average:
+        region_key = RegionCode.CA
+    elif profile and profile.default_grid_region is not None:
+        region_key = profile.default_grid_region
+    else:
+        region_key = None
+
+    if region_key is None:
+        return None
+
+    grid = grid_by_region.get(region_key)
+    if grid is None and hasattr(region_key, "value"):
+        grid = grid_by_region.get(region_key.value)
+    if grid is None and isinstance(region_key, RegionCode):
+        grid = grid_by_region.get(region_key.value)
+    return grid
+
+
 def export_view(ds: Optional[DataStore] = None) -> pd.DataFrame:
     datastore = ds or choose_backend()
     efs = {ef.activity_id: ef for ef in datastore.load_emission_factors()}
     profiles = {p.profile_id: p for p in datastore.load_profiles()}
-    grid_lookup: Dict[str | RegionCode, Optional[float]] = {
-        gi.region: gi.intensity_g_per_kwh for gi in datastore.load_grid_intensity()
-    }
+    grid_lookup: Dict[str | RegionCode, Optional[float]] = {}
+    grid_by_region: Dict[str | RegionCode, GridIntensity] = {}
+    for gi in datastore.load_grid_intensity():
+        grid_lookup[gi.region] = gi.intensity_g_per_kwh
+        grid_by_region[gi.region] = gi
+        if hasattr(gi.region, "value"):
+            grid_lookup[gi.region.value] = gi.intensity_g_per_kwh
+            grid_by_region[gi.region.value] = gi
     rows: List[dict] = []
+    derived_rows: List[dict] = []
     for sched in datastore.load_activity_schedule():
         profile = profiles.get(sched.profile_id)
         ef = efs.get(sched.activity_id)
         emission = None
+        grid_row: Optional[GridIntensity] = None
         if profile and ef:
             emission = compute_emission(sched, profile, ef, grid_lookup)
+            if emission is not None and ef.is_grid_indexed:
+                grid_row = _resolve_grid_row(sched, profile, grid_by_region)
         rows.append(
             {
                 "profile_id": sched.profile_id,
@@ -122,10 +165,21 @@ def export_view(ds: Optional[DataStore] = None) -> pd.DataFrame:
                 "annual_emissions_g": emission,
             }
         )
+        derived_rows.append(
+            {
+                "profile": profile,
+                "schedule": sched,
+                "emission_factor": ef,
+                "grid_intensity": grid_row,
+                "annual_emissions_g": emission,
+            }
+        )
     df = pd.DataFrame(rows)
     out_dir = Path(__file__).parent / "outputs"
     out_dir.mkdir(exist_ok=True)
+    citation_keys = sorted(collect_activity_source_keys(derived_rows))
     metadata = figures.build_metadata("export_view")
+    metadata["citation_keys"] = citation_keys
     with (out_dir / "export_view.csv").open("w") as fh:
         for key, value in metadata.items():
             fh.write(f"# {key}: {value}\n")
@@ -133,7 +187,7 @@ def export_view(ds: Optional[DataStore] = None) -> pd.DataFrame:
     payload = {**metadata, "data": df.to_dict(orient="records")}
     (out_dir / "export_view.json").write_text(json.dumps(payload, indent=2))
     # example figure slice
-    figures.export_total_by_activity(df, out_dir, ["coffee", "streaming"])
+    figures.export_total_by_activity(df, out_dir, citation_keys)
     return df
 
 
