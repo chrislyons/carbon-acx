@@ -65,9 +65,11 @@ def _build_components(lock_data: dict[str, Any]) -> list[dict[str, Any]]:
         component["purl"] = f"pkg:pypi/{name}@{version}"
         if (licenses := package.get("license")) is not None:
             component["licenses"] = [
-                {"license": {"id": licenses}}
-                if isinstance(licenses, str)
-                else {"expression": str(licenses)}
+                (
+                    {"license": {"id": licenses}}
+                    if isinstance(licenses, str)
+                    else {"expression": str(licenses)}
+                )
             ]
         components.append(component)
     components.sort(key=lambda item: (item["name"], item["version"]))
