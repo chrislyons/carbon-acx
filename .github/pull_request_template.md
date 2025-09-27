@@ -10,6 +10,9 @@
 **Sources & References:**
 - <!-- Required: cite datasets, reports, or tickets that informed the change -->
 
+**Source IDs:**
+- <!-- Required: list every `source_id` added or consumed in this PR -->
+
 **Scope Notes:**
 - <!-- Required: clarify anything intentionally out-of-scope or deferred -->
 
@@ -17,6 +20,7 @@
 - <!-- Required: list relevant data vintages, refresh cadence, or sunset expectations -->
 
 **ACX015 Seeding Checklist:**
+- [ ] Source IDs above follow the sources-first / null-first protocol
 - [ ] Inputs conform to seeding rules (no hidden migrations or drift)
 - [ ] QA artifacts updated or attached
 - [ ] Branch ready for CODEOWNERS review gate
