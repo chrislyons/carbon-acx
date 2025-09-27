@@ -1,0 +1,15 @@
+{
+  "data": [
+    {
+      "category": "Cooling",
+      "activity_name": "Chiller",
+      "layer_id": "professional",
+      "values": {
+        "mean": 500,
+        "low": 400,
+        "high": 600
+      }
+    }
+  ],
+  "citation_keys": ["SRC.DEMO"]
+}

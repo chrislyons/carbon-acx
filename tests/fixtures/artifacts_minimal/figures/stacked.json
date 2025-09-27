@@ -1,0 +1,14 @@
+{
+  "data": [
+    {
+      "category": "Cooling",
+      "layer_id": "professional",
+      "values": {
+        "mean": 1200,
+        "low": 1000,
+        "high": 1400
+      }
+    }
+  ],
+  "citation_keys": ["SRC.DEMO"]
+}

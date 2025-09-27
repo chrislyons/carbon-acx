@@ -1,0 +1,18 @@
+{
+  "data": {
+    "nodes": [
+      {"id": "cooling", "label": "Cooling", "type": "category"},
+      {"id": "chiller", "label": "Chiller"}
+    ],
+    "links": [
+      {
+        "source": "cooling",
+        "target": "chiller",
+        "category": "Cooling",
+        "layer_id": "professional",
+        "values": {"mean": 500}
+      }
+    ]
+  },
+  "citation_keys": ["SRC.DEMO"]
+}

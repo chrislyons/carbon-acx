@@ -1,0 +1,9 @@
+{
+  "generated_at": "2024-01-01T00:00:00Z",
+  "regions": ["Demo Region"],
+  "vintages": {
+    "emission_factors": [2024],
+    "grid_intensity": [2024]
+  },
+  "sources": ["SRC.DEMO"]
+}
