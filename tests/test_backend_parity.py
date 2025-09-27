@@ -8,7 +8,9 @@ from calc import derive
 
 
 @pytest.mark.parametrize("backend", ["csv", "duckdb"])
-def test_backend_parity(tmp_path_factory: pytest.TempPathFactory, monkeypatch: pytest.MonkeyPatch, backend: str) -> None:
+def test_backend_parity(
+    tmp_path_factory: pytest.TempPathFactory, monkeypatch: pytest.MonkeyPatch, backend: str
+) -> None:
     monkeypatch.delenv("ACX_DATA_BACKEND", raising=False)
     monkeypatch.setenv("ACX_GENERATED_AT", "1970-01-01T00:00:00+00:00")
 

@@ -87,9 +87,7 @@ def _normalise_value(value: Any) -> Any:
 
 def _normalise_mapping(record: dict) -> dict:
     return {key: _normalise_value(record.get(key)) for key in EXPORT_COLUMNS if key in record} | {
-        key: _normalise_value(value)
-        for key, value in record.items()
-        if key not in EXPORT_COLUMNS
+        key: _normalise_value(value) for key, value in record.items() if key not in EXPORT_COLUMNS
     }
 
 
@@ -534,10 +532,7 @@ def export_view(
             fh.write(f"# {key}: {value_str}\n")
         df.to_csv(fh, index=False)
 
-    records = [
-        {column: row.get(column) for column in EXPORT_COLUMNS}
-        for row in normalised_rows
-    ]
+    records = [{column: row.get(column) for column in EXPORT_COLUMNS} for row in normalised_rows]
     payload = dict(metadata)
     payload["data"] = records
     _write_json(out_dir / "export_view.json", payload)

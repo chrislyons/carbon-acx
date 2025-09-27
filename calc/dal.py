@@ -69,9 +69,7 @@ class DuckDbStore:
 
     def __init__(self) -> None:
         if duckdb is None:  # pragma: no cover - exercised in runtime environments
-            raise RuntimeError(
-                "DuckDB backend requires the 'duckdb' extra to be installed"
-            )
+            raise RuntimeError("DuckDB backend requires the 'duckdb' extra to be installed")
         self._conn = duckdb.connect(database=":memory:")
 
     def _load(self, filename: str) -> List[dict]:
@@ -101,7 +99,9 @@ class DuckDbStore:
         rows = result.fetchall()
         payload: List[dict] = []
         for row in rows:
-            record = {column: value if value is not None else None for column, value in zip(columns, row)}
+            record = {
+                column: value if value is not None else None for column, value in zip(columns, row)
+            }
             payload.append(record)
         return payload
 
