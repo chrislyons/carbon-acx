@@ -6,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  build:
+  quality:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -24,7 +24,7 @@ jobs:
         run: poetry config virtualenvs.create false
 
       - name: Install dependencies
-        run: make install
+        run: poetry install --with dev --extras db --no-root
 
       - name: Lint
         run: make lint
@@ -33,10 +33,63 @@ jobs:
         run: make test
 
       - name: Build distribution assets
-        run: make ci_build_pages
+        run: make dist/site/index.html
 
       - name: Upload dist artifacts
         uses: actions/upload-artifact@v4
         with:
           name: dist
           path: dist
+
+  build:
+    needs: quality
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        backend: [csv, duckdb]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Poetry
+        run: pip install poetry==1.7.1
+
+      - name: Configure Poetry
+        run: poetry config virtualenvs.create false
+
+      - name: Install dependencies
+        run: poetry install --with dev --extras db --no-root
+
+      - name: Build outputs
+        run: make build BACKEND=${{ matrix.backend }}
+
+      - name: Upload outputs artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: outputs-${{ matrix.backend }}
+          path: build/${{ matrix.backend }}
+          if-no-files-found: error
+
+  parity:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download CSV outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: outputs-csv
+          path: outputs-csv
+
+      - name: Download DuckDB outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: outputs-duckdb
+          path: outputs-duckdb
+
+      - name: Compare artifacts
+        run: diff -rq outputs-csv/calc/outputs outputs-duckdb/calc/outputs

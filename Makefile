@@ -1,9 +1,14 @@
-ACX_DATA_BACKEND ?= csv
+BACKEND ?= csv
+ACX_DATA_BACKEND ?= $(BACKEND)
+OUTPUT_DIR ?= build/$(BACKEND)
+OUTPUT_PATH := $(OUTPUT_DIR)/calc/outputs
+OUTPUT_MANIFEST := $(OUTPUT_PATH)/manifest.json
+DEFAULT_GENERATED_AT ?= 1970-01-01T00:00:00+00:00
 
-.PHONY: install lint test ci_build_pages app format validate release migrate_v1_1
+.PHONY: install lint test ci_build_pages app format validate release migrate_v1_1 build-backend
 
 install:
-	poetry install --with dev
+	poetry install --with dev --no-root
 
 lint:
 	PYTHONPATH=. poetry run ruff check .
@@ -12,13 +17,14 @@ lint:
 test:
 	PYTHONPATH=. poetry run pytest
 
-calc/outputs/manifest.json:
-	ACX_DATA_BACKEND=$(ACX_DATA_BACKEND) PYTHONPATH=. poetry run python -m calc.derive
+$(OUTPUT_MANIFEST):
+	@mkdir -p $(OUTPUT_DIR)
+	ACX_GENERATED_AT=$(DEFAULT_GENERATED_AT) ACX_DATA_BACKEND=$(ACX_DATA_BACKEND) PYTHONPATH=. poetry run python -m calc.derive --output-root $(OUTPUT_DIR)
 
-build: calc/outputs/manifest.json
+build: $(OUTPUT_MANIFEST)
 
-dist/artifacts/manifest.json: calc/outputs/manifest.json
-	PYTHONPATH=. poetry run python -m scripts.package_artifacts --src calc/outputs --dest dist/artifacts
+dist/artifacts/manifest.json: $(OUTPUT_MANIFEST)
+	PYTHONPATH=. poetry run python -m scripts.package_artifacts --src $(OUTPUT_PATH) --dest dist/artifacts
 
 package: dist/artifacts/manifest.json
 
@@ -42,3 +48,6 @@ release:
 
 migrate_v1_1:
 	python3 scripts/migrate_to_v1_1.py
+
+build-backend:
+	$(MAKE) build BACKEND=$(B)
