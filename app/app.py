@@ -44,10 +44,7 @@ def _reference_keys(figures: Dict[str, dict | None]) -> list[str]:
 
 
 def _reference_lookup(keys: list[str]) -> dict[str, int]:
-    return {
-        ref.key: idx
-        for idx, ref in enumerate(citations.references_for(keys), start=1)
-    }
+    return {ref.key: idx for idx, ref in enumerate(citations.references_for(keys), start=1)}
 
 
 def create_app() -> Dash:
