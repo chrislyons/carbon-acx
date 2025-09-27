@@ -26,6 +26,9 @@ jobs:
       - name: Install dependencies
         run: poetry install --with dev --extras db --no-root
 
+      - name: Verify lockfile consistency
+        run: poetry lock --check
+
       - name: Lint
         run: make lint
 
@@ -34,6 +37,16 @@ jobs:
 
       - name: Build packages
         run: make build site package
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: dist/sbom.cdx.json
+          if-no-files-found: error
+
+      - name: Vulnerability scan
+        run: poetry run pip-audit --strict
 
       - name: Upload dist artifacts bundle
         uses: actions/upload-artifact@v4
