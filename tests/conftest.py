@@ -16,6 +16,7 @@ if str(ROOT) not in sys.path:
 def _set_output_root(tmp_path, monkeypatch):
     output_root = tmp_path / "derived"
     monkeypatch.setenv("ACX_OUTPUT_ROOT", str(output_root))
+    monkeypatch.setenv("ACX_ALLOW_OUTPUT_RM", "1")
     return output_root
 
 
