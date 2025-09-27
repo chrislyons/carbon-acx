@@ -1,6 +1,12 @@
 profile_id,layer_id,name,region_code_default,grid_strategy,grid_mix_json,cohort_id,office_days_per_week,assumption_notes
 PRO.TO.24_39.HYBRID.2025,professional,Toronto Pros 24–39 — Hybrid (2025),CA-ON,region_default,,,3,
 PRO.TO.40_56.HYBRID.2025,professional,Toronto Pros 40–56 — Hybrid (2025),CA-ON,region_default,,,3,
+PRO.QC.24_39.HYBRID.2025,professional,Quebec Pros 24–39 — Hybrid (2025),CA-QC,region_default,,,3,
+PRO.QC.40_56.HYBRID.2025,professional,Quebec Pros 40–56 — Hybrid (2025),CA-QC,region_default,,,3,
+PRO.AB.24_39.HYBRID.2025,professional,Alberta Pros 24–39 — Hybrid (2025),CA-AB,region_default,,,3,
+PRO.AB.40_56.HYBRID.2025,professional,Alberta Pros 40–56 — Hybrid (2025),CA-AB,region_default,,,3,
+PRO.BC.24_39.HYBRID.2025,professional,British Columbia Pros 24–39 — Hybrid (2025),CA-BC,region_default,,,3,
+PRO.BC.40_56.HYBRID.2025,professional,British Columbia Pros 40–56 — Hybrid (2025),CA-BC,region_default,,,3,
 ONLINE.TO.CONSUMER.2025,online,Online Services — Toronto consumer (2025),CA-ON,region_default,,,
 IND_LIGHT.ON.CONSTRUCTION.2025,industrial_light,Ontario light-industrial construction (2025),CA-ON,region_default,,,,"Pending activity schedules; defaults held inactive until trade mix validated."
 IND_LIGHT.ON.LOGISTICS.2025,industrial_light,Ontario light-industrial logistics & warehousing (2025),CA-ON,region_default,,,,"Awaiting regional load profiles and shift schedules prior to enablement."
