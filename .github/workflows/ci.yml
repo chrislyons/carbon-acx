@@ -17,6 +17,9 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Check README make targets
+        run: python tools/check_readme_make_targets.py
+
       - name: Install Poetry
         run: pip install poetry==1.7.1
 
