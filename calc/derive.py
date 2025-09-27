@@ -1,15 +1,16 @@
 from __future__ import annotations
 
-import datetime as _datetime_module
-from dataclasses import asdict, dataclass
-from decimal import Decimal, ROUND_HALF_UP
-from pathlib import Path
-from typing import Any, Dict, List, Mapping, Optional
-
 import json
 import math
 import os
 import shutil
+import datetime as _datetime_module
+import hashlib
+import re
+from dataclasses import asdict, dataclass
+from decimal import Decimal, ROUND_HALF_UP
+from pathlib import Path
+from typing import Any, Dict, List, Mapping, Optional
 
 import pandas as pd
 
@@ -29,6 +30,10 @@ from .schema import (
 FLOAT_QUANTISER = Decimal("0.000001")
 OUTPUT_ROOT_ENV = "ACX_OUTPUT_ROOT"
 GENERATED_AT_ENV = "ACX_GENERATED_AT"
+ALLOW_OUTPUT_RM_ENV = "ACX_ALLOW_OUTPUT_RM"
+REPO_ROOT = Path(__file__).resolve().parent.parent
+ARTIFACT_ROOT = REPO_ROOT / "dist" / "artifacts"
+BUILD_HASH_RE = re.compile(r"^[0-9a-f]{12}$")
 EXPORT_COLUMNS = [
     "profile_id",
     "activity_id",
@@ -91,7 +96,38 @@ def _normalise_mapping(record: dict) -> dict:
     }
 
 
+def _env_flag(name: str) -> bool:
+    value = os.getenv(name)
+    if value is None:
+        return False
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def is_safe_output_dir(path: Path, repo_root: Path) -> bool:
+    if _env_flag(ALLOW_OUTPUT_RM_ENV):
+        return True
+
+    repo_artifacts = (repo_root / "dist" / "artifacts").resolve()
+    resolved = path.resolve()
+    try:
+        relative = resolved.relative_to(repo_artifacts)
+    except ValueError:
+        return False
+
+    if not relative.parts:
+        return False
+
+    build_segment = relative.parts[0]
+    return bool(BUILD_HASH_RE.fullmatch(build_segment))
+
+
 def _prepare_output_dir(path: Path) -> None:
+    if not is_safe_output_dir(path, REPO_ROOT):
+        raise ValueError(
+            "Refusing to clear output directory outside dist/artifacts build guardrails:"
+            f" {path}"
+        )
+
     if path.exists():
         for child in path.iterdir():
             if child.name == ".gitkeep":
@@ -103,13 +139,47 @@ def _prepare_output_dir(path: Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
 
 
-def _resolve_output_root(output_root: Path | str | None) -> Optional[Path]:
+def _resolve_output_root(output_root: Path | str | None, repo_root: Path) -> Path:
     if output_root is not None:
-        return Path(output_root)
-    env_root = os.getenv(OUTPUT_ROOT_ENV)
-    if env_root:
-        return Path(env_root)
-    return None
+        candidate = Path(output_root)
+    else:
+        env_root = os.getenv(OUTPUT_ROOT_ENV)
+        if env_root:
+            candidate = Path(env_root)
+        else:
+            candidate = ARTIFACT_ROOT
+
+    if not candidate.is_absolute():
+        candidate = (repo_root / candidate).resolve()
+    else:
+        candidate = candidate.resolve()
+
+    return candidate
+
+
+def _apply_build_hash(base_root: Path, repo_root: Path, build_hash: str) -> Path:
+    repo_artifacts = (repo_root / "dist" / "artifacts").resolve()
+    base_resolved = base_root.resolve()
+    try:
+        relative = base_resolved.relative_to(repo_artifacts)
+    except ValueError:
+        return base_resolved
+
+    parts = relative.parts
+    if parts and BUILD_HASH_RE.fullmatch(parts[0]):
+        return base_resolved
+
+    return repo_artifacts.joinpath(build_hash, *parts)
+
+
+def _compute_build_hash(manifest_payload: Mapping[str, Any], rows: List[dict]) -> str:
+    digest_source = json.dumps(
+        {"manifest": manifest_payload, "rows": rows},
+        sort_keys=True,
+        separators=(",", ":"),
+        default=str,
+    ).encode("utf-8")
+    return hashlib.sha256(digest_source).hexdigest()[:12]
 
 
 def _sort_export_rows(rows: List[dict]) -> List[dict]:
@@ -480,18 +550,6 @@ def export_view(
     normalised_rows = [_normalise_mapping(row) for row in sorted_rows]
     df = pd.DataFrame(normalised_rows, columns=EXPORT_COLUMNS)
 
-    output_root_path = _resolve_output_root(output_root)
-    if output_root_path is None:
-        out_dir = Path(__file__).parent / "outputs"
-    else:
-        out_dir = Path(output_root_path) / "calc" / "outputs"
-
-    _prepare_output_dir(out_dir)
-    figure_dir = out_dir / "figures"
-    reference_dir = out_dir / "references"
-    _prepare_output_dir(figure_dir)
-    _prepare_output_dir(reference_dir)
-
     citation_keys = sorted(collect_activity_source_keys(derived_rows))
     resolved_profiles = sorted(resolved_profile_ids)
     profile_arg = resolved_profiles if resolved_profiles else None
@@ -508,8 +566,6 @@ def export_view(
     references = _format_references(citation_keys)
     metadata["references"] = references
 
-    _write_reference_file(reference_dir, "export_view", references)
-
     csv_metadata = {k: v for k, v in metadata.items() if k not in {"references", "data"}}
     csv_order = [
         "generated_at",
@@ -521,6 +577,31 @@ def export_view(
     ]
     ordered_keys = [key for key in csv_order if key in csv_metadata]
     remaining_keys = [key for key in csv_metadata if key not in csv_order]
+
+    manifest_payload = {
+        "generated_at": generated_at,
+        "regions": sorted(manifest_regions),
+        "vintages": {
+            "emission_factors": sorted(manifest_ef_vintages),
+            "grid_intensity": sorted(manifest_grid_vintages),
+        },
+        "sources": citation_keys,
+        "layers": sorted_layers,
+    }
+
+    build_hash = _compute_build_hash(manifest_payload, normalised_rows)
+    base_output_root = _resolve_output_root(output_root, REPO_ROOT)
+    output_root_path = _apply_build_hash(base_output_root, REPO_ROOT, build_hash)
+
+    out_dir = Path(output_root_path) / "calc" / "outputs"
+    _prepare_output_dir(out_dir)
+    figure_dir = out_dir / "figures"
+    reference_dir = out_dir / "references"
+    _prepare_output_dir(figure_dir)
+    _prepare_output_dir(reference_dir)
+
+    _write_reference_file(reference_dir, "export_view", references)
+
     export_csv_path = out_dir / "export_view.csv"
     with export_csv_path.open("w", encoding="utf-8") as fh:
         for key in ordered_keys + sorted(remaining_keys):
@@ -558,17 +639,21 @@ def export_view(
     _write_figure("bubble", "figures.bubble", bubble_points)
     _write_figure("sankey", "figures.sankey", sankey)
 
-    manifest = {
-        "generated_at": generated_at,
-        "regions": sorted(manifest_regions),
-        "vintages": {
-            "emission_factors": sorted(manifest_ef_vintages),
-            "grid_intensity": sorted(manifest_grid_vintages),
-        },
-        "sources": citation_keys,
-        "layers": sorted_layers,
-    }
+    manifest = dict(manifest_payload)
+    manifest["build_hash"] = build_hash
     _write_json(out_dir / "manifest.json", manifest)
+
+    try:
+        output_root_path.resolve().relative_to(ARTIFACT_ROOT.resolve())
+    except ValueError:
+        pass
+    else:
+        ARTIFACT_ROOT.mkdir(parents=True, exist_ok=True)
+        pointer_payload = {
+            "build_hash": build_hash,
+            "artifact_dir": str(output_root_path),
+        }
+        _write_json(ARTIFACT_ROOT / "latest-build.json", pointer_payload)
 
     return df
 
