@@ -1,0 +1,12 @@
+# CODEOWNERS defines the default reviewers for directories that align with ACX015 governance rules.
+# When files in the listed paths change, the associated owners are requested for review automatically.
+
+# Fallback owner for uncategorized paths.
+*               @chrislyons
+
+# Domain owners.
+/data/          @chrislyons
+/schema/        @chrislyons
+/docs/          @chrislyons
+/app/           @chrislyons
+/.github/workflows/  @chrislyons
