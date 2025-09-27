@@ -1,0 +1,1 @@
+A. Shehabi et al., “Estimating the Energy Use of Data Centers: 2024 Update,” Lawrence Berkeley National Laboratory, Berkeley, CA, USA, 2024. Available: https://eta.lbl.gov/publications/estimating-energy-use-data-centers

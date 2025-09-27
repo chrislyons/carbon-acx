@@ -1,3 +1,8 @@
 ef_id,activity_id,unit,value_g_per_unit,is_grid_indexed,electricity_kwh_per_unit,electricity_kwh_per_unit_low,electricity_kwh_per_unit_high,region,scope_boundary,gwp_horizon,vintage_year,source_id,method_notes,uncert_low_g_per_unit,uncert_high_g_per_unit
 EF.DEMO.COFFEE.FIXED,FOOD.COFFEE.CUP.HOT,cup,1,,,,,,cradle-to-grave,GWP100 (AR6),2025,SRC.DEMO,,,
 EF.DEMO.STREAM,stream,,,TRUE,0.10,,,,,,,SRC.DIMPACT.2021,,,
+EF.ONLINE.MEDIA.STREAM.HD.HOUR.TV,MEDIA.STREAM.HD.HOUR.TV,hour,,TRUE,0.165,,,,Operational electricity,GWP100 (AR6),2024,SRC.DIMPACT.2021,,,
+EF.ONLINE.CONF.HD.PARTICIPANT_HOUR,CONF.HD.PARTICIPANT_HOUR,hour,,TRUE,0.082,,,,Operational electricity,GWP100 (AR6),2024,SRC.NETFLIX.2023,,,
+EF.ONLINE.CLOUD.DOWNLOAD.GB,CLOUD.DOWNLOAD.GB,GB,,TRUE,0.015,,,,Operational electricity,GWP100 (AR6),2024,SRC.SCOPE3.DATA_TRANSFER.2024,,,
+EF.ONLINE.SOCIAL.SCROLL.HOUR.MOBILE,SOCIAL.SCROLL.HOUR.MOBILE,hour,,TRUE,0.0048,,,,Operational electricity,GWP100 (AR6),2024,SRC.DIMPACT.2021,,,
+EF.ONLINE.AI.LLM.INFER.1K_TOKENS,AI.LLM.INFER.1K_TOKENS.GENERIC,1k_tokens,,TRUE,0.003,,,,Operational electricity,GWP100 (AR6),2025,SRC.LBNL.DC.2024,,,
