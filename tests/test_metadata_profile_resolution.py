@@ -1,14 +1,14 @@
 import functools
 import json
-import shutil
-from pathlib import Path
 
 import calc.derive as derive_mod
 import calc.figures as figures
 from calc.schema import ActivitySchedule, EmissionFactor, GridIntensity, LayerId, Profile
 
 
-def test_export_metadata_reports_resolved_profiles(monkeypatch):
+def test_export_metadata_reports_resolved_profiles(
+    monkeypatch, derived_output_dir, derived_output_root
+):
     figures.invalidate_cache()
     fake_loader = functools.lru_cache(maxsize=1)(lambda: {"default_profile": "WRONG"})
     monkeypatch.setattr(figures, "_load_config", fake_loader)
@@ -45,12 +45,9 @@ def test_export_metadata_reports_resolved_profiles(monkeypatch):
         def load_activities(self):
             return []
 
-    out_dir = Path("calc/outputs")
-    if out_dir.exists():
-        shutil.rmtree(out_dir)
-
     try:
-        derive_mod.export_view(FakeStore())
+        out_dir = derived_output_dir
+        derive_mod.export_view(FakeStore(), output_root=derived_output_root)
         data = json.loads((out_dir / "export_view.json").read_text())
         assert data["profile"] == "p1"
         assert data["profile_resolution"] == {

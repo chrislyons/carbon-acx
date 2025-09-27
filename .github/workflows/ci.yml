@@ -6,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  quality:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -32,64 +32,45 @@ jobs:
       - name: Test
         run: make test
 
-      - name: Build distribution assets
-        run: make dist/site/index.html
+      - name: Build packages
+        run: make build site package
 
-      - name: Upload dist artifacts
+      - name: Upload dist artifacts bundle
         uses: actions/upload-artifact@v4
         with:
-          name: dist
-          path: dist
-
-  build:
-    needs: quality
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        backend: [csv, duckdb]
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install Poetry
-        run: pip install poetry==1.7.1
-
-      - name: Configure Poetry
-        run: poetry config virtualenvs.create false
-
-      - name: Install dependencies
-        run: poetry install --with dev --extras db --no-root
-
-      - name: Build outputs
-        run: make build BACKEND=${{ matrix.backend }}
-
-      - name: Upload outputs artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: outputs-${{ matrix.backend }}
-          path: build/${{ matrix.backend }}
+          name: dist-artifacts
+          path: dist/artifacts
           if-no-files-found: error
 
-  parity:
+      - name: Upload static site bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-site
+          path: dist/site
+          if-no-files-found: error
+
+  deploy-pages:
     needs: build
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Download CSV outputs
+      - name: Download static site
         uses: actions/download-artifact@v4
         with:
-          name: outputs-csv
-          path: outputs-csv
+          name: dist-site
+          path: dist-site
 
-      - name: Download DuckDB outputs
-        uses: actions/download-artifact@v4
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v2
         with:
-          name: outputs-duckdb
-          path: outputs-duckdb
+          path: dist-site
 
-      - name: Compare artifacts
-        run: diff -rq outputs-csv/calc/outputs outputs-duckdb/calc/outputs
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

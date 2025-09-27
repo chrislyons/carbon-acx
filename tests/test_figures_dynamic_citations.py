@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 import json
-import shutil
-from pathlib import Path
 
 import calc.derive as derive_mod
 from calc import citations
@@ -53,12 +51,10 @@ class DynamicStore:
         return []
 
 
-def test_figures_use_dynamic_citations(tmp_path):
-    out_dir = Path("calc/outputs")
-    if out_dir.exists():
-        shutil.rmtree(out_dir)
+def test_figures_use_dynamic_citations(derived_output_dir, derived_output_root):
+    out_dir = derived_output_dir
 
-    derive_mod.export_view(DynamicStore())
+    derive_mod.export_view(DynamicStore(), output_root=derived_output_root)
 
     export_payload = json.loads((out_dir / "export_view.json").read_text())
     expected_keys = ["SRC.DIMPACT.2021", "SRC.IESO.2024"]

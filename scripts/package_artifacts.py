@@ -45,7 +45,7 @@ def package_artifacts(source: Path, destination: Path) -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Package derived artifacts for distribution.")
     parser.add_argument(
-        "--src", default="calc/outputs", type=Path, help="Source directory of derived data"
+        "--src", default="build/calc/outputs", type=Path, help="Source directory of derived data"
     )
     parser.add_argument(
         "--dest",

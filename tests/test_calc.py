@@ -3,10 +3,8 @@ from calc.derive import compute_emission, get_grid_intensity
 from calc.schema import ActivitySchedule, EmissionFactor, LayerId, Profile
 
 
-def test_export_metadata_and_references(tmp_path):
-    from pathlib import Path
+def test_export_metadata_and_references(derived_output_dir, derived_output_root):
     import json
-    import shutil
 
     import calc.derive as derive_mod
     from calc.schema import GridIntensity
@@ -56,10 +54,8 @@ def test_export_metadata_and_references(tmp_path):
         def load_activities(self):
             return []
 
-    out_dir = Path("calc/outputs")
-    if out_dir.exists():
-        shutil.rmtree(out_dir)
-    derive_mod.export_view(FakeStore())
+    out_dir = derived_output_dir
+    derive_mod.export_view(FakeStore(), output_root=derived_output_root)
     csv_lines = (out_dir / "export_view.csv").read_text().splitlines()
     assert csv_lines[0].startswith("# generated_at: ")
     assert csv_lines[1] == "# profile: p1"

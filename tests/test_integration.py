@@ -1,6 +1,5 @@
 import json
 import math
-import shutil
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -117,20 +116,15 @@ def _normalise(value):
     return value
 
 
-def test_export_view_matches_golden(monkeypatch):
+def test_export_view_matches_golden(monkeypatch, derived_output_dir, derived_output_root):
     figures.invalidate_cache()
     _patch_time(monkeypatch)
 
-    out_dir = Path("calc/outputs")
-    if out_dir.exists():
-        shutil.rmtree(out_dir)
-
     try:
-        derive_mod.export_view(GoldenStore())
+        out_dir = derived_output_dir
+        derive_mod.export_view(GoldenStore(), output_root=derived_output_root)
         payload = json.loads((out_dir / "export_view.json").read_text())
     finally:
-        if out_dir.exists():
-            shutil.rmtree(out_dir)
         figures.invalidate_cache()
 
     golden_path = Path("tests/fixtures/export_view.golden.json")
