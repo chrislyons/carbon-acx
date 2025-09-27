@@ -6,6 +6,8 @@ import shutil
 from pathlib import Path
 from typing import Iterable
 
+from ._artifact_paths import MANIFEST_FILENAME, resolve_artifact_outputs
+
 ALLOWED_SUFFIXES = {".json", ".csv", ".txt"}
 
 
@@ -16,6 +18,12 @@ def _iter_artifact_files(source: Path) -> Iterable[Path]:
 
 
 def package_artifacts(source: Path, destination: Path) -> dict:
+    source = source.resolve()
+    destination = destination.resolve()
+
+    if destination == source or destination in source.parents or source in destination.parents:
+        raise ValueError("Destination directory must be outside the source artifact tree.")
+
     if not source.exists():
         raise FileNotFoundError(f"Artifact source directory not found: {source}")
 
@@ -31,7 +39,7 @@ def package_artifacts(source: Path, destination: Path) -> dict:
         shutil.copy2(file_path, target_path)
         copied_files.append(str(relative))
 
-    manifest_path = destination / "manifest.json"
+    manifest_path = destination / MANIFEST_FILENAME
     if not manifest_path.exists():
         raise FileNotFoundError(
             "Packaged artifacts are missing manifest.json. "
@@ -45,18 +53,19 @@ def package_artifacts(source: Path, destination: Path) -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Package derived artifacts for distribution.")
     parser.add_argument(
-        "--src", default="build/calc/outputs", type=Path, help="Source directory of derived data"
+        "--src", default="dist/artifacts", type=Path, help="Source directory of derived data"
     )
     parser.add_argument(
         "--dest",
-        default="dist/artifacts",
+        default="dist/packaged-artifacts",
         type=Path,
         help="Destination directory for packaged artifacts",
     )
     args = parser.parse_args()
 
-    summary = package_artifacts(args.src, args.dest)
-    manifest_path = args.dest / "manifest.json"
+    source_dir = resolve_artifact_outputs(args.src)
+    summary = package_artifacts(source_dir, args.dest)
+    manifest_path = args.dest / MANIFEST_FILENAME
     generated_at = (
         summary["manifest"].get("generated_at") if isinstance(summary["manifest"], dict) else None
     )

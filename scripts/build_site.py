@@ -14,6 +14,7 @@ from app.components import sankey as sankey_component
 from app.components import stacked as stacked_component
 from app.components._helpers import extend_unique, format_reference_hint
 from calc import citations
+from ._artifact_paths import resolve_artifact_outputs
 
 FIGURE_BUILDERS = {
     "stacked": stacked_component._build_figure,
@@ -115,8 +116,7 @@ def _format_manifest_summary(manifest: Mapping | None) -> str:
 
 
 def build_site(artifact_dir: Path, output_dir: Path) -> Path:
-    if not artifact_dir.exists():
-        raise FileNotFoundError(f"Artifact directory not found: {artifact_dir}")
+    artifact_dir = resolve_artifact_outputs(artifact_dir)
 
     output_dir.mkdir(parents=True, exist_ok=True)
     _copy_assets(output_dir)
@@ -202,7 +202,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--artifacts",
-        default="build/calc/outputs",
+        default="dist/artifacts",
         type=Path,
         help="Path to derived artifact directory",
     )
