@@ -202,12 +202,12 @@ def main() -> None:
     )
     parser.add_argument(
         "--artifacts",
-        default="dist/artifacts",
+        default="build/calc/outputs",
         type=Path,
-        help="Path to packaged artifact directory",
+        help="Path to derived artifact directory",
     )
     parser.add_argument(
-        "--output", default="dist/site", type=Path, help="Output directory for the static site"
+        "--output", default="build/site", type=Path, help="Output directory for the static site"
     )
     args = parser.parse_args()
 

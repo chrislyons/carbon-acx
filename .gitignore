@@ -3,10 +3,10 @@ __pycache__/
 .venv/
 .poetry/
 build/
+dist/
+calc/outputs/
 *.egg-info/
 .ruff_cache/
 .pytest_cache/
-calc/outputs/*.csv
-calc/outputs/*.json
 node_modules/
 *.csv~

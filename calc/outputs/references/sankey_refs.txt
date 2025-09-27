@@ -1,4 +1,0 @@
-[1] Demo, “Demonstration placeholder reference,” 2025. Available: https://example.org/demo.
-[2] Carbon Trust and DIMPACT, “The Carbon Impact of Video Streaming,” 2021. Available: https://dimpact.org/resources.
-[3] Independent Electricity System Operator (IESO), “Power Data—Emissions and Grid Intensity (Ontario),” 2025. Available: https://www.ieso.ca/en/Power-Data/Data-Directory
-[4] A. Shehabi et al., “Estimating the Energy Use of Data Centers: 2024 Update,” Lawrence Berkeley National Laboratory, Berkeley, CA, USA, 2024. Available: https://eta.lbl.gov/publications/estimating-energy-use-data-centers

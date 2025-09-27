@@ -1,11 +1,14 @@
-BACKEND ?= csv
-ACX_DATA_BACKEND ?= $(BACKEND)
-OUTPUT_DIR ?= build/$(BACKEND)
+ACX_DATA_BACKEND ?= csv
+OUTPUT_DIR ?= build/$(ACX_DATA_BACKEND)
 OUTPUT_PATH := $(OUTPUT_DIR)/calc/outputs
 OUTPUT_MANIFEST := $(OUTPUT_PATH)/manifest.json
+SITE_BUILD_DIR ?= build/site
+DIST_DIR ?= dist
+DIST_ARTIFACTS_DIR := $(DIST_DIR)/artifacts
+DIST_SITE_DIR := $(DIST_DIR)/site
 DEFAULT_GENERATED_AT ?= 1970-01-01T00:00:00+00:00
 
-.PHONY: install lint test ci_build_pages app format validate release migrate_v1_1 build-backend
+.PHONY: install lint test ci_build_pages app format validate release migrate_v1_1 build-backend build site package
 
 install:
 	poetry install --with dev --no-root
@@ -23,17 +26,21 @@ $(OUTPUT_MANIFEST):
 
 build: $(OUTPUT_MANIFEST)
 
-dist/artifacts/manifest.json: $(OUTPUT_MANIFEST)
-	PYTHONPATH=. poetry run python -m scripts.package_artifacts --src $(OUTPUT_PATH) --dest dist/artifacts
+$(SITE_BUILD_DIR)/index.html: $(OUTPUT_MANIFEST)
+	PYTHONPATH=. poetry run python -m scripts.build_site --artifacts $(OUTPUT_PATH) --output $(SITE_BUILD_DIR)
 
-package: dist/artifacts/manifest.json
+site: $(SITE_BUILD_DIR)/index.html
 
-dist/site/index.html: dist/artifacts/manifest.json
-	PYTHONPATH=. poetry run python -m scripts.build_site --artifacts dist/artifacts --output dist/site
+$(DIST_ARTIFACTS_DIR)/manifest.json: $(OUTPUT_MANIFEST)
+	PYTHONPATH=. poetry run python -m scripts.package_artifacts --src $(OUTPUT_PATH) --dest $(DIST_ARTIFACTS_DIR)
 
-site: dist/site/index.html
+$(DIST_SITE_DIR)/index.html: $(DIST_ARTIFACTS_DIR)/manifest.json
+	rm -rf $(DIST_SITE_DIR)
+	PYTHONPATH=. poetry run python -m scripts.build_site --artifacts $(DIST_ARTIFACTS_DIR) --output $(DIST_SITE_DIR)
 
-ci_build_pages: install lint test dist/site/index.html
+package: $(DIST_ARTIFACTS_DIR)/manifest.json $(DIST_SITE_DIR)/index.html
+
+ci_build_pages: install lint test package
 
 app:
 	ACX_DATA_BACKEND=$(ACX_DATA_BACKEND) PYTHONPATH=. poetry run python -m app.app
@@ -50,4 +57,4 @@ migrate_v1_1:
 	python3 scripts/migrate_to_v1_1.py
 
 build-backend:
-	$(MAKE) build BACKEND=$(B)
+	$(MAKE) build ACX_DATA_BACKEND=$(B)
