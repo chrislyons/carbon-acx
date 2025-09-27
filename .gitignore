@@ -2,8 +2,6 @@ __pycache__/
 *.pyc
 .venv/
 .poetry/
-.dist/
-dist/
 build/
 *.egg-info/
 .ruff_cache/
