@@ -12,9 +12,7 @@ def test_provincial_grid_vintage_matrix_complete():
     expected_years = range(2021, 2026)
 
     matrix = {
-        (row.region, row.vintage_year): row
-        for row in grid_rows
-        if row.vintage_year is not None
+        (row.region, row.vintage_year): row for row in grid_rows if row.vintage_year is not None
     }
 
     for region in tracked_regions:
@@ -26,9 +24,7 @@ def test_provincial_grid_vintage_matrix_complete():
             assert row.source_id
 
     ontario_rows = [
-        row
-        for row in grid_rows
-        if row.region == RegionCode.CA_ON and row.vintage_year is not None
+        row for row in grid_rows if row.region == RegionCode.CA_ON and row.vintage_year is not None
     ]
     assert ontario_rows, "expected at least one Ontario grid intensity row"
     latest_ontario = max(ontario_rows, key=lambda row: row.vintage_year)
