@@ -2,6 +2,7 @@ import pytest
 from datetime import date
 from pydantic import ValidationError
 
+from calc import schema
 from calc.schema import Activity, ActivitySchedule, EmissionFactor, LayerId, Profile
 
 
@@ -105,3 +106,19 @@ def test_layer_id_validation():
     Profile(profile_id="p", layer_id=LayerId.PROFESSIONAL)
     with pytest.raises(ValidationError):
         Profile(profile_id="bad", layer_id="student")
+
+
+def test_online_emission_factors_are_grid_indexed():
+    activities = {activity.activity_id: activity for activity in schema.load_activities()}
+    current_year = date.today().year
+
+    for ef in schema.load_emission_factors():
+        activity = activities.get(ef.activity_id)
+        if activity is None or activity.layer_id != LayerId.ONLINE:
+            continue
+
+        assert ef.is_grid_indexed is True
+        assert ef.value_g_per_unit is None
+        assert ef.electricity_kwh_per_unit is not None
+        if ef.vintage_year is not None:
+            assert ef.vintage_year <= current_year

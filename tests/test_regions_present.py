@@ -51,3 +51,20 @@ def test_grid_sources_registered():
 
     missing = source_ids - registered_sources
     assert not missing, f"unregistered source ids: {sorted(missing)}"
+
+
+def test_online_consumer_profiles_added():
+    profiles = {profile.profile_id: profile for profile in schema.load_profiles()}
+
+    expected = {
+        "ONLINE.TO.CONSUMER.2025": RegionCode.CA_ON,
+        "ONLINE.QC.CONSUMER.2025": RegionCode.CA_QC,
+        "ONLINE.AB.CONSUMER.2025": RegionCode.CA_AB,
+        "ONLINE.BC.CONSUMER.2025": RegionCode.CA_BC,
+    }
+
+    for profile_id, region in expected.items():
+        assert profile_id in profiles, f"missing online profile {profile_id}"
+        profile = profiles[profile_id]
+        assert profile.layer_id == LayerId.ONLINE
+        assert profile.default_grid_region == region

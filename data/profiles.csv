@@ -8,6 +8,9 @@ PRO.AB.40_56.HYBRID.2025,professional,Alberta Pros 40–56 — Hybrid (2025),CA-
 PRO.BC.24_39.HYBRID.2025,professional,British Columbia Pros 24–39 — Hybrid (2025),CA-BC,region_default,,,3,
 PRO.BC.40_56.HYBRID.2025,professional,British Columbia Pros 40–56 — Hybrid (2025),CA-BC,region_default,,,3,
 ONLINE.TO.CONSUMER.2025,online,Online Services — Toronto consumer (2025),CA-ON,region_default,,,
+ONLINE.QC.CONSUMER.2025,online,Online Services — Quebec consumer (2025),CA-QC,region_default,,,
+ONLINE.AB.CONSUMER.2025,online,Online Services — Alberta consumer (2025),CA-AB,region_default,,,
+ONLINE.BC.CONSUMER.2025,online,Online Services — British Columbia consumer (2025),CA-BC,region_default,,,
 IND_LIGHT.ON.CONSTRUCTION.2025,industrial_light,Ontario light-industrial construction (2025),CA-ON,region_default,,,,"Pending activity schedules; defaults held inactive until trade mix validated."
 IND_LIGHT.ON.LOGISTICS.2025,industrial_light,Ontario light-industrial logistics & warehousing (2025),CA-ON,region_default,,,,"Awaiting regional load profiles and shift schedules prior to enablement."
 IND.TO.HEAVY.2025,industrial_heavy,Ontario heavy-industrial baseline (2025),CA-ON,region_default,,,,"Hidden until heavy-industrial schedules and emission factors are published; placeholder for clinker, steel, refining, and mining haul activities."

@@ -72,7 +72,13 @@ class LayerId(str, Enum):
         return self.value.title()
 
 
-ScopeBoundary = Literal["WTT+TTW", "cradle-to-grave", "Electricity LCA", "gate-to-gate"]
+ScopeBoundary = Literal[
+    "WTT+TTW",
+    "cradle-to-grave",
+    "Electricity LCA",
+    "gate-to-gate",
+    "Operational electricity",
+]
 
 
 class Activity(BaseModel):
