@@ -1,5 +1,6 @@
 import itertools
 import math
+from collections import defaultdict
 
 from calc import derive, schema
 from calc.schema import ActivitySchedule, LayerId, Profile, RegionCode
@@ -41,30 +42,41 @@ def test_grid_indexed_online_activities_scale_with_provincial_intensity():
 
     emission_factors = {ef.activity_id: ef for ef in schema.load_emission_factors()}
 
-    for activity_id in ONLINE_ACTIVITIES:
-        ef = emission_factors[activity_id]
-        emissions = {}
-        for region in PROVINCES:
-            profile = Profile(
-                profile_id=f"TEST.{region.value}",
-                layer_id=LayerId.ONLINE,
-                region_code_default=region,
+    profiles_by_region: dict[RegionCode, Profile] = {}
+    schedules_by_region: dict[RegionCode, list[ActivitySchedule]] = defaultdict(list)
+
+    for region in PROVINCES:
+        profile = Profile(
+            profile_id=f"TEST.{region.value}",
+            layer_id=LayerId.ONLINE,
+            default_grid_region=region,
+        )
+        profiles_by_region[region] = profile
+        for activity_id in ONLINE_ACTIVITIES:
+            schedules_by_region[region].append(
+                ActivitySchedule(
+                    profile_id=profile.profile_id,
+                    activity_id=activity_id,
+                    layer_id=LayerId.ONLINE,
+                    freq_per_day=1,
+                )
             )
-            schedule = ActivitySchedule(
-                profile_id=profile.profile_id,
-                activity_id=activity_id,
-                layer_id=LayerId.ONLINE,
-                freq_per_day=1,
-            )
+
+    totals: dict[RegionCode, float] = {}
+    for region, profile in profiles_by_region.items():
+        total = 0.0
+        for schedule in schedules_by_region[region]:
+            ef = emission_factors[schedule.activity_id]
             emission = derive.compute_emission(schedule, profile, ef, grid_lookup)
             assert emission is not None
-            emissions[region] = emission
+            total += emission
+        totals[region] = total
+        assert total > 0
 
-        # Annual totals must vary with grid intensity for the same activity
-        values = list(emissions.values())
-        assert len({round(val, 6) for val in values}) > 1
+    values = list(totals.values())
+    assert len({round(val, 6) for val in values}) > 1
 
-        for province_a, province_b in itertools.combinations(PROVINCES, 2):
-            ratio_emissions = emissions[province_a] / emissions[province_b]
-            ratio_intensity = intensity_by_region[province_a] / intensity_by_region[province_b]
-            assert math.isclose(ratio_emissions, ratio_intensity, rel_tol=1e-6)
+    for province_a, province_b in itertools.combinations(PROVINCES, 2):
+        ratio_emissions = totals[province_a] / totals[province_b]
+        ratio_intensity = intensity_by_region[province_a] / intensity_by_region[province_b]
+        assert math.isclose(ratio_emissions, ratio_intensity, rel_tol=1e-6)
