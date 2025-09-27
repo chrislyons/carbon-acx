@@ -6,7 +6,9 @@ import calc.figures as figures
 from calc.schema import ActivitySchedule, EmissionFactor, GridIntensity, LayerId, Profile
 
 
-def test_export_metadata_reports_resolved_profiles(monkeypatch, derived_output_dir, derived_output_root):
+def test_export_metadata_reports_resolved_profiles(
+    monkeypatch, derived_output_dir, derived_output_root
+):
     figures.invalidate_cache()
     fake_loader = functools.lru_cache(maxsize=1)(lambda: {"default_profile": "WRONG"})
     monkeypatch.setattr(figures, "_load_config", fake_loader)
