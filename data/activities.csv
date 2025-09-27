@@ -1,3 +1,13 @@
 activity_id,layer_id,category,name,default_unit,description,unit_definition,notes
 FOOD.COFFEE.CUP.HOT,professional,food,Coffee—12 oz hot,cup,Cup of coffee,,
 stream,professional,,stream,,HD streaming on TV,,
+MEDIA.STREAM.HD.HOUR.TV,online,media,HD video streaming on TV—per hour,hour,One hour of high-definition video streaming delivered to a television via broadband.,,Slugs from ACX014; EF pending credible bandwidth-intensity citation.
+MEDIA.STREAM.UHD.HOUR.TV,online,media,Ultra HD (4K) video streaming on TV—per hour,hour,One hour of ultra-high-definition (4K) streaming to a television.,,EF to be added after validating 4K bandwidth intensity.
+MEDIA.STREAM.SD.HOUR.MOBILE,online,media,SD video streaming on mobile—per hour,hour,One hour of standard-definition streaming to a smartphone or tablet on Wi-Fi.,,Awaiting Wi-Fi/mobile network intensity confirmation.
+MUSIC.STREAM.STANDARD.HOUR,online,media,Music streaming—standard quality per hour,hour,One hour of standard-quality audio streaming.,,EF placeholder.
+CONF.HD.PER_PARTICIPANT_HOUR,online,conferencing,HD video conference per participant-hour,hour,One participant attending a high-definition video conference for one hour.,,EF TBD using updated conferencing benchmarks.
+CONF.AUDIO.PER_PARTICIPANT_HOUR,online,conferencing,Audio-only conference per participant-hour,hour,One participant attending an audio-only conference for one hour.,,Pending bandwidth-only EF.
+AI.LLM.INFER.1K_TOKENS.GENERIC,online,ai,LLM inference—1K token response,1k_tokens,"Generating an approximately 1,000-token response from a general-purpose large language model.","1k_tokens" means one thousand output tokens.,Awaiting Scope 3 AI inference measurement reference.
+AI.IMAGE.GENERATION.PROMPT,online,ai,Generative image inference per prompt,prompt,Generating a single image prompt with a general-purpose diffusion model.,,Awaiting Scope 3 creative AI benchmark.
+DOWNLOAD.GAME.CONSOLE.50GB,online,downloads,Download 50 GB console game,download,Downloading a 50 gigabyte digital game to a console.,"download" equals one 50 GB transfer.,Pending validation against broadband download intensity.
+CLOUD.STORAGE.SYNC.GB_MONTH,online,cloud,Cloud storage sync per GB-month,gb_month,Maintaining one gigabyte of synced cloud storage for one month.,"gb_month" equals one gigabyte stored and synced for one month.,To be updated with hyperscale storage intensity.
