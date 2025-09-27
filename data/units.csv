@@ -8,3 +8,6 @@ L,volume,0.001,
 participant-hour,participation,3600,
 1k_tokens,data,1000,
 image,count,1,
+prompt,count,1,
+download,data,50000000000,"One download equals 50 gigabytes transferred."
+gb_month,data_time,2592000000000000,"One gigabyte stored for 30 days (approximate month)."

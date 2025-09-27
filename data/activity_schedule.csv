@@ -1,2 +1,7 @@
 profile_id,activity_id,layer_id,freq_per_day,freq_per_week,office_days_only,region_override,schedule_notes
 PRO.TO.24_39.HYBRID.2025,FOOD.COFFEE.CUP.HOT,professional,,5,TRUE,,
+ONLINE.TO.CONSUMER.2025,MEDIA.STREAM.HD.HOUR.TV,online,,7,FALSE,,Weekly total assumes roughly one hour of HD TV streaming per day.
+ONLINE.TO.CONSUMER.2025,MUSIC.STREAM.STANDARD.HOUR,online,,14,FALSE,,Two hours of audio streaming per day across devices.
+ONLINE.TO.CONSUMER.2025,CONF.HD.PER_PARTICIPANT_HOUR,online,,2,FALSE,,Assumes two one-hour HD video calls per week for personal/social use.
+ONLINE.TO.CONSUMER.2025,AI.LLM.INFER.1K_TOKENS.GENERIC,online,1,,FALSE,,Conservative placeholder: one 1K-token AI interaction per day.
+ONLINE.TO.CONSUMER.2025,CLOUD.STORAGE.SYNC.GB_MONTH,online,,,FALSE,,Usage captured via profile metadata; EF TBD so no automatic cadence.
