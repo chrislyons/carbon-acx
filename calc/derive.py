@@ -12,7 +12,15 @@ import pandas as pd
 from . import citations, figures
 from .api import collect_activity_source_keys
 from .dal import DataStore, choose_backend
-from .schema import Activity, ActivitySchedule, EmissionFactor, GridIntensity, Profile, RegionCode
+from .schema import (
+    Activity,
+    ActivitySchedule,
+    EmissionFactor,
+    GridIntensity,
+    LayerId,
+    Profile,
+    RegionCode,
+)
 
 
 def get_grid_intensity(
@@ -36,6 +44,29 @@ def get_grid_intensity(
         return None
     if profile and profile.default_grid_region:
         return grid_lookup.get(profile.default_grid_region)
+    return None
+
+
+def _layer_value(value: LayerId | str | None) -> str | None:
+    if value is None:
+        return None
+    if isinstance(value, LayerId):
+        return value.value
+    return str(value)
+
+
+def _resolve_layer_id(
+    sched: ActivitySchedule | None,
+    profile: Profile | None,
+    activity: Activity | None,
+) -> Optional[str]:
+    for source in (sched, profile, activity):
+        if source is None:
+            continue
+        layer = getattr(source, "layer_id", None)
+        resolved = _layer_value(layer)
+        if resolved:
+            return resolved
     return None
 
 
@@ -247,6 +278,7 @@ def export_view(ds: Optional[DataStore] = None) -> pd.DataFrame:
     derived_rows: List[dict] = []
     resolved_profile_ids: set[str] = set()
     manifest_regions: set[str] = set()
+    manifest_layers: set[str] = set()
     manifest_ef_vintages: set[int] = set()
     manifest_grid_vintages: set[int] = set()
 
@@ -259,6 +291,9 @@ def export_view(ds: Optional[DataStore] = None) -> pd.DataFrame:
         grid_row: Optional[GridIntensity] = None
         details = EmissionDetails(mean=None, low=None, high=None)
         emission = None
+        layer_id = _resolve_layer_id(sched, profile, activity)
+        if layer_id:
+            manifest_layers.add(layer_id)
 
         if profile and ef:
             if ef.vintage_year is not None:
@@ -282,6 +317,7 @@ def export_view(ds: Optional[DataStore] = None) -> pd.DataFrame:
             {
                 "profile_id": sched.profile_id,
                 "activity_id": sched.activity_id,
+                "layer_id": layer_id,
                 "activity_name": activity.name if isinstance(activity, Activity) else None,
                 "activity_category": activity.category if isinstance(activity, Activity) else None,
                 "scope_boundary": ef.scope_boundary if isinstance(ef, EmissionFactor) else None,
@@ -316,6 +352,7 @@ def export_view(ds: Optional[DataStore] = None) -> pd.DataFrame:
                 "emission_factor": ef,
                 "grid_intensity": grid_row,
                 "annual_emissions_g": emission,
+                "layer_id": layer_id,
             }
         )
 
@@ -335,6 +372,7 @@ def export_view(ds: Optional[DataStore] = None) -> pd.DataFrame:
     metadata = figures.build_metadata("export_view", profile_ids=profile_arg)
     metadata["generated_at"] = generated_at
     metadata["citation_keys"] = citation_keys
+    metadata["layers"] = sorted(manifest_layers)
     references = _format_references(citation_keys)
     metadata["references"] = references
 
@@ -346,7 +384,8 @@ def export_view(ds: Optional[DataStore] = None) -> pd.DataFrame:
             fh.write(f"# {key}: {value}\n")
         df.to_csv(fh, index=False)
 
-    records = df.replace({pd.NA: None}).where(pd.notnull(df), None).to_dict(orient="records")
+    serialisable = df.replace({pd.NA: None}).astype(object).where(pd.notnull(df), None)
+    records = serialisable.to_dict(orient="records")
     payload = {**metadata, "data": records}
     (out_dir / "export_view.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
@@ -358,6 +397,7 @@ def export_view(ds: Optional[DataStore] = None) -> pd.DataFrame:
         meta = figures.build_metadata(method, profile_ids=profile_arg)
         meta["generated_at"] = generated_at
         meta["citation_keys"] = citation_keys
+        meta["layers"] = sorted(manifest_layers)
         meta["references"] = references
         meta["data"] = data
         (figure_dir / f"{name}.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
@@ -375,6 +415,7 @@ def export_view(ds: Optional[DataStore] = None) -> pd.DataFrame:
             "grid_intensity": sorted(manifest_grid_vintages),
         },
         "sources": citation_keys,
+        "layers": sorted(manifest_layers),
     }
     (out_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 

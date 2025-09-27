@@ -1,2 +1,2 @@
-profile_id,activity_id,freq_per_day,freq_per_week,office_days_only,region_override,schedule_notes
-PRO.TO.24_39.HYBRID.2025,FOOD.COFFEE.CUP.HOT,,5,TRUE,,
+profile_id,activity_id,layer_id,freq_per_day,freq_per_week,office_days_only,region_override,schedule_notes
+PRO.TO.24_39.HYBRID.2025,FOOD.COFFEE.CUP.HOT,professional,,5,TRUE,,

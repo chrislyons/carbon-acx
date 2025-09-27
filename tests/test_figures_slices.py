@@ -10,6 +10,7 @@ def _build_df():
                 "activity_id": "a1",
                 "activity_name": "Laptop",
                 "activity_category": "Devices",
+                "layer_id": "professional",
                 "annual_emissions_g": 10.0,
                 "annual_emissions_g_low": 9.0,
                 "annual_emissions_g_high": 12.0,
@@ -18,6 +19,7 @@ def _build_df():
                 "activity_id": "a2",
                 "activity_name": "",
                 "activity_category": "Travel",
+                "layer_id": "professional",
                 "annual_emissions_g": 5.0,
                 "annual_emissions_g_low": 4.0,
                 "annual_emissions_g_high": 6.0,
@@ -26,6 +28,7 @@ def _build_df():
                 "activity_id": "a1",
                 "activity_name": "Laptop",
                 "activity_category": "Devices",
+                "layer_id": "professional",
                 "annual_emissions_g": 3.0,
                 "annual_emissions_g_low": None,
                 "annual_emissions_g_high": None,
@@ -58,3 +61,35 @@ def test_slice_sankey_links_include_bounds():
     assert payload["links"][0]["values"]["mean"] == 13.0
     assert payload["links"][0]["values"]["low"] == 9.0
     assert payload["links"][0]["category"] == "Devices"
+
+
+def test_slice_respects_layer_boundaries():
+    df = pd.DataFrame(
+        [
+            {
+                "activity_id": "a1",
+                "activity_name": "Laptop",
+                "activity_category": "Devices",
+                "layer_id": "professional",
+                "annual_emissions_g": 10.0,
+                "annual_emissions_g_low": None,
+                "annual_emissions_g_high": None,
+            },
+            {
+                "activity_id": "a1",
+                "activity_name": "Laptop",
+                "activity_category": "Devices",
+                "layer_id": "online",
+                "annual_emissions_g": 5.0,
+                "annual_emissions_g_low": None,
+                "annual_emissions_g_high": None,
+            },
+        ]
+    )
+
+    stacked = figures.slice_stacked(df)
+    assert {row["layer_id"] for row in stacked} == {"professional", "online"}
+    pro_total = next(row["values"]["mean"] for row in stacked if row["layer_id"] == "professional")
+    online_total = next(row["values"]["mean"] for row in stacked if row["layer_id"] == "online")
+    assert pro_total == 10.0
+    assert online_total == 5.0

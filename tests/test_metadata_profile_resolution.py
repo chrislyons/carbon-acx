@@ -5,7 +5,7 @@ from pathlib import Path
 
 import calc.derive as derive_mod
 import calc.figures as figures
-from calc.schema import ActivitySchedule, EmissionFactor, GridIntensity, Profile
+from calc.schema import ActivitySchedule, EmissionFactor, GridIntensity, LayerId, Profile
 
 
 def test_export_metadata_reports_resolved_profiles(monkeypatch):
@@ -19,12 +19,23 @@ def test_export_metadata_reports_resolved_profiles(monkeypatch):
             return [EmissionFactor(activity_id="coffee", value_g_per_unit=1)]
 
         def load_profiles(self):
-            return [Profile(profile_id="p1", office_days_per_week=3, default_grid_region="CA-ON")]
+            return [
+                Profile(
+                    profile_id="p1",
+                    layer_id=LayerId.PROFESSIONAL,
+                    office_days_per_week=3,
+                    default_grid_region="CA-ON",
+                )
+            ]
 
         def load_activity_schedule(self):
             return [
                 ActivitySchedule(
-                    profile_id="p1", activity_id="coffee", freq_per_week=5, office_days_only=True
+                    profile_id="p1",
+                    activity_id="coffee",
+                    layer_id=LayerId.PROFESSIONAL,
+                    freq_per_week=5,
+                    office_days_only=True,
                 ),
             ]
 
@@ -47,5 +58,6 @@ def test_export_metadata_reports_resolved_profiles(monkeypatch):
             "used": ["p1"],
         }
         assert data["profile_resolution"]["requested"] != data["profile_resolution"]["used"][0]
+        assert data["layers"] == ["professional"]
     finally:
         figures.invalidate_cache()

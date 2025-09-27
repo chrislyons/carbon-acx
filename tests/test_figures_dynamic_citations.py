@@ -6,7 +6,7 @@ from pathlib import Path
 
 import calc.derive as derive_mod
 from calc import citations
-from calc.schema import ActivitySchedule, EmissionFactor, GridIntensity, Profile
+from calc.schema import ActivitySchedule, EmissionFactor, GridIntensity, LayerId, Profile
 
 
 class DynamicStore:
@@ -21,10 +21,24 @@ class DynamicStore:
         ]
 
     def load_profiles(self):
-        return [Profile(profile_id="p1", office_days_per_week=5, default_grid_region="CA-ON")]
+        return [
+            Profile(
+                profile_id="p1",
+                layer_id=LayerId.PROFESSIONAL,
+                office_days_per_week=5,
+                default_grid_region="CA-ON",
+            )
+        ]
 
     def load_activity_schedule(self):
-        return [ActivitySchedule(profile_id="p1", activity_id="video", freq_per_day=1)]
+        return [
+            ActivitySchedule(
+                profile_id="p1",
+                activity_id="video",
+                layer_id=LayerId.PROFESSIONAL,
+                freq_per_day=1,
+            )
+        ]
 
     def load_grid_intensity(self):
         return [
@@ -49,6 +63,8 @@ def test_figures_use_dynamic_citations(tmp_path):
     export_payload = json.loads((out_dir / "export_view.json").read_text())
     expected_keys = ["SRC.DIMPACT.2021", "SRC.IESO.2024"]
     assert export_payload["citation_keys"] == expected_keys
+    assert export_payload["layers"] == ["professional"]
+    assert all(row["layer_id"] == "professional" for row in export_payload["data"])
 
     expected_refs = [
         citations.format_ieee(ref.numbered(idx))
@@ -62,3 +78,4 @@ def test_figures_use_dynamic_citations(tmp_path):
     assert fig_payload["references"] == expected_refs
     assert fig_payload["citation_keys"] == expected_keys
     assert all("coffee" not in ref and "stream" not in ref for ref in fig_payload["references"])
+    assert all(row.get("layer_id") == "professional" for row in fig_payload["data"])

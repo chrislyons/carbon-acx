@@ -11,6 +11,7 @@ from calc.schema import (
     ActivitySchedule,
     EmissionFactor,
     GridIntensity,
+    LayerId,
     Profile,
     RegionCode,
 )
@@ -54,6 +55,7 @@ class GoldenStore:
         return [
             Profile(
                 profile_id="p1",
+                layer_id=LayerId.PROFESSIONAL,
                 office_days_per_week=5,
                 default_grid_region=RegionCode.CA_ON,
             )
@@ -61,10 +63,16 @@ class GoldenStore:
 
     def load_activity_schedule(self):
         return [
-            ActivitySchedule(profile_id="p1", activity_id="coffee", freq_per_week=5),
+            ActivitySchedule(
+                profile_id="p1",
+                activity_id="coffee",
+                layer_id=LayerId.PROFESSIONAL,
+                freq_per_week=5,
+            ),
             ActivitySchedule(
                 profile_id="p1",
                 activity_id="stream",
+                layer_id=LayerId.PROFESSIONAL,
                 freq_per_day=2,
                 region_override=RegionCode.CA_ON,
             ),
@@ -84,8 +92,18 @@ class GoldenStore:
 
     def load_activities(self):
         return [
-            Activity(activity_id="coffee", name="Coffee", category="Food"),
-            Activity(activity_id="stream", name="Streaming", category="Digital"),
+            Activity(
+                activity_id="coffee",
+                layer_id=LayerId.PROFESSIONAL,
+                name="Coffee",
+                category="Food",
+            ),
+            Activity(
+                activity_id="stream",
+                layer_id=LayerId.PROFESSIONAL,
+                name="Streaming",
+                category="Digital",
+            ),
         ]
 
 
