@@ -36,11 +36,12 @@ def test_layout_contains_expected_sections(monkeypatch) -> None:
     layout_ids = _collect_ids(dash_app.layout.to_plotly_json())
 
     figures_store = {
-        name: app_module._load_figure_payload(fixture_dir, name)
-        for name in app_module.FIGURE_NAMES
+        name: app_module._load_figure_payload(fixture_dir, name) for name in app_module.FIGURE_NAMES
     }
     available_layers = app_module._collect_layers(figures_store)
-    selected_layers = available_layers[:1] if available_layers else [app_module.LayerId.PROFESSIONAL.value]
+    selected_layers = (
+        available_layers[:1] if available_layers else [app_module.LayerId.PROFESSIONAL.value]
+    )
 
     callback = next(iter(dash_app.callback_map.values()))["callback"].__wrapped__
     panels_children, _ = callback(selected_layers, "single", figures_store)
