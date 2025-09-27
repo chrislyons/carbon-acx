@@ -124,8 +124,7 @@ def is_safe_output_dir(path: Path, repo_root: Path) -> bool:
 def _prepare_output_dir(path: Path) -> None:
     if not is_safe_output_dir(path, REPO_ROOT):
         raise ValueError(
-            "Refusing to clear output directory outside dist/artifacts build guardrails:"
-            f" {path}"
+            "Refusing to clear output directory outside dist/artifacts build guardrails:" f" {path}"
         )
 
     if path.exists():
