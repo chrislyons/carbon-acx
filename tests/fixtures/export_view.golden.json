@@ -1,0 +1,49 @@
+{
+  "generated_at": "2024-01-02T03:04:05+00:00",
+  "profile": "p1",
+  "method": "export_view",
+  "profile_resolution": {
+    "requested": "PRO.TO.24_39.HYBRID.2025",
+    "used": [
+      "p1"
+    ]
+  },
+  "citation_keys": [
+    "SRC.IESO.2024",
+    "coffee",
+    "streaming"
+  ],
+  "references": [
+    "[1] Independent Electricity System Operator (IESO), \u201cEmissions and Grid Intensity (Ontario)\u2014Data and Reports,\u201d 2024. Available: https://www.ieso.ca/en/Power-Data/Data-Directory.",
+    "[2] Coffee reference.",
+    "[3] Streaming reference."
+  ],
+  "data": [
+    {
+      "profile_id": "p1",
+      "activity_id": "coffee",
+      "activity_name": "Coffee",
+      "activity_category": "Food",
+      "scope_boundary": null,
+      "emission_factor_vintage_year": 2022,
+      "grid_region": null,
+      "grid_vintage_year": null,
+      "annual_emissions_g": 520.0,
+      "annual_emissions_g_low": null,
+      "annual_emissions_g_high": null
+    },
+    {
+      "profile_id": "p1",
+      "activity_id": "stream",
+      "activity_name": "Streaming",
+      "activity_category": "Digital",
+      "scope_boundary": null,
+      "emission_factor_vintage_year": 2023,
+      "grid_region": "CA-ON",
+      "grid_vintage_year": 2024.0,
+      "annual_emissions_g": 18200.0,
+      "annual_emissions_g_low": 16380.0,
+      "annual_emissions_g_high": 20020.0
+    }
+  ]
+}
