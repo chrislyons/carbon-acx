@@ -18,8 +18,8 @@ test:
 	PYTHONPATH=. poetry run pytest
 
 $(OUTPUT_MANIFEST):
-        @mkdir -p $(OUTPUT_DIR)
-        ACX_GENERATED_AT=$(DEFAULT_GENERATED_AT) ACX_DATA_BACKEND=$(ACX_DATA_BACKEND) PYTHONPATH=. poetry run python -m calc.derive --output-root $(OUTPUT_DIR)
+	@mkdir -p $(OUTPUT_DIR)
+	ACX_GENERATED_AT=$(DEFAULT_GENERATED_AT) ACX_DATA_BACKEND=$(ACX_DATA_BACKEND) PYTHONPATH=. poetry run python -m calc.derive --output-root $(OUTPUT_DIR)
 
 build: $(OUTPUT_MANIFEST)
 
