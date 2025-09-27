@@ -123,4 +123,5 @@ def render(
     return html.Section(
         [html.H2(title), content],
         className="chart-section chart-section--bubble",
+        id="bubble",
     )

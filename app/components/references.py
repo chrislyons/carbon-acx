@@ -21,4 +21,5 @@ def render(reference_keys: Sequence[str] | None) -> html.Aside:
             html.Ol([html.Li(text) for text in references]),
         ],
         className="references-panel",
+        id="references",
     )
