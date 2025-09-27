@@ -1,29 +1,51 @@
 {
-  "generated_at": "2024-01-02T03:04:05+00:00",
-  "profile": "PRO.TO.24_39.HYBRID.2025",
-  "method": "figures.stacked",
-  "profile_resolution": {
-    "requested": "PRO.TO.24_39.HYBRID.2025",
-    "used": [
-      "PRO.TO.24_39.HYBRID.2025"
-    ]
-  },
   "citation_keys": [
-    "SRC.DEMO"
-  ],
-  "layers": [
-    "professional"
-  ],
-  "references": [
-    "[1] Demo, \u201cDemonstration placeholder reference,\u201d 2025. Available: https://example.org/demo."
+    "SRC.DEMO",
+    "SRC.DIMPACT.2021",
+    "SRC.IESO.2025",
+    "SRC.LBNL.DC.2024"
   ],
   "data": [
     {
-      "layer_id": "professional",
       "category": "food",
+      "layer_id": "professional",
       "values": {
         "mean": 156.0
       }
+    },
+    {
+      "category": "ai",
+      "layer_id": "online",
+      "values": {
+        "mean": 103.74
+      }
+    },
+    {
+      "category": "media",
+      "layer_id": "online",
+      "values": {
+        "mean": 5705.7
+      }
     }
+  ],
+  "generated_at": "1970-01-01T00:00:00+00:00",
+  "layers": [
+    "online",
+    "professional"
+  ],
+  "method": "figures.stacked",
+  "profile": "ONLINE.TO.CONSUMER.2025, PRO.TO.24_39.HYBRID.2025",
+  "profile_resolution": {
+    "requested": "PRO.TO.24_39.HYBRID.2025",
+    "used": [
+      "ONLINE.TO.CONSUMER.2025",
+      "PRO.TO.24_39.HYBRID.2025"
+    ]
+  },
+  "references": [
+    "[1] Demo, \u201cDemonstration placeholder reference,\u201d 2025. Available: https://example.org/demo.",
+    "[2] Carbon Trust and DIMPACT, \u201cThe Carbon Impact of Video Streaming,\u201d 2021. Available: https://dimpact.org/resources.",
+    "[3] Independent Electricity System Operator (IESO), \u201cPower Data\u2014Emissions and Grid Intensity (Ontario),\u201d 2025. Available: https://www.ieso.ca/en/Power-Data/Data-Directory",
+    "[4] A. Shehabi et al., \u201cEstimating the Energy Use of Data Centers: 2024 Update,\u201d Lawrence Berkeley National Laboratory, Berkeley, CA, USA, 2024. Available: https://eta.lbl.gov/publications/estimating-energy-use-data-centers"
   ]
 }

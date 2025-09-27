@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+import datetime as _datetime_module
 from dataclasses import asdict, dataclass
+from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
-from typing import Dict, List, Mapping, Optional
+from typing import Any, Dict, List, Mapping, Optional
 
 import json
-from datetime import datetime, timezone
+import math
+import os
+import shutil
 
 import pandas as pd
 
@@ -21,6 +25,121 @@ from .schema import (
     Profile,
     RegionCode,
 )
+
+FLOAT_QUANTISER = Decimal("0.000001")
+OUTPUT_ROOT_ENV = "ACX_OUTPUT_ROOT"
+GENERATED_AT_ENV = "ACX_GENERATED_AT"
+EXPORT_COLUMNS = [
+    "profile_id",
+    "activity_id",
+    "layer_id",
+    "activity_name",
+    "activity_category",
+    "scope_boundary",
+    "emission_factor_vintage_year",
+    "grid_region",
+    "grid_vintage_year",
+    "annual_emissions_g",
+    "annual_emissions_g_low",
+    "annual_emissions_g_high",
+]
+
+datetime = _datetime_module.datetime
+timezone = _datetime_module.timezone
+
+
+def _quantize_float(value: float) -> float:
+    if math.isnan(value) or math.isinf(value):
+        return value
+    quantised = Decimal(str(value)).quantize(FLOAT_QUANTISER, rounding=ROUND_HALF_UP)
+    return float(quantised)
+
+
+def _coerce_none(value: Any) -> Any:
+    if value is None:
+        return None
+    if isinstance(value, (list, tuple, dict, set)):
+        return value
+    try:
+        if pd.isna(value):
+            return None
+    except TypeError:
+        pass
+    return value
+
+
+def _normalise_value(value: Any) -> Any:
+    coerced = _coerce_none(value)
+    if coerced is None:
+        return None
+    if isinstance(coerced, float):
+        return _quantize_float(coerced)
+    if isinstance(coerced, Decimal):
+        return _quantize_float(float(coerced))
+    if isinstance(coerced, dict):
+        return {key: _normalise_value(val) for key, val in coerced.items()}
+    if isinstance(coerced, list):
+        return [_normalise_value(item) for item in coerced]
+    if isinstance(coerced, tuple):
+        return tuple(_normalise_value(item) for item in coerced)
+    return coerced
+
+
+def _normalise_mapping(record: dict) -> dict:
+    return {key: _normalise_value(record.get(key)) for key in EXPORT_COLUMNS if key in record} | {
+        key: _normalise_value(value)
+        for key, value in record.items()
+        if key not in EXPORT_COLUMNS
+    }
+
+
+def _prepare_output_dir(path: Path) -> None:
+    if path.exists():
+        for child in path.iterdir():
+            if child.name == ".gitkeep":
+                continue
+            if child.is_dir():
+                shutil.rmtree(child)
+            else:
+                child.unlink()
+    path.mkdir(parents=True, exist_ok=True)
+
+
+def _resolve_output_root(output_root: Path | str | None) -> Optional[Path]:
+    if output_root is not None:
+        return Path(output_root)
+    env_root = os.getenv(OUTPUT_ROOT_ENV)
+    if env_root:
+        return Path(env_root)
+    return None
+
+
+def _sort_export_rows(rows: List[dict]) -> List[dict]:
+    def sort_key(row: dict) -> tuple:
+        grid_year = row.get("grid_vintage_year")
+        ef_year = row.get("emission_factor_vintage_year")
+        return (
+            str(row.get("profile_id") or ""),
+            str(row.get("activity_id") or ""),
+            str(row.get("layer_id") or ""),
+            str(row.get("grid_region") or ""),
+            -1 if grid_year in (None, "") else int(grid_year),
+            -1 if ef_year in (None, "") else int(ef_year),
+        )
+
+    return sorted(rows, key=sort_key)
+
+
+def _write_json(path: Path, payload: Any) -> None:
+    normalised = _normalise_value(payload)
+    path.write_text(json.dumps(normalised, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def _resolve_generated_at() -> str:
+    env_value = os.getenv(GENERATED_AT_ENV)
+    if env_value:
+        return env_value
+    return datetime.now(timezone.utc).isoformat()
 
 
 def get_grid_intensity(
@@ -260,7 +379,10 @@ def _resolve_grid_row(
     return grid
 
 
-def export_view(ds: Optional[DataStore] = None) -> pd.DataFrame:
+def export_view(
+    ds: Optional[DataStore] = None,
+    output_root: Path | str | None = None,
+) -> pd.DataFrame:
     datastore = ds or choose_backend()
     activities = {activity.activity_id: activity for activity in datastore.load_activities()}
     efs = {ef.activity_id: ef for ef in datastore.load_emission_factors()}
@@ -356,51 +478,85 @@ def export_view(ds: Optional[DataStore] = None) -> pd.DataFrame:
             }
         )
 
-    df = pd.DataFrame(rows)
-    out_dir = Path(__file__).parent / "outputs"
-    out_dir.mkdir(exist_ok=True)
+    sorted_rows = _sort_export_rows(rows)
+    normalised_rows = [_normalise_mapping(row) for row in sorted_rows]
+    df = pd.DataFrame(normalised_rows, columns=EXPORT_COLUMNS)
+
+    output_root_path = _resolve_output_root(output_root)
+    if output_root_path is None:
+        out_dir = Path(__file__).parent / "outputs"
+    else:
+        out_dir = Path(output_root_path) / "calc" / "outputs"
+
+    _prepare_output_dir(out_dir)
     figure_dir = out_dir / "figures"
-    figure_dir.mkdir(exist_ok=True)
     reference_dir = out_dir / "references"
-    reference_dir.mkdir(exist_ok=True)
+    _prepare_output_dir(figure_dir)
+    _prepare_output_dir(reference_dir)
 
     citation_keys = sorted(collect_activity_source_keys(derived_rows))
     resolved_profiles = sorted(resolved_profile_ids)
     profile_arg = resolved_profiles if resolved_profiles else None
-    generated_at = datetime.now(timezone.utc).isoformat()
+    generated_at = _resolve_generated_at()
+    sorted_layers = sorted(manifest_layers)
 
-    metadata = figures.build_metadata("export_view", profile_ids=profile_arg)
-    metadata["generated_at"] = generated_at
+    metadata = figures.build_metadata(
+        "export_view",
+        profile_ids=profile_arg,
+        generated_at=generated_at,
+    )
     metadata["citation_keys"] = citation_keys
-    metadata["layers"] = sorted(manifest_layers)
+    metadata["layers"] = sorted_layers
     references = _format_references(citation_keys)
     metadata["references"] = references
 
     _write_reference_file(reference_dir, "export_view", references)
 
-    csv_metadata = {k: v for k, v in metadata.items() if k != "references" and k != "data"}
-    with (out_dir / "export_view.csv").open("w", encoding="utf-8") as fh:
-        for key, value in csv_metadata.items():
-            fh.write(f"# {key}: {value}\n")
+    csv_metadata = {k: v for k, v in metadata.items() if k not in {"references", "data"}}
+    csv_order = [
+        "generated_at",
+        "profile",
+        "method",
+        "profile_resolution",
+        "citation_keys",
+        "layers",
+    ]
+    ordered_keys = [key for key in csv_order if key in csv_metadata]
+    remaining_keys = [key for key in csv_metadata if key not in csv_order]
+    export_csv_path = out_dir / "export_view.csv"
+    with export_csv_path.open("w", encoding="utf-8") as fh:
+        for key in ordered_keys + sorted(remaining_keys):
+            value_payload = _normalise_value(csv_metadata[key])
+            if isinstance(value_payload, (dict, list)):
+                value_str = repr(value_payload)
+            else:
+                value_str = "" if value_payload is None else str(value_payload)
+            fh.write(f"# {key}: {value_str}\n")
         df.to_csv(fh, index=False)
 
-    serialisable = df.replace({pd.NA: None}).astype(object).where(pd.notnull(df), None)
-    records = serialisable.to_dict(orient="records")
-    payload = {**metadata, "data": records}
-    (out_dir / "export_view.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    records = [
+        {column: row.get(column) for column in EXPORT_COLUMNS}
+        for row in normalised_rows
+    ]
+    payload = dict(metadata)
+    payload["data"] = records
+    _write_json(out_dir / "export_view.json", payload)
 
     stacked = figures.slice_stacked(df)
     bubble_points = [asdict(point) for point in figures.slice_bubble(df)]
     sankey = figures.slice_sankey(df)
 
     def _write_figure(name: str, method: str, data: object) -> None:
-        meta = figures.build_metadata(method, profile_ids=profile_arg)
-        meta["generated_at"] = generated_at
+        meta = figures.build_metadata(
+            method,
+            profile_ids=profile_arg,
+            generated_at=generated_at,
+        )
         meta["citation_keys"] = citation_keys
-        meta["layers"] = sorted(manifest_layers)
+        meta["layers"] = sorted_layers
         meta["references"] = references
         meta["data"] = data
-        (figure_dir / f"{name}.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
+        _write_json(figure_dir / f"{name}.json", meta)
         _write_reference_file(reference_dir, name, references)
 
     _write_figure("stacked", "figures.stacked", stacked)
@@ -415,13 +571,24 @@ def export_view(ds: Optional[DataStore] = None) -> pd.DataFrame:
             "grid_intensity": sorted(manifest_grid_vintages),
         },
         "sources": citation_keys,
-        "layers": sorted(manifest_layers),
+        "layers": sorted_layers,
     }
-    (out_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    _write_json(out_dir / "manifest.json", manifest)
 
     return df
 
 
 if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Generate ACX derived outputs")
+    parser.add_argument(
+        "--output-root",
+        type=Path,
+        default=None,
+        help="Base directory for generated calc/outputs (defaults to the package directory)",
+    )
+    args = parser.parse_args()
+
     datastore = choose_backend()
-    export_view(datastore)
+    export_view(datastore, output_root=args.output_root)

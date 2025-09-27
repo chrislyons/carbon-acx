@@ -1,46 +1,94 @@
 {
-  "generated_at": "2024-01-02T03:04:05+00:00",
-  "profile": "PRO.TO.24_39.HYBRID.2025",
-  "method": "figures.sankey",
-  "profile_resolution": {
-    "requested": "PRO.TO.24_39.HYBRID.2025",
-    "used": [
-      "PRO.TO.24_39.HYBRID.2025"
-    ]
-  },
   "citation_keys": [
-    "SRC.DEMO"
-  ],
-  "layers": [
-    "professional"
-  ],
-  "references": [
-    "[1] Demo, \u201cDemonstration placeholder reference,\u201d 2025. Available: https://example.org/demo."
+    "SRC.DEMO",
+    "SRC.DIMPACT.2021",
+    "SRC.IESO.2025",
+    "SRC.LBNL.DC.2024"
   ],
   "data": {
-    "nodes": [
-      {
-        "id": "activity:Coffee\u201412 oz hot",
-        "type": "activity",
-        "label": "Coffee\u201412 oz hot"
-      },
-      {
-        "id": "category:food",
-        "type": "category",
-        "label": "food"
-      }
-    ],
     "links": [
       {
-        "source": "category:food",
-        "target": "activity:Coffee\u201412 oz hot",
+        "activity_id": "AI.LLM.INFER.1K_TOKENS.GENERIC",
+        "category": "ai",
+        "layer_id": "online",
+        "source": "category:ai",
+        "target": "activity:LLM inference\u20141K token response",
+        "values": {
+          "mean": 103.74
+        }
+      },
+      {
+        "activity_id": "MEDIA.STREAM.HD.HOUR.TV",
+        "category": "media",
+        "layer_id": "online",
+        "source": "category:media",
+        "target": "activity:HD video streaming on TV\u2014per hour",
+        "values": {
+          "mean": 5705.7
+        }
+      },
+      {
         "activity_id": "FOOD.COFFEE.CUP.HOT",
         "category": "food",
         "layer_id": "professional",
+        "source": "category:food",
+        "target": "activity:Coffee\u201412 oz hot",
         "values": {
           "mean": 156.0
         }
       }
+    ],
+    "nodes": [
+      {
+        "id": "activity:Coffee\u201412 oz hot",
+        "label": "Coffee\u201412 oz hot",
+        "type": "activity"
+      },
+      {
+        "id": "activity:HD video streaming on TV\u2014per hour",
+        "label": "HD video streaming on TV\u2014per hour",
+        "type": "activity"
+      },
+      {
+        "id": "activity:LLM inference\u20141K token response",
+        "label": "LLM inference\u20141K token response",
+        "type": "activity"
+      },
+      {
+        "id": "category:ai",
+        "label": "ai",
+        "type": "category"
+      },
+      {
+        "id": "category:food",
+        "label": "food",
+        "type": "category"
+      },
+      {
+        "id": "category:media",
+        "label": "media",
+        "type": "category"
+      }
     ]
-  }
+  },
+  "generated_at": "1970-01-01T00:00:00+00:00",
+  "layers": [
+    "online",
+    "professional"
+  ],
+  "method": "figures.sankey",
+  "profile": "ONLINE.TO.CONSUMER.2025, PRO.TO.24_39.HYBRID.2025",
+  "profile_resolution": {
+    "requested": "PRO.TO.24_39.HYBRID.2025",
+    "used": [
+      "ONLINE.TO.CONSUMER.2025",
+      "PRO.TO.24_39.HYBRID.2025"
+    ]
+  },
+  "references": [
+    "[1] Demo, \u201cDemonstration placeholder reference,\u201d 2025. Available: https://example.org/demo.",
+    "[2] Carbon Trust and DIMPACT, \u201cThe Carbon Impact of Video Streaming,\u201d 2021. Available: https://dimpact.org/resources.",
+    "[3] Independent Electricity System Operator (IESO), \u201cPower Data\u2014Emissions and Grid Intensity (Ontario),\u201d 2025. Available: https://www.ieso.ca/en/Power-Data/Data-Directory",
+    "[4] A. Shehabi et al., \u201cEstimating the Energy Use of Data Centers: 2024 Update,\u201d Lawrence Berkeley National Laboratory, Berkeley, CA, USA, 2024. Available: https://eta.lbl.gov/publications/estimating-energy-use-data-centers"
+  ]
 }

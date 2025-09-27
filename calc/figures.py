@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from dataclasses import dataclass
-from datetime import datetime, timezone
+import datetime as _datetime_module
+import os
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -15,6 +16,10 @@ from .schema import LayerId
 CONFIG_PATH = Path(__file__).parent / "config.yaml"
 
 LAYER_ORDER = [layer.value for layer in LayerId]
+DEFAULT_GENERATED_AT = "1970-01-01T00:00:00+00:00"
+GENERATED_AT_ENV = "ACX_GENERATED_AT"
+datetime = _datetime_module.datetime
+timezone = _datetime_module.timezone
 
 
 @lru_cache(maxsize=1)
@@ -29,7 +34,21 @@ def _load_config() -> dict:
     return data
 
 
-def build_metadata(method: str, profile_ids: Iterable[str] | None = None) -> dict:
+def _resolve_generated_at(value: str | None = None) -> str:
+    if value:
+        return value
+    env_value = os.getenv(GENERATED_AT_ENV)
+    if env_value:
+        return env_value
+    return datetime.now(timezone.utc).isoformat()
+
+
+def build_metadata(
+    method: str,
+    profile_ids: Iterable[str] | None = None,
+    *,
+    generated_at: str | None = None,
+) -> dict:
     config = _load_config()
     requested_profile = config.get("default_profile")
 
@@ -43,7 +62,7 @@ def build_metadata(method: str, profile_ids: Iterable[str] | None = None) -> dic
             profile_value = None
 
     metadata = {
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": _resolve_generated_at(generated_at),
         "profile": profile_value,
         "method": method,
     }
@@ -133,7 +152,8 @@ def slice_stacked(df: pd.DataFrame) -> list[dict]:
     )
     aggregated["_layer_rank"] = aggregated["layer_id"].map(_layer_rank)
     aggregated = aggregated.sort_values(
-        ["_layer_rank", "annual_emissions_g"], ascending=[True, False]
+        ["_layer_rank", "layer_id", "activity_category", "annual_emissions_g"],
+        ascending=[True, True, True, False],
     )
 
     results: list[dict] = []
@@ -194,7 +214,14 @@ def slice_bubble(df: pd.DataFrame) -> list[BubblePoint]:
     )
     aggregated["_layer_rank"] = aggregated["layer_id"].map(_layer_rank)
     aggregated = aggregated.sort_values(
-        ["_layer_rank", "annual_emissions_g"], ascending=[True, False]
+        [
+            "_layer_rank",
+            "layer_id",
+            "activity_id",
+            "activity_name",
+            "annual_emissions_g",
+        ],
+        ascending=[True, True, True, True, False],
     )
 
     results: list[BubblePoint] = []
@@ -248,7 +275,15 @@ def slice_sankey(df: pd.DataFrame) -> dict:
     )
     aggregated["_layer_rank"] = aggregated["layer_id"].map(_layer_rank)
     aggregated = aggregated.sort_values(
-        ["_layer_rank", "annual_emissions_g"], ascending=[True, False]
+        [
+            "_layer_rank",
+            "layer_id",
+            "activity_category",
+            "activity_id",
+            "activity_name",
+            "annual_emissions_g",
+        ],
+        ascending=[True, True, True, True, True, False],
     )
 
     nodes: dict[tuple[str, str], dict] = {}
@@ -283,6 +318,13 @@ def slice_sankey(df: pd.DataFrame) -> dict:
         )
 
     ordered_nodes = [node for _, node in sorted(nodes.items(), key=lambda item: item[1]["id"])]
+    links.sort(
+        key=lambda item: (
+            item.get("layer_id") or "",
+            item.get("category") or "",
+            item.get("activity_id") or "",
+        )
+    )
     return {"nodes": ordered_nodes, "links": links}
 
 
@@ -293,6 +335,7 @@ def invalidate_cache() -> None:
 __all__ = [
     "BubblePoint",
     "build_metadata",
+    "DEFAULT_GENERATED_AT",
     "invalidate_cache",
     "slice_bubble",
     "slice_sankey",
