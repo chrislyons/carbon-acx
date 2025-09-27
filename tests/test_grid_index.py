@@ -1,9 +1,11 @@
 from calc.derive import get_grid_intensity
-from calc.schema import Profile
+from calc.schema import LayerId, Profile
 
 
 def test_grid_precedence():
-    profile = Profile(profile_id="p1", default_grid_region="CA-ON")
+    profile = Profile(
+        profile_id="p1", layer_id=LayerId.PROFESSIONAL, default_grid_region="CA-ON"
+    )
     grid = {
         "CA-AB": 1,
         "CA-BC": 2,

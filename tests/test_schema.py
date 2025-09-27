@@ -2,7 +2,7 @@ import pytest
 from datetime import date
 from pydantic import ValidationError
 
-from calc.schema import EmissionFactor, ActivitySchedule, Activity
+from calc.schema import Activity, ActivitySchedule, EmissionFactor, LayerId, Profile
 
 
 def test_fixed_vs_grid_mutual_exclusion():
@@ -52,12 +52,23 @@ def test_uncert_bounds_and_vintage_year():
 
 
 def test_schedule_freq_mutual_exclusion():
-    ActivitySchedule(profile_id="p", activity_id="a", freq_per_day=1)
-    ActivitySchedule(profile_id="p", activity_id="b", freq_per_week=1)
+    ActivitySchedule(
+        profile_id="p",
+        activity_id="a",
+        layer_id=LayerId.PROFESSIONAL,
+        freq_per_day=1,
+    )
+    ActivitySchedule(
+        profile_id="p",
+        activity_id="b",
+        layer_id=LayerId.PROFESSIONAL,
+        freq_per_week=1,
+    )
     with pytest.raises(ValidationError):
         ActivitySchedule(
             profile_id="p",
             activity_id="c",
+            layer_id=LayerId.PROFESSIONAL,
             freq_per_day=1,
             freq_per_week=1,
         )
@@ -81,10 +92,16 @@ def test_region_and_scope_literals():
 
 
 def test_units_registry_validation():
-    Activity(activity_id="a", default_unit="km")
+    Activity(activity_id="a", layer_id=LayerId.PROFESSIONAL, default_unit="km")
     with pytest.raises(ValidationError):
-        Activity(activity_id="b", default_unit="badunit")
+        Activity(activity_id="b", layer_id=LayerId.PROFESSIONAL, default_unit="badunit")
 
     EmissionFactor(activity_id="c", unit="hour", value_g_per_unit=1)
     with pytest.raises(ValidationError):
         EmissionFactor(activity_id="d", unit="badunit", value_g_per_unit=1)
+
+
+def test_layer_id_validation():
+    Profile(profile_id="p", layer_id=LayerId.PROFESSIONAL)
+    with pytest.raises(ValidationError):
+        Profile(profile_id="bad", layer_id="student")

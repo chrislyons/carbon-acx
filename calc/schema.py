@@ -53,11 +53,31 @@ class RegionCode(str, Enum):
     CA = "CA"
 
 
+class LayerId(str, Enum):
+    PROFESSIONAL = "professional"
+    ONLINE = "online"
+    INDUSTRIAL_LIGHT = "industrial_light"
+    INDUSTRIAL_HEAVY = "industrial_heavy"
+
+    @property
+    def label(self) -> str:
+        if self is LayerId.PROFESSIONAL:
+            return "Professional"
+        if self is LayerId.ONLINE:
+            return "Online"
+        if self is LayerId.INDUSTRIAL_LIGHT:
+            return "Industrial (Light)"
+        if self is LayerId.INDUSTRIAL_HEAVY:
+            return "Industrial (Heavy)"
+        return self.value.title()
+
+
 ScopeBoundary = Literal["WTT+TTW", "cradle-to-grave", "Electricity LCA", "gate-to-gate"]
 
 
 class Activity(BaseModel):
     activity_id: str
+    layer_id: LayerId
     category: Optional[str] = None
     name: Optional[str] = None
     default_unit: Optional[str] = None
@@ -148,6 +168,7 @@ class EmissionFactor(BaseModel):
 
 class Profile(BaseModel):
     profile_id: str
+    layer_id: LayerId
     office_days_per_week: Optional[float] = None
     default_grid_region: Optional[RegionCode] = Field(default=None, alias="region_code_default")
 
@@ -157,6 +178,7 @@ class Profile(BaseModel):
 class ActivitySchedule(BaseModel):
     profile_id: str
     activity_id: str
+    layer_id: LayerId
     quantity_per_week: Optional[float] = None
     office_only: Optional[bool] = None
     freq_per_day: Optional[float] = None

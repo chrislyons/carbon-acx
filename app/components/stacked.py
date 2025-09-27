@@ -76,17 +76,27 @@ def _build_figure(payload: dict, reference_hint: str) -> go.Figure:
     return figure
 
 
-def render(figure_payload: Optional[dict], reference_lookup: Mapping[str, int]) -> html.Section:
+def render(
+    figure_payload: Optional[dict],
+    reference_lookup: Mapping[str, int],
+    *,
+    title_suffix: str | None = None,
+) -> html.Section:
     reference_hint = format_reference_hint(
         figure_payload.get("citation_keys") if figure_payload else None,
         reference_lookup,
     )
 
     title = "Annual emissions by activity category"
+    if title_suffix:
+        title = f"{title} — {title_suffix}"
     figure = _build_figure(figure_payload or {}, reference_hint)
 
     if not figure.data:
-        content = html.P("No category data available.")
+        message = "No category data available."
+        if title_suffix:
+            message = f"No category data available for {title_suffix}."
+        content = html.P(message)
     else:
         content = dcc.Graph(
             figure=figure,
