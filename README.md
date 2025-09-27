@@ -13,7 +13,8 @@ artifacts clearly separated:
 - **`data/`** holds source CSVs and external references.
 - **`calc/`** provides the domain models and the `calc.derive` entry point that
   transforms the raw inputs.
-- **`app/`** contains a small FastAPI application for interactive exploration.
+- **`app/`** provides a Dash application for interactive exploration during
+  development.
 - **`docs/`** aggregates reference material for maintainers and contributors.
 
 Related guides:
@@ -33,8 +34,8 @@ Related guides:
    reproducible output tree under `build/<backend>/calc/outputs`.
 4. **Artifacts** — packaging scripts copy curated tables, figures, and
    manifest metadata into `dist/artifacts` for distribution.
-5. **UI** — the static site renderer and `app/` service consume the packaged
-   artifacts to power user-facing experiences.
+5. **UI** — the Dash development server and the static site renderer both
+   consume the packaged artifacts to power user-facing experiences.
 
 ## Local development
 
@@ -105,24 +106,32 @@ artifacts:
 - `dist-artifacts` — curated tables, manifests, and references.
 - `dist-site` — the compiled static site bundle ready for deployment.
 
-## Running the app and static site
+### Build outputs
 
-Start the interactive FastAPI app after building artifacts:
+Running `make build` writes the derived artifacts to
+`build/<backend>/calc/outputs`, including the Plotly payloads under
+`build/<backend>/calc/outputs/figures/{stacked,bubble,sankey}.json`, the dataset
+manifest at `build/<backend>/calc/outputs/manifest.json`, tabular exports in
+`build/<backend>/calc/outputs/export_view.{csv,json}`, and the reference exports
+in `build/<backend>/calc/outputs/references/*_refs.txt`. These same files are
+published as the production bundle served from Cloudflare Pages.
+
+## Running the Dash preview and static client
+
+Launch the Dash development server once artifacts exist:
 
 ```bash
 make build
-make app
+make app  # serves Dash on http://localhost:8050
 ```
 
-The app expects the derived outputs to exist and will serve them on
-`http://localhost:8000`.
-
-To inspect the static site locally, build it and serve the output directory with
-any static file server. For example:
+To inspect the static client locally, build it and serve the output directory
+with any static file server. For example:
 
 ```bash
 make site
 python -m http.server --directory build/site 8001
 ```
 
-Navigate to `http://localhost:8001` to verify the rendered pages.
+Navigate to `http://localhost:8001` to verify the rendered pages. The generated
+`build/site/index.html` bundle is what Cloudflare Pages deploys in production.
