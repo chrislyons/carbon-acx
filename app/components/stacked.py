@@ -76,7 +76,9 @@ def _build_figure(payload: dict, reference_hint: str) -> go.Figure:
     return figure
 
 
-def render(figure_payload: Optional[dict], reference_lookup: Mapping[str, int]) -> html.Section:
+def render(
+    figure_payload: Optional[dict], reference_lookup: Mapping[str, int]
+) -> html.Section:
     reference_hint = format_reference_hint(
         figure_payload.get("citation_keys") if figure_payload else None,
         reference_lookup,

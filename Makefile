@@ -1,9 +1,20 @@
 ACX_DATA_BACKEND ?= csv
 
-.PHONY: install lint test ci_build_pages app format validate release migrate_v1_1
+.PHONY: install validate build app format lint test release migrate_v1_1
 
 install:
 	poetry install --with dev
+
+validate: lint test
+
+build:
+        ACX_DATA_BACKEND=$(ACX_DATA_BACKEND) PYTHONPATH=. poetry run python -m calc.derive
+
+app:
+        ACX_DATA_BACKEND=$(ACX_DATA_BACKEND) PYTHONPATH=. poetry run python -m app.app
+
+format:
+	PYTHONPATH=. poetry run black .
 
 lint:
 	PYTHONPATH=. poetry run ruff check .
@@ -12,33 +23,9 @@ lint:
 test:
 	PYTHONPATH=. poetry run pytest
 
-calc/outputs/manifest.json:
-	ACX_DATA_BACKEND=$(ACX_DATA_BACKEND) PYTHONPATH=. poetry run python -m calc.derive
-
-build: calc/outputs/manifest.json
-
-dist/artifacts/manifest.json: calc/outputs/manifest.json
-	PYTHONPATH=. poetry run python -m scripts.package_artifacts --src calc/outputs --dest dist/artifacts
-
-package: dist/artifacts/manifest.json
-
-dist/site/index.html: dist/artifacts/manifest.json
-	PYTHONPATH=. poetry run python -m scripts.build_site --artifacts dist/artifacts --output dist/site
-
-site: dist/site/index.html
-
-ci_build_pages: install lint test dist/site/index.html
-
-app:
-	ACX_DATA_BACKEND=$(ACX_DATA_BACKEND) PYTHONPATH=. poetry run python -m app.app
-
-format:
-	PYTHONPATH=. poetry run black .
-
-validate: lint test
-
 release:
 	@echo "release placeholder"
+
 
 migrate_v1_1:
 	python3 scripts/migrate_to_v1_1.py
