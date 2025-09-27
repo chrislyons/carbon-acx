@@ -120,5 +120,10 @@ def test_online_emission_factors_are_grid_indexed():
         assert ef.is_grid_indexed is True
         assert ef.value_g_per_unit is None
         assert ef.electricity_kwh_per_unit is not None
+        assert ef.electricity_kwh_per_unit > 0
+        assert ef.unit == activity.default_unit
+        assert ef.scope_boundary == "Operational electricity"
         if ef.vintage_year is not None:
             assert ef.vintage_year <= current_year
+        else:
+            pytest.fail(f"Online EF for {ef.activity_id} is missing a vintage year")

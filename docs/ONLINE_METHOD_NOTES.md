@@ -58,5 +58,5 @@ and data-centre electricity.
 ## Grid data refresh
 
 Ontario receives a 2025 grid-intensity update sourced from the latest IESO emissions reporting, while
-Québec’s 2025 row references the National Inventory Report. CER 2024 snapshots backstop the remaining
-provincial intensities.【F:data/grid_intensity.csv†L2-L18】【F:data/sources.csv†L19-L24】
+the 2025 rows for Québec, Alberta, and British Columbia reference the National Inventory Report. CER
+2024 snapshots backstop the remaining provincial intensities.【F:data/grid_intensity.csv†L2-L18】【F:data/sources.csv†L19-L24】
