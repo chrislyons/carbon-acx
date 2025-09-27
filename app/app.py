@@ -243,12 +243,16 @@ def create_app() -> Dash:
         children: list = []
         for layer_id in ordered_layers:
             label = _layer_label(layer_id)
-            filtered = {name: _filter_payload(payload, layer_id) for name, payload in figures_store.items()}
+            filtered = {
+                name: _filter_payload(payload, layer_id) for name, payload in figures_store.items()
+            }
             children.append(
                 html.Div(
                     className="layer-panel",
                     children=[
-                        stacked.render(filtered.get("stacked"), reference_lookup, title_suffix=label),
+                        stacked.render(
+                            filtered.get("stacked"), reference_lookup, title_suffix=label
+                        ),
                         bubble.render(filtered.get("bubble"), reference_lookup, title_suffix=label),
                         sankey.render(filtered.get("sankey"), reference_lookup, title_suffix=label),
                     ],

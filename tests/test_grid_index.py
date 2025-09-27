@@ -3,9 +3,7 @@ from calc.schema import LayerId, Profile
 
 
 def test_grid_precedence():
-    profile = Profile(
-        profile_id="p1", layer_id=LayerId.PROFESSIONAL, default_grid_region="CA-ON"
-    )
+    profile = Profile(profile_id="p1", layer_id=LayerId.PROFESSIONAL, default_grid_region="CA-ON")
     grid = {
         "CA-AB": 1,
         "CA-BC": 2,

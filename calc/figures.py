@@ -188,9 +188,7 @@ def slice_bubble(df: pd.DataFrame) -> list[BubblePoint]:
         frame.groupby(
             ["layer_id", "activity_id", "activity_name", "activity_category"],
             dropna=False,
-        )[
-            ["annual_emissions_g", "annual_emissions_g_low", "annual_emissions_g_high"]
-        ]
+        )[["annual_emissions_g", "annual_emissions_g_low", "annual_emissions_g_high"]]
         .sum(min_count=1)
         .reset_index()
     )
@@ -244,9 +242,7 @@ def slice_sankey(df: pd.DataFrame) -> dict:
     aggregated = (
         frame.groupby(
             ["layer_id", "activity_category", "activity_id", "activity_name"], dropna=False
-        )[
-            ["annual_emissions_g", "annual_emissions_g_low", "annual_emissions_g_high"]
-        ]
+        )[["annual_emissions_g", "annual_emissions_g_low", "annual_emissions_g_high"]]
         .sum(min_count=1)
         .reset_index()
     )
