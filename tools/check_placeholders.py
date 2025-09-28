@@ -39,7 +39,9 @@ def scan_file(path: Path) -> list[PlaceholderHit]:
         lower_line = raw_line.casefold()
         for token in BANNED_TOKENS:
             if token.casefold() in lower_line:
-                hits.append(PlaceholderHit(line_number=line_number, token=token, line_text=raw_line.strip()))
+                hits.append(
+                    PlaceholderHit(line_number=line_number, token=token, line_text=raw_line.strip())
+                )
     return hits
 
 
