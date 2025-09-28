@@ -10,7 +10,7 @@ PACKAGED_ARTIFACTS_DIR := $(DIST_DIR)/packaged-artifacts
 PACKAGED_MANIFEST := $(PACKAGED_ARTIFACTS_DIR)/manifest.json
 DEFAULT_GENERATED_AT ?= 1970-01-01T00:00:00+00:00
 
-.PHONY: install lint test ci_build_pages app format validate release migrate_v1_1 build-backend build site package sbom
+.PHONY: install lint test ci_build_pages app format validate release build-backend build site package sbom
 
 install:
 	poetry install --with dev --no-root
@@ -54,9 +54,6 @@ validate: lint test
 
 release:
 	@echo "release placeholder"
-
-migrate_v1_1:
-	python3 scripts/migrate_to_v1_1.py
 
 build-backend:
 	$(MAKE) build ACX_DATA_BACKEND=$(B)
