@@ -594,8 +594,7 @@ def export_view(
             "grid_intensity": sorted(manifest_grid_vintages),
         },
         "vintage_matrix": {
-            key: manifest_vintage_matrix[key]
-            for key in sorted(manifest_vintage_matrix)
+            key: manifest_vintage_matrix[key] for key in sorted(manifest_vintage_matrix)
         },
         "sources": citation_keys,
         "layers": sorted_layers,

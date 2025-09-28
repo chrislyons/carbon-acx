@@ -87,14 +87,10 @@ def _format_manifest_summary(manifest: Mapping | None) -> str:
 
     summary_items: list[str] = []
     if generated_at:
-        summary_items.append(
-            f"<li><strong>Generated at:</strong> {escape(str(generated_at))}</li>"
-        )
+        summary_items.append(f"<li><strong>Generated at:</strong> {escape(str(generated_at))}</li>")
     if regions:
         joined_regions = ", ".join(str(region) for region in regions)
-        summary_items.append(
-            f"<li><strong>Regions:</strong> {escape(joined_regions)}</li>"
-        )
+        summary_items.append(f"<li><strong>Regions:</strong> {escape(joined_regions)}</li>")
     if vintages:
         ef = vintages.get("emission_factors") or []
         grid = vintages.get("grid_intensity") or []
@@ -127,9 +123,9 @@ def _format_manifest_summary(manifest: Mapping | None) -> str:
     matrix_html = ""
     if matrix_entries:
         rows = "".join(
-            "<li><span class=\"vintages-panel__region\">"
+            '<li><span class="vintages-panel__region">'
             + escape(region)
-            + "</span><span class=\"vintages-panel__year\">"
+            + '</span><span class="vintages-panel__year">'
             + escape(str(year))
             + "</span></li>"
             for region, year in matrix_entries
@@ -138,9 +134,7 @@ def _format_manifest_summary(manifest: Mapping | None) -> str:
             '<div class="info-panel vintages-panel">'
             "<h3>Grid vintages</h3>"
             "<p>Latest grid intensity vintage year per region.</p>"
-            '<ul class="vintages-list">'
-            + rows
-            + "</ul>"
+            '<ul class="vintages-list">' + rows + "</ul>"
             "</div>"
         )
 
