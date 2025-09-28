@@ -12,7 +12,7 @@ from uuid import uuid4
 import tomllib
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-DEFAULT_OUTPUT = PROJECT_ROOT / "dist" / "sbom.cdx.json"
+DEFAULT_OUTPUT = PROJECT_ROOT / "dist" / "sbom" / "cyclonedx.json"
 POETRY_LOCK = PROJECT_ROOT / "poetry.lock"
 PYPROJECT = PROJECT_ROOT / "pyproject.toml"
 
@@ -109,7 +109,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--output",
         type=Path,
         default=DEFAULT_OUTPUT,
-        help="Path to write the SBOM JSON (default: dist/sbom.cdx.json)",
+        help="Path to write the SBOM JSON (default: dist/sbom/cyclonedx.json)",
     )
     return parser.parse_args(argv)
 
