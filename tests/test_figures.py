@@ -161,7 +161,11 @@ def test_exported_figures_have_consistent_references(derived_artifacts):
         payload = json.loads(figure_path.read_text(encoding="utf-8"))
 
         references_path = reference_dir / f"{figure_path.stem}_refs.txt"
-        reference_lines = [line for line in references_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+        reference_lines = [
+            line
+            for line in references_path.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
 
         assert payload.get("references") == reference_lines
         for idx, line in enumerate(reference_lines, start=1):
@@ -169,7 +173,9 @@ def test_exported_figures_have_consistent_references(derived_artifacts):
 
         expected_refs = [
             citations.format_ieee(ref.numbered(idx))
-            for idx, ref in enumerate(citations.references_for(payload.get("citation_keys")), start=1)
+            for idx, ref in enumerate(
+                citations.references_for(payload.get("citation_keys")), start=1
+            )
         ]
         assert reference_lines == expected_refs
 
