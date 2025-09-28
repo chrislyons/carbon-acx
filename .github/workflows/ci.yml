@@ -95,11 +95,31 @@ jobs:
           name: export-view-csv-${{ github.run_id }}
           path: parity/csv
 
+      - name: Normalize CSV export path
+        run: |
+          set -euo pipefail
+          csv_file="$(find parity/csv -name export_view.json -print -quit)"
+          if [ -z "${csv_file}" ]; then
+            echo "export_view.json from CSV backend artifact not found" >&2
+            exit 1
+          fi
+          mv "${csv_file}" parity/csv/export_view.json
+
       - name: Download DuckDB export
         uses: actions/download-artifact@v4
         with:
           name: export-view-duckdb-${{ github.run_id }}
           path: parity/duckdb
+
+      - name: Normalize DuckDB export path
+        run: |
+          set -euo pipefail
+          duckdb_file="$(find parity/duckdb -name export_view.json -print -quit)"
+          if [ -z "${duckdb_file}" ]; then
+            echo "export_view.json from DuckDB backend artifact not found" >&2
+            exit 1
+          fi
+          mv "${duckdb_file}" parity/duckdb/export_view.json
 
       - name: Diff backend exports
         run: python tools/diff_exports.py parity/csv/export_view.json parity/duckdb/export_view.json
