@@ -103,6 +103,29 @@ def _bounds(mean: float | None, low: float | None, high: float | None) -> dict:
     return payload
 
 
+def _value_columns(frame: pd.DataFrame) -> list[str]:
+    columns = ["annual_emissions_g"]
+    for optional in ["annual_emissions_g_low", "annual_emissions_g_high"]:
+        if optional in frame.columns:
+            columns.append(optional)
+    if "annual_emissions_g" not in frame.columns:
+        raise KeyError("DataFrame missing required column: ['annual_emissions_g']")
+    return columns
+
+
+def _extract_values(row: pd.Series) -> dict | None:
+    mean = _coerce_optional(row.get("annual_emissions_g"))
+    if mean is None:
+        return None
+    low = None
+    if "annual_emissions_g_low" in row.index:
+        low = _coerce_optional(row.get("annual_emissions_g_low"))
+    high = None
+    if "annual_emissions_g_high" in row.index:
+        high = _coerce_optional(row.get("annual_emissions_g_high"))
+    return _bounds(mean, low, high)
+
+
 def _normalise_category(value: Any) -> str:
     if value is None or (isinstance(value, float) and pd.isna(value)):
         return "uncategorized"
@@ -135,18 +158,15 @@ def slice_stacked(df: pd.DataFrame) -> list[dict]:
         df,
         [
             "annual_emissions_g",
-            "annual_emissions_g_low",
-            "annual_emissions_g_high",
             "activity_category",
             "layer_id",
         ],
     ).copy()
     frame["activity_category"] = frame["activity_category"].map(_normalise_category)
     frame["layer_id"] = frame["layer_id"].map(_normalise_layer)
+    value_columns = _value_columns(frame)
     aggregated = (
-        frame.groupby(["layer_id", "activity_category"], dropna=False)[
-            ["annual_emissions_g", "annual_emissions_g_low", "annual_emissions_g_high"]
-        ]
+        frame.groupby(["layer_id", "activity_category"], dropna=False)[value_columns]
         .sum(min_count=1)
         .reset_index()
     )
@@ -158,16 +178,14 @@ def slice_stacked(df: pd.DataFrame) -> list[dict]:
 
     results: list[dict] = []
     for _, row in aggregated.iterrows():
-        mean = _coerce_optional(row["annual_emissions_g"])
-        if mean is None:
+        values = _extract_values(row)
+        if values is None:
             continue
-        low = _coerce_optional(row.get("annual_emissions_g_low"))
-        high = _coerce_optional(row.get("annual_emissions_g_high"))
         results.append(
             {
                 "layer_id": _normalise_layer(row.get("layer_id")),
                 "category": row["activity_category"],
-                "values": _bounds(mean, low, high),
+                "values": values,
             }
         )
     return results
@@ -192,8 +210,6 @@ def slice_bubble(df: pd.DataFrame) -> list[BubblePoint]:
             "activity_name",
             "activity_category",
             "annual_emissions_g",
-            "annual_emissions_g_low",
-            "annual_emissions_g_high",
             "layer_id",
         ],
     ).copy()
@@ -204,11 +220,12 @@ def slice_bubble(df: pd.DataFrame) -> list[BubblePoint]:
     frame["activity_category"] = frame["activity_category"].map(_normalise_category)
     frame["layer_id"] = frame["layer_id"].map(_normalise_layer)
 
+    value_columns = _value_columns(frame)
     aggregated = (
         frame.groupby(
             ["layer_id", "activity_id", "activity_name", "activity_category"],
             dropna=False,
-        )[["annual_emissions_g", "annual_emissions_g_low", "annual_emissions_g_high"]]
+        )[value_columns]
         .sum(min_count=1)
         .reset_index()
     )
@@ -226,11 +243,9 @@ def slice_bubble(df: pd.DataFrame) -> list[BubblePoint]:
 
     results: list[BubblePoint] = []
     for _, row in aggregated.iterrows():
-        mean = _coerce_optional(row["annual_emissions_g"])
-        if mean is None:
+        values = _extract_values(row)
+        if values is None:
             continue
-        low = _coerce_optional(row.get("annual_emissions_g_low"))
-        high = _coerce_optional(row.get("annual_emissions_g_high"))
         layer = _normalise_layer(row.get("layer_id"))
         results.append(
             BubblePoint(
@@ -238,7 +253,7 @@ def slice_bubble(df: pd.DataFrame) -> list[BubblePoint]:
                 activity_name=str(row["activity_name"]),
                 category=row["activity_category"],
                 layer_id=layer,
-                values=_bounds(mean, low, high),
+                values=values,
             )
         )
     return results
@@ -254,8 +269,6 @@ def slice_sankey(df: pd.DataFrame) -> dict:
             "activity_name",
             "activity_category",
             "annual_emissions_g",
-            "annual_emissions_g_low",
-            "annual_emissions_g_high",
             "layer_id",
         ],
     ).copy()
@@ -266,10 +279,11 @@ def slice_sankey(df: pd.DataFrame) -> dict:
     frame["activity_category"] = frame["activity_category"].map(_normalise_category)
     frame["layer_id"] = frame["layer_id"].map(_normalise_layer)
 
+    value_columns = _value_columns(frame)
     aggregated = (
         frame.groupby(
             ["layer_id", "activity_category", "activity_id", "activity_name"], dropna=False
-        )[["annual_emissions_g", "annual_emissions_g_low", "annual_emissions_g_high"]]
+        )[value_columns]
         .sum(min_count=1)
         .reset_index()
     )
@@ -296,11 +310,9 @@ def slice_sankey(df: pd.DataFrame) -> dict:
 
     links: list[dict] = []
     for _, row in aggregated.iterrows():
-        mean = _coerce_optional(row["annual_emissions_g"])
-        if mean is None:
+        values = _extract_values(row)
+        if values is None:
             continue
-        low = _coerce_optional(row.get("annual_emissions_g_low"))
-        high = _coerce_optional(row.get("annual_emissions_g_high"))
         layer = _normalise_layer(row.get("layer_id"))
         category_label = str(row["activity_category"])
         activity_label = str(row["activity_name"])
@@ -313,7 +325,7 @@ def slice_sankey(df: pd.DataFrame) -> dict:
                 "activity_id": str(row["activity_id"]),
                 "category": category_label,
                 "layer_id": layer,
-                "values": _bounds(mean, low, high),
+                "values": values,
             }
         )
 
