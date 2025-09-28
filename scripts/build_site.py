@@ -83,36 +83,69 @@ def _format_manifest_summary(manifest: Mapping | None) -> str:
     regions = manifest.get("regions") or []
     vintages = manifest.get("vintages") or {}
     sources = manifest.get("sources") or []
+    matrix_raw = manifest.get("vintage_matrix") or {}
 
-    items: list[str] = []
+    summary_items: list[str] = []
     if generated_at:
-        items.append(f"<li><strong>Generated at:</strong> {escape(str(generated_at))}</li>")
+        summary_items.append(f"<li><strong>Generated at:</strong> {escape(str(generated_at))}</li>")
     if regions:
         joined_regions = ", ".join(str(region) for region in regions)
-        items.append(f"<li><strong>Regions:</strong> {escape(joined_regions)}</li>")
+        summary_items.append(f"<li><strong>Regions:</strong> {escape(joined_regions)}</li>")
     if vintages:
         ef = vintages.get("emission_factors") or []
         grid = vintages.get("grid_intensity") or []
         if ef:
-            items.append(
+            summary_items.append(
                 f"<li><strong>Emission factor vintages:</strong> {escape(', '.join(map(str, ef)))}</li>"
             )
         if grid:
-            items.append(
+            summary_items.append(
                 f"<li><strong>Grid intensity vintages:</strong> {escape(', '.join(map(str, grid)))}</li>"
             )
     if sources:
-        items.append(f"<li><strong>Total sources:</strong> {len(sources)}</li>")
+        summary_items.append(f"<li><strong>Total sources:</strong> {len(sources)}</li>")
 
-    if not items:
-        items.append("<li>No manifest metadata available.</li>")
+    if not summary_items:
+        summary_items.append("<li>No manifest metadata available.</li>")
 
-    return (
-        '<section class="manifest-section">'
+    matrix_entries: list[tuple[str, int]] = []
+    if isinstance(matrix_raw, Mapping):
+        for region, year in matrix_raw.items():
+            if region is None or year is None:
+                continue
+            try:
+                matrix_entries.append((str(region), int(year)))
+            except (TypeError, ValueError):
+                continue
+
+    matrix_entries.sort(key=lambda item: item[0])
+
+    matrix_html = ""
+    if matrix_entries:
+        rows = "".join(
+            '<li><span class="vintages-panel__region">'
+            + escape(region)
+            + '</span><span class="vintages-panel__year">'
+            + escape(str(year))
+            + "</span></li>"
+            for region, year in matrix_entries
+        )
+        matrix_html = (
+            '<div class="info-panel vintages-panel">'
+            "<h3>Grid vintages</h3>"
+            "<p>Latest grid intensity vintage year per region.</p>"
+            '<ul class="vintages-list">' + rows + "</ul>"
+            "</div>"
+        )
+
+    summary_html = (
+        '<div class="info-panel manifest-panel">'
         "<h3>Dataset manifest</h3>"
-        "<ul>" + "".join(items) + "</ul>"
-        "</section>"
+        "<ul>" + "".join(summary_items) + "</ul>"
+        "</div>"
     )
+
+    return summary_html + matrix_html
 
 
 def build_site(artifact_dir: Path, output_dir: Path) -> Path:

@@ -471,6 +471,7 @@ def export_view(
     manifest_layers: set[str] = set()
     manifest_ef_vintages: set[int] = set()
     manifest_grid_vintages: set[int] = set()
+    manifest_vintage_matrix: dict[str, int] = {}
 
     schedules = datastore.load_activity_schedule()
     for sched in schedules:
@@ -497,8 +498,15 @@ def export_view(
                         else grid_row.region
                     )
                     if region_value is not None:
-                        manifest_regions.add(str(region_value))
-                    if grid_row.vintage_year is not None:
+                        region_key = str(region_value)
+                        manifest_regions.add(region_key)
+                        if grid_row.vintage_year is not None:
+                            year = int(grid_row.vintage_year)
+                            manifest_grid_vintages.add(year)
+                            existing_year = manifest_vintage_matrix.get(region_key)
+                            if existing_year is None or year > existing_year:
+                                manifest_vintage_matrix[region_key] = year
+                    elif grid_row.vintage_year is not None:
                         manifest_grid_vintages.add(int(grid_row.vintage_year))
             details = compute_emission_details(sched, profile, ef, grid_lookup, grid_row)
             emission = details.mean
@@ -584,6 +592,9 @@ def export_view(
         "vintages": {
             "emission_factors": sorted(manifest_ef_vintages),
             "grid_intensity": sorted(manifest_grid_vintages),
+        },
+        "vintage_matrix": {
+            key: manifest_vintage_matrix[key] for key in sorted(manifest_vintage_matrix)
         },
         "sources": citation_keys,
         "layers": sorted_layers,
