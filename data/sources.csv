@@ -1,6 +1,4 @@
 source_id,ieee_citation,url,year,license
-SRC.OLD,Old source,,,
-SRC.DEMO,"[1] Demo, “Demonstration placeholder reference,” 2025. Available: https://example.org/demo",https://example.org/demo,2025,
 SRC.DIMPACT.2021,"[2] Carbon Trust and DIMPACT, “The Carbon Impact of Video Streaming,” 2021. Available: https://dimpact.org/resources",https://dimpact.org/resources,2021,
 SRC.IESO.2024,"[3] Independent Electricity System Operator (IESO), “Emissions and Grid Intensity (Ontario)—Data and Reports,” 2024. Available: https://www.ieso.ca/en/Power-Data/Data-Directory",https://www.ieso.ca/en/Power-Data/Data-Directory,2024,
 SRC.IEA.DCN.2023,"[4] International Energy Agency, “Data Centres and Data Transmission Networks,” Paris, France: IEA, 2023. Available: https://www.iea.org/reports/data-centres-and-data-transmission-networks",https://www.iea.org/reports/data-centres-and-data-transmission-networks,2023,
