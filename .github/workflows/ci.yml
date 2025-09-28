@@ -8,6 +8,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        backend: [csv, duckdb]
+    env:
+      ACX_DATA_BACKEND: ${{ matrix.backend }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -41,10 +46,17 @@ jobs:
       - name: Build packages
         run: make build site package
 
+      - name: Upload export_view.json
+        uses: actions/upload-artifact@v4
+        with:
+          name: export-view-${{ matrix.backend }}-${{ github.run_id }}
+          path: dist/artifacts/**/${{ matrix.backend }}/calc/outputs/export_view.json
+          if-no-files-found: error
+
       - name: Upload SBOM
         uses: actions/upload-artifact@v4
         with:
-          name: sbom
+          name: sbom-${{ matrix.backend }}-${{ github.run_id }}
           path: dist/sbom.cdx.json
           if-no-files-found: error
 
@@ -54,19 +66,66 @@ jobs:
       - name: Upload dist artifacts bundle
         uses: actions/upload-artifact@v4
         with:
-          name: dist-artifacts
+          name: dist-artifacts-${{ matrix.backend }}-${{ github.run_id }}
           path: dist/artifacts
           if-no-files-found: error
 
       - name: Upload static site bundle
         uses: actions/upload-artifact@v4
         with:
-          name: dist-site
+          name: dist-site-${{ matrix.backend }}-${{ github.run_id }}
           path: dist/site
           if-no-files-found: error
 
-  deploy-pages:
+  backend-parity:
     needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Download CSV export
+        uses: actions/download-artifact@v4
+        with:
+          name: export-view-csv-${{ github.run_id }}
+          path: parity/csv
+
+      - name: Normalize CSV export path
+        run: |
+          set -euo pipefail
+          csv_file="$(find parity/csv -name export_view.json -print -quit)"
+          if [ -z "${csv_file}" ]; then
+            echo "export_view.json from CSV backend artifact not found" >&2
+            exit 1
+          fi
+          mv "${csv_file}" parity/csv/export_view.json
+
+      - name: Download DuckDB export
+        uses: actions/download-artifact@v4
+        with:
+          name: export-view-duckdb-${{ github.run_id }}
+          path: parity/duckdb
+
+      - name: Normalize DuckDB export path
+        run: |
+          set -euo pipefail
+          duckdb_file="$(find parity/duckdb -name export_view.json -print -quit)"
+          if [ -z "${duckdb_file}" ]; then
+            echo "export_view.json from DuckDB backend artifact not found" >&2
+            exit 1
+          fi
+          mv "${duckdb_file}" parity/duckdb/export_view.json
+
+      - name: Diff backend exports
+        run: python tools/diff_exports.py parity/csv/export_view.json parity/duckdb/export_view.json
+
+  deploy-pages:
+    needs: [build, backend-parity]
     if: github.ref == 'refs/heads/main'
     permissions:
       pages: write
@@ -79,7 +138,7 @@ jobs:
       - name: Download static site
         uses: actions/download-artifact@v4
         with:
-          name: dist-site
+          name: dist-site-csv-${{ github.run_id }}
           path: dist-site
 
       - name: Upload Pages artifact
