@@ -49,14 +49,14 @@ jobs:
       - name: Upload export_view.json
         uses: actions/upload-artifact@v4
         with:
-          name: export-view-${{ matrix.backend }}
+          name: export-view-${{ matrix.backend }}-${{ github.run_id }}
           path: dist/artifacts/**/${{ matrix.backend }}/calc/outputs/export_view.json
           if-no-files-found: error
 
       - name: Upload SBOM
         uses: actions/upload-artifact@v4
         with:
-          name: sbom
+          name: sbom-${{ matrix.backend }}-${{ github.run_id }}
           path: dist/sbom.cdx.json
           if-no-files-found: error
 
@@ -66,14 +66,14 @@ jobs:
       - name: Upload dist artifacts bundle
         uses: actions/upload-artifact@v4
         with:
-          name: dist-artifacts
+          name: dist-artifacts-${{ matrix.backend }}-${{ github.run_id }}
           path: dist/artifacts
           if-no-files-found: error
 
       - name: Upload static site bundle
         uses: actions/upload-artifact@v4
         with:
-          name: dist-site
+          name: dist-site-${{ matrix.backend }}-${{ github.run_id }}
           path: dist/site
           if-no-files-found: error
 
@@ -92,13 +92,13 @@ jobs:
       - name: Download CSV export
         uses: actions/download-artifact@v4
         with:
-          name: export-view-csv
+          name: export-view-csv-${{ github.run_id }}
           path: parity/csv
 
       - name: Download DuckDB export
         uses: actions/download-artifact@v4
         with:
-          name: export-view-duckdb
+          name: export-view-duckdb-${{ github.run_id }}
           path: parity/duckdb
 
       - name: Diff backend exports
@@ -118,7 +118,7 @@ jobs:
       - name: Download static site
         uses: actions/download-artifact@v4
         with:
-          name: dist-site
+          name: dist-site-csv-${{ github.run_id }}
           path: dist-site
 
       - name: Upload Pages artifact
