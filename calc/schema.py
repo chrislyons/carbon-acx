@@ -1,10 +1,18 @@
+"""Schema definitions plus cached CSV loading helpers for ACX datasets.
+
+This module exposes the pydantic models that describe the public datasets and
+provides helpers for reading the canonical CSV inputs. A simple read-through
+cache keeps sanitized ``pandas.DataFrame`` objects keyed by file path and
+modification time so repeated reads within a process avoid redundant parsing
+while still reacting deterministically to changes on disk.
+"""
+
 from __future__ import annotations
 
 from pathlib import Path
 from datetime import date
 from enum import Enum
-from functools import lru_cache
-from typing import List, Optional, Literal
+from typing import Dict, List, Optional, Literal, Tuple
 
 import pandas as pd
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -24,10 +32,20 @@ else:
 UNIT_REGISTRY = set(_units_df[_unit_column].dropna().astype(str))
 
 
-@lru_cache(maxsize=None)
+# simple read-through cache for CSV payloads; values are sanitized DataFrames
+_csv_cache: Dict[Path, Tuple[int, pd.DataFrame]] = {}
+
+
 def _load_csv(path: Path, model: type[BaseModel]) -> tuple[BaseModel, ...]:
-    df = pd.read_csv(path, dtype=object)
-    df = df.where(pd.notnull(df), None)
+    mtime_ns = path.stat().st_mtime_ns
+    cached = _csv_cache.get(path)
+    if cached and cached[0] == mtime_ns:
+        df = cached[1].copy(deep=True)
+    else:
+        df = pd.read_csv(path, dtype=object)
+        df = df.where(pd.notnull(df), None)
+        _csv_cache[path] = (mtime_ns, df)
+        df = df.copy(deep=True)
     records = df.to_dict(orient="records")
     return tuple(model(**row) for row in records)
 
@@ -240,4 +258,4 @@ def load_grid_intensity() -> List[GridIntensity]:
 def invalidate_caches() -> None:
     """Clear cached CSV reads for schema models."""
 
-    _load_csv.cache_clear()
+    _csv_cache.clear()
