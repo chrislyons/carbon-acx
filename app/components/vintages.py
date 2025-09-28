@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from operator import itemgetter
 from typing import Mapping
 
 from dash import html
@@ -34,7 +35,7 @@ def _coerce_matrix(manifest: Mapping | None) -> list[tuple[str, int]]:
             continue
         entries.append((region, year))
 
-    entries.sort(key=lambda item: item[0])
+    entries.sort(key=itemgetter(0))
     return entries
 
 
