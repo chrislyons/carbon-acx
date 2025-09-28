@@ -8,6 +8,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        backend: [csv, duckdb]
+    env:
+      ACX_DATA_BACKEND: ${{ matrix.backend }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -41,6 +46,13 @@ jobs:
       - name: Build packages
         run: make build site package
 
+      - name: Upload export_view.json
+        uses: actions/upload-artifact@v4
+        with:
+          name: export-view-${{ matrix.backend }}
+          path: dist/artifacts/**/${{ matrix.backend }}/calc/outputs/export_view.json
+          if-no-files-found: error
+
       - name: Upload SBOM
         uses: actions/upload-artifact@v4
         with:
@@ -65,8 +77,35 @@ jobs:
           path: dist/site
           if-no-files-found: error
 
-  deploy-pages:
+  backend-parity:
     needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Download CSV export
+        uses: actions/download-artifact@v4
+        with:
+          name: export-view-csv
+          path: parity/csv
+
+      - name: Download DuckDB export
+        uses: actions/download-artifact@v4
+        with:
+          name: export-view-duckdb
+          path: parity/duckdb
+
+      - name: Diff backend exports
+        run: python tools/diff_exports.py parity/csv/export_view.json parity/duckdb/export_view.json
+
+  deploy-pages:
+    needs: [build, backend-parity]
     if: github.ref == 'refs/heads/main'
     permissions:
       pages: write
