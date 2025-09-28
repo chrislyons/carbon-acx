@@ -59,9 +59,40 @@ make test
 make validate  # runs lint + test together for quick verification
 ```
 
-### Build and package artifacts
+### Run the Dash preview
 
-Each stage can be executed independently or as a chain:
+The interactive development experience relies on Dash. Generate artifacts and
+launch the preview server:
+
+```bash
+make build
+make app  # serves Dash on http://localhost:8050
+```
+
+Both the preview and the static client consume the same derived bundle under
+`build/<backend>/calc/outputs`, including the Plotly payloads at
+`build/<backend>/calc/outputs/figures/{stacked,bubble,sankey}.json`, the manifest
+at `build/<backend>/calc/outputs/manifest.json`, tabular exports in
+`build/<backend>/calc/outputs/export_view.{csv,json}`, and IEEE references in
+`build/<backend>/calc/outputs/references/*_refs.txt`.
+
+### Build the static client
+
+The production site is a static client published from Cloudflare Pages. Locally
+render it and inspect the generated HTML bundle:
+
+```bash
+make site
+python -m http.server --directory build/site 8001
+```
+
+Navigate to `http://localhost:8001` to verify `build/site/index.html` before
+packaging. The same artifact is uploaded without modification for production
+hosting.
+
+### Package distributable bundles
+
+Each stage can be executed independently or chained together:
 
 ```bash
 make build     # derive data products into build/<backend>
@@ -69,8 +100,8 @@ make site      # render the static site using the derived outputs
 make package   # assemble dist/artifacts and dist/site bundles
 ```
 
-The convenience target below mirrors the CI pipeline and is safe to run locally
-before submitting a pull request:
+The convenience target below mirrors the CI pipeline and is safe to run before
+submitting a pull request:
 
 ```bash
 make build site package
@@ -116,22 +147,13 @@ manifest at `build/<backend>/calc/outputs/manifest.json`, tabular exports in
 in `build/<backend>/calc/outputs/references/*_refs.txt`. These same files are
 published as the production bundle served from Cloudflare Pages.
 
-## Running the Dash preview and static client
+## Deploying static artifacts
 
-Launch the Dash development server once artifacts exist:
+Continuous integration executes the build, site render, and packaging steps and
+publishes downloadable artifacts:
 
-```bash
-make build
-make app  # serves Dash on http://localhost:8050
-```
+- `dist-artifacts` — curated tables, manifests, and references.
+- `dist-site` — the compiled static site bundle ready for deployment.
 
-To inspect the static client locally, build it and serve the output directory
-with any static file server. For example:
-
-```bash
-make site
-python -m http.server --directory build/site 8001
-```
-
-Navigate to `http://localhost:8001` to verify the rendered pages. The generated
-`build/site/index.html` bundle is what Cloudflare Pages deploys in production.
+Upload the contents of `dist/site` to Cloudflare Pages (or any static file
+hosting platform) to mirror the production deployment.
