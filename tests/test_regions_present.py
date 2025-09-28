@@ -31,9 +31,26 @@ def test_provincial_professional_profiles_present():
             assert profile.default_grid_region == region
 
 
+def test_canadian_grid_regions_present():
+    grid_rows = schema.load_grid_intensity()
+    present_regions = {row.region for row in grid_rows}
+
+    expected_regions = {
+        RegionCode.CA,
+        RegionCode.CA_ON,
+        RegionCode.CA_QC,
+        RegionCode.CA_AB,
+        RegionCode.CA_BC,
+    }
+
+    missing = expected_regions - present_regions
+    assert not missing, f"missing grid intensity rows for: {sorted(code.value for code in missing)}"
+
+
 def test_grid_sources_registered():
     grid_rows = schema.load_grid_intensity()
     tracked_regions = {
+        RegionCode.CA,
         RegionCode.CA_QC,
         RegionCode.CA_AB,
         RegionCode.CA_BC,
