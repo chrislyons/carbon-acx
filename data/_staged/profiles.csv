@@ -1,0 +1,3 @@
+profile_id,layer_id,name,region_code_default,grid_strategy,grid_mix_json,cohort_id,office_days_per_week,assumption_notes
+IND_LIGHT.ON.LOGISTICS.2025,industrial_light,Ontario light-industrial logistics & warehousing (2025),CA-ON,region_default,,,,"Awaiting regional load profiles and shift schedules prior to enablement."
+IND.TO.HEAVY.2025,industrial_heavy,Ontario heavy-industrial baseline (2025),CA-ON,region_default,,,,"Hidden until heavy-industrial schedules and emission factors are published; placeholder for clinker, steel, refining, and mining haul activities."

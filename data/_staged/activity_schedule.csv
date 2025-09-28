@@ -1,0 +1,3 @@
+profile_id,activity_id,layer_id,freq_per_day,freq_per_week,office_days_only,region_override,schedule_notes
+ONLINE.TO.CONSUMER.2025,AI.LLM.INFER.1K_TOKENS.GENERIC,online,1,,FALSE,,Conservative placeholder: one 1K-token AI interaction per day.
+ONLINE.TO.CONSUMER.2025,CLOUD.STORAGE.SYNC.GB_MONTH,online,,,FALSE,,Usage captured via profile metadata; EF TBD so no automatic cadence.
