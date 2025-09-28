@@ -5,5 +5,8 @@
     "emission_factors": [2024],
     "grid_intensity": [2024]
   },
+  "vintage_matrix": {
+    "Demo Region": 2024
+  },
   "sources": ["SRC.DEMO"]
 }

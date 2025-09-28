@@ -11,7 +11,7 @@ from dash import Dash, Input, Output, State, dcc, html
 from calc import citations
 from calc.schema import LayerId
 
-from .components import bubble, references, sankey, stacked
+from .components import bubble, references, sankey, stacked, vintages
 from .components._helpers import extend_unique
 
 ARTIFACT_ENV = "ACX_ARTIFACT_DIR"
@@ -30,6 +30,16 @@ def _artifact_dir() -> Path:
 
 def _load_figure_payload(base_dir: Path, name: str) -> dict | None:
     path = base_dir / "figures" / f"{name}.json"
+    if not path.exists():
+        return None
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return None
+
+
+def _load_manifest_payload(base_dir: Path) -> dict | None:
+    path = base_dir / "manifest.json"
     if not path.exists():
         return None
     try:
@@ -127,6 +137,7 @@ def create_app() -> Dash:
     figures = {name: _load_figure_payload(artifact_dir, name) for name in FIGURE_NAMES}
     reference_keys = _reference_keys(figures)
     reference_lookup = _reference_lookup(reference_keys)
+    manifest_payload = _load_manifest_payload(artifact_dir)
 
     available_layers = _collect_layers(figures)
     default_layers = [available_layers[0]] if available_layers else [LayerId.PROFESSIONAL.value]
@@ -200,7 +211,13 @@ def create_app() -> Dash:
                     html.Div(id="layer-panels", className="layer-panels"),
                 ],
             ),
-            references.render(reference_keys),
+            html.Div(
+                [
+                    vintages.render(manifest_payload),
+                    references.render(reference_keys),
+                ],
+                className="sidebar-panels",
+            ),
         ],
     )
 
