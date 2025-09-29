@@ -186,9 +186,7 @@ def build_site(artifact_dir: Path, output_dir: Path) -> Path:
         section_html = (
             f'<section class="{FIGURE_CLASSES[name]}">'
             f"<h2>{escape(FIGURE_TITLES[name])}</h2>"
-            f"{graph_html}"
-            + "".join(footnotes)
-            + "</section>"
+            f"{graph_html}" + "".join(footnotes) + "</section>"
         )
         sections.append(section_html)
 

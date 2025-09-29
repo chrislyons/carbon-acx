@@ -17,7 +17,9 @@ def _load_manifest(path: Path | None) -> Mapping | None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Render reusable copy blocks to Markdown snippets.")
+    parser = argparse.ArgumentParser(
+        description="Render reusable copy blocks to Markdown snippets."
+    )
     parser.add_argument(
         "--manifest",
         type=Path,

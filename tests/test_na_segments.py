@@ -1,4 +1,3 @@
-
 from app.components import bubble, na_notice, sankey, stacked
 from app.components._helpers import has_na_segments
 
@@ -31,18 +30,14 @@ def test_stacked_section_appends_na_notice() -> None:
     payload = {"data": [{"category": "NA", "values": {"mean": 10}}]}
     section = stacked.render(payload, {})
     children = section.to_plotly_json()["props"]["children"]
-    assert "chart-footnote chart-footnote--na" in {
-        _class_name(child) for child in children
-    }
+    assert "chart-footnote chart-footnote--na" in {_class_name(child) for child in children}
 
 
 def test_sankey_section_appends_na_notice() -> None:
     payload = {"data": {"nodes": [{"id": "na", "label": "NA"}], "links": []}}
     section = sankey.render(payload, {})
     children = section.to_plotly_json()["props"]["children"]
-    assert "chart-footnote chart-footnote--na" in {
-        _class_name(child) for child in children
-    }
+    assert "chart-footnote chart-footnote--na" in {_class_name(child) for child in children}
 
 
 def test_bubble_section_appends_na_notice() -> None:
@@ -57,6 +52,4 @@ def test_bubble_section_appends_na_notice() -> None:
     }
     section = bubble.render(payload, {})
     children = section.to_plotly_json()["props"]["children"]
-    assert "chart-footnote chart-footnote--na" in {
-        _class_name(child) for child in children
-    }
+    assert "chart-footnote chart-footnote--na" in {_class_name(child) for child in children}
