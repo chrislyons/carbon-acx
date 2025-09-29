@@ -771,4 +771,3 @@ _LAYER_NAME_HINTS: dict[str, LayerId] = {
     "industrial_heavy": LayerId.INDUSTRIAL_HEAVY,
     "heavy_industrial": LayerId.INDUSTRIAL_HEAVY,
 }
-

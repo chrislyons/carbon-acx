@@ -44,9 +44,7 @@ def test_layout_contains_expected_sections(monkeypatch) -> None:
     )
 
     panel_callback_info = next(
-        info
-        for key, info in dash_app.callback_map.items()
-        if "layer-panels.children" in key
+        info for key, info in dash_app.callback_map.items() if "layer-panels.children" in key
     )
     callback = panel_callback_info["callback"].__wrapped__
     panels_children, _ = callback(selected_layers, "single", figures_store)

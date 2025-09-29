@@ -155,9 +155,7 @@ def _reference_rank(key: str, reference_lookup: Mapping[str, int]) -> tuple[int,
     return (index, key)
 
 
-def _order_reference_keys(
-    keys: Iterable[str], reference_lookup: Mapping[str, int]
-) -> list[str]:
+def _order_reference_keys(keys: Iterable[str], reference_lookup: Mapping[str, int]) -> list[str]:
     seen: set[str] = set()
     unique: list[str] = []
     for key in keys:

@@ -55,7 +55,8 @@ def test_layer_filter_and_reference_union(monkeypatch, derived_output_dir, deriv
 
     artifact_dir = derived_output_dir
     figures_store = {
-        name: app_module._load_figure_payload(artifact_dir, name) for name in app_module.FIGURE_NAMES
+        name: app_module._load_figure_payload(artifact_dir, name)
+        for name in app_module.FIGURE_NAMES
     }
 
     professional = app_module._filter_payload(figures_store["stacked"], "professional")
