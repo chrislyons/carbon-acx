@@ -93,14 +93,10 @@ def _format_manifest_summary(manifest: Mapping | None) -> str:
 
     summary_items: list[str] = []
     if generated_at:
-        summary_items.append(
-            f"<li><strong>Generated at:</strong> {escape(str(generated_at))}</li>"
-        )
+        summary_items.append(f"<li><strong>Generated at:</strong> {escape(str(generated_at))}</li>")
     if regions:
         joined_regions = ", ".join(str(region) for region in regions)
-        summary_items.append(
-            f"<li><strong>Regions:</strong> {escape(joined_regions)}</li>"
-        )
+        summary_items.append(f"<li><strong>Regions:</strong> {escape(joined_regions)}</li>")
     if vintages:
         ef = vintages.get("emission_factors") or []
         grid = vintages.get("grid_intensity") or []
@@ -224,15 +220,13 @@ def build_site(artifact_dir: Path, output_dir: Path) -> Path:
         '<div class="page-header__titles">'
         '<p class="page-eyebrow">Carbon ACX</p>'
         "<h1>Carbon ACX emissions overview</h1>"
-        f"<p class=\"page-subtitle\">{hero_subtitle}</p>"
+        f'<p class="page-subtitle">{hero_subtitle}</p>'
         "</div>"
         "</div>"
     )
     generated_meta = ""
     if manifest and manifest.get("generated_at"):
-        generated_meta = (
-            f"<p class=\"page-meta generated-at\">Last generated: {escape(str(manifest['generated_at']))}</p>"
-        )
+        generated_meta = f"<p class=\"page-meta generated-at\">Last generated: {escape(str(manifest['generated_at']))}</p>"
 
     header_html = (
         '<header class="page-header card">'
@@ -254,17 +248,13 @@ def build_site(artifact_dir: Path, output_dir: Path) -> Path:
         '<link rel="stylesheet" href="styles.css" />'
         "</head>"
         "<body>"
-        '<div class="page-shell">'
-        + header_html
-        + '<div class="layout-grid">'
-        '<main class="main-column chart-column">'
-        + "".join(sections)
-        + "</main>"
+        '<div class="page-shell">' + header_html + '<div class="layout-grid">'
+        '<main class="main-column chart-column">' + "".join(sections) + "</main>"
         '<aside class="sidebar">'
         '<div class="references-panel card sticky" data-loading="false">'
         '<div class="skeleton skeleton--panel" aria-hidden="true"></div>'
         '<div class="card__content">'
-        '<h2>References</h2>'
+        "<h2>References</h2>"
         '<ol class="references-list">'
         + reference_items
         + "</ol>"
