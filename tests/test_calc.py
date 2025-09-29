@@ -91,7 +91,7 @@ def test_export_metadata_and_references(derived_output_dir, derived_output_root)
     assert export_refs == expected_refs
 
     stacked_payload = json.loads((out_dir / "figures" / "stacked.json").read_text())
-    assert stacked_payload["references"] == expected_refs
+    assert "references" not in stacked_payload
     assert stacked_payload["citation_keys"] == ["coffee", "streaming"]
     assert stacked_payload["profile"] == "p1"
     assert stacked_payload["profile_resolution"] == {
@@ -102,23 +102,23 @@ def test_export_metadata_and_references(derived_output_dir, derived_output_root)
     assert stacked_payload["data"]
     assert all("layer_id" in row for row in stacked_payload["data"])
     assert stacked_payload.get("layer_citation_keys") == {"professional": ["coffee", "streaming"]}
-    assert stacked_payload.get("layer_references") == {"professional": expected_refs}
+    assert "layer_references" not in stacked_payload
 
     bubble_payload = json.loads((out_dir / "figures" / "bubble.json").read_text())
-    assert bubble_payload["references"] == expected_refs
+    assert "references" not in bubble_payload
     assert all("mean" in point["values"] for point in bubble_payload["data"])
     assert all(point.get("layer_id") for point in bubble_payload["data"])
     assert bubble_payload.get("layer_citation_keys") == {"professional": ["coffee", "streaming"]}
-    assert bubble_payload.get("layer_references") == {"professional": expected_refs}
+    assert "layer_references" not in bubble_payload
 
     sankey_payload = json.loads((out_dir / "figures" / "sankey.json").read_text())
-    assert sankey_payload["references"] == expected_refs
+    assert "references" not in sankey_payload
     assert isinstance(sankey_payload["data"], dict)
     assert "nodes" in sankey_payload["data"]
     assert "links" in sankey_payload["data"]
     assert all("layer_id" in link for link in sankey_payload["data"]["links"])
     assert sankey_payload.get("layer_citation_keys") == {"professional": ["coffee", "streaming"]}
-    assert sankey_payload.get("layer_references") == {"professional": expected_refs}
+    assert "layer_references" not in sankey_payload
 
     for name in ("stacked", "bubble", "sankey"):
         txt = (out_dir / "references" / f"{name}_refs.txt").read_text().strip().splitlines()

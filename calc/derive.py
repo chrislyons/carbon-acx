@@ -790,7 +790,8 @@ def export_view(
             meta["layer_references"] = layer_references
         meta["references"] = references
         meta["data"] = data
-        _write_json(figure_dir / f"{name}.json", meta)
+        trimmed_meta = figures.trim_figure_payload(meta)
+        _write_json(figure_dir / f"{name}.json", trimmed_meta)
         _write_reference_file(reference_dir, name, references)
 
     _write_figure("stacked", "figures.stacked", stacked)
