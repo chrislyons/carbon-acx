@@ -48,21 +48,51 @@ jobs:
         run: |
           set -euo pipefail
           make db_init db_import build_db
+          sqlite_outputs="$(python - <<'PY'
+import json
+from pathlib import Path
+
+manifest_path = Path("dist/artifacts/latest-build.json")
+data = json.loads(manifest_path.read_text())
+artifact_dir = Path(data["artifact_dir"]).expanduser().resolve()
+outputs_dir = artifact_dir / "calc" / "outputs"
+print(outputs_dir)
+PY
+)"
+          if [ ! -d "${sqlite_outputs}" ]; then
+            echo "SQLite build outputs not found at ${sqlite_outputs}" >&2
+            exit 1
+          fi
+          echo "SQLITE_OUTPUTS=${sqlite_outputs}" >> "${GITHUB_ENV}"
           make build_csv
+          csv_outputs="$(python - <<'PY'
+import json
+from pathlib import Path
+
+manifest_path = Path("dist/artifacts/latest-build.json")
+data = json.loads(manifest_path.read_text())
+artifact_dir = Path(data["artifact_dir"]).expanduser().resolve()
+outputs_dir = artifact_dir / "calc" / "outputs"
+print(outputs_dir)
+PY
+)"
+          if [ ! -d "${csv_outputs}" ]; then
+            echo "CSV build outputs not found at ${csv_outputs}" >&2
+            exit 1
+          fi
+          echo "CSV_OUTPUTS=${csv_outputs}" >> "${GITHUB_ENV}"
 
       - name: Diff CSV and SQLite outputs
         if: matrix.backend == 'csv'
         run: |
           set -euo pipefail
-          csv_outputs="$(find dist/artifacts -path '*/csv/calc/outputs' -type d -print -quit)"
-          sqlite_outputs="$(find dist/artifacts -path '*/sqlite/calc/outputs' -type d -print -quit)"
-          if [ -z "${csv_outputs}" ] || [ -z "${sqlite_outputs}" ]; then
+          if [ -z "${CSV_OUTPUTS:-}" ] || [ -z "${SQLITE_OUTPUTS:-}" ]; then
             echo "Expected calc/outputs directories for CSV and SQLite builds" >&2
             exit 1
           fi
           diff -ru \
-            <(grep -h -v '"generated_at":' "${csv_outputs}"/*) \
-            <(grep -h -v '"generated_at":' "${sqlite_outputs}"/*)
+            <(grep -h -v '"generated_at":' "${CSV_OUTPUTS}"/*) \
+            <(grep -h -v '"generated_at":' "${SQLITE_OUTPUTS}"/*)
 
       - name: Build packages
         run: make build site package sbom
