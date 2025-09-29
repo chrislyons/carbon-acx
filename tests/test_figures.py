@@ -90,6 +90,17 @@ def _iter_hover_indices(name: str, payload: dict) -> Iterable[list[int]]:
             yield indices
 
 
+def _iter_trace_entries(name: str, payload: dict) -> Iterable[dict]:
+    data = payload.get("data")
+    if name == "sankey":
+        entries = data.get("links", []) if isinstance(data, dict) else []
+    else:
+        entries = data if isinstance(data, list) else []
+    for entry in entries:
+        if isinstance(entry, dict):
+            yield entry
+
+
 def _expected_totals(df: pd.DataFrame) -> dict[str, float]:
     subset = df[df["annual_emissions_g"].notna()]
     totals: dict[str, float] = {}
@@ -193,5 +204,19 @@ def test_exported_figures_have_consistent_references(derived_artifacts):
                     assert sum(collected) == pytest.approx(expected_total, rel=1e-6, abs=1e-6)
 
         valid_indices = set(range(1, len(reference_lines) + 1))
+        reference_lookup = {
+            idx: line
+            for idx, line in enumerate(reference_lines, start=1)
+            if line.startswith(f"[{idx}]")
+        }
+        for entry in _iter_trace_entries(figure_path.stem, payload):
+            units = entry.get("units")
+            assert isinstance(units, dict), "figure entries must include units metadata"
+            assert units.get("unit"), "units metadata must declare a unit"
+            assert units.get("label"), "units metadata must include a human label"
         for indices in _iter_hover_indices(figure_path.stem, payload):
             assert set(indices).issubset(valid_indices)
+            for index in indices:
+                assert (
+                    index in reference_lookup
+                ), f"reference [{index}] missing from references file"
