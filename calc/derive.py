@@ -827,9 +827,21 @@ if __name__ == "__main__":
         default=None,
         help="Base directory for generated calc/outputs (defaults to the package directory)",
     )
+    parser.add_argument(
+        "--db",
+        type=Path,
+        default=None,
+        help="Path to the SQL database when using sqlite or duckdb backends",
+    )
+    parser.add_argument(
+        "--backend",
+        choices=("csv", "sqlite", "duckdb"),
+        default=None,
+        help="Override ACX_DATA_BACKEND for this invocation",
+    )
     args = parser.parse_args()
 
-    datastore = choose_backend()
+    datastore = choose_backend(backend=args.backend, db_path=args.db)
     export_view(datastore, output_root=args.output_root)
 _LAYER_PREFIXES: list[tuple[str, LayerId]] = [
     ("PRO.", LayerId.PROFESSIONAL),

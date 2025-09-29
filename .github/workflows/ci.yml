@@ -43,6 +43,25 @@ jobs:
       - name: Test
         run: make test
 
+      - name: Build database-backed artifacts
+        if: matrix.backend == 'csv'
+        run: |
+          set -euo pipefail
+          make db_init db_import build_db
+          make build_csv
+
+      - name: Diff CSV and SQLite outputs
+        if: matrix.backend == 'csv'
+        run: |
+          set -euo pipefail
+          csv_outputs="$(find dist/artifacts -path '*/csv/calc/outputs' -type d -print -quit)"
+          sqlite_outputs="$(find dist/artifacts -path '*/sqlite/calc/outputs' -type d -print -quit)"
+          if [ -z "${csv_outputs}" ] || [ -z "${sqlite_outputs}" ]; then
+            echo "Expected calc/outputs directories for CSV and SQLite builds" >&2
+            exit 1
+          fi
+          diff -ru "${csv_outputs}" "${sqlite_outputs}"
+
       - name: Build packages
         run: make build site package sbom
 
