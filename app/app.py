@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Iterable, Mapping
 
 import copy
 from dash import Dash, Input, Output, State, dcc, html
@@ -119,6 +119,22 @@ def _filter_payload(payload: dict | None, layer_id: str | None) -> dict | None:
         node_ids = {link.get("source") for link in links} | {link.get("target") for link in links}
         nodes = [node for node in data.get("nodes", []) if node.get("id") in node_ids]
         filtered["data"] = {"nodes": nodes, "links": links}
+    filtered["layers"] = [layer_id]
+
+    layer_key_map = filtered.get("layer_citation_keys")
+    if isinstance(layer_key_map, dict):
+        keys = layer_key_map.get(layer_id, [])
+        filtered["layer_citation_keys"] = {layer_id: keys}
+        filtered["citation_keys"] = keys
+    else:
+        keys = None
+
+    layer_ref_map = filtered.get("layer_references")
+    if isinstance(layer_ref_map, dict):
+        filtered["layer_references"] = {layer_id: layer_ref_map.get(layer_id, [])}
+        if keys is not None:
+            filtered["references"] = layer_ref_map.get(layer_id, filtered.get("references"))
+
     return filtered
 
 
@@ -132,6 +148,24 @@ def _order_layers(layers: list[str]) -> list[str]:
     return sorted(unique, key=_layer_order_index)
 
 
+def _reference_rank(key: str, reference_lookup: Mapping[str, int]) -> tuple[int, str]:
+    index = reference_lookup.get(key)
+    if index is None:
+        return (len(reference_lookup), key)
+    return (index, key)
+
+
+def _order_reference_keys(keys: Iterable[str], reference_lookup: Mapping[str, int]) -> list[str]:
+    seen: set[str] = set()
+    unique: list[str] = []
+    for key in keys:
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(key)
+    return sorted(unique, key=lambda item: _reference_rank(item, reference_lookup))
+
+
 def create_app() -> Dash:
     artifact_dir = _artifact_dir()
     figures = {name: _load_figure_payload(artifact_dir, name) for name in FIGURE_NAMES}
@@ -139,8 +173,32 @@ def create_app() -> Dash:
     reference_lookup = _reference_lookup(reference_keys)
     manifest_payload = _load_manifest_payload(artifact_dir)
 
+    layer_citation_keys: dict[str, list[str]] = {}
+    if isinstance(manifest_payload, dict):
+        manifest_layers = manifest_payload.get("layer_citation_keys")
+        if isinstance(manifest_layers, dict):
+            layer_citation_keys = {
+                str(layer): list(keys)
+                for layer, keys in manifest_layers.items()
+                if isinstance(keys, list)
+            }
+
     available_layers = _collect_layers(figures)
     default_layers = [available_layers[0]] if available_layers else [LayerId.PROFESSIONAL.value]
+
+    def _resolve_reference_keys(
+        layers: Iterable[str], mapping: Mapping[str, list[str]] | None = None
+    ) -> list[str]:
+        active_map: Mapping[str, list[str]] = mapping or layer_citation_keys
+        aggregated: list[str] = []
+        has_mapping = bool(active_map)
+        for layer in layers:
+            extend_unique(active_map.get(layer, []), aggregated)
+        if not aggregated and not has_mapping:
+            aggregated = list(reference_keys)
+        return _order_reference_keys(aggregated, reference_lookup)
+
+    initial_reference_keys = _resolve_reference_keys(default_layers)
     layer_options: list[dict] = []
     for layer in LayerId:
         option = {"label": layer.label, "value": layer.value}
@@ -154,6 +212,7 @@ def create_app() -> Dash:
         children=[
             dcc.Store(id="figures-store", data=figures),
             dcc.Store(id="available-layers", data=available_layers),
+            dcc.Store(id="layer-citation-keys", data=layer_citation_keys),
             html.Main(
                 className="chart-column",
                 children=[
@@ -214,7 +273,7 @@ def create_app() -> Dash:
             html.Div(
                 [
                     vintages.render(manifest_payload),
-                    references.render(reference_keys),
+                    references.render(initial_reference_keys),
                 ],
                 className="sidebar-panels",
             ),
@@ -277,6 +336,29 @@ def create_app() -> Dash:
             )
 
         return children, panels_class
+
+    @app.callback(
+        Output("references", "children"),
+        Input("layer-selector", "value"),
+        State("layer-citation-keys", "data"),
+    )
+    def _update_references(selected_layers, layer_map):
+        layers = selected_layers or []
+        if isinstance(layers, str):
+            layers = [layers]
+        layers = [layer for layer in layers if isinstance(layer, str)]
+        ordered_layers = _order_layers(layers)
+
+        mapping = layer_citation_keys
+        if isinstance(layer_map, dict):
+            mapping = {
+                str(layer): list(keys)
+                for layer, keys in layer_map.items()
+                if isinstance(keys, list)
+            }
+
+        reference_keys_for_layers = _resolve_reference_keys(ordered_layers, mapping)
+        return references.render_children(reference_keys_for_layers)
 
     return app
 

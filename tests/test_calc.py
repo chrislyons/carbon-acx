@@ -78,11 +78,14 @@ def test_export_metadata_and_references(derived_output_dir, derived_output_root)
     assert data["citation_keys"] == ["coffee", "streaming"]
     assert data["layers"] == ["professional"]
     assert all(row["layer_id"] == "professional" for row in data["data"])
+    assert data.get("layer_citation_keys") == {"professional": ["coffee", "streaming"]}
 
     expected_refs = [
         citations.format_ieee(ref.numbered(idx))
         for idx, ref in enumerate(citations.references_for(["coffee", "streaming"]), start=1)
     ]
+
+    assert data.get("layer_references") == {"professional": expected_refs}
 
     export_refs = (out_dir / "references" / "export_view_refs.txt").read_text().strip().splitlines()
     assert export_refs == expected_refs
@@ -98,11 +101,15 @@ def test_export_metadata_and_references(derived_output_dir, derived_output_root)
     assert stacked_payload["method"] == "figures.stacked"
     assert stacked_payload["data"]
     assert all("layer_id" in row for row in stacked_payload["data"])
+    assert stacked_payload.get("layer_citation_keys") == {"professional": ["coffee", "streaming"]}
+    assert stacked_payload.get("layer_references") == {"professional": expected_refs}
 
     bubble_payload = json.loads((out_dir / "figures" / "bubble.json").read_text())
     assert bubble_payload["references"] == expected_refs
     assert all("mean" in point["values"] for point in bubble_payload["data"])
     assert all(point.get("layer_id") for point in bubble_payload["data"])
+    assert bubble_payload.get("layer_citation_keys") == {"professional": ["coffee", "streaming"]}
+    assert bubble_payload.get("layer_references") == {"professional": expected_refs}
 
     sankey_payload = json.loads((out_dir / "figures" / "sankey.json").read_text())
     assert sankey_payload["references"] == expected_refs
@@ -110,6 +117,8 @@ def test_export_metadata_and_references(derived_output_dir, derived_output_root)
     assert "nodes" in sankey_payload["data"]
     assert "links" in sankey_payload["data"]
     assert all("layer_id" in link for link in sankey_payload["data"]["links"])
+    assert sankey_payload.get("layer_citation_keys") == {"professional": ["coffee", "streaming"]}
+    assert sankey_payload.get("layer_references") == {"professional": expected_refs}
 
     for name in ("stacked", "bubble", "sankey"):
         txt = (out_dir / "references" / f"{name}_refs.txt").read_text().strip().splitlines()
@@ -118,6 +127,8 @@ def test_export_metadata_and_references(derived_output_dir, derived_output_root)
     manifest = json.loads((out_dir / "manifest.json").read_text())
     assert manifest["sources"] == ["coffee", "streaming"]
     assert manifest["layers"] == ["professional"]
+    assert manifest.get("layer_citation_keys") == {"professional": ["coffee", "streaming"]}
+    assert manifest.get("layer_references") == {"professional": expected_refs}
 
 
 def test_emission_calculation_and_nulls():

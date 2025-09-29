@@ -242,6 +242,33 @@ def _layer_value(value: LayerId | str | None) -> str | None:
     return str(value)
 
 
+def _normalise_layer_hint(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "_", value.strip().lower()).strip("_")
+
+
+def _resolve_layer_hint(value: object | None) -> Optional[str]:
+    if value is None:
+        return None
+    if isinstance(value, LayerId):
+        return value.value
+
+    text = str(value).strip()
+    if not text:
+        return None
+
+    upper = text.upper()
+    for prefix, layer in _LAYER_PREFIXES:
+        if upper.startswith(prefix):
+            return layer.value
+
+    normalised = _normalise_layer_hint(text)
+    hinted = _LAYER_NAME_HINTS.get(normalised)
+    if hinted is not None:
+        return hinted.value
+
+    return None
+
+
 def _resolve_layer_id(
     sched: ActivitySchedule | None,
     profile: Profile | None,
@@ -254,7 +281,20 @@ def _resolve_layer_id(
         resolved = _layer_value(layer)
         if resolved:
             return resolved
-    return None
+
+    hint_sources = (
+        getattr(sched, "profile_id", None),
+        getattr(profile, "profile_id", None),
+        getattr(sched, "activity_id", None),
+        getattr(activity, "activity_id", None),
+        getattr(activity, "category", None),
+    )
+    for candidate in hint_sources:
+        hinted = _resolve_layer_hint(candidate)
+        if hinted:
+            return hinted
+
+    return LayerId.PROFESSIONAL.value
 
 
 def _office_ratio(profile: Profile) -> Optional[float]:
@@ -564,6 +604,27 @@ def export_view(
     generated_at = _resolve_generated_at()
     sorted_layers = sorted(manifest_layers)
 
+    layer_key_sets: dict[str, set[str]] = {}
+    for row in derived_rows:
+        layer = row.get("layer_id") if isinstance(row, dict) else getattr(row, "layer_id", None)
+        if not layer:
+            continue
+        keys = collect_activity_source_keys([row])
+        if not keys:
+            continue
+        layer_key_sets.setdefault(str(layer), set()).update(keys)
+
+    layer_citation_keys: dict[str, List[str]] = {}
+    for layer in sorted_layers:
+        key_set = layer_key_sets.get(layer, set())
+        ordered = [key for key in citation_keys if key in key_set]
+        remaining = sorted(key_set.difference(ordered))
+        layer_citation_keys[layer] = ordered + remaining
+
+    layer_references: dict[str, List[str]] = {
+        layer: _format_references(layer_citation_keys.get(layer, [])) for layer in sorted_layers
+    }
+
     metadata = figures.build_metadata(
         "export_view",
         profile_ids=profile_arg,
@@ -571,6 +632,10 @@ def export_view(
     )
     metadata["citation_keys"] = citation_keys
     metadata["layers"] = sorted_layers
+    if layer_citation_keys:
+        metadata["layer_citation_keys"] = layer_citation_keys
+    if layer_references:
+        metadata["layer_references"] = layer_references
     references = _format_references(citation_keys)
     metadata["references"] = references
 
@@ -599,6 +664,10 @@ def export_view(
         "sources": citation_keys,
         "layers": sorted_layers,
     }
+    if layer_citation_keys:
+        manifest_payload["layer_citation_keys"] = layer_citation_keys
+    if layer_references:
+        manifest_payload["layer_references"] = layer_references
 
     build_hash = _compute_build_hash(manifest_payload, normalised_rows)
     base_output_root = _resolve_output_root(output_root, REPO_ROOT)
@@ -641,6 +710,10 @@ def export_view(
         )
         meta["citation_keys"] = citation_keys
         meta["layers"] = sorted_layers
+        if layer_citation_keys:
+            meta["layer_citation_keys"] = layer_citation_keys
+        if layer_references:
+            meta["layer_references"] = layer_references
         meta["references"] = references
         meta["data"] = data
         _write_json(figure_dir / f"{name}.json", meta)
@@ -683,3 +756,18 @@ if __name__ == "__main__":
 
     datastore = choose_backend()
     export_view(datastore, output_root=args.output_root)
+_LAYER_PREFIXES: list[tuple[str, LayerId]] = [
+    ("PRO.", LayerId.PROFESSIONAL),
+    ("ONLINE.", LayerId.ONLINE),
+    ("IND.TO.LIGHT.", LayerId.INDUSTRIAL_LIGHT),
+    ("IND.TO.HEAVY.", LayerId.INDUSTRIAL_HEAVY),
+]
+
+_LAYER_NAME_HINTS: dict[str, LayerId] = {
+    "professional": LayerId.PROFESSIONAL,
+    "online": LayerId.ONLINE,
+    "industrial_light": LayerId.INDUSTRIAL_LIGHT,
+    "light_industrial": LayerId.INDUSTRIAL_LIGHT,
+    "industrial_heavy": LayerId.INDUSTRIAL_HEAVY,
+    "heavy_industrial": LayerId.INDUSTRIAL_HEAVY,
+}

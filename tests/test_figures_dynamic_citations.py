@@ -73,5 +73,7 @@ def test_figures_use_dynamic_citations(derived_output_dir, derived_output_root):
     fig_payload = json.loads((out_dir / "figures" / "stacked.json").read_text())
     assert fig_payload["references"] == expected_refs
     assert fig_payload["citation_keys"] == expected_keys
+    assert fig_payload.get("layer_citation_keys") == {"professional": expected_keys}
+    assert fig_payload.get("layer_references") == {"professional": expected_refs}
     assert all("coffee" not in ref and "stream" not in ref for ref in fig_payload["references"])
     assert all(row.get("layer_id") == "professional" for row in fig_payload["data"])
