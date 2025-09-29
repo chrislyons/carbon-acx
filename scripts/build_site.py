@@ -250,8 +250,8 @@ def build_site(artifact_dir: Path, output_dir: Path) -> Path:
         "<body>"
         '<div class="page-shell">' + header_html + '<div class="layout-grid">'
         '<main class="main-column chart-column">' + "".join(sections) + "</main>"
-        '<aside class="sidebar">'
-        '<div class="references-panel card sticky" data-loading="false">'
+        '<div class="sidebar">'
+        '<aside class="references-panel card sticky" data-loading="false">'
         '<div class="skeleton skeleton--panel" aria-hidden="true"></div>'
         '<div class="card__content">'
         "<h2>References</h2>"
@@ -259,7 +259,7 @@ def build_site(artifact_dir: Path, output_dir: Path) -> Path:
         + reference_items
         + "</ol>"
         + manifest_section
-        + "</div></div></aside></div></div>"
+        + "</div></aside></div></div>"
         "</body>"
         "</html>"
     )
