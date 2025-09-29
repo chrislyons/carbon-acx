@@ -803,6 +803,19 @@ p {
   text-decoration: none;
 }
 
+.chart-downloads__status {
+  flex-basis: 100%;
+  min-height: 1.4rem;
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.chart-downloads__status--error {
+  color: var(--color-critical);
+}
+
 .sidebar-section {
   display: flex;
   flex-direction: column;
