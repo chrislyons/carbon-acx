@@ -102,11 +102,13 @@ def _format_manifest_summary(manifest: Mapping | None) -> str:
         grid = vintages.get("grid_intensity") or []
         if ef:
             summary_items.append(
-                f"<li><strong>Emission factor vintages:</strong> {escape(', '.join(map(str, ef)))}</li>"
+                f"<li><strong>Emission factor vintages:</strong> {escape(', '.join(map(str, ef)))}"  # noqa: B950
+                "</li>"
             )
         if grid:
             summary_items.append(
-                f"<li><strong>Grid intensity vintages:</strong> {escape(', '.join(map(str, grid)))}</li>"
+                f"<li><strong>Grid intensity vintages:</strong> {escape(', '.join(map(str, grid)))}"  # noqa: B950
+                "</li>"
             )
     if sources:
         summary_items.append(f"<li><strong>Total sources:</strong> {len(sources)}</li>")
@@ -126,7 +128,16 @@ def _format_manifest_summary(manifest: Mapping | None) -> str:
 
     matrix_entries.sort(key=lambda item: item[0])
 
-    matrix_html = ""
+    sections: list[str] = []
+
+    summary_html = (
+        '<section class="sidebar-section manifest-panel">'
+        "<h3>Dataset manifest</h3>"
+        '<ul class="manifest-panel__list">' + "".join(summary_items) + "</ul>"
+        "</section>"
+    )
+    sections.append(summary_html)
+
     if matrix_entries:
         rows = "".join(
             '<li><span class="vintages-panel__region">'
@@ -137,21 +148,15 @@ def _format_manifest_summary(manifest: Mapping | None) -> str:
             for region, year in matrix_entries
         )
         matrix_html = (
-            '<div class="info-panel vintages-panel">'
+            '<section class="sidebar-section vintages-panel">'
             "<h3>Grid vintages</h3>"
-            "<p>Latest grid intensity vintage year per region.</p>"
+            '<p class="sidebar-section__description">Latest grid intensity vintage year per region.</p>'
             '<ul class="vintages-list">' + rows + "</ul>"
-            "</div>"
+            "</section>"
         )
+        sections.append(matrix_html)
 
-    summary_html = (
-        '<div class="info-panel manifest-panel">'
-        "<h3>Dataset manifest</h3>"
-        "<ul>" + "".join(summary_items) + "</ul>"
-        "</div>"
-    )
-
-    return summary_html + matrix_html
+    return "".join(sections)
 
 
 def build_site(artifact_dir: Path, output_dir: Path) -> Path:
@@ -189,9 +194,13 @@ def build_site(artifact_dir: Path, output_dir: Path) -> Path:
             footnotes.append(na_html())
 
         section_html = (
-            f'<section class="{FIGURE_CLASSES[name]}">'
+            f'<section class="{FIGURE_CLASSES[name]} card" data-loading="false">'
+            '<div class="skeleton skeleton--chart" aria-hidden="true"></div>'
+            '<div class="card__content">'
             f"<h2>{escape(FIGURE_TITLES[name])}</h2>"
-            f"{graph_html}" + "".join(footnotes) + "</section>"
+            f'<div class="chart-section__figure">{graph_html}</div>'
+            + "".join(footnotes)
+            + "</div></section>"
         )
         sections.append(section_html)
 
@@ -202,15 +211,31 @@ def build_site(artifact_dir: Path, output_dir: Path) -> Path:
 
     manifest_section = _format_manifest_summary(manifest)
 
-    header_lines = [
-        "<h1>Carbon ACX emissions overview</h1>",
-        "<p>Figures sourced from precomputed artifacts. Hover a chart to see supporting references.</p>",
-        disclosure_html(manifest),
-    ]
+    hero_subtitle = (
+        "Figures sourced from precomputed artifacts. Hover a chart to see supporting references."
+    )
+    brand_block = (
+        '<div class="page-header__brand">'
+        '<span class="brand-mark" aria-hidden="true">CA</span>'
+        '<div class="page-header__titles">'
+        '<p class="page-eyebrow">Carbon ACX</p>'
+        "<h1>Carbon ACX emissions overview</h1>"
+        f'<p class="page-subtitle">{hero_subtitle}</p>'
+        "</div>"
+        "</div>"
+    )
+    generated_meta = ""
     if manifest and manifest.get("generated_at"):
-        header_lines.append(
-            f"<p class=\"generated-at\">Last generated: {escape(str(manifest['generated_at']))}</p>"
-        )
+        generated_meta = f"<p class=\"page-meta generated-at\">Last generated: {escape(str(manifest['generated_at']))}</p>"
+
+    header_html = (
+        '<header class="page-header card">'
+        '<div class="card__content">'
+        + brand_block
+        + disclosure_html(manifest)
+        + generated_meta
+        + "</div></header>"
+    )
 
     html = (
         "<!DOCTYPE html>"
@@ -223,13 +248,18 @@ def build_site(artifact_dir: Path, output_dir: Path) -> Path:
         '<link rel="stylesheet" href="styles.css" />'
         "</head>"
         "<body>"
-        '<div class="app-container">'
-        '<main class="chart-column">'
-        "<header>" + "".join(header_lines) + "</header>" + "".join(sections) + "</main>"
-        '<aside class="references-panel">'
+        '<div class="page-shell">' + header_html + '<div class="layout-grid">'
+        '<main class="main-column chart-column">' + "".join(sections) + "</main>"
+        '<div class="sidebar">'
+        '<aside class="references-panel card sticky" data-loading="false">'
+        '<div class="skeleton skeleton--panel" aria-hidden="true"></div>'
+        '<div class="card__content">'
         "<h2>References</h2>"
-        "<ol>" + reference_items + "</ol>" + manifest_section + "</aside>"
-        "</div>"
+        '<ol class="references-list">'
+        + reference_items
+        + "</ol>"
+        + manifest_section
+        + "</div></aside></div></div>"
         "</body>"
         "</html>"
     )

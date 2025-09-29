@@ -22,7 +22,7 @@ def test_static_site_builds_index(tmp_path) -> None:
     assert "Annual emissions by activity category" in html
     assert "Activity bubble chart" in html
     assert "Activity flow" in html
-    assert '<aside class="references-panel">' in html
+    assert '<aside class="references-panel card sticky"' in html
 
     styles_path = output_dir / "styles.css"
     assert styles_path.exists(), "Expected styles.css to be copied alongside the build output"
