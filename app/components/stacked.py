@@ -9,6 +9,7 @@ from calc.ui.theme import TOKENS, get_plotly_template
 
 from . import na_notice
 from ._helpers import clamp_optional, format_reference_hint, has_na_segments
+from ._plotly_settings import apply_figure_layout_defaults
 
 
 def _build_figure(payload: dict, reference_hint: str) -> go.Figure:
@@ -33,7 +34,7 @@ def _build_figure(payload: dict, reference_hint: str) -> go.Figure:
 
     palette = TOKENS["palette"]
 
-    figure = go.Figure()
+    figure = apply_figure_layout_defaults(go.Figure())
     if not means:
         return figure
 
