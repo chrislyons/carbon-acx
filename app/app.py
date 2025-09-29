@@ -339,6 +339,8 @@ def create_app() -> Dash:
     app.layout = html.Div(
         className="app-container",
         children=[
+            dcc.Store(id="theme-preference", storage_type="local"),
+            dcc.Store(id="theme-mode"),
             dcc.Store(id="figures-store", data=figures),
             dcc.Store(id="available-layers", data=available_layers),
             dcc.Store(id="layer-citation-keys", data=layer_citation_keys),
@@ -348,7 +350,30 @@ def create_app() -> Dash:
                 children=[
                     html.Header(
                         [
-                            html.H1("Carbon ACX emissions overview"),
+                            html.Div(
+                                [
+                                    html.H1("Carbon ACX emissions overview"),
+                                    html.Button(
+                                        [
+                                            html.Span(
+                                                className="theme-toggle__icon",
+                                                **{"aria-hidden": "true"},
+                                            ),
+                                            html.Span(
+                                                "Theme: System (Light)",
+                                                id="theme-toggle-label",
+                                                className="theme-toggle__label",
+                                            ),
+                                        ],
+                                        id="theme-toggle",
+                                        className="theme-toggle",
+                                        title="Cycle theme (system preference: Light)",
+                                        **{"aria-label": "Cycle theme (system preference: Light)"},
+                                        **{"data-mode": "system"},
+                                    ),
+                                ],
+                                className="page-header__top",
+                            ),
                             html.P(
                                 "Figures sourced from precomputed artifacts. "
                                 "Hover a chart to see supporting references."
@@ -441,10 +466,15 @@ def create_app() -> Dash:
         Output("layer-panels", "className"),
         Input("layer-selector", "value"),
         Input("view-mode", "value"),
+        Input("theme-mode", "data"),
         State("figures-store", "data"),
     )
-    def _update_panels(selected_layers, view_mode, figures_store):
+    def _update_panels(selected_layers, view_mode, theme_mode=None, figures_store=None):
         panels_class = "layer-panels"
+        if figures_store is None and not isinstance(theme_mode, (str, type(None))):
+            figures_store = theme_mode
+            theme_mode = None
+
         if not figures_store:
             empty = html.Div(className="layer-empty", children=html.P("No charts available."))
             return [empty], panels_class
@@ -473,6 +503,7 @@ def create_app() -> Dash:
             panels_class += " layer-panels--grid"
 
         children: list = []
+        dark_mode = isinstance(theme_mode, str) and theme_mode.lower() == "dark"
         for layer_id in ordered_layers:
             label = _layer_label(layer_id)
             filtered = {
@@ -483,10 +514,23 @@ def create_app() -> Dash:
                     className="layer-panel",
                     children=[
                         stacked.render(
-                            filtered.get("stacked"), reference_lookup, title_suffix=label
+                            filtered.get("stacked"),
+                            reference_lookup,
+                            title_suffix=label,
+                            dark=dark_mode,
                         ),
-                        bubble.render(filtered.get("bubble"), reference_lookup, title_suffix=label),
-                        sankey.render(filtered.get("sankey"), reference_lookup, title_suffix=label),
+                        bubble.render(
+                            filtered.get("bubble"),
+                            reference_lookup,
+                            title_suffix=label,
+                            dark=dark_mode,
+                        ),
+                        sankey.render(
+                            filtered.get("sankey"),
+                            reference_lookup,
+                            title_suffix=label,
+                            dark=dark_mode,
+                        ),
                     ],
                 )
             )
@@ -572,6 +616,83 @@ def create_app() -> Dash:
         ]
 
         return badges
+
+    app.clientside_callback(
+        """
+        function(nClicks, storedPreference) {
+            const ctx = window.dash_clientside.callback_context;
+            const trigger = ctx.triggered.length ? ctx.triggered[0] : {prop_id: ""};
+
+            let state = "system";
+            if (typeof storedPreference === "string") {
+                const normalized = storedPreference.toLowerCase();
+                if (normalized === "light" || normalized === "dark") {
+                    state = normalized;
+                }
+            }
+
+            const value = trigger.value;
+            if (
+                trigger.prop_id === "theme-toggle.n_clicks" &&
+                value !== undefined &&
+                value !== null
+            ) {
+                if (state === "system") {
+                    state = "dark";
+                } else if (state === "dark") {
+                    state = "light";
+                } else {
+                    state = "system";
+                }
+            }
+
+            const media = window.matchMedia("(prefers-color-scheme: dark)");
+            const effective = state === "system" ? (media.matches ? "dark" : "light") : state;
+            document.documentElement.setAttribute("data-theme", effective);
+            window.__acxThemePreferenceState = state;
+
+            if (!window.__acxThemeMediaListenerAttached) {
+                media.addEventListener("change", (event) => {
+                    if (window.__acxThemePreferenceState === "system") {
+                        document.documentElement.setAttribute(
+                            "data-theme",
+                            event.matches ? "dark" : "light"
+                        );
+                    }
+                });
+                window.__acxThemeMediaListenerAttached = true;
+            }
+
+            const capitalize = (text) => text.charAt(0).toUpperCase() + text.slice(1);
+            const effectiveLabel = capitalize(effective);
+            const labelText =
+                state === "system"
+                    ? `Theme: System (${effectiveLabel})`
+                    : `Theme: ${effectiveLabel}`;
+            const actionLabel =
+                state === "system"
+                    ? `Cycle theme (system preference: ${effectiveLabel})`
+                    : `Cycle theme (current: ${effectiveLabel})`;
+
+            return [
+                state === "system" ? null : state,
+                effective,
+                state,
+                labelText,
+                actionLabel,
+                actionLabel,
+            ];
+        }
+        """,
+        Output("theme-preference", "data"),
+        Output("theme-mode", "data"),
+        Output("theme-toggle", "data-mode"),
+        Output("theme-toggle-label", "children"),
+        Output("theme-toggle", "aria-label"),
+        Output("theme-toggle", "title"),
+        Input("theme-toggle", "n_clicks"),
+        State("theme-preference", "data"),
+    )
 
     @app.callback(
         Output("references", "children"),

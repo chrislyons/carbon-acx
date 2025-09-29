@@ -5,7 +5,7 @@ from typing import Mapping, Optional
 import plotly.graph_objects as go
 from dash import dcc, html
 
-from calc.ui.theme import TOKENS, get_plotly_template
+from calc.ui.theme import get_palette, get_plotly_template
 
 from . import na_notice
 from ._helpers import (
@@ -18,7 +18,9 @@ from ._helpers import (
 from ._plotly_settings import apply_figure_layout_defaults
 
 
-def _build_figure(payload: dict, reference_lookup: Mapping[str, int]) -> go.Figure:
+def _build_figure(
+    payload: dict, reference_lookup: Mapping[str, int], *, dark: bool = False
+) -> go.Figure:
     data = payload.get("data", []) if payload else []
     categories: list[str] = []
     means: list[float] = []
@@ -54,7 +56,7 @@ def _build_figure(payload: dict, reference_lookup: Mapping[str, int]) -> go.Figu
             }
         )
 
-    palette = TOKENS["palette"]
+    palette = get_palette(dark=dark)
 
     figure = apply_figure_layout_defaults(go.Figure())
     if not means:
@@ -94,7 +96,7 @@ def _build_figure(payload: dict, reference_lookup: Mapping[str, int]) -> go.Figu
     )
 
     figure.update_layout(
-        template=get_plotly_template(),
+        template=get_plotly_template(dark=dark),
         margin=dict(l=80, r=20, t=40, b=40),
         xaxis=dict(title="Annual emissions (g CO₂e)", showgrid=True, zeroline=False),
         yaxis=dict(title="Activity category", autorange="reversed"),
@@ -108,11 +110,12 @@ def render(
     reference_lookup: Mapping[str, int],
     *,
     title_suffix: str | None = None,
+    dark: bool = False,
 ) -> html.Section:
     title = "Annual emissions by activity category"
     if title_suffix:
         title = f"{title} — {title_suffix}"
-    figure = _build_figure(figure_payload or {}, reference_lookup)
+    figure = _build_figure(figure_payload or {}, reference_lookup, dark=dark)
 
     if not figure.data:
         message = "No category data available."
