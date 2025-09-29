@@ -88,6 +88,14 @@ def _copy_assets(destination: Path) -> None:
                 shutil.copy2(asset, js_target / asset.name)
 
 
+def _copy_data_artifacts(artifact_dir: Path, destination: Path) -> None:
+    if not artifact_dir.exists():
+        return
+    if destination.exists():
+        shutil.rmtree(destination)
+    shutil.copytree(artifact_dir, destination)
+
+
 def _format_manifest_summary(manifest: Mapping | None) -> str:
     if not manifest:
         return ""
@@ -171,6 +179,7 @@ def build_site(artifact_dir: Path, output_dir: Path) -> Path:
 
     output_dir.mkdir(parents=True, exist_ok=True)
     _copy_assets(output_dir)
+    _copy_data_artifacts(artifact_dir, output_dir / "data")
 
     figures: dict[str, Mapping | None] = {}
     for name in FIGURE_BUILDERS:
@@ -277,6 +286,7 @@ def build_site(artifact_dir: Path, output_dir: Path) -> Path:
         "<head>"
         '<meta charset="utf-8" />'
         '<meta name="viewport" content="width=device-width, initial-scale=1" />'
+        '<base href="./" />'
         "<title>Carbon ACX emissions overview</title>"
         '<link rel="stylesheet" href="fonts.css" />'
         '<link rel="stylesheet" href="styles.css" />'
@@ -301,6 +311,9 @@ def build_site(artifact_dir: Path, output_dir: Path) -> Path:
 
     index_path = output_dir / "index.html"
     index_path.write_text(html, encoding="utf-8")
+
+    fallback_path = output_dir / "200.html"
+    fallback_path.write_text(html, encoding="utf-8")
 
     return index_path
 

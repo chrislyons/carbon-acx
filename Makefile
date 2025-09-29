@@ -11,7 +11,7 @@ PACKAGED_ARTIFACTS_DIR := $(DIST_DIR)/packaged-artifacts
 PACKAGED_MANIFEST := $(PACKAGED_ARTIFACTS_DIR)/manifest.json
 DEFAULT_GENERATED_AT ?= 1970-01-01T00:00:00+00:00
 
-.PHONY: install lint test ci_build_pages app format validate release build-backend build site package sbom
+.PHONY: install lint test ci_build_pages app format validate release build-backend build site package sbom build-static
 
 install:
 	poetry install --with dev --no-root
@@ -43,7 +43,10 @@ $(DIST_SITE_DIR)/index.html: $(LATEST_BUILD)
 
 package: $(PACKAGED_MANIFEST) $(DIST_SITE_DIR)/index.html sbom
 
-ci_build_pages: install lint test package
+ci_build_pages: install lint test build-static
+
+build-static: $(DIST_SITE_DIR)/index.html
+	@echo "Static site available at $(DIST_SITE_DIR)"
 
 app:
 	ACX_DATA_BACKEND=$(ACX_DATA_BACKEND) PYTHONPATH=. poetry run python -m app.app
