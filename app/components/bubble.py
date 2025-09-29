@@ -5,6 +5,8 @@ from typing import Mapping, Optional
 import plotly.graph_objects as go
 from dash import dcc, html
 
+from calc.ui.theme import TOKENS, get_plotly_template
+
 from . import na_notice
 from ._helpers import clamp_optional, format_reference_hint, has_na_segments
 
@@ -31,6 +33,8 @@ def _build_figure(payload: dict, reference_hint: str) -> go.Figure:
         means.append(mean)
         errors_high.append(max((high or mean) - mean, 0.0))
         errors_low.append(max(mean - (low or mean), 0.0))
+
+    palette = TOKENS["palette"]
 
     figure = go.Figure()
     if not means:
@@ -69,24 +73,24 @@ def _build_figure(payload: dict, reference_hint: str) -> go.Figure:
             size=means,
             sizemode="area",
             sizeref=sizeref,
-            color="#10b981",
+            color=palette["positive"],
             opacity=0.8,
-            line=dict(color="rgba(15, 23, 42, 0.4)", width=1),
+            line=dict(color="rgba(15, 23, 42, 0.35)", width=1),
         ),
         customdata=[reference_hint] * len(means),
         hovertemplate=hover_template,
     )
     if error_kwargs:
+        error_kwargs["color"] = palette["accent_strong"]
         trace_kwargs["error_y"] = error_kwargs
 
     figure.add_trace(go.Scatter(**trace_kwargs))
 
     figure.update_layout(
+        template=get_plotly_template(),
         margin=dict(l=60, r=20, t=40, b=60),
         xaxis=dict(title="Activity category", type="category"),
         yaxis=dict(title="Annual emissions (g CO₂e)", rangemode="tozero"),
-        plot_bgcolor="#ffffff",
-        paper_bgcolor="rgba(0,0,0,0)",
         showlegend=False,
     )
     return figure

@@ -74,6 +74,11 @@ def _copy_assets(destination: Path) -> None:
     css_source = project_root / "app" / "assets" / "styles.css"
     if css_source.exists():
         shutil.copy2(css_source, destination / "styles.css")
+    site_assets = project_root / "site" / "assets"
+    if site_assets.exists():
+        for asset in site_assets.iterdir():
+            if asset.is_file():
+                shutil.copy2(asset, destination / asset.name)
 
 
 def _format_manifest_summary(manifest: Mapping | None) -> str:
@@ -214,6 +219,7 @@ def build_site(artifact_dir: Path, output_dir: Path) -> Path:
         '<meta charset="utf-8" />'
         '<meta name="viewport" content="width=device-width, initial-scale=1" />'
         "<title>Carbon ACX emissions overview</title>"
+        '<link rel="stylesheet" href="fonts.css" />'
         '<link rel="stylesheet" href="styles.css" />'
         "</head>"
         "<body>"
