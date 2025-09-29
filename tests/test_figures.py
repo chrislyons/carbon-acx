@@ -167,7 +167,7 @@ def test_exported_figures_have_consistent_references(derived_artifacts):
             if line.strip()
         ]
 
-        assert payload.get("references") == reference_lines
+        assert "references" not in payload
         for idx, line in enumerate(reference_lines, start=1):
             assert line.startswith(f"[{idx}]")
 

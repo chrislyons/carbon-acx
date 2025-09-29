@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
+from typing import Any, MutableMapping
 from dataclasses import dataclass
 import datetime as _datetime_module
 import os
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Mapping
 
 import pandas as pd
 import yaml
@@ -380,8 +380,64 @@ __all__ = [
     "BubblePoint",
     "build_metadata",
     "DEFAULT_GENERATED_AT",
+    "trim_figure_payload",
     "invalidate_cache",
     "slice_bubble",
     "slice_sankey",
     "slice_stacked",
 ]
+
+
+def trim_figure_payload(payload: Mapping[str, Any]) -> dict[str, Any]:
+    """Return a copy of ``payload`` without defaulted or derived metadata.
+
+    Figure metadata is embedded in static JSON artefacts, so trimming redundant
+    values can significantly reduce their size.  The resulting payload keeps the
+    fields required by the Dash client while removing:
+
+    * ``references`` and ``layer_references`` — the formatted reference text is
+      available on demand via :mod:`calc.citations` and duplicated in the
+      downloadable ``*_refs.txt`` artefacts.
+    * ``generated_at`` when it matches the compile-time default timestamp.
+    * ``profile`` when it resolves to the configured default profile.
+    * ``profile_resolution`` when it collapses to the default profile.
+    """
+
+    trimmed: MutableMapping[str, Any] = dict(payload)
+
+    trimmed.pop("references", None)
+    trimmed.pop("layer_references", None)
+
+    generated_at = trimmed.get("generated_at")
+    if generated_at == DEFAULT_GENERATED_AT:
+        trimmed.pop("generated_at", None)
+
+    default_profile = _load_config().get("default_profile")
+    profile_value = trimmed.get("profile")
+    if not profile_value or profile_value == default_profile:
+        trimmed.pop("profile", None)
+
+    profile_resolution = trimmed.get("profile_resolution")
+    if isinstance(profile_resolution, Mapping):
+        used = profile_resolution.get("used")
+        requested = profile_resolution.get("requested")
+
+        is_iterable = isinstance(used, Iterable) and not isinstance(used, (str, bytes))
+        used_values = [str(value) for value in used] if is_iterable else []
+        if not used_values:
+            trimmed.pop("profile_resolution", None)
+        else:
+            requested_value = str(requested) if requested else None
+            if requested_value == default_profile and used_values == [default_profile]:
+                trimmed.pop("profile_resolution", None)
+            elif not requested_value:
+                trimmed["profile_resolution"] = {"used": used_values}
+            else:
+                trimmed["profile_resolution"] = {
+                    "requested": requested_value,
+                    "used": used_values,
+                }
+    elif "profile_resolution" in trimmed:
+        trimmed.pop("profile_resolution", None)
+
+    return dict(trimmed)
