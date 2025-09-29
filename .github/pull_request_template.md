@@ -7,17 +7,23 @@
 **Changes:**
 - <!-- Bullet list of notable updates -->
 
-**Sources & References:**
-- <!-- Required: cite datasets, reports, or tickets that informed the change -->
+**Sources & References (required, include links):**
+- <!-- Cite datasets, reports, tickets, and include URLs wherever possible -->
 
-**Source IDs:**
-- <!-- Required: list every `source_id` added or consumed in this PR -->
+**Source IDs (required):**
+- <!-- List every `source_id` added or consumed in this PR -->
 
-**Scope Notes:**
-- <!-- Required: clarify anything intentionally out-of-scope or deferred -->
+**Scope Notes (required):**
+- <!-- Clarify anything intentionally out-of-scope or deferred -->
 
-**Vintage Notes:**
-- <!-- Required: list relevant data vintages, refresh cadence, or sunset expectations -->
+**Vintage Notes (required):**
+- <!-- List relevant data vintages, refresh cadence, or sunset expectations -->
+
+**Affects Regions (check all that apply):**
+- [ ] AMER
+- [ ] EMEA
+- [ ] APAC
+- [ ] Global / Multi-region
 
 **ACX015 Seeding Checklist:**
 - [ ] Source IDs above follow the sources-first / null-first protocol
