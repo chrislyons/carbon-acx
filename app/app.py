@@ -4,9 +4,12 @@ import json
 import os
 from pathlib import Path
 from typing import Dict, Iterable, Mapping
+from urllib.parse import parse_qs, urlencode, quote
+
+import dash
 
 import copy
-from dash import Dash, Input, Output, State, dcc, html
+from dash import Dash, Input, Output, State, dcc, html, no_update
 
 from calc import citations
 from calc.schema import LayerId
@@ -335,16 +338,147 @@ def create_app() -> Dash:
             option["disabled"] = True
         layer_options.append(option)
 
+    def _coerce_layer_values(value) -> list[str]:
+        if isinstance(value, str):
+            return [value]
+        if isinstance(value, Iterable):
+            return [str(item) for item in value if isinstance(item, str)]
+        return []
+
+    def _active_layers_for(
+        value, view_mode: str, available_candidates: Iterable[str] | None
+    ) -> list[str]:
+        layers = _coerce_layer_values(value)
+        candidates = [str(item) for item in available_candidates or []]
+        if candidates:
+            layers = [layer for layer in layers if layer in candidates]
+        ordered = _order_layers(layers)
+        if view_mode != "compare" and ordered:
+            return ordered[:1]
+        return ordered
+
+    def _summarise_layers(
+        layers: list[str], metadata_store_value: Mapping | None
+    ) -> dict[str, list[str]]:
+        metadata = metadata_store_value if isinstance(metadata_store_value, Mapping) else {}
+        layer_meta_map = metadata.get("layers") if isinstance(metadata, Mapping) else {}
+        emission_years = metadata.get("emission_years") if isinstance(metadata, Mapping) else []
+        methods = metadata.get("methods") if isinstance(metadata, Mapping) else []
+        grid_sources = metadata.get("grid_sources") if isinstance(metadata, Mapping) else []
+
+        scopes: list[str] = []
+        years: list[str] = []
+        grids: list[str] = []
+        labels: list[str] = []
+
+        if isinstance(layer_meta_map, Mapping):
+            for layer_id in layers:
+                entry = layer_meta_map.get(layer_id)
+                if isinstance(entry, Mapping):
+                    extend_unique(entry.get("scopes", []), scopes)
+                    extend_unique(entry.get("years", []), years)
+                    extend_unique(entry.get("grid", []), grids)
+                labels.append(_layer_label(layer_id))
+        else:
+            labels = [_layer_label(layer) for layer in layers]
+
+        if not labels:
+            labels = [_layer_label(layer) for layer in layers]
+
+        return {
+            "scopes": scopes,
+            "years": years,
+            "grids": grids,
+            "layer_labels": labels,
+            "methods": methods if isinstance(methods, list) else [],
+            "grid_sources": grid_sources if isinstance(grid_sources, list) else [],
+            "emission_years": emission_years if isinstance(emission_years, list) else [],
+        }
+
+    def _format_values(values: Iterable[str], fallback: str) -> str:
+        items = [item for item in values if item]
+        if not items:
+            return fallback
+        if len(items) == 1:
+            return items[0]
+        return ", ".join(items)
+
+    def _build_share_payload(
+        selected_layers, view_mode_value: str, metadata_store_value, available_candidates
+    ) -> dict[str, object]:
+        ordered_layers = _active_layers_for(selected_layers, view_mode_value, available_candidates)
+        summary = _summarise_layers(ordered_layers, metadata_store_value)
+        year_candidates = summary["years"] or summary["emission_years"]
+        scope_text = _format_values(summary["scopes"], "Not specified")
+        year_text = _format_values(year_candidates, "No vintages")
+        layer_text = _format_values(summary["layer_labels"] or ["None selected"], "None selected")
+        caption = " • ".join(
+            [
+                f"Scope: {scope_text}",
+                f"Year: {year_text}",
+                f"Layer: {layer_text}",
+            ]
+        )
+        title = "Annual emissions by activity category"
+        if ordered_layers:
+            if view_mode_value == "compare" and len(summary["layer_labels"]) > 1:
+                suffix = ", ".join(summary["layer_labels"])
+            else:
+                suffix = summary["layer_labels"][0]
+            if suffix:
+                title = f"{title} — {suffix}"
+        slug = ordered_layers[0] if ordered_layers else "overview"
+        return {
+            "layers": ordered_layers,
+            "viewMode": view_mode_value,
+            "scope": scope_text,
+            "year": year_text,
+            "layer": layer_text,
+            "scope_values": summary["scopes"],
+            "year_values": year_candidates,
+            "layer_labels": summary["layer_labels"],
+            "caption": caption,
+            "chartTitle": title,
+            "fileSlug": slug,
+        }
+
+    def _build_permalink_query(share_payload: Mapping[str, object]) -> str:
+        params: list[tuple[str, str]] = []
+        layers = share_payload.get("layers")
+        if isinstance(layers, list) and layers:
+            params.append(("layer", ",".join(str(layer) for layer in layers)))
+        view_mode_value = share_payload.get("viewMode")
+        if view_mode_value == "compare":
+            params.append(("view", "compare"))
+        scope_values = share_payload.get("scope_values")
+        if isinstance(scope_values, list) and scope_values:
+            params.append(("scope", ",".join(str(item) for item in scope_values)))
+        year_values = share_payload.get("year_values")
+        if isinstance(year_values, list) and year_values:
+            params.append(("year", ",".join(str(item) for item in year_values)))
+        if not params:
+            return ""
+        return "?" + urlencode(params, quote_via=quote, safe=",")
+
+    initial_share_data = _build_share_payload(
+        default_layers, "single", metadata_store, available_layers
+    )
+
     app = Dash(__name__)
     app.layout = html.Div(
         className="app-container",
         children=[
+            dcc.Location(id="url"),
             dcc.Store(id="theme-preference", storage_type="local"),
             dcc.Store(id="theme-mode"),
             dcc.Store(id="figures-store", data=figures),
             dcc.Store(id="available-layers", data=available_layers),
             dcc.Store(id="layer-citation-keys", data=layer_citation_keys),
             dcc.Store(id="metadata-store", data=metadata_store),
+            dcc.Store(id="default-layers", data=default_layers),
+            dcc.Store(id="share-data", data=initial_share_data),
+            dcc.Store(id="copy-status"),
+            dcc.Store(id="download-status"),
             html.Main(
                 className="chart-column",
                 children=[
@@ -430,6 +564,28 @@ def create_app() -> Dash:
                                         ],
                                     ),
                                     html.Div(
+                                        className="chart-downloads",
+                                        children=[
+                                            html.Button(
+                                                "Copy link",
+                                                id="copy-link-btn",
+                                                className="chart-downloads__button",
+                                                type="button",
+                                            ),
+                                            html.Button(
+                                                "Download PNG",
+                                                id="download-png-btn",
+                                                className="chart-downloads__button",
+                                                type="button",
+                                            ),
+                                            html.Span(
+                                                id="share-status",
+                                                className="chart-downloads__status",
+                                                **{"aria-live": "polite", "role": "status"},
+                                            ),
+                                        ],
+                                    ),
+                                    html.Div(
                                         id="chart-badges",
                                         className="chart-badges",
                                     ),
@@ -462,6 +618,57 @@ def create_app() -> Dash:
     )
 
     @app.callback(
+        Output("layer-selector", "value"),
+        Output("view-mode", "value"),
+        Input("url", "search"),
+        Input("url", "hash"),
+        State("available-layers", "data"),
+        State("default-layers", "data"),
+    )
+    def _sync_state_from_url(
+        search_value, hash_value, available_layers_state, default_layers_state
+    ):
+        def _coerce_sequence(value) -> list[str]:
+            if isinstance(value, list):
+                return [str(item) for item in value if isinstance(item, str)]
+            return []
+
+        available = _coerce_sequence(available_layers_state)
+        fallback = _coerce_sequence(default_layers_state)
+        if available:
+            fallback = [layer for layer in fallback if layer in available] or available[:1]
+        if not fallback:
+            fallback = [LayerId.PROFESSIONAL.value]
+
+        query_string = ""
+        if isinstance(search_value, str) and search_value:
+            query_string = search_value.lstrip("?")
+        elif isinstance(hash_value, str) and hash_value:
+            query_string = hash_value.lstrip("#")
+            if query_string.startswith("?"):
+                query_string = query_string[1:]
+
+        parsed = parse_qs(query_string, keep_blank_values=False) if query_string else {}
+        layer_values: list[str] = []
+        if parsed:
+            layer_param = parsed.get("layer") or parsed.get("layers")
+            if layer_param:
+                raw_value = layer_param[-1]
+                for part in str(raw_value).split(","):
+                    candidate = part.strip()
+                    if candidate:
+                        layer_values.append(candidate)
+
+        view_tokens = parsed.get("view") or parsed.get("mode") if parsed else None
+        view_mode = "compare" if view_tokens and view_tokens[-1].lower() == "compare" else "single"
+
+        ordered_layers = _active_layers_for(layer_values, view_mode, available or fallback)
+        if not ordered_layers:
+            ordered_layers = _active_layers_for(fallback, view_mode, available or fallback)
+
+        return ordered_layers, view_mode
+
+    @app.callback(
         Output("layer-panels", "children"),
         Output("layer-panels", "className"),
         Input("layer-selector", "value"),
@@ -479,18 +686,8 @@ def create_app() -> Dash:
             empty = html.Div(className="layer-empty", children=html.P("No charts available."))
             return [empty], panels_class
 
-        layers = selected_layers or []
-        if isinstance(layers, str):
-            layers = [layers]
-        layers = [layer for layer in layers if isinstance(layer, str)]
-
         available = _collect_layers(figures_store)
-        if available:
-            layers = [layer for layer in layers if layer in available]
-
-        ordered_layers = _order_layers(layers)
-        if view_mode != "compare" and ordered_layers:
-            ordered_layers = ordered_layers[:1]
+        ordered_layers = _active_layers_for(selected_layers, view_mode, available)
 
         if not ordered_layers:
             empty = html.Div(
@@ -546,14 +743,6 @@ def create_app() -> Dash:
             ],
         )
 
-    def _format_values(values: Iterable[str], fallback: str) -> str:
-        items = [item for item in values if item]
-        if not items:
-            return fallback
-        if len(items) == 1:
-            return items[0]
-        return ", ".join(items)
-
     @app.callback(
         Output("chart-badges", "children"),
         Input("layer-selector", "value"),
@@ -562,47 +751,22 @@ def create_app() -> Dash:
         State("available-layers", "data"),
     )
     def _update_badges(selected_layers, view_mode, metadata_store, available_layers):
-        layers = selected_layers or []
-        if isinstance(layers, str):
-            layers = [layers]
-        layers = [layer for layer in layers if isinstance(layer, str)]
-
-        available = available_layers if isinstance(available_layers, list) else []
-        if available:
-            layers = [layer for layer in layers if layer in available]
-
-        ordered_layers = _order_layers(layers)
-        if view_mode != "compare" and ordered_layers:
-            ordered_layers = ordered_layers[:1]
-
-        metadata = metadata_store if isinstance(metadata_store, Mapping) else {}
-        layer_meta_map = metadata.get("layers") if isinstance(metadata, Mapping) else {}
-        emission_years = metadata.get("emission_years") if isinstance(metadata, Mapping) else []
-        methods = metadata.get("methods") if isinstance(metadata, Mapping) else []
-        grid_sources = metadata.get("grid_sources") if isinstance(metadata, Mapping) else []
-
-        scopes: list[str] = []
-        years: list[str] = []
-        grids: list[str] = []
-        layer_labels: list[str] = []
-
-        if isinstance(layer_meta_map, Mapping):
-            for layer_id in ordered_layers:
-                entry = layer_meta_map.get(layer_id)
-                if isinstance(entry, Mapping):
-                    extend_unique(entry.get("scopes", []), scopes)
-                    extend_unique(entry.get("years", []), years)
-                    extend_unique(entry.get("grid", []), grids)
-                layer_labels.append(_layer_label(layer_id))
-
-        if not layer_labels:
-            layer_labels = [_layer_label(layer) for layer in ordered_layers]
+        ordered_layers = _active_layers_for(
+            selected_layers,
+            view_mode,
+            available_layers if isinstance(available_layers, list) else [],
+        )
+        summary = _summarise_layers(ordered_layers, metadata_store)
+        emission_years = summary["years"] or summary["emission_years"]
+        layer_labels = summary["layer_labels"] or [_layer_label(layer) for layer in ordered_layers]
+        grid_values = summary["grids"] or summary["grid_sources"]
+        methods = summary["methods"]
 
         badges = [
-            _format_badge("Scope", _format_values(scopes, "Not specified")),
+            _format_badge("Scope", _format_values(summary["scopes"], "Not specified")),
             _format_badge(
                 "Year",
-                _format_values(years or emission_years or [], "No vintages"),
+                _format_values(emission_years or [], "No vintages"),
             ),
             _format_badge(
                 "Layer",
@@ -611,11 +775,73 @@ def create_app() -> Dash:
             _format_badge("Method", _format_values(methods, "Unknown")),
             _format_badge(
                 "Grid source",
-                _format_values(grids or grid_sources or [], "Not available"),
+                _format_values(grid_values or [], "Not available"),
             ),
         ]
 
         return badges
+
+    @app.callback(
+        Output("url", "search"),
+        Output("share-data", "data"),
+        Input("layer-selector", "value"),
+        Input("view-mode", "value"),
+        State("metadata-store", "data"),
+        State("available-layers", "data"),
+        State("url", "search"),
+        prevent_initial_call=True,
+    )
+    def _update_permalink(
+        selected_layers,
+        view_mode,
+        metadata_store_value,
+        available_layers_value,
+        current_search,
+    ):
+        available = (
+            [str(item) for item in available_layers_value if isinstance(item, str)]
+            if isinstance(available_layers_value, list)
+            else []
+        )
+        share_payload = _build_share_payload(
+            selected_layers, view_mode, metadata_store_value, available
+        )
+        search_value = _build_permalink_query(share_payload)
+        if search_value == current_search:
+            search_output = no_update
+        else:
+            search_output = search_value
+        return search_output, share_payload
+
+    @app.callback(
+        Output("share-status", "children"),
+        Output("share-status", "className"),
+        Input("copy-status", "data"),
+        Input("download-status", "data"),
+        prevent_initial_call=True,
+    )
+    def _share_feedback(copy_status, download_status):
+        base_class = "chart-downloads__status"
+        triggered = getattr(dash.callback_context, "triggered_id", None)
+        if triggered == "copy-status" and isinstance(copy_status, Mapping):
+            status = copy_status.get("status")
+            if status == "success":
+                return "Link copied to clipboard.", base_class
+            if status == "error":
+                return (
+                    "Unable to copy link.",
+                    f"{base_class} chart-downloads__status--error",
+                )
+        elif triggered == "download-status" and isinstance(download_status, Mapping):
+            status = download_status.get("status")
+            if status == "success":
+                return "PNG downloaded.", base_class
+            if status == "error":
+                return (
+                    "Unable to export PNG.",
+                    f"{base_class} chart-downloads__status--error",
+                )
+        return "", base_class
 
     app.clientside_callback(
         """
@@ -692,6 +918,197 @@ def create_app() -> Dash:
         Output("theme-toggle", "title"),
         Input("theme-toggle", "n_clicks"),
         State("theme-preference", "data"),
+    )
+
+    app.clientside_callback(
+        """
+        async function(nClicks) {
+            if (!nClicks) {
+                return window.dash_clientside.no_update;
+            }
+
+            const url =
+                window.location.origin +
+                window.location.pathname +
+                window.location.search +
+                window.location.hash;
+
+            try {
+                if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+                    await navigator.clipboard.writeText(url);
+                } else {
+                    const textarea = document.createElement("textarea");
+                    textarea.value = url;
+                    textarea.setAttribute("readonly", "");
+                    textarea.style.position = "absolute";
+                    textarea.style.left = "-9999px";
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand("copy");
+                    document.body.removeChild(textarea);
+                }
+                return {status: "success", timestamp: Date.now()};
+            } catch (error) {
+                console.error("Copy failed", error);
+                return {status: "error", timestamp: Date.now()};
+            }
+        }
+        """,
+        Output("copy-status", "data"),
+        Input("copy-link-btn", "n_clicks"),
+        prevent_initial_call=True,
+    )
+
+    app.clientside_callback(
+        """
+        async function(nClicks, shareData) {
+            if (!nClicks) {
+                return window.dash_clientside.no_update;
+            }
+            if (!window.Plotly || typeof window.Plotly.toImage !== "function") {
+                return {status: "error", timestamp: Date.now()};
+            }
+
+            const target = document.querySelector(
+                ".layer-panel .chart-section--stacked .js-plotly-plot"
+            );
+            if (!target) {
+                return {status: "error", timestamp: Date.now()};
+            }
+
+            try {
+                const dataUrl = await window.Plotly.toImage(target, {
+                    format: "png",
+                    scale: 2,
+                });
+
+                const img = await new Promise((resolve, reject) => {
+                    const image = new Image();
+                    image.onload = () => resolve(image);
+                    image.onerror = reject;
+                    image.src = dataUrl;
+                });
+
+                const styles = getComputedStyle(document.documentElement);
+                const background = styles.getPropertyValue("--color-background").trim() || "#ffffff";
+                const textColor = styles.getPropertyValue("--color-text").trim() || "#0f172a";
+                const mutedColor = styles.getPropertyValue("--color-text-muted").trim() || "#475569";
+                const accentColor = styles.getPropertyValue("--color-accent").trim() || "#2563eb";
+
+                const padding = 80;
+                const minWidth = 1200;
+                const canvasWidth = Math.max(img.width + padding * 2, minWidth);
+                const textWidth = canvasWidth - padding * 2;
+                const fontStack = "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+                const title = shareData && shareData.chartTitle
+                    ? shareData.chartTitle
+                    : "Carbon ACX emissions overview";
+                const caption = shareData && shareData.caption ? shareData.caption : "";
+
+                const wrapText = (ctx, text, maxWidth) => {
+                    if (!text) {
+                        return [];
+                    }
+                    const words = text.split(/\\s+/).filter(Boolean);
+                    const lines = [];
+                    let current = "";
+                    for (const word of words) {
+                        const testLine = current ? `${current} ${word}` : word;
+                        if (ctx.measureText(testLine).width > maxWidth && current) {
+                            lines.push(current);
+                            current = word;
+                        } else {
+                            current = testLine;
+                        }
+                    }
+                    if (current) {
+                        lines.push(current);
+                    }
+                    return lines;
+                };
+
+                const canvas = document.createElement("canvas");
+                const measureCtx = canvas.getContext("2d");
+                const titleSize = 40;
+                const captionSize = 22;
+                const footerSize = 16;
+                const titleLineHeight = Math.round(titleSize * 1.2);
+                const captionLineHeight = Math.round(captionSize * 1.35);
+
+                measureCtx.font = `600 ${titleSize}px ${fontStack}`;
+                const titleLines = wrapText(measureCtx, title, textWidth);
+                measureCtx.font = `500 ${captionSize}px ${fontStack}`;
+                const captionLines = wrapText(measureCtx, caption, textWidth);
+
+                const titleHeight = (titleLines.length || 1) * titleLineHeight;
+                const captionHeight = captionLines.length
+                    ? captionLines.length * captionLineHeight + 32
+                    : 0;
+                const footerHeight = Math.round(footerSize * 1.6) + 8;
+                const totalHeight = Math.round(
+                    padding + titleHeight + 24 + img.height + captionHeight + footerHeight + padding
+                );
+
+                canvas.width = canvasWidth;
+                canvas.height = totalHeight;
+                const ctx = canvas.getContext("2d");
+                ctx.imageSmoothingQuality = "high";
+                ctx.fillStyle = background;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.fillStyle = textColor;
+                ctx.font = `600 ${titleSize}px ${fontStack}`;
+                ctx.textBaseline = "top";
+                let cursorY = padding;
+                const titleRenderLines = titleLines.length ? titleLines : [title];
+                for (const line of titleRenderLines) {
+                    ctx.fillText(line, padding, cursorY);
+                    cursorY += titleLineHeight;
+                }
+
+                cursorY += 24;
+                const imageX = Math.max(padding, (canvas.width - img.width) / 2);
+                ctx.drawImage(img, imageX, cursorY);
+                cursorY += img.height;
+
+                if (captionLines.length) {
+                    cursorY += 32;
+                    ctx.fillStyle = mutedColor || textColor;
+                    ctx.font = `500 ${captionSize}px ${fontStack}`;
+                    for (const line of captionLines) {
+                        ctx.fillText(line, padding, cursorY);
+                        cursorY += captionLineHeight;
+                    }
+                }
+
+                cursorY += 32;
+                ctx.font = `600 ${footerSize}px ${fontStack}`;
+                ctx.fillStyle = mutedColor || textColor;
+                ctx.fillText("carbonacx.org", padding, cursorY);
+                ctx.textAlign = "right";
+                ctx.fillStyle = accentColor || textColor;
+                ctx.fillText("Carbon ACX", canvas.width - padding, cursorY);
+                ctx.textAlign = "left";
+
+                const link = document.createElement("a");
+                const slug = shareData && shareData.fileSlug ? shareData.fileSlug : "overview";
+                link.download = `carbon-acx-${slug}.png`;
+                link.href = canvas.toDataURL("image/png");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                return {status: "success", timestamp: Date.now()};
+            } catch (error) {
+                console.error("PNG export failed", error);
+                return {status: "error", timestamp: Date.now()};
+            }
+        }
+        """,
+        Output("download-status", "data"),
+        Input("download-png-btn", "n_clicks"),
+        State("share-data", "data"),
+        prevent_initial_call=True,
     )
 
     @app.callback(
