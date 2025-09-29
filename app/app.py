@@ -169,9 +169,7 @@ def _layer_metadata_from_export(export_payload: Mapping | None) -> dict[str, dic
             layer_entry["grid"].add(str(grid_year))
 
     for layer_id, values in metadata_accumulator.items():
-        layer_metadata[layer_id] = {
-            key: sorted(collection) for key, collection in values.items()
-        }
+        layer_metadata[layer_id] = {key: sorted(collection) for key, collection in values.items()}
 
     return layer_metadata
 
