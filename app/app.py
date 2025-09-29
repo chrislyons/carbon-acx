@@ -11,7 +11,7 @@ from dash import Dash, Input, Output, State, dcc, html
 from calc import citations
 from calc.schema import LayerId
 
-from .components import bubble, references, sankey, stacked, vintages
+from .components import bubble, disclosure, references, sankey, stacked, vintages
 from .components._helpers import extend_unique
 
 ARTIFACT_ENV = "ACX_ARTIFACT_DIR"
@@ -223,6 +223,7 @@ def create_app() -> Dash:
                                 "Figures sourced from precomputed artifacts. "
                                 "Hover a chart to see supporting references."
                             ),
+                            disclosure.render(manifest_payload),
                         ]
                     ),
                     html.Section(

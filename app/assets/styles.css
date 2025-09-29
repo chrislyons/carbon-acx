@@ -40,6 +40,28 @@ body {
   line-height: 1.5;
 }
 
+.disclosure-block {
+  margin-top: 1rem;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  background: #eff6ff;
+  color: #1e3a8a;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.disclosure-block p {
+  margin: 0 0 0.75rem;
+  line-height: 1.5;
+}
+
+.disclosure-block__meta {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: grid;
+  gap: 0.4rem;
+  color: #1e3a8a;
+}
+
 .sidebar-panels {
   display: flex;
   flex-direction: column;
@@ -120,6 +142,33 @@ body {
 .chart-section p {
   margin: 0;
   color: #64748b;
+}
+
+.chart-footnote {
+  margin-top: 1rem;
+  border-left: 3px solid rgba(30, 41, 59, 0.2);
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.chart-footnote p {
+  margin: 0;
+}
+
+.chart-footnote--na {
+  border-color: rgba(59, 130, 246, 0.35);
+  background: #eff6ff;
+  color: #1e3a8a;
+}
+
+.chart-footnote--comparison {
+  border-color: rgba(16, 185, 129, 0.35);
+  background: #ecfdf5;
+  color: #0f766e;
 }
 
 .chart-figure {

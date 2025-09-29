@@ -6,6 +6,57 @@ from collections.abc import Iterable, Mapping
 from typing import Sequence
 
 
+_NA_LABELS = {
+    "na",
+    "n/a",
+    "not available",
+    "not yet available",
+    "data not available",
+    "not modelled",
+    "not modeled",
+}
+
+
+def _is_na_label(value: object) -> bool:
+    if value is None:
+        return False
+    text = str(value).strip().lower()
+    return text in _NA_LABELS
+
+
+def has_na_segments(payload: Mapping | None) -> bool:
+    """Return ``True`` when the payload contains NA-labelled segments."""
+
+    if not isinstance(payload, Mapping):
+        return False
+
+    data = payload.get("data")
+
+    if isinstance(data, list):
+        for row in data:
+            if not isinstance(row, Mapping):
+                continue
+            if _is_na_label(row.get("category")) or _is_na_label(row.get("activity_name")):
+                return True
+            if _is_na_label(row.get("label")):
+                return True
+    elif isinstance(data, Mapping):
+        nodes = data.get("nodes")
+        if isinstance(nodes, list):
+            for node in nodes:
+                if isinstance(node, Mapping) and _is_na_label(node.get("label")):
+                    return True
+        links = data.get("links")
+        if isinstance(links, list):
+            for link in links:
+                if not isinstance(link, Mapping):
+                    continue
+                if _is_na_label(link.get("category")) or _is_na_label(link.get("label")):
+                    return True
+
+    return False
+
+
 def reference_numbers(
     citation_keys: Sequence[str] | None, reference_lookup: Mapping[str, int]
 ) -> list[int]:
@@ -71,5 +122,6 @@ __all__ = [
     "extend_unique",
     "format_emissions",
     "format_reference_hint",
+    "has_na_segments",
     "reference_numbers",
 ]

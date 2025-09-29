@@ -5,7 +5,8 @@ from typing import Mapping, Optional
 import plotly.graph_objects as go
 from dash import dcc, html
 
-from ._helpers import clamp_optional, format_reference_hint
+from . import na_notice
+from ._helpers import clamp_optional, format_reference_hint, has_na_segments
 
 
 def _build_figure(payload: dict, reference_hint: str) -> go.Figure:
@@ -116,8 +117,13 @@ def render(
             className="chart-figure",
         )
 
+    children: list = [html.H2(title), content]
+
+    if has_na_segments(figure_payload):
+        children.append(na_notice.render())
+
     return html.Section(
-        [html.H2(title), content],
+        children,
         className="chart-section chart-section--sankey",
         id="sankey",
     )

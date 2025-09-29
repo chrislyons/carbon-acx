@@ -12,8 +12,9 @@ import plotly.io as pio
 from app.components import bubble as bubble_component
 from app.components import sankey as sankey_component
 from app.components import stacked as stacked_component
-from app.components._helpers import extend_unique, format_reference_hint
+from app.components._helpers import extend_unique, format_reference_hint, has_na_segments
 from calc import citations
+from calc.copy_blocks import disclosure_html, na_html
 from ._artifact_paths import resolve_artifact_outputs
 
 FIGURE_BUILDERS = {
@@ -178,11 +179,16 @@ def build_site(artifact_dir: Path, output_dir: Path) -> Path:
         else:
             message = FALLBACK_MESSAGES.get(name, "No data available.")
             graph_html = f"<p>{escape(message)}</p>"
+        footnotes: list[str] = []
+        if has_na_segments(payload):
+            footnotes.append(na_html())
+
         section_html = (
             f'<section class="{FIGURE_CLASSES[name]}">'
             f"<h2>{escape(FIGURE_TITLES[name])}</h2>"
             f"{graph_html}"
-            "</section>"
+            + "".join(footnotes)
+            + "</section>"
         )
         sections.append(section_html)
 
@@ -196,6 +202,7 @@ def build_site(artifact_dir: Path, output_dir: Path) -> Path:
     header_lines = [
         "<h1>Carbon ACX emissions overview</h1>",
         "<p>Figures sourced from precomputed artifacts. Hover a chart to see supporting references.</p>",
+        disclosure_html(manifest),
     ]
     if manifest and manifest.get("generated_at"):
         header_lines.append(
