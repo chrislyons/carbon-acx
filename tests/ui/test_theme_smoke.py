@@ -10,18 +10,24 @@ def test_tokens_cover_core_sections() -> None:
         assert section in TOKENS
     assert "sans" in TOKENS["font"]["family"]
     assert "accent" in TOKENS["palette"]
+    assert "dark" in TOKENS["palettes"]
 
 
 def test_plotly_template_smoke() -> None:
-    template = get_plotly_template()
-    assert template.layout.font.family
-    assert template.layout.margin.l >= 0
+    light = get_plotly_template()
+    dark = get_plotly_template(dark=True)
 
-    figure = go.Figure(data=[go.Bar(y=[1, 3, 2])])
-    figure.update_layout(template=template, title="Test Chart")
+    for template in (light, dark):
+        assert template.layout.font.family
+        assert template.layout.margin.l >= 0
 
-    payload = figure.to_plotly_json()
-    layout = payload["layout"]
-    assert layout["template"]["layout"]["font"]["family"]
-    assert layout["title"]["text"] == "Test Chart"
-    assert payload["data"][0]["type"] == "bar"
+        figure = go.Figure(data=[go.Bar(y=[1, 3, 2])])
+        figure.update_layout(template=template, title="Test Chart")
+
+        payload = figure.to_plotly_json()
+        layout = payload["layout"]
+        assert layout["template"]["layout"]["font"]["family"]
+        assert layout["title"]["text"] == "Test Chart"
+        assert payload["data"][0]["type"] == "bar"
+
+    assert light.layout.paper_bgcolor != dark.layout.paper_bgcolor

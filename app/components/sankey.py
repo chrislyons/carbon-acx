@@ -5,7 +5,7 @@ from typing import Mapping, Optional
 import plotly.graph_objects as go
 from dash import dcc, html
 
-from calc.ui.theme import TOKENS, get_plotly_template
+from calc.ui.theme import get_palette, get_plotly_template
 
 from . import na_notice
 from ._helpers import (
@@ -18,12 +18,14 @@ from ._helpers import (
 from ._plotly_settings import apply_figure_layout_defaults
 
 
-def _build_figure(payload: dict, reference_lookup: Mapping[str, int]) -> go.Figure:
+def _build_figure(
+    payload: dict, reference_lookup: Mapping[str, int], *, dark: bool = False
+) -> go.Figure:
     data = payload.get("data", {}) if payload else {}
     nodes = data.get("nodes", [])
     links = data.get("links", [])
 
-    palette = TOKENS["palette"]
+    palette = get_palette(dark=dark)
 
     id_to_index: dict[str, int] = {}
     labels: list[str] = []
@@ -79,6 +81,8 @@ def _build_figure(payload: dict, reference_lookup: Mapping[str, int]) -> go.Figu
         return figure
 
     link_color = "rgba(37, 99, 235, 0.45)"
+    if dark:
+        link_color = "rgba(96, 165, 250, 0.6)"
     figure.add_trace(
         go.Sankey(
             arrangement="snap",
@@ -103,7 +107,7 @@ def _build_figure(payload: dict, reference_lookup: Mapping[str, int]) -> go.Figu
     )
 
     figure.update_layout(
-        template=get_plotly_template(),
+        template=get_plotly_template(dark=dark),
         margin=dict(l=40, r=40, t=40, b=40),
     )
     return figure
@@ -114,11 +118,12 @@ def render(
     reference_lookup: Mapping[str, int],
     *,
     title_suffix: str | None = None,
+    dark: bool = False,
 ) -> html.Section:
     title = "Activity flow"
     if title_suffix:
         title = f"{title} — {title_suffix}"
-    figure = _build_figure(figure_payload or {}, reference_lookup)
+    figure = _build_figure(figure_payload or {}, reference_lookup, dark=dark)
 
     if not figure.data:
         message = "No flow data available."
