@@ -5,6 +5,8 @@ from typing import Mapping, Optional
 import plotly.graph_objects as go
 from dash import dcc, html
 
+from calc.ui.theme import TOKENS, get_plotly_template
+
 from . import na_notice
 from ._helpers import clamp_optional, format_reference_hint, has_na_segments
 
@@ -13,6 +15,8 @@ def _build_figure(payload: dict, reference_hint: str) -> go.Figure:
     data = payload.get("data", {}) if payload else {}
     nodes = data.get("nodes", [])
     links = data.get("links", [])
+
+    palette = TOKENS["palette"]
 
     id_to_index: dict[str, int] = {}
     labels: list[str] = []
@@ -27,9 +31,9 @@ def _build_figure(payload: dict, reference_hint: str) -> go.Figure:
         labels.append(str(node.get("label") or node_id))
         node_type = str(node.get("type") or "node")
         if node_type == "category":
-            colors.append("#0ea5e9")
+            colors.append(palette["accent_subtle"])
         else:
-            colors.append("#6366f1")
+            colors.append(palette["accent"])
 
     sources: list[int] = []
     targets: list[int] = []
@@ -58,7 +62,7 @@ def _build_figure(payload: dict, reference_hint: str) -> go.Figure:
     if not values:
         return figure
 
-    link_color = "rgba(79, 70, 229, 0.45)"
+    link_color = "rgba(37, 99, 235, 0.45)"
     figure.add_trace(
         go.Sankey(
             arrangement="snap",
@@ -81,9 +85,8 @@ def _build_figure(payload: dict, reference_hint: str) -> go.Figure:
     )
 
     figure.update_layout(
+        template=get_plotly_template(),
         margin=dict(l=40, r=40, t=40, b=40),
-        plot_bgcolor="#ffffff",
-        paper_bgcolor="rgba(0,0,0,0)",
     )
     return figure
 
