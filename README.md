@@ -205,3 +205,13 @@ quality expectations, and data ingestion guidance.
 ## License
 
 Licensed under the terms of the [MIT License](LICENSE).
+
+## Cloudflare Pages route for /carbon-acx
+This repo ships a Pages Function at `functions/carbon-acx/[[path]].ts`:
+
+- If `CARBON_ACX_ORIGIN` is set (e.g., `https://carbon-acx.pages.dev`), requests to `/carbon-acx*` are proxied there (path + query preserved).
+- If not set, Pages serves static fallback from `site/carbon-acx/`.
+
+Configure in Cloudflare Pages:
+1. Build output directory: `site`
+2. Environment variable: `CARBON_ACX_ORIGIN` (optional). Leave unset to show the placeholder.
