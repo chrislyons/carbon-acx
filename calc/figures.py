@@ -16,6 +16,11 @@ from .schema import LayerId
 CONFIG_PATH = Path(__file__).parent / "config.yaml"
 
 LAYER_ORDER = [layer.value for layer in LayerId]
+ANNUAL_EMISSIONS_UNITS = {
+    "quantity": "annual_emissions",
+    "unit": "g_co2e",
+    "label": "Annual emissions (g CO₂e)",
+}
 DEFAULT_GENERATED_AT = "1970-01-01T00:00:00+00:00"
 GENERATED_AT_ENV = "ACX_GENERATED_AT"
 datetime = _datetime_module.datetime
@@ -186,7 +191,12 @@ def slice_stacked(
             continue
         layer = _normalise_layer(row.get("layer_id"))
         category = row["activity_category"]
-        entry = {"layer_id": layer, "category": category, "values": values}
+        entry = {
+            "layer_id": layer,
+            "category": category,
+            "values": values,
+            "units": dict(ANNUAL_EMISSIONS_UNITS),
+        }
         if reference_map is not None:
             payload = reference_map.get((layer, category))
             if payload:
@@ -206,6 +216,7 @@ class BubblePoint:
     category: str | None
     layer_id: str | None
     values: dict
+    units: dict[str, str]
     citation_keys: list[str] | None = None
     hover_reference_indices: list[int] | None = None
 
@@ -274,6 +285,7 @@ def slice_bubble(
                 category=row["activity_category"],
                 layer_id=layer,
                 values=values,
+                units=dict(ANNUAL_EMISSIONS_UNITS),
                 citation_keys=ref_keys,
                 hover_reference_indices=ref_indices,
             )
@@ -350,6 +362,7 @@ def slice_sankey(
             "category": category_label,
             "layer_id": layer,
             "values": values,
+            "units": dict(ANNUAL_EMISSIONS_UNITS),
         }
         if reference_map is not None:
             payload = reference_map.get((layer, category_label, str(row["activity_id"])))
