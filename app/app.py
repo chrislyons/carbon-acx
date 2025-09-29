@@ -38,6 +38,16 @@ def _load_figure_payload(base_dir: Path, name: str) -> dict | None:
         return None
 
 
+def _load_export_payload(base_dir: Path) -> dict | None:
+    path = base_dir / "export_view.json"
+    if not path.exists():
+        return None
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return None
+
+
 def _load_manifest_payload(base_dir: Path) -> dict | None:
     path = base_dir / "manifest.json"
     if not path.exists():
@@ -95,6 +105,112 @@ def _collect_layers(figures: Dict[str, dict | None]) -> list[str]:
                 if value:
                     layers.add(str(value))
     return sorted(layers, key=_layer_order_index)
+
+
+def _normalise_sequence(values: Iterable[object]) -> list[str]:
+    items: list[str] = []
+    for value in values:
+        if value is None:
+            continue
+        text = str(value).strip()
+        if text:
+            items.append(text)
+    return items
+
+
+def _collect_methods(figures: Mapping[str, dict | None]) -> list[str]:
+    methods: list[str] = []
+    for payload in figures.values():
+        if not isinstance(payload, Mapping):
+            continue
+        method = payload.get("method")
+        if method:
+            extend_unique([str(method)], methods)
+    return methods
+
+
+def _layer_metadata_from_export(export_payload: Mapping | None) -> dict[str, dict[str, list[str]]]:
+    layer_metadata: dict[str, dict[str, list[str]]] = {}
+    if not isinstance(export_payload, Mapping):
+        return layer_metadata
+
+    data = export_payload.get("data")
+    if not isinstance(data, list):
+        return layer_metadata
+
+    metadata_accumulator: dict[str, dict[str, set[str]]] = {}
+    for row in data:
+        if not isinstance(row, Mapping):
+            continue
+        layer_id = row.get("layer_id")
+        if not layer_id:
+            continue
+        key = str(layer_id)
+        layer_entry = metadata_accumulator.setdefault(
+            key,
+            {"scopes": set(), "years": set(), "grid": set()},
+        )
+
+        scope_value = row.get("scope_boundary")
+        if scope_value:
+            layer_entry["scopes"].add(str(scope_value))
+
+        year_value = row.get("emission_factor_vintage_year")
+        if year_value not in (None, ""):
+            layer_entry["years"].add(str(year_value))
+
+        grid_region = row.get("grid_region")
+        grid_year = row.get("grid_vintage_year")
+        if grid_region and grid_year not in (None, ""):
+            layer_entry["grid"].add(f"{grid_region} ({grid_year})")
+        elif grid_region:
+            layer_entry["grid"].add(str(grid_region))
+        elif grid_year not in (None, ""):
+            layer_entry["grid"].add(str(grid_year))
+
+    for layer_id, values in metadata_accumulator.items():
+        layer_metadata[layer_id] = {
+            key: sorted(collection) for key, collection in values.items()
+        }
+
+    return layer_metadata
+
+
+def _manifest_grid_sources(manifest: Mapping | None) -> list[str]:
+    if not isinstance(manifest, Mapping):
+        return []
+
+    matrix = manifest.get("vintage_matrix")
+    sources: list[str] = []
+    if isinstance(matrix, Mapping):
+        for region, year in matrix.items():
+            if region and year not in (None, ""):
+                sources.append(f"{region} ({year})")
+            elif region:
+                sources.append(str(region))
+            elif year not in (None, ""):
+                sources.append(str(year))
+
+    if not sources:
+        regions = manifest.get("regions")
+        sources = _normalise_sequence(regions if isinstance(regions, Iterable) else [])
+
+    return sorted(dict.fromkeys(sources))
+
+
+def _manifest_emission_years(manifest: Mapping | None) -> list[str]:
+    if not isinstance(manifest, Mapping):
+        return []
+
+    vintages = manifest.get("vintages")
+    if not isinstance(vintages, Mapping):
+        return []
+
+    emission_years = vintages.get("emission_factors")
+    if not isinstance(emission_years, Iterable):
+        return []
+
+    return sorted({str(year) for year in emission_years if year not in (None, "")})
 
 
 def _row_layer(row: object) -> str | None:
@@ -169,9 +285,24 @@ def _order_reference_keys(keys: Iterable[str], reference_lookup: Mapping[str, in
 def create_app() -> Dash:
     artifact_dir = _artifact_dir()
     figures = {name: _load_figure_payload(artifact_dir, name) for name in FIGURE_NAMES}
+    export_payload = _load_export_payload(artifact_dir)
     reference_keys = _reference_keys(figures)
     reference_lookup = _reference_lookup(reference_keys)
     manifest_payload = _load_manifest_payload(artifact_dir)
+
+    layer_metadata = _layer_metadata_from_export(export_payload)
+    method_values = _collect_methods(figures)
+    if isinstance(export_payload, Mapping):
+        export_method = export_payload.get("method")
+        if export_method:
+            extend_unique([str(export_method)], method_values)
+
+    metadata_store = {
+        "layers": layer_metadata,
+        "methods": method_values,
+        "grid_sources": _manifest_grid_sources(manifest_payload),
+        "emission_years": _manifest_emission_years(manifest_payload),
+    }
 
     layer_citation_keys: dict[str, list[str]] = {}
     if isinstance(manifest_payload, dict):
@@ -213,6 +344,7 @@ def create_app() -> Dash:
             dcc.Store(id="figures-store", data=figures),
             dcc.Store(id="available-layers", data=available_layers),
             dcc.Store(id="layer-citation-keys", data=layer_citation_keys),
+            dcc.Store(id="metadata-store", data=metadata_store),
             html.Main(
                 className="chart-column",
                 children=[
@@ -223,50 +355,75 @@ def create_app() -> Dash:
                                 "Figures sourced from precomputed artifacts. "
                                 "Hover a chart to see supporting references."
                             ),
-                            disclosure.render(manifest_payload),
-                        ]
-                    ),
-                    html.Section(
-                        className="chart-controls",
-                        children=[
                             html.Div(
-                                [
-                                    html.Label(
-                                        "Select layers",
-                                        htmlFor="layer-selector",
-                                        className="chart-controls__label",
-                                    ),
-                                    dcc.Checklist(
-                                        id="layer-selector",
-                                        options=layer_options,
-                                        value=default_layers,
-                                        inline=True,
-                                        className="chart-controls__checklist",
-                                    ),
-                                ],
-                                className="chart-controls__group",
-                            ),
-                            html.Div(
-                                [
-                                    html.Label(
-                                        "View mode",
-                                        htmlFor="view-mode",
-                                        className="chart-controls__label",
-                                    ),
-                                    dcc.RadioItems(
-                                        id="view-mode",
-                                        options=[
-                                            {"label": "Single layer", "value": "single"},
-                                            {"label": "Compare layers", "value": "compare"},
+                                className="chart-toolbar",
+                                children=[
+                                    html.Section(
+                                        className="chart-controls",
+                                        children=[
+                                            html.Div(
+                                                [
+                                                    html.Label(
+                                                        "Select layers",
+                                                        htmlFor="layer-selector",
+                                                        className="chart-controls__label",
+                                                    ),
+                                                    dcc.Checklist(
+                                                        id="layer-selector",
+                                                        options=layer_options,
+                                                        value=default_layers,
+                                                        inline=True,
+                                                        className="chart-controls__checklist",
+                                                    ),
+                                                ],
+                                                className="chart-controls__group",
+                                            ),
+                                            html.Div(
+                                                [
+                                                    html.Label(
+                                                        "View mode",
+                                                        htmlFor="view-mode",
+                                                        className="chart-controls__label",
+                                                    ),
+                                                    dcc.RadioItems(
+                                                        id="view-mode",
+                                                        options=[
+                                                            {
+                                                                "label": "Single layer",
+                                                                "value": "single",
+                                                            },
+                                                            {
+                                                                "label": "Compare layers",
+                                                                "value": "compare",
+                                                            },
+                                                        ],
+                                                        value="single",
+                                                        inline=True,
+                                                        className="chart-controls__radios",
+                                                    ),
+                                                ],
+                                                className="chart-controls__group",
+                                            ),
                                         ],
-                                        value="single",
-                                        inline=True,
-                                        className="chart-controls__radios",
+                                    ),
+                                    html.Div(
+                                        id="chart-badges",
+                                        className="chart-badges",
                                     ),
                                 ],
-                                className="chart-controls__group",
                             ),
-                        ],
+                            html.Details(
+                                className="disclosure-panel",
+                                open=True,
+                                children=[
+                                    html.Summary("Disclosure"),
+                                    html.Div(
+                                        disclosure.render(manifest_payload),
+                                        className="disclosure-panel__content",
+                                    ),
+                                ],
+                            ),
+                        ]
                     ),
                     html.Div(id="layer-panels", className="layer-panels"),
                 ],
@@ -337,6 +494,86 @@ def create_app() -> Dash:
             )
 
         return children, panels_class
+
+    def _format_badge(label: str, value: str) -> html.Div:
+        return html.Div(
+            className="chart-badge",
+            children=[
+                html.Span(label, className="chart-badge__label"),
+                html.Span(value, className="chart-badge__value"),
+            ],
+        )
+
+    def _format_values(values: Iterable[str], fallback: str) -> str:
+        items = [item for item in values if item]
+        if not items:
+            return fallback
+        if len(items) == 1:
+            return items[0]
+        return ", ".join(items)
+
+    @app.callback(
+        Output("chart-badges", "children"),
+        Input("layer-selector", "value"),
+        Input("view-mode", "value"),
+        State("metadata-store", "data"),
+        State("available-layers", "data"),
+    )
+    def _update_badges(selected_layers, view_mode, metadata_store, available_layers):
+        layers = selected_layers or []
+        if isinstance(layers, str):
+            layers = [layers]
+        layers = [layer for layer in layers if isinstance(layer, str)]
+
+        available = available_layers if isinstance(available_layers, list) else []
+        if available:
+            layers = [layer for layer in layers if layer in available]
+
+        ordered_layers = _order_layers(layers)
+        if view_mode != "compare" and ordered_layers:
+            ordered_layers = ordered_layers[:1]
+
+        metadata = metadata_store if isinstance(metadata_store, Mapping) else {}
+        layer_meta_map = metadata.get("layers") if isinstance(metadata, Mapping) else {}
+        emission_years = metadata.get("emission_years") if isinstance(metadata, Mapping) else []
+        methods = metadata.get("methods") if isinstance(metadata, Mapping) else []
+        grid_sources = metadata.get("grid_sources") if isinstance(metadata, Mapping) else []
+
+        scopes: list[str] = []
+        years: list[str] = []
+        grids: list[str] = []
+        layer_labels: list[str] = []
+
+        if isinstance(layer_meta_map, Mapping):
+            for layer_id in ordered_layers:
+                entry = layer_meta_map.get(layer_id)
+                if isinstance(entry, Mapping):
+                    extend_unique(entry.get("scopes", []), scopes)
+                    extend_unique(entry.get("years", []), years)
+                    extend_unique(entry.get("grid", []), grids)
+                layer_labels.append(_layer_label(layer_id))
+
+        if not layer_labels:
+            layer_labels = [_layer_label(layer) for layer in ordered_layers]
+
+        badges = [
+            _format_badge("Scope", _format_values(scopes, "Not specified")),
+            _format_badge(
+                "Year",
+                _format_values(years or emission_years or [], "No vintages"),
+            ),
+            _format_badge(
+                "Layer",
+                _format_values(layer_labels or ["None selected"], "None selected"),
+            ),
+            _format_badge("Method", _format_values(methods, "Unknown")),
+            _format_badge(
+                "Grid source",
+                _format_values(grids or grid_sources or [], "Not available"),
+            ),
+        ]
+
+        return badges
 
     @app.callback(
         Output("references", "children"),
