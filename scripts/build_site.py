@@ -12,7 +12,7 @@ import plotly.io as pio
 from app.components import bubble as bubble_component
 from app.components import sankey as sankey_component
 from app.components import stacked as stacked_component
-from app.components._helpers import extend_unique, format_reference_hint, has_na_segments
+from app.components._helpers import extend_unique, has_na_segments
 from calc import citations
 from calc.copy_blocks import disclosure_html, na_html
 from ._artifact_paths import resolve_artifact_outputs
@@ -79,6 +79,13 @@ def _copy_assets(destination: Path) -> None:
         for asset in site_assets.iterdir():
             if asset.is_file():
                 shutil.copy2(asset, destination / asset.name)
+    site_js = project_root / "site" / "js"
+    if site_js.exists():
+        js_target = destination / "js"
+        js_target.mkdir(parents=True, exist_ok=True)
+        for asset in site_js.iterdir():
+            if asset.is_file():
+                shutil.copy2(asset, js_target / asset.name)
 
 
 def _format_manifest_summary(manifest: Mapping | None) -> str:
@@ -174,10 +181,11 @@ def build_site(artifact_dir: Path, output_dir: Path) -> Path:
 
     sections: list[str] = []
     include_plotlyjs = True
+    figure_download_dir = output_dir / "figures"
+    reference_download_dir = output_dir / "references"
     for name, builder in FIGURE_BUILDERS.items():
         payload = figures.get(name) or {}
-        reference_hint = format_reference_hint(payload.get("citation_keys"), reference_lookup)
-        figure = builder(payload, reference_hint)  # type: ignore[arg-type]
+        figure = builder(payload, reference_lookup)  # type: ignore[arg-type]
         if getattr(figure, "data", None):
             graph_html = pio.to_html(
                 figure,
@@ -193,19 +201,45 @@ def build_site(artifact_dir: Path, output_dir: Path) -> Path:
         if has_na_segments(payload):
             footnotes.append(na_html())
 
-        section_html = (
-            f'<section class="{FIGURE_CLASSES[name]} card" data-loading="false">'
-            '<div class="skeleton skeleton--chart" aria-hidden="true"></div>'
-            '<div class="card__content">'
-            f"<h2>{escape(FIGURE_TITLES[name])}</h2>"
-            f'<div class="chart-section__figure">{graph_html}</div>'
-            + "".join(footnotes)
-            + "</div></section>"
+        downloads: list[str] = []
+        figure_src = artifact_dir / "figures" / f"{name}.json"
+        if figure_src.exists():
+            figure_download_dir.mkdir(parents=True, exist_ok=True)
+            figure_dest = figure_download_dir / figure_src.name
+            shutil.copy2(figure_src, figure_dest)
+            downloads.append(
+                f'<a class="chart-downloads__button" download href="figures/{figure_src.name}">Download figure JSON</a>'
+            )
+        reference_src = artifact_dir / "references" / f"{name}_refs.txt"
+        if reference_src.exists():
+            reference_download_dir.mkdir(parents=True, exist_ok=True)
+            reference_dest = reference_download_dir / reference_src.name
+            shutil.copy2(reference_src, reference_dest)
+            downloads.append(
+                f'<a class="chart-downloads__button" download href="references/{reference_src.name}">Download references</a>'
+            )
+        downloads_html = (
+            '<div class="chart-downloads">' + "".join(downloads) + "</div>" if downloads else ""
         )
-        sections.append(section_html)
+
+        section_parts = [
+            f'<section class="{FIGURE_CLASSES[name]} card" data-loading="false">',
+            '<div class="skeleton skeleton--chart" aria-hidden="true"></div>',
+            '<div class="card__content">',
+            f"<h2>{escape(FIGURE_TITLES[name])}</h2>",
+        ]
+        if downloads_html:
+            section_parts.append(downloads_html)
+        section_parts.append(f'<div class="chart-section__figure">{graph_html}</div>')
+        section_parts.extend(footnotes)
+        section_parts.append("</div></section>")
+        sections.append("".join(section_parts))
 
     if references:
-        reference_items = "".join(f"<li>{escape(text)}</li>" for text in references)
+        reference_items = "".join(
+            f'<li data-reference-index="{idx}">{escape(text)}</li>'
+            for idx, text in enumerate(references, start=1)
+        )
     else:
         reference_items = "<li>No references available.</li>"
 
@@ -246,6 +280,7 @@ def build_site(artifact_dir: Path, output_dir: Path) -> Path:
         "<title>Carbon ACX emissions overview</title>"
         '<link rel="stylesheet" href="fonts.css" />'
         '<link rel="stylesheet" href="styles.css" />'
+        '<script src="js/app.js" defer></script>'
         "</head>"
         "<body>"
         '<div class="page-shell">' + header_html + '<div class="layout-grid">'
