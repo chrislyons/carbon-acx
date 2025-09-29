@@ -60,7 +60,9 @@ jobs:
             echo "Expected calc/outputs directories for CSV and SQLite builds" >&2
             exit 1
           fi
-          diff -ru "${csv_outputs}" "${sqlite_outputs}"
+          diff -ru \
+            <(grep -h -v '"generated_at":' "${csv_outputs}"/*) \
+            <(grep -h -v '"generated_at":' "${sqlite_outputs}"/*)
 
       - name: Build packages
         run: make build site package sbom
