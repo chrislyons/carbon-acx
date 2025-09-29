@@ -11,7 +11,8 @@ PACKAGED_ARTIFACTS_DIR := $(DIST_DIR)/packaged-artifacts
 PACKAGED_MANIFEST := $(PACKAGED_ARTIFACTS_DIR)/manifest.json
 DEFAULT_GENERATED_AT ?= 1970-01-01T00:00:00+00:00
 
-.PHONY: install lint test ci_build_pages app format validate release build-backend build site package sbom build-static
+.PHONY: install lint test ci_build_pages app format validate release build-backend build site package sbom build-static \
+	db_init db_import db_export build_csv build_db
 
 install:
 	poetry install --with dev --no-root
@@ -67,3 +68,19 @@ $(DIST_DIR):
 
 sbom: $(DIST_DIR)
 	PYTHONPATH=. poetry run python -m tools.sbom --output $(SBOM_PATH)
+
+db_init:
+	rm -f acx.db
+	sqlite3 acx.db < db/schema.sql
+
+db_import:
+	PYTHONPATH=. poetry run python scripts/import_csv_to_db.py --db acx.db --data ./data
+
+db_export:
+	PYTHONPATH=. poetry run python scripts/export_db_to_csv.py --db acx.db --out ./data
+
+build_csv:
+	ACX_OUTPUT_ROOT=dist/artifacts/csv ACX_DATA_BACKEND=csv PYTHONPATH=. poetry run python -m calc.derive
+
+build_db:
+	ACX_OUTPUT_ROOT=dist/artifacts/sqlite ACX_DATA_BACKEND=sqlite PYTHONPATH=. poetry run python -m calc.derive --db acx.db
