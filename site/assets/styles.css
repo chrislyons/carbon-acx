@@ -32,6 +32,7 @@
   --color-accent: #2563eb;
   --color-accent-subtle: #bfdbfe;
   --color-accent-strong: #1d4ed8;
+  --color-focus-ring: #1d4ed8;
   --color-positive: #10b981;
   --color-warning: #fbbf24;
   --color-critical: #ef4444;
@@ -41,6 +42,17 @@
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 html,
@@ -71,10 +83,15 @@ a:focus-visible,
 button:focus-visible,
 input:focus-visible,
 select:focus-visible,
-textarea:focus-visible {
-  outline: 3px solid var(--color-accent-subtle);
+textarea:focus-visible,
+summary:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
   outline-offset: 3px;
   border-radius: var(--radius-sm);
+}
+
+summary:focus-visible {
+  border-radius: var(--radius-md);
 }
 
 button,
@@ -414,6 +431,12 @@ p {
   transition: background-color 0.2s ease;
 }
 
+.chart-controls__checklist label:focus-within,
+.chart-controls__radios label:focus-within {
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+  outline: none;
+}
+
 .chart-controls__checklist label:hover,
 .chart-controls__radios label:hover {
   background-color: rgba(191, 219, 254, 0.7);
@@ -475,6 +498,11 @@ p {
   color: #1e3a8a;
   cursor: pointer;
   list-style: none;
+}
+
+.disclosure-panel > summary:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 4px;
 }
 
 .disclosure-panel > summary::-webkit-details-marker {
