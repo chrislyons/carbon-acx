@@ -76,6 +76,15 @@ def reference_numbers(
     return numbers
 
 
+def primary_reference_index(
+    citation_keys: Sequence[str] | None, reference_lookup: Mapping[str, int]
+) -> int | None:
+    numbers = reference_numbers(citation_keys, reference_lookup)
+    if not numbers:
+        return None
+    return min(numbers)
+
+
 def format_reference_hint(
     citation_keys: Sequence[str] | None, reference_lookup: Mapping[str, int]
 ) -> str:
@@ -123,5 +132,6 @@ __all__ = [
     "format_emissions",
     "format_reference_hint",
     "has_na_segments",
+    "primary_reference_index",
     "reference_numbers",
 ]

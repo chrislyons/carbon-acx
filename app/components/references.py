@@ -19,7 +19,14 @@ def _reference_texts(reference_keys: Sequence[str] | None) -> list[str]:
 
 def render_children(reference_keys: Sequence[str] | None) -> list[html.Component]:
     references = _reference_texts(reference_keys)
-    return [html.H2("References"), html.Ol([html.Li(text) for text in references])]
+    has_indices = bool(reference_keys)
+    items = []
+    for idx, text in enumerate(references, start=1):
+        attrs = {"children": text}
+        if has_indices:
+            attrs["data-reference-index"] = str(idx)
+        items.append(html.Li(**attrs))
+    return [html.H2("References"), html.Ol(items, className="references-list")]
 
 
 def render(reference_keys: Sequence[str] | None) -> html.Aside:

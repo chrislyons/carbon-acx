@@ -8,16 +8,24 @@ from dash import dcc, html
 from calc.ui.theme import TOKENS, get_plotly_template
 
 from . import na_notice
-from ._helpers import clamp_optional, format_reference_hint, has_na_segments
+from ._helpers import (
+    clamp_optional,
+    format_emissions,
+    has_na_segments,
+    primary_reference_index,
+    reference_numbers,
+)
 from ._plotly_settings import apply_figure_layout_defaults
 
 
-def _build_figure(payload: dict, reference_hint: str) -> go.Figure:
+def _build_figure(payload: dict, reference_lookup: Mapping[str, int]) -> go.Figure:
     data = payload.get("data", []) if payload else []
     categories: list[str] = []
     means: list[float] = []
     err_plus: list[float] = []
     err_minus: list[float] = []
+    formatted_values: list[str] = []
+    meta_entries: list[dict[str, object]] = []
 
     for row in data:
         values = row.get("values", {})
@@ -31,6 +39,20 @@ def _build_figure(payload: dict, reference_hint: str) -> go.Figure:
         means.append(mean)
         err_plus.append(max((high or mean) - mean, 0.0))
         err_minus.append(max(mean - (low or mean), 0.0))
+        formatted_values.append(format_emissions(mean))
+        indices = list(row.get("hover_reference_indices") or [])
+        if not indices:
+            indices = reference_numbers(row.get("citation_keys"), reference_lookup)
+        primary = next(iter(indices), None)
+        if primary is None:
+            primary = primary_reference_index(row.get("citation_keys"), reference_lookup)
+        meta_entries.append(
+            {
+                "source_index": str(primary) if primary is not None else "–",
+                "source_index_value": primary,
+                "reference_indices": indices,
+            }
+        )
 
     palette = TOKENS["palette"]
 
@@ -52,8 +74,7 @@ def _build_figure(payload: dict, reference_hint: str) -> go.Figure:
     )
 
     hover_template = (
-        "<b>%{y}</b><br>Annual emissions: %{x:,.0f} g CO₂e"
-        + ("<br>%{customdata}" if reference_hint != "No references" else "")
+        "<b>%{y}</b><br>Annual emissions: %{customdata}<br>[%{meta.source_index}]"
         + "<extra></extra>"
     )
 
@@ -65,7 +86,8 @@ def _build_figure(payload: dict, reference_hint: str) -> go.Figure:
             orientation="h",
             marker=dict(color=palette["accent"]),
             opacity=0.85,
-            customdata=[reference_hint] * len(means),
+            customdata=formatted_values,
+            meta=meta_entries,
             hovertemplate=hover_template,
             error_x=error_kwargs,
         )
@@ -87,15 +109,10 @@ def render(
     *,
     title_suffix: str | None = None,
 ) -> html.Section:
-    reference_hint = format_reference_hint(
-        figure_payload.get("citation_keys") if figure_payload else None,
-        reference_lookup,
-    )
-
     title = "Annual emissions by activity category"
     if title_suffix:
         title = f"{title} — {title_suffix}"
-    figure = _build_figure(figure_payload or {}, reference_hint)
+    figure = _build_figure(figure_payload or {}, reference_lookup)
 
     if not figure.data:
         message = "No category data available."

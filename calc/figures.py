@@ -6,7 +6,7 @@ import datetime as _datetime_module
 import os
 from functools import lru_cache
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 import pandas as pd
 import yaml
@@ -151,7 +151,10 @@ def _ensure_columns(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
     return df
 
 
-def slice_stacked(df: pd.DataFrame) -> list[dict]:
+def slice_stacked(
+    df: pd.DataFrame,
+    reference_map: Mapping[tuple[str | None, str], tuple[list[str], list[int]]] | None = None,
+) -> list[dict]:
     if df.empty:
         return []
     frame = _ensure_columns(
@@ -181,13 +184,18 @@ def slice_stacked(df: pd.DataFrame) -> list[dict]:
         values = _extract_values(row)
         if values is None:
             continue
-        results.append(
-            {
-                "layer_id": _normalise_layer(row.get("layer_id")),
-                "category": row["activity_category"],
-                "values": values,
-            }
-        )
+        layer = _normalise_layer(row.get("layer_id"))
+        category = row["activity_category"]
+        entry = {"layer_id": layer, "category": category, "values": values}
+        if reference_map is not None:
+            payload = reference_map.get((layer, category))
+            if payload:
+                keys, indices = payload
+                if keys:
+                    entry["citation_keys"] = keys
+                if indices:
+                    entry["hover_reference_indices"] = indices
+        results.append(entry)
     return results
 
 
@@ -198,9 +206,14 @@ class BubblePoint:
     category: str | None
     layer_id: str | None
     values: dict
+    citation_keys: list[str] | None = None
+    hover_reference_indices: list[int] | None = None
 
 
-def slice_bubble(df: pd.DataFrame) -> list[BubblePoint]:
+def slice_bubble(
+    df: pd.DataFrame,
+    reference_map: Mapping[tuple[str | None, str], tuple[list[str], list[int]]] | None = None,
+) -> list[BubblePoint]:
     if df.empty:
         return []
     frame = _ensure_columns(
@@ -247,6 +260,13 @@ def slice_bubble(df: pd.DataFrame) -> list[BubblePoint]:
         if values is None:
             continue
         layer = _normalise_layer(row.get("layer_id"))
+        ref_keys: list[str] | None = None
+        ref_indices: list[int] | None = None
+        if reference_map is not None:
+            activity_id = str(row["activity_id"])
+            payload = reference_map.get((layer, activity_id))
+            if payload:
+                ref_keys, ref_indices = payload
         results.append(
             BubblePoint(
                 activity_id=str(row["activity_id"]),
@@ -254,12 +274,17 @@ def slice_bubble(df: pd.DataFrame) -> list[BubblePoint]:
                 category=row["activity_category"],
                 layer_id=layer,
                 values=values,
+                citation_keys=ref_keys,
+                hover_reference_indices=ref_indices,
             )
         )
     return results
 
 
-def slice_sankey(df: pd.DataFrame) -> dict:
+def slice_sankey(
+    df: pd.DataFrame,
+    reference_map: Mapping[tuple[str | None, str, str], tuple[list[str], list[int]]] | None = None,
+) -> dict:
     if df.empty:
         return {"nodes": [], "links": []}
     frame = _ensure_columns(
@@ -318,16 +343,23 @@ def slice_sankey(df: pd.DataFrame) -> dict:
         activity_label = str(row["activity_name"])
         source = _ensure_node("category", category_label)
         target = _ensure_node("activity", activity_label)
-        links.append(
-            {
-                "source": source["id"],
-                "target": target["id"],
-                "activity_id": str(row["activity_id"]),
-                "category": category_label,
-                "layer_id": layer,
-                "values": values,
-            }
-        )
+        entry = {
+            "source": source["id"],
+            "target": target["id"],
+            "activity_id": str(row["activity_id"]),
+            "category": category_label,
+            "layer_id": layer,
+            "values": values,
+        }
+        if reference_map is not None:
+            payload = reference_map.get((layer, category_label, str(row["activity_id"])))
+            if payload:
+                keys, indices = payload
+                if keys:
+                    entry["citation_keys"] = keys
+                if indices:
+                    entry["hover_reference_indices"] = indices
+        links.append(entry)
 
     ordered_nodes = [node for _, node in sorted(nodes.items(), key=lambda item: item[1]["id"])]
     links.sort(

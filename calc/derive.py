@@ -7,6 +7,7 @@ import shutil
 import datetime as _datetime_module
 import hashlib
 import re
+from collections import defaultdict
 from dataclasses import asdict, dataclass
 from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
@@ -94,6 +95,18 @@ def _normalise_mapping(record: dict) -> dict:
     return {key: _normalise_value(record.get(key)) for key in EXPORT_COLUMNS if key in record} | {
         key: _normalise_value(value) for key, value in record.items() if key not in EXPORT_COLUMNS
     }
+
+
+def _normalise_category_label(value: Any) -> str:
+    if value is None:
+        return "uncategorized"
+    try:
+        if pd.isna(value):
+            return "uncategorized"
+    except TypeError:
+        pass
+    text = str(value)
+    return text if text else "uncategorized"
 
 
 def _env_flag(name: str) -> bool:
@@ -587,6 +600,8 @@ def export_view(
             {
                 "profile": profile,
                 "schedule": sched,
+                "activity_id": sched.activity_id,
+                "activity_category": activity.category if isinstance(activity, Activity) else None,
                 "emission_factor": ef,
                 "grid_intensity": grid_row,
                 "annual_emissions_g": emission,
@@ -624,6 +639,63 @@ def export_view(
     layer_references: dict[str, List[str]] = {
         layer: _format_references(layer_citation_keys.get(layer, [])) for layer in sorted_layers
     }
+
+    reference_index_lookup = {key: idx for idx, key in enumerate(citation_keys, start=1)}
+
+    stacked_groups: dict[tuple[str | None, str], set[str]] = defaultdict(set)
+    bubble_groups: dict[tuple[str | None, str], set[str]] = defaultdict(set)
+    sankey_groups: dict[tuple[str | None, str, str], set[str]] = defaultdict(set)
+
+    for row in derived_rows:
+        keys = collect_activity_source_keys([row])
+        if not keys:
+            continue
+        layer_value = row.get("layer_id")
+        layer_key = str(layer_value) if layer_value is not None else None
+        activity_key = row.get("activity_id")
+        activity_id = str(activity_key) if activity_key is not None else None
+        category_raw = row.get("activity_category")
+        category_key = _normalise_category_label(category_raw)
+
+        if category_key:
+            stacked_groups[(layer_key, category_key)].update(keys)
+        if activity_id:
+            bubble_groups[(layer_key, activity_id)].update(keys)
+            if category_key:
+                sankey_groups[(layer_key, category_key, activity_id)].update(keys)
+
+    def _ordered_keys(values: set[str]) -> list[str]:
+        if not values:
+            return []
+        ordered = [key for key in citation_keys if key in values]
+        remaining = [key for key in sorted(values) if key not in ordered]
+        return ordered + remaining
+
+    def _ordered_indices(keys: list[str]) -> list[int]:
+        indices: list[int] = []
+        for key in keys:
+            index = reference_index_lookup.get(key)
+            if index is not None:
+                indices.append(index)
+        return indices
+
+    stacked_reference_map: dict[tuple[str | None, str], tuple[list[str], list[int]]] = {}
+    for group_key, values in stacked_groups.items():
+        ordered_keys = _ordered_keys(values)
+        if ordered_keys:
+            stacked_reference_map[group_key] = (ordered_keys, _ordered_indices(ordered_keys))
+
+    bubble_reference_map: dict[tuple[str | None, str], tuple[list[str], list[int]]] = {}
+    for group_key, values in bubble_groups.items():
+        ordered_keys = _ordered_keys(values)
+        if ordered_keys:
+            bubble_reference_map[group_key] = (ordered_keys, _ordered_indices(ordered_keys))
+
+    sankey_reference_map: dict[tuple[str | None, str, str], tuple[list[str], list[int]]] = {}
+    for group_key, values in sankey_groups.items():
+        ordered_keys = _ordered_keys(values)
+        if ordered_keys:
+            sankey_reference_map[group_key] = (ordered_keys, _ordered_indices(ordered_keys))
 
     metadata = figures.build_metadata(
         "export_view",
@@ -698,9 +770,11 @@ def export_view(
     payload["data"] = records
     _write_json(out_dir / "export_view.json", payload)
 
-    stacked = figures.slice_stacked(df)
-    bubble_points = [asdict(point) for point in figures.slice_bubble(df)]
-    sankey = figures.slice_sankey(df)
+    stacked = figures.slice_stacked(df, reference_map=stacked_reference_map)
+    bubble_points = [
+        asdict(point) for point in figures.slice_bubble(df, reference_map=bubble_reference_map)
+    ]
+    sankey = figures.slice_sankey(df, reference_map=sankey_reference_map)
 
     def _write_figure(name: str, method: str, data: object) -> None:
         meta = figures.build_metadata(
