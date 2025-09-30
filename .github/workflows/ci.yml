@@ -48,14 +48,14 @@ jobs:
         run: |
           set -euo pipefail
           make db_init db_import build_db
-          sqlite_outputs="$(python -c \"import json, pathlib; manifest=json.load(open('dist/artifacts/latest-build.json')); artifact_dir=pathlib.Path(manifest['artifact_dir']).expanduser().resolve(); print(artifact_dir / 'calc' / 'outputs')\")"
+          sqlite_outputs="$(python -c \"import json, pathlib; manifest=json.load(open('dist/artifacts/latest-build.json')); artifact_dir=pathlib.Path(manifest['artifact_dir']).expanduser().resolve(); print(str(artifact_dir / 'calc' / 'outputs'))\")"
           if [ ! -d "${sqlite_outputs}" ]; then
             echo "SQLite build outputs not found at ${sqlite_outputs}" >&2
             exit 1
           fi
           echo "SQLITE_OUTPUTS=${sqlite_outputs}" >> "${GITHUB_ENV}"
           make build_csv
-          csv_outputs="$(python -c \"import json, pathlib; manifest=json.load(open('dist/artifacts/latest-build.json')); artifact_dir=pathlib.Path(manifest['artifact_dir']).expanduser().resolve(); print(artifact_dir / 'calc' / 'outputs')\")"
+          csv_outputs="$(python -c \"import json, pathlib; manifest=json.load(open('dist/artifacts/latest-build.json')); artifact_dir=pathlib.Path(manifest['artifact_dir']).expanduser().resolve(); print(str(artifact_dir / 'calc' / 'outputs'))\")"
           if [ ! -d "${csv_outputs}" ]; then
             echo "CSV build outputs not found at ${csv_outputs}" >&2
             exit 1
