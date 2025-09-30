@@ -27,22 +27,28 @@ export interface ProfileControlsState {
 
 export type ProfileStatus = 'idle' | 'loading' | 'success' | 'error';
 
-interface BubbleDatum {
-  activity_id?: string;
-  activity_name?: string | null;
-  annual_emissions_g?: number | null;
-}
-
 export interface ComputeResult {
   manifest?: {
     profile_id?: string;
     dataset_version?: string;
     overrides?: Record<string, number>;
+    sources?: string[];
     [key: string]: unknown;
   };
   figures?: {
     bubble?: {
-      data?: BubbleDatum[];
+      data?: unknown;
+      citation_keys?: string[];
+      [key: string]: unknown;
+    };
+    stacked?: {
+      data?: unknown;
+      citation_keys?: string[];
+      [key: string]: unknown;
+    };
+    sankey?: {
+      data?: unknown;
+      citation_keys?: string[];
       [key: string]: unknown;
     };
     [key: string]: unknown;

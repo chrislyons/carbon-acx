@@ -1,5 +1,10 @@
 import { useMemo } from 'react';
 
+import { Bubble, BubbleDatum } from './Bubble';
+import { Sankey, SankeyData } from './Sankey';
+import { Stacked, StackedDatum } from './Stacked';
+import { formatEmission } from '../lib/format';
+import { buildReferenceLookup } from '../lib/references';
 import { ComputeResult, useProfile } from '../state/profile';
 
 interface ActivityRow {
@@ -8,33 +13,32 @@ interface ActivityRow {
   emissions: number;
 }
 
-function formatEmission(value: number | null | undefined): string {
-  if (value == null || !Number.isFinite(value)) {
-    return '—';
-  }
-  const tonnes = value / 1_000_000;
-  if (Math.abs(tonnes) >= 1) {
-    return `${tonnes.toFixed(2)} t CO₂e`;
-  }
-  const kilograms = value / 1_000;
-  if (Math.abs(kilograms) >= 1) {
-    return `${kilograms.toFixed(1)} kg CO₂e`;
-  }
-  return `${value.toFixed(0)} g CO₂e`;
-}
-
 function resolveActivities(result: ComputeResult | null): {
   topActivities: ActivityRow[];
   total: number | null;
   count: number;
 } {
   const bubble = result?.figures?.bubble;
-  const rows = Array.isArray(bubble?.data) ? bubble?.data : [];
+  const rows = Array.isArray(bubble?.data) ? (bubble?.data as unknown[]) : [];
   const aggregated = rows
-    .map((row) => {
-      const id = row.activity_id ?? 'unknown-activity';
-      const name = row.activity_name || row.activity_id || 'Activity';
-      const emissions = typeof row.annual_emissions_g === 'number' ? row.annual_emissions_g : 0;
+    .map((entry, index) => {
+      const row = (entry as Record<string, unknown>) ?? {};
+      const rawId = row.activity_id;
+      const id = typeof rawId === 'string' && rawId.trim().length > 0 ? rawId : `activity-${index + 1}`;
+      const nameCandidate = row.activity_name;
+      const name =
+        typeof nameCandidate === 'string' && nameCandidate.trim().length > 0
+          ? nameCandidate
+          : id;
+      const legacy = row.annual_emissions_g;
+      const values = (row.values as Record<string, unknown> | undefined) ?? undefined;
+      const mean = values && typeof values.mean === 'number' ? values.mean : null;
+      const emissions =
+        typeof legacy === 'number' && Number.isFinite(legacy)
+          ? legacy
+          : typeof mean === 'number' && Number.isFinite(mean)
+            ? mean
+            : 0;
       return {
         id,
         label: name,
@@ -72,7 +76,7 @@ const STATUS_LABEL: Record<string, string> = {
 export function VizCanvas(): JSX.Element {
   const { status, result, error } = useProfile();
 
-  const { topActivities, total, count } = useMemo(() => resolveActivities(result), [result]);
+  const { total, count } = useMemo(() => resolveActivities(result), [result]);
 
   const datasetVersion =
     typeof result?.manifest?.dataset_version === 'string'
@@ -81,6 +85,36 @@ export function VizCanvas(): JSX.Element {
   const generatedAt =
     typeof result?.manifest?.generated_at === 'string' ? result?.manifest?.generated_at : null;
   const referenceCount = Array.isArray(result?.references) ? result?.references.length : null;
+
+  const sources = useMemo(() => {
+    const manifestSources = Array.isArray(result?.manifest?.sources)
+      ? (result?.manifest?.sources as string[])
+      : [];
+    if (manifestSources.length > 0) {
+      return manifestSources;
+    }
+    const collected: string[] = [];
+    const pushUnique = (values: unknown) => {
+      if (!Array.isArray(values)) {
+        return;
+      }
+      values.forEach((value) => {
+        if (typeof value === 'string' && !collected.includes(value)) {
+          collected.push(value);
+        }
+      });
+    };
+    pushUnique(result?.figures?.stacked?.citation_keys);
+    pushUnique(result?.figures?.bubble?.citation_keys);
+    pushUnique(result?.figures?.sankey?.citation_keys);
+    return collected;
+  }, [result]);
+
+  const referenceLookup = useMemo(() => buildReferenceLookup(sources), [sources]);
+
+  const stackedData = (result?.figures?.stacked?.data as StackedDatum[]) ?? [];
+  const bubbleData = (result?.figures?.bubble?.data as BubbleDatum[]) ?? [];
+  const sankeyData = (result?.figures?.sankey?.data as SankeyData) ?? { nodes: [], links: [] };
 
   const statusTone = resolveStatusTone(status);
   const statusLabel = STATUS_LABEL[status] ?? status;
@@ -149,33 +183,10 @@ export function VizCanvas(): JSX.Element {
                 <p className="mt-2 text-[11px] uppercase tracking-[0.3em] text-slate-500">source citations</p>
               </div>
             </div>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-400">
-                  Top emitting activities
-                </h3>
-                {status === 'loading' ? (
-                  <span className="text-xs font-medium text-amber-300">Recomputing…</span>
-                ) : null}
-              </div>
-              {topActivities.length === 0 ? (
-                <p className="text-sm text-slate-500">No emitting activities returned for this profile yet.</p>
-              ) : (
-                <ul className="space-y-3">
-                  {topActivities.map((row) => (
-                    <li
-                      key={row.id}
-                      className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-3"
-                    >
-                      <div>
-                        <p className="text-sm font-semibold text-slate-100">{row.label}</p>
-                        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{row.id}</p>
-                      </div>
-                      <span className="text-sm font-semibold text-slate-100">{formatEmission(row.emissions)}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
+            <div className="grid gap-4 lg:grid-cols-3">
+              <Stacked data={stackedData} referenceLookup={referenceLookup} />
+              <Bubble data={bubbleData} referenceLookup={referenceLookup} />
+              <Sankey data={sankeyData} referenceLookup={referenceLookup} />
             </div>
           </div>
         ) : null}

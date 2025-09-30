@@ -5,5 +5,10 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: '0.0.0.0'
+  },
+  test: {
+    environment: 'jsdom',
+    setupFiles: './src/setupTests.ts',
+    globals: true
   }
 });

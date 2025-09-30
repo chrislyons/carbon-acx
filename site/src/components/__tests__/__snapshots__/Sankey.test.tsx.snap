@@ -1,0 +1,135 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Sankey > renders gradient links with reference hints 1`] = `
+<DocumentFragment>
+  <section
+    aria-labelledby="sankey-heading"
+    class="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-5 shadow-inner shadow-slate-900/40"
+    id="sankey"
+  >
+    <h3
+      class="text-base font-semibold text-slate-100"
+      id="sankey-heading"
+    >
+      Emission pathways
+    </h3>
+    <svg
+      class="mt-4 w-full text-slate-400"
+      role="img"
+      viewBox="0 0 640 360"
+    >
+      <defs>
+        <lineargradient
+          gradientUnits="userSpaceOnUse"
+          id="sankey-gradient-0"
+          x1="90"
+          x2="550"
+          y1="58"
+          y2="58"
+        >
+          <stop
+            offset="0%"
+            stop-color="#38bdf8"
+            stop-opacity="0.85"
+          />
+          <stop
+            offset="100%"
+            stop-color="#38bdf8"
+            stop-opacity="0.35"
+          />
+        </lineargradient>
+      </defs>
+      <g>
+        <path
+          class="transition-opacity duration-300 opacity-70"
+          d="M160 58 C 220 58, 420 58, 480 58"
+          fill="none"
+          id="sankey-link-0"
+          stroke="url(#sankey-gradient-0)"
+          stroke-linecap="round"
+          stroke-width="26"
+          tabindex="0"
+        >
+          <title>
+            Cooling → Chiller — 1.80 kg CO₂e [1]
+          </title>
+        </path>
+      </g>
+      <g
+        class="cursor-pointer"
+        data-testid="sankey-node-category:cooling"
+        tabindex="0"
+        transform="translate(20, 40)"
+      >
+        <rect
+          fill="#38bdf8"
+          fill-opacity="0.55"
+          height="36"
+          rx="18"
+          stroke="rgba(15, 23, 42, 0.6)"
+          stroke-width="1.5"
+          width="140"
+        >
+          <title>
+            Cooling — 1.80 kg CO₂e [1]
+          </title>
+        </rect>
+        <text
+          alignment-baseline="middle"
+          class="fill-slate-950 text-sm font-semibold"
+          text-anchor="middle"
+          x="70"
+          y="18"
+        >
+          Cooling
+        </text>
+        <text
+          class="fill-slate-400 text-xs"
+          text-anchor="middle"
+          x="70"
+          y="50"
+        >
+          1.80 kg CO₂e
+        </text>
+      </g>
+      <g
+        class="cursor-pointer"
+        data-testid="sankey-node-activity:chiller"
+        tabindex="0"
+        transform="translate(480, 40)"
+      >
+        <rect
+          fill="#38bdf8"
+          fill-opacity="0.55"
+          height="36"
+          rx="18"
+          stroke="rgba(15, 23, 42, 0.6)"
+          stroke-width="1.5"
+          width="140"
+        >
+          <title>
+            Chiller — 1.80 kg CO₂e [1]
+          </title>
+        </rect>
+        <text
+          alignment-baseline="middle"
+          class="fill-slate-950 text-sm font-semibold"
+          text-anchor="middle"
+          x="70"
+          y="18"
+        >
+          Chiller
+        </text>
+        <text
+          class="fill-slate-400 text-xs"
+          text-anchor="middle"
+          x="70"
+          y="50"
+        >
+          1.80 kg CO₂e
+        </text>
+      </g>
+    </svg>
+  </section>
+</DocumentFragment>
+`;
