@@ -1,4 +1,6 @@
 const ARTIFACT_PATH_PATTERN = /\/artifacts\//;
+const ARTIFACT_CACHE_PARAM = 'acx-cache';
+const ARTIFACT_CACHE_VERSION = '2';
 
 function resolveUrl(input: RequestInfo | URL): string {
   if (typeof input === 'string') {
@@ -44,10 +46,20 @@ export function installFetchLogger(): void {
     );
 
     if (isArtifactRequest) {
-      request = new Request(request, {
+      const artifactUrl = new URL(requestUrl, window.location.href);
+      artifactUrl.searchParams.set(ARTIFACT_CACHE_PARAM, ARTIFACT_CACHE_VERSION);
+      request = new Request(artifactUrl.toString(), {
         method: 'GET',
         cache: 'no-store',
-        mode: 'same-origin'
+        mode: 'same-origin',
+        credentials: request.credentials,
+        headers: new Headers(request.headers),
+        redirect: request.redirect,
+        referrer: request.referrer,
+        referrerPolicy: request.referrerPolicy,
+        integrity: request.integrity,
+        keepalive: request.keepalive,
+        signal: request.signal
       });
     }
 
