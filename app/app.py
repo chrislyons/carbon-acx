@@ -14,7 +14,15 @@ from dash import Dash, Input, Output, State, dcc, html, no_update
 from calc import citations
 from calc.schema import LayerId
 
-from .components import bubble, disclosure, references, sankey, stacked, vintages
+from .components import (
+    bubble,
+    disclosure,
+    intensity,
+    references,
+    sankey,
+    stacked,
+    vintages,
+)
 from .components._helpers import extend_unique
 
 ARTIFACT_ENV = "ACX_ARTIFACT_DIR"
@@ -305,6 +313,26 @@ def create_app() -> Dash:
         "emission_years": _manifest_emission_years(manifest_payload),
     }
 
+    intensity_records = intensity.load_intensity_records()
+    intensity_labels = intensity.load_functional_unit_labels()
+    intensity_sections = intensity.load_reference_sections()
+    intensity_options = intensity.functional_unit_options(intensity_records, intensity_labels)
+    intensity_default_fu = intensity_options[0]["value"] if intensity_options else None
+    intensity_initial_figure = intensity.build_figure(
+        intensity_records,
+        intensity_default_fu,
+    )
+    intensity_initial_references = intensity.render_references_children(
+        intensity_sections,
+        intensity_default_fu,
+        intensity_labels,
+    )
+    intensity_initial_status = intensity.status_message(
+        intensity_records,
+        intensity_default_fu,
+        intensity_labels,
+    )
+
     layer_citation_keys: dict[str, list[str]] = {}
     if isinstance(manifest_payload, dict):
         manifest_layers = manifest_payload.get("layer_citation_keys")
@@ -479,8 +507,14 @@ def create_app() -> Dash:
             dcc.Store(id="share-data", data=initial_share_data),
             dcc.Store(id="copy-status"),
             dcc.Store(id="download-status"),
+            dcc.Store(id="intensity-records", data=intensity_records),
+            dcc.Store(
+                id="intensity-functional-unit-labels", data=intensity_labels
+            ),
+            dcc.Store(id="intensity-reference-sections", data=intensity_sections),
             html.Main(
                 className="chart-column",
+                id="overview-main",
                 children=[
                     html.Header(
                         [
@@ -512,8 +546,28 @@ def create_app() -> Dash:
                                 "Figures sourced from precomputed artifacts. "
                                 "Hover a chart to see supporting references."
                             ),
+                            dcc.Tabs(
+                                id="app-view-tabs",
+                                value="overview",
+                                className="chart-tabs",
+                                children=[
+                                    dcc.Tab(
+                                        label="Overview",
+                                        value="overview",
+                                        className="chart-tabs__tab",
+                                        selected_className="chart-tabs__tab--selected",
+                                    ),
+                                    dcc.Tab(
+                                        label="Intensity",
+                                        value="intensity",
+                                        className="chart-tabs__tab",
+                                        selected_className="chart-tabs__tab--selected",
+                                    ),
+                                ],
+                            ),
                             html.Div(
                                 className="chart-toolbar",
+                                id="overview-toolbar",
                                 children=[
                                     html.Section(
                                         className="chart-controls",
@@ -593,6 +647,7 @@ def create_app() -> Dash:
                             ),
                             html.Details(
                                 className="disclosure-panel",
+                                id="overview-disclosure",
                                 open=True,
                                 children=[
                                     html.Summary("Disclosure"),
@@ -613,9 +668,43 @@ def create_app() -> Dash:
                     references.render(initial_reference_keys),
                 ],
                 className="sidebar-panels",
+                id="overview-sidebar",
+            ),
+            html.Div(
+                intensity.render_layout(
+                    intensity_options,
+                    intensity_default_fu,
+                    intensity_initial_figure,
+                    intensity_initial_references,
+                    status_text=intensity_initial_status,
+                ),
+                id="intensity-view",
+                className="intensity-container",
+                style={"display": "none"},
             ),
         ],
     )
+
+    @app.callback(
+        Output("overview-main", "style"),
+        Output("overview-sidebar", "style"),
+        Output("intensity-view", "style"),
+        Output("overview-toolbar", "style"),
+        Output("overview-disclosure", "style"),
+        Input("app-view-tabs", "value"),
+    )
+    def _toggle_view(tab_value: str | None):
+        if tab_value == "intensity":
+            hidden_style = {"display": "none"}
+            return (
+                hidden_style,
+                hidden_style,
+                {"display": "flex"},
+                hidden_style,
+                hidden_style,
+            )
+        default_style: dict[str, str] = {}
+        return default_style, default_style, {"display": "none"}, default_style, default_style
 
     @app.callback(
         Output("layer-selector", "value"),
@@ -1133,6 +1222,38 @@ def create_app() -> Dash:
 
         reference_keys_for_layers = _resolve_reference_keys(ordered_layers, mapping)
         return references.render_children(reference_keys_for_layers)
+
+    @app.callback(
+        Output("intensity-figure", "figure"),
+        Output("intensity-status", "children"),
+        Output("intensity-references", "children"),
+        Input("intensity-functional-unit", "value"),
+        Input("theme-mode", "data"),
+        State("intensity-records", "data"),
+        State("intensity-reference-sections", "data"),
+        State("intensity-functional-unit-labels", "data"),
+    )
+    def _update_intensity_view(
+        functional_unit_value,
+        theme_mode_value,
+        records_state,
+        reference_sections_state,
+        label_state,
+    ):
+        records = records_state if isinstance(records_state, list) else []
+        labels = label_state if isinstance(label_state, dict) else {}
+        references_state = (
+            reference_sections_state if isinstance(reference_sections_state, dict) else {}
+        )
+        dark_mode = isinstance(theme_mode_value, str) and theme_mode_value.lower() == "dark"
+        figure = intensity.build_figure(records, functional_unit_value, dark=dark_mode)
+        status_text = intensity.status_message(records, functional_unit_value, labels)
+        reference_children = intensity.render_references_children(
+            references_state,
+            functional_unit_value,
+            labels,
+        )
+        return figure, status_text, reference_children
 
     return app
 
