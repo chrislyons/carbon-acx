@@ -12,7 +12,11 @@ def _text_paths() -> list[Path]:
     targets = [root / "README.md"]
     site_dir = root / "site"
     if site_dir.exists():
-        targets.extend(path for path in site_dir.rglob("*") if path.is_file())
+        targets.extend(
+            path
+            for path in site_dir.rglob("*")
+            if path.is_file() and "node_modules" not in path.parts
+        )
     return targets
 
 
