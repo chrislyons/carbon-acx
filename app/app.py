@@ -23,6 +23,7 @@ from .components import (
     stacked,
     vintages,
 )
+from .lib import narratives
 from .components._helpers import extend_unique
 
 ARTIFACT_ENV = "ACX_ARTIFACT_DIR"
@@ -706,6 +707,11 @@ def create_app() -> Dash:
                         ]
                     ),
                     html.Div(id="layer-panels", className="layer-panels"),
+                    html.Div(
+                        id="activity-narrative",
+                        className="chart-narrative",
+                        **{"aria-live": "polite", "role": "status"},
+                    ),
                 ],
             ),
             html.Div(
@@ -925,6 +931,18 @@ def create_app() -> Dash:
     )
     def _toggle_clear_button(active_activity):
         return active_activity in (None, "")
+
+    @app.callback(
+        Output("activity-narrative", "children"),
+        Input("acx-active-activity", "data"),
+    )
+    def _render_activity_narrative(active_activity):
+        if not active_activity:
+            return ""
+        blurb = narratives.pairwise_blurb(None, active_activity, None)
+        if not blurb:
+            return ""
+        return html.P(blurb)
 
     @app.callback(
         Output("chart-badges", "children"),
