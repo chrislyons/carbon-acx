@@ -303,6 +303,10 @@ class ActivitySchedule(BaseModel):
     region_override: Optional[RegionCode] = None
     mix_region: Optional[RegionCode] = None
     use_canada_average: Optional[bool] = None
+    distance_km: Optional[float] = None
+    passengers: Optional[float] = None
+    hours: Optional[float] = None
+    viewers: Optional[float] = None
 
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
 
