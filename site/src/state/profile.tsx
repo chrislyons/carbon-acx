@@ -35,6 +35,7 @@ export interface ComputeResult {
     sources?: string[];
     [key: string]: unknown;
   };
+  datasetId?: string;
   figures?: {
     bubble?: {
       data?: unknown;
@@ -64,6 +65,7 @@ interface ProfileContextValue {
   status: ProfileStatus;
   result: ComputeResult | null;
   error: string | null;
+  refresh: () => void;
   setCommuteDays: (value: number) => void;
   setModeSplit: (mode: keyof ModeSplit, value: number) => void;
   setDiet: (diet: DietOption) => void;
@@ -281,6 +283,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
   const [result, setResult] = useState<ComputeResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [profileId] = useState<string>(DEFAULT_PROFILE_ID);
+  const [refreshToken, setRefreshToken] = useState(0);
 
   const overrides = useMemo(() => buildOverrides(controls), [controls]);
   const overridesKey = useMemo(() => JSON.stringify(overrides), [overrides]);
@@ -343,7 +346,11 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
       window.clearTimeout(timeoutId);
       controller.abort();
     };
-  }, [profileId, overrides, overridesKey]);
+  }, [profileId, overrides, overridesKey, refreshToken]);
+
+  const refresh = useCallback(() => {
+    setRefreshToken((value) => value + 1);
+  }, []);
 
   const setCommuteDays = useCallback((value: number) => {
     setControls((previous) => {
@@ -412,6 +419,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
       status,
       result,
       error,
+      refresh,
       setCommuteDays,
       setModeSplit,
       setDiet,
@@ -425,6 +433,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
       status,
       result,
       error,
+      refresh,
       setCommuteDays,
       setModeSplit,
       setDiet,

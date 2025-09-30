@@ -75,14 +75,16 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 export function VizCanvas(): JSX.Element {
-  const { status, result, error } = useProfile();
+  const { status, result, error, refresh } = useProfile();
 
   const { total, count } = useMemo(() => resolveActivities(result), [result]);
 
   const datasetVersion =
-    typeof result?.manifest?.dataset_version === 'string'
-      ? result?.manifest?.dataset_version
-      : 'unknown';
+    typeof result?.datasetId === 'string' && result.datasetId.trim().length > 0
+      ? result.datasetId
+      : typeof result?.manifest?.dataset_version === 'string' && result.manifest.dataset_version
+        ? result.manifest.dataset_version
+        : 'unknown';
   const generatedAt =
     typeof result?.manifest?.generated_at === 'string' ? result?.manifest?.generated_at : null;
   const referenceCount = Array.isArray(result?.references) ? result?.references.length : null;
@@ -152,9 +154,25 @@ export function VizCanvas(): JSX.Element {
       <div className="mt-2.5 flex-1 overflow-hidden rounded-xl border border-slate-800/60 bg-slate-950/50">
         <div className="flex h-full flex-col overflow-y-auto p-3">
           {status === 'error' ? (
-            <div className="space-y-2 text-compact text-rose-200">
-              <p className="text-[13px] font-semibold">Unable to refresh results</p>
-              <p>{error ?? 'An unexpected error occurred while requesting /api/compute.'}</p>
+            <div
+              role="alert"
+              className="mb-3 space-y-1.5 rounded-xl border border-rose-500/40 bg-rose-500/10 p-3 text-compact text-rose-100 shadow-inner shadow-rose-900/30"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-[13px] font-semibold uppercase tracking-[0.2em] text-rose-100">
+                  Unable to refresh results
+                </p>
+                <button
+                  type="button"
+                  onClick={refresh}
+                  className="inline-flex items-center rounded-md border border-rose-400/40 bg-rose-500/20 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-rose-50 transition hover:bg-rose-500/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-300"
+                >
+                  Retry
+                </button>
+              </div>
+              <p className="text-[13px] text-rose-100/90">
+                {error ?? 'We could not reach the compute service. Please try again.'}
+              </p>
             </div>
           ) : null}
           {status !== 'error' && result === null ? (
