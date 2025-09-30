@@ -19,7 +19,9 @@ def _write_site_stub(site_root: Path) -> None:
 
 def _write_artifacts_stub(artifacts_dir: Path) -> None:
     artifacts_dir.mkdir(parents=True, exist_ok=True)
-    (artifacts_dir / "manifest.json").write_text("{\"generated_at\": \"2024-01-01T00:00:00Z\"}", encoding="utf-8")
+    (artifacts_dir / "manifest.json").write_text(
+        '{"generated_at": "2024-01-01T00:00:00Z"}', encoding="utf-8"
+    )
     nested = artifacts_dir / "figures"
     nested.mkdir()
     (nested / "stacked.json").write_text("{}", encoding="utf-8")

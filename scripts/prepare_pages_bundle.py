@@ -5,8 +5,9 @@ import shutil
 import textwrap
 from pathlib import Path
 
-HEADERS_TEMPLATE = textwrap.dedent(
-    """
+HEADERS_TEMPLATE = (
+    textwrap.dedent(
+        """
     /index.html
       Cache-Control: no-cache
 
@@ -17,7 +18,9 @@ HEADERS_TEMPLATE = textwrap.dedent(
       Access-Control-Allow-Methods: GET, HEAD, OPTIONS
       Access-Control-Allow-Headers: Content-Type
     """
-).strip() + "\n"
+    ).strip()
+    + "\n"
+)
 
 REDIRECTS_TEMPLATE = "/carbon-acx\t/carbon-acx/\t301\n"
 

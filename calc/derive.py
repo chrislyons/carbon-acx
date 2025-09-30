@@ -786,7 +786,10 @@ def export_view(
         normalised["layer_id"] = layer_value
         return normalised
 
-    stacked = [_with_layer_id(entry) for entry in figures.slice_stacked(df, reference_map=stacked_reference_map)]
+    stacked = [
+        _with_layer_id(entry)
+        for entry in figures.slice_stacked(df, reference_map=stacked_reference_map)
+    ]
     bubble_points = [
         _with_layer_id(asdict(point))
         for point in figures.slice_bubble(df, reference_map=bubble_reference_map)
