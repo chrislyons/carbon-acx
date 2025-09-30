@@ -13,6 +13,9 @@ HEADERS_TEMPLATE = textwrap.dedent(
     /artifacts/*
       Cache-Control: public, max-age=31536000, immutable
       Content-Type: application/json; charset=utf-8
+      Access-Control-Allow-Origin: https://boot.industries
+      Access-Control-Allow-Methods: GET, HEAD, OPTIONS
+      Access-Control-Allow-Headers: Content-Type
     """
 ).strip() + "\n"
 

@@ -1,4 +1,10 @@
 const ALLOWED_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
+const CORS_HEADERS: Record<string, string> = {
+  "Access-Control-Allow-Origin": "https://boot.industries",
+  "Access-Control-Allow-Methods": "GET,HEAD,OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Max-Age": "86400"
+};
 
 export const onRequest: PagesFunction<{
   CARBON_ACX_ORIGIN: string | undefined;
@@ -11,6 +17,10 @@ export const onRequest: PagesFunction<{
       status: 405,
       headers: { Allow: "GET, HEAD, OPTIONS" },
     });
+  }
+
+  if (method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: CORS_HEADERS });
   }
 
   const reqUrl = new URL(request.url);
@@ -31,6 +41,9 @@ export const onRequest: PagesFunction<{
       "Cache-Control",
       out.headers.get("Cache-Control") || "public, max-age=86400, s-maxage=86400",
     );
+    for (const [key, value] of Object.entries(CORS_HEADERS)) {
+      out.headers.set(key, value);
+    }
     return out;
   }
 
