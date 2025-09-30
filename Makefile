@@ -1,7 +1,8 @@
 ACX_DATA_BACKEND ?= csv
 OUTPUT_BASE ?= $(DIST_ARTIFACTS_DIR)/$(ACX_DATA_BACKEND)
 LATEST_BUILD := $(DIST_ARTIFACTS_DIR)/latest-build.json
-SITE_BUILD_DIR ?= build/site
+SITE_DIR := site
+SITE_BUILD_DIR ?= $(SITE_DIR)/dist
 DIST_DIR ?= dist
 DIST_ARTIFACTS_DIR := $(DIST_DIR)/artifacts
 DIST_SITE_DIR := $(DIST_DIR)/site
@@ -30,23 +31,34 @@ $(LATEST_BUILD):
 
 build: $(LATEST_BUILD)
 
-$(SITE_BUILD_DIR)/index.html: $(LATEST_BUILD)
-	PYTHONPATH=. poetry run python -m scripts.build_site --artifacts $(DIST_ARTIFACTS_DIR) --output $(SITE_BUILD_DIR)
+NPM ?= npm
 
-site: $(SITE_BUILD_DIR)/index.html
+.PHONY: site_install site_build site_dev
+
+site_install:
+	cd $(SITE_DIR) && $(NPM) install
+
+$(SITE_BUILD_DIR)/index.html: site_install
+	cd $(SITE_DIR) && $(NPM) run build
+
+site_build: $(SITE_BUILD_DIR)/index.html
+
+site: site_build
+	rm -rf $(DIST_SITE_DIR)
+	mkdir -p $(DIST_DIR)
+	cp -R $(SITE_BUILD_DIR) $(DIST_SITE_DIR)
+
+site_dev: site_install
+	cd $(SITE_DIR) && $(NPM) run dev -- --host 0.0.0.0
 
 $(PACKAGED_MANIFEST): $(LATEST_BUILD)
 	PYTHONPATH=. poetry run python -m scripts.package_artifacts --src $(DIST_ARTIFACTS_DIR) --dest $(PACKAGED_ARTIFACTS_DIR)
 
-$(DIST_SITE_DIR)/index.html: $(LATEST_BUILD)
-	rm -rf $(DIST_SITE_DIR)
-	PYTHONPATH=. poetry run python -m scripts.build_site --artifacts $(DIST_ARTIFACTS_DIR) --output $(DIST_SITE_DIR)
+package: $(PACKAGED_MANIFEST) site sbom
 
-package: $(PACKAGED_MANIFEST) $(DIST_SITE_DIR)/index.html sbom
+ci_build_pages: install lint test site
 
-ci_build_pages: install lint test build-static
-
-build-static: $(DIST_SITE_DIR)/index.html
+build-static: site
 	@echo "Static site available at $(DIST_SITE_DIR)"
 
 app:
