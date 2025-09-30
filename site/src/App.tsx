@@ -2,30 +2,36 @@ import { useState } from 'react';
 
 import { ProfileControls } from './components/ProfileControls';
 import { ReferencesDrawer } from './components/ReferencesDrawer';
+import { Layout } from './components/Layout';
 import { VizCanvas } from './components/VizCanvas';
 import { ProfileProvider } from './state/profile';
 
 export default function App(): JSX.Element {
-  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(true);
+  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(() => {
+    if (typeof window === 'undefined') {
+      return true;
+    }
+    return window.matchMedia('(min-width: 1280px)').matches;
+  });
 
   return (
     <ProfileProvider>
-      <div className="min-h-screen bg-slate-950 text-slate-100">
+      <div className="flex min-h-screen w-screen flex-col bg-slate-950 text-slate-100">
         <a
           href="#main"
           className="absolute left-4 top-4 z-50 -translate-y-20 rounded-lg bg-sky-500 px-3 py-2 font-semibold text-slate-900 transition focus:translate-y-0 focus:outline-none"
         >
           Skip to main content
         </a>
-        <header className="border-b border-slate-800 bg-slate-950/80 backdrop-blur">
-          <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
+        <header className="border-b border-slate-800/60 bg-slate-950/70 backdrop-blur">
+          <div className="flex items-center justify-between px-4 py-2.5 sm:px-5 lg:px-6">
             <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-sky-400">Carbon</p>
-              <h1 className="text-xl font-semibold">Analysis Console</h1>
+              <p className="text-[10px] uppercase tracking-[0.35em] text-sky-400">Carbon</p>
+              <h1 className="text-base font-semibold">Analysis Console</h1>
             </div>
             <button
               type="button"
-              className="inline-flex items-center gap-2 rounded-lg border border-slate-700 px-3 py-2 text-sm font-medium text-slate-100 shadow-sm transition hover:border-slate-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 lg:hidden"
+              className="inline-flex items-center gap-1 rounded-lg border border-slate-700 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.25em] text-slate-100 shadow-sm transition hover:border-slate-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 lg:hidden"
               aria-expanded={isDrawerOpen}
               aria-controls="references-panel"
               onClick={() => setIsDrawerOpen((open) => !open)}
@@ -41,16 +47,18 @@ export default function App(): JSX.Element {
             </button>
           </div>
         </header>
-        <main id="main" className="mx-auto flex max-w-7xl flex-1 flex-col gap-6 px-4 py-6 lg:py-10">
-          <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(260px,0.85fr)_minmax(0,2.2fr)_minmax(260px,1fr)]">
-            <ProfileControls />
-            <VizCanvas />
-            <ReferencesDrawer
-              id="references-panel"
-              open={isDrawerOpen}
-              onToggle={() => setIsDrawerOpen((open) => !open)}
-            />
-          </div>
+        <main id="main" className="flex min-h-0 flex-1 flex-col px-4 py-4 sm:px-5 lg:px-6">
+          <Layout
+            controls={<ProfileControls />}
+            canvas={<VizCanvas />}
+            references={
+              <ReferencesDrawer
+                id="references-panel"
+                open={isDrawerOpen}
+                onToggle={() => setIsDrawerOpen((open) => !open)}
+              />
+            }
+          />
         </main>
       </div>
     </ProfileProvider>

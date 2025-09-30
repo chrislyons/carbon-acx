@@ -85,19 +85,19 @@ export function PresetGallery(): JSX.Element {
   };
 
   return (
-    <section aria-labelledby="preset-gallery-heading" className="mt-6 space-y-4">
+    <section aria-labelledby="preset-gallery-heading" className="space-y-2.5">
       <div>
         <p
           id="preset-gallery-heading"
-          className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400"
+          className="text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-400"
         >
           Preset gallery
         </p>
-        <p className="mt-1 text-sm text-slate-400">
+        <p className="mt-1 text-compact text-slate-400">
           Load a ready-made lifestyle profile. Re-selecting a preset restores its saved state.
         </p>
       </div>
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-2.5 sm:grid-cols-2">
         {PRESETS.map((preset) => {
           const isActive = preset.id === activePresetId;
           return (
@@ -105,23 +105,23 @@ export function PresetGallery(): JSX.Element {
               key={preset.id}
               type="button"
               onClick={() => handleApply(preset)}
-              className={`group flex h-full flex-col justify-between rounded-lg border p-4 text-left transition focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 ${
+              className={`group flex h-full flex-col justify-between rounded-lg border text-left shadow-sm transition focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 pad-compact ${
                 isActive
                   ? 'border-sky-500 bg-sky-500/10 text-slate-100 shadow-sm shadow-sky-900/40'
                   : 'border-slate-800 bg-slate-900/60 text-slate-300 hover:border-slate-600'
               }`}
               aria-pressed={isActive}
             >
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-sm font-semibold text-slate-100">{preset.title}</span>
+              <div className="flex items-center justify-between gap-1.5">
+                <span className="text-[13px] font-semibold text-slate-100">{preset.title}</span>
                 {isActive && (
-                  <span className="inline-flex items-center rounded-full bg-sky-500/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-sky-300">
+                  <span className="inline-flex items-center rounded-full bg-sky-500/20 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.25em] text-sky-300">
                     Active
                   </span>
                 )}
               </div>
-              <p className="mt-3 text-xs text-slate-400">{preset.summary}</p>
-              <span className="mt-4 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+              <p className="mt-2 text-compact text-slate-400">{preset.summary}</p>
+              <span className="mt-2 inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-400">
                 <span className="h-1.5 w-1.5 rounded-full bg-slate-500 transition group-hover:bg-sky-400" aria-hidden="true" />
                 Apply preset
               </span>
