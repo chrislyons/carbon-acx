@@ -2,17 +2,21 @@
 
 ## `/carbon-acx/*`
 
-Requests under `/carbon-acx` are proxied to the Carbon ACX Cloudflare Pages deployment.
-The function rewrites the subpath while preserving any query parameters and forwards the
-incoming GET/HEAD request (including headers needed for conditional requests) to the
-upstream specified by the `CARBON_ACX_PAGES_HOST` environment variable.
+Requests under `/carbon-acx` are served by a Cloudflare Pages function that only allows
+`GET`, `HEAD`, and `OPTIONS`. Other methods receive a `405 Method Not Allowed` response.
+
+When the `CARBON_ACX_ORIGIN` environment variable is set, the function rewrites the
+subpath while preserving query parameters and forwards the request upstream. Leaving the
+variable unset serves the static bundle published under `dist/site/` directly from
+Cloudflare Pages.
 
 ### Caching
 
-* Fingerprinted assets (e.g. `main.abcdef12.js`) are served with `Cache-Control: public, max-age=31536000, immutable`.
-* Other responses, including HTML shell documents, use `Cache-Control: public, max-age=86400`.
-* The upstream fetch uses Cloudflare cache settings with a one-day TTL for successful responses,
-  a one-minute TTL for 404s, and no caching for 5xx.
+* The `_headers` file generated during packaging ensures `index.html` is served with
+  `Cache-Control: no-cache` while `/artifacts/*` responses are immutable (`public,
+  max-age=31536000, immutable`).
+* Static artefacts are copied into `dist/site/artifacts/`, so requests to
+  `/carbon-acx/artifacts/*` resolve without hitting the compute worker.
 
 ### Deep linking and SPA behaviour
 
@@ -23,6 +27,6 @@ project.
 
 ### Data fetches
 
-Requests for JSON or CSV assets include `Access-Control-Allow-Origin: https://boot.industries`
-and ensure any existing `Vary` header also covers `Origin`, allowing Carbon ACX pages to make
-same-origin XHR/fetch requests when served under `/carbon-acx` on boot.industries.
+Requests for JSON or CSV artefacts are served directly from the static bundle, inheriting
+the immutable caching headers from `_headers`. CORS headers are not required because the
+client is served from the same origin and path prefix.

@@ -11,18 +11,23 @@ served from the `/carbon-acx` path by the main Carbonplan site.
    ```
 2. Produce fresh derived data artifacts and the static site bundle:
    ```bash
-   make build-static
+   make package
    ```
 
-This command runs the standard data build and emits the static site to
-`dist/site/`. The directory contains:
+This command runs the standard data build, packages distributable artefacts,
+and emits the static site to `dist/site/`. The directory contains:
 
 - `index.html` – the single-page application shell.
 - `200.html` – a copy of `index.html` used by Cloudflare Pages for SPA
   fallback routing.
 - asset files (CSS, fonts, JavaScript) required by the client.
-- a `data/` folder that mirrors the contents of `dist/artifacts/`, allowing the
-  client to serve JSON/CSV artifacts relative to the deployed path.
+- an `artifacts/` folder that mirrors the packaged outputs, allowing the
+  production deployment to serve JSON/CSV downloads relative to
+  `/carbon-acx/artifacts/*`.
+- a `_headers` file that configures Cloudflare Pages caching (`index.html`
+  served with `Cache-Control: no-cache`, immutable caching for
+  `/artifacts/*`).
+- a `_redirects` file that forces `/carbon-acx` to `/carbon-acx/`.
 
 All asset links are written as relative paths, so the bundle can be mounted at
 `/carbon-acx` without additional rewrites.
@@ -32,4 +37,4 @@ All asset links are written as relative paths, so the bundle can be mounted at
 Upload the contents of `dist/site/` to a Cloudflare Pages project. The main
 Carbonplan site proxies requests under `/carbon-acx/*` to this bundle, so the
 relative asset paths must remain intact. If you add new artifact files to the
-build, confirm that they appear under `dist/site/data/` before deploying.
+build, confirm that they appear under `dist/site/artifacts/` before deploying.

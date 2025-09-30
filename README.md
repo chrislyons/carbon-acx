@@ -182,16 +182,18 @@ The Dash app reads from `calc/outputs` (or a custom `ACX_ARTIFACT_DIR`) and rend
 Render and preview the static site without a live server:
 
 ```bash
-make site
-python -m http.server --directory build/site 8001
+make package
+python -m http.server --directory dist/site 8001
 ```
 
-The build embeds:
+The packaged bundle embeds:
 
 - Pre-rendered Plotly HTML snippets for each figure.
 - Disclosure panel, manifest summary, and grid vintage table.
-- Download links pointing to the packaged artefacts under `build/site/data/`.
+- Download links pointing to the packaged artefacts under `dist/site/artifacts/`.
 - IEEE reference list identical to the Dash experience.
+- Cloudflare Pages metadata (`_headers`, `_redirects`) to configure caching and
+  trailing-slash redirects for `/carbon-acx`.
 
 When ready for production, deploy the contents of `dist/site/` to Cloudflare Pages. The companion function under `functions/carbon-acx/[[path]].ts` can proxy `/carbon-acx/*` routes to the hosted bundle or an upstream origin when `CARBON_ACX_ORIGIN` is set.
 
@@ -235,7 +237,7 @@ Additional configuration:
 ## Build & deployment
 
 1. **Local build** — `make build` -> `dist/artifacts/<hash>` -> `make site` -> `build/site` -> `make package` -> `dist/packaged-artifacts` + `dist/site`.
-2. **Continuous integration** — The CI workflow (replicated by `make ci_build_pages`) runs install, lint, test, and `make build-static`, publishing two artefacts: `dist-artifacts` (data bundle) and `dist-site` (static client).
+2. **Continuous integration** — The CI workflow (replicated by `make ci_build_pages`) runs install, lint, test, and packages the static site (`make package`), publishing two artefacts: `dist-artifacts` (data bundle) and `dist-site` (static client).
 3. **Release** — `make release` is a placeholder for future automated releases; production deploys currently upload `dist/site/` to Cloudflare Pages manually or via upstream automation described in `docs/deploy.md`.
 4. **Routing** — `functions/carbon-acx/[[path]].ts` sits alongside the static bundle to proxy or serve `/carbon-acx/*` traffic with opinionated caching headers (see `docs/routes.md`).
 
@@ -260,7 +262,7 @@ Quality gates are enforced through pytest, ruff, black, and SBOM generation:
 Before submitting a change:
 
 ```bash
-make format lint test build site package
+make format lint test build package
 ```
 
 ---
