@@ -485,12 +485,22 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
       const fallback = availableLayers.includes(PRIMARY_LAYER_ID)
         ? PRIMARY_LAYER_ID
         : availableLayers[0] ?? PRIMARY_LAYER_ID;
+      const availableSet = new Set(availableLayers);
       const nextSet = new Set<string>();
       previous.forEach((layer) => {
-        if (typeof layer === 'string' && availableLayers.includes(layer)) {
+        if (typeof layer === 'string' && availableSet.has(layer)) {
           nextSet.add(layer);
         }
       });
+
+      if (availableSet.size === 0) {
+        return [fallback];
+      }
+
+      if (nextSet.size === 0 || (nextSet.size === 1 && nextSet.has(fallback))) {
+        return Array.from(availableSet);
+      }
+
       nextSet.add(fallback);
       const ordered: string[] = [];
       availableLayers.forEach((layer) => {
