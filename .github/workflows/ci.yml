@@ -48,9 +48,9 @@ jobs:
         run: |
           set -euo pipefail
           make db_init db_import build_db
-          python tools/record_calc_outputs.py "SQLite" "SQLITE_OUTPUTS"
+          python tools/record_calc_outputs.py "SQLite" "SQLITE_OUTPUTS" sqlite
           make build_csv
-          python tools/record_calc_outputs.py "CSV" "CSV_OUTPUTS"
+          python tools/record_calc_outputs.py "CSV" "CSV_OUTPUTS" csv
 
       - name: Diff CSV and SQLite outputs
         if: matrix.backend == 'csv'
@@ -59,7 +59,15 @@ jobs:
           if [ -z "${SQLITE_OUTPUTS:-}" ] && [ -f dist/.calc-outputs/SQLITE_OUTPUTS.path ]; then
             SQLITE_OUTPUTS="$(cat dist/.calc-outputs/SQLITE_OUTPUTS.path)"
           fi
+          if [ -z "${SQLITE_OUTPUTS:-}" ]; then
+            python tools/record_calc_outputs.py "SQLite" "SQLITE_OUTPUTS" sqlite
+            SQLITE_OUTPUTS="$(cat dist/.calc-outputs/SQLITE_OUTPUTS.path)"
+          fi
           if [ -z "${CSV_OUTPUTS:-}" ] && [ -f dist/.calc-outputs/CSV_OUTPUTS.path ]; then
+            CSV_OUTPUTS="$(cat dist/.calc-outputs/CSV_OUTPUTS.path)"
+          fi
+          if [ -z "${CSV_OUTPUTS:-}" ]; then
+            python tools/record_calc_outputs.py "CSV" "CSV_OUTPUTS" csv
             CSV_OUTPUTS="$(cat dist/.calc-outputs/CSV_OUTPUTS.path)"
           fi
           if [ -z "${CSV_OUTPUTS:-}" ] || [ -z "${SQLITE_OUTPUTS:-}" ]; then

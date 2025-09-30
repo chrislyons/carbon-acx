@@ -6,18 +6,18 @@ import json
 import os
 import pathlib
 import sys
-from typing import Final
+from typing import Final, Optional
 
 MANIFEST_PATH: Final = pathlib.Path("dist/artifacts/latest-build.json")
+ARTIFACT_ROOT: Final = pathlib.Path("dist/artifacts")
 
 
-def main(label: str, env_var: str) -> None:
-    if "GITHUB_ENV" not in os.environ:
-        raise SystemExit("GITHUB_ENV is not set")
+def _manifest_outputs_dir() -> Optional[pathlib.Path]:
+    """Resolve the calc outputs directory from ``latest-build.json`` if present."""
 
     manifest_path = MANIFEST_PATH
     if not manifest_path.exists():
-        raise SystemExit("latest-build.json not found")
+        return None
 
     manifest = json.loads(manifest_path.read_text())
     try:
@@ -27,8 +27,46 @@ def main(label: str, env_var: str) -> None:
 
     artifact_dir = pathlib.Path(artifact_dir_raw).expanduser().resolve()
     outputs_dir = artifact_dir / "calc" / "outputs"
-    if not outputs_dir.is_dir():
-        raise SystemExit(f"{label} build outputs not found at {outputs_dir}")
+    if outputs_dir.is_dir():
+        return outputs_dir
+    return None
+
+
+def _scan_backend_outputs(backend: str) -> pathlib.Path:
+    """Locate the newest calc outputs directory for ``backend``."""
+
+    if not ARTIFACT_ROOT.is_dir():
+        raise SystemExit("dist/artifacts not found")
+
+    candidates: list[pathlib.Path] = []
+    for hashed_dir in ARTIFACT_ROOT.iterdir():
+        if not hashed_dir.is_dir():
+            continue
+        candidate = hashed_dir / backend / "calc" / "outputs"
+        if candidate.is_dir():
+            candidates.append(candidate.resolve())
+
+    if not candidates:
+        raise SystemExit(f"No calc outputs found for backend '{backend}'")
+
+    candidates.sort(key=lambda path: path.stat().st_mtime, reverse=True)
+    return candidates[0]
+
+
+def main(label: str, env_var: str, backend: str | None) -> None:
+    if "GITHUB_ENV" not in os.environ:
+        raise SystemExit("GITHUB_ENV is not set")
+
+    outputs_dir = _manifest_outputs_dir()
+    if backend and outputs_dir is not None:
+        expected = outputs_dir.parent.parent.name
+        if expected != backend:
+            outputs_dir = None
+
+    if outputs_dir is None:
+        if not backend:
+            raise SystemExit("Unable to resolve calc outputs without backend hint")
+        outputs_dir = _scan_backend_outputs(backend)
 
     print(f"{label} build outputs: {outputs_dir}")
     with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env_file:
@@ -41,6 +79,7 @@ def main(label: str, env_var: str) -> None:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        raise SystemExit("Usage: record_calc_outputs.py <label> <env-var>")
-    main(sys.argv[1], sys.argv[2])
+    if len(sys.argv) not in {3, 4}:
+        raise SystemExit("Usage: record_calc_outputs.py <label> <env-var> [backend]")
+    backend_arg = sys.argv[3] if len(sys.argv) == 4 else None
+    main(sys.argv[1], sys.argv[2], backend_arg)
