@@ -17,7 +17,7 @@ exports[`Stacked > renders stacked bars with reference hints 1`] = `
         Annual emissions by category
       </h3>
       <p
-        class="text-xs uppercase tracking-[0.3em] text-slate-500"
+        class="text-xs uppercase tracking-[0.3em] text-slate-300"
       >
         Total 2.00 kg CO₂e
       </p>
@@ -84,7 +84,7 @@ exports[`Stacked > renders stacked bars with reference hints 1`] = `
       </li>
     </ol>
     <p
-      class="mt-6 text-xs uppercase tracking-[0.3em] text-slate-500"
+      class="mt-6 text-xs uppercase tracking-[0.3em] text-slate-300"
     >
       Annual emissions (adaptive units)
     </p>

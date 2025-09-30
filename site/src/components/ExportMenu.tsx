@@ -137,12 +137,14 @@ export function ExportMenu({ canvasRef }: ExportMenuProps): JSX.Element {
   const [feedback, setFeedback] = useState<FeedbackState>(null);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const toggleRef = useRef<HTMLButtonElement | null>(null);
+  const previousOpenRef = useRef(menuOpen);
 
   useEffect(() => {
     if (!menuOpen || typeof document === 'undefined') {
       return;
     }
-    const handlePointer = (event: MouseEvent) => {
+    const handlePointer = (event: MouseEvent | PointerEvent | TouchEvent) => {
       if (!containerRef.current) {
         return;
       }
@@ -155,10 +157,12 @@ export function ExportMenu({ canvasRef }: ExportMenuProps): JSX.Element {
         setMenuOpen(false);
       }
     };
-    document.addEventListener('mousedown', handlePointer);
+    document.addEventListener('pointerdown', handlePointer);
+    document.addEventListener('touchstart', handlePointer);
     document.addEventListener('keydown', handleKey);
     return () => {
-      document.removeEventListener('mousedown', handlePointer);
+      document.removeEventListener('pointerdown', handlePointer);
+      document.removeEventListener('touchstart', handlePointer);
       document.removeEventListener('keydown', handleKey);
     };
   }, [menuOpen]);
@@ -248,25 +252,40 @@ export function ExportMenu({ canvasRef }: ExportMenuProps): JSX.Element {
 
   const actionsDisabled = busyAction !== null || !hasResult;
 
+  useEffect(() => {
+    const wasOpen = previousOpenRef.current;
+    if (menuOpen) {
+      const firstAction = containerRef.current?.querySelector<HTMLButtonElement>('[data-export-action="menu-item"]');
+      firstAction?.focus({ preventScroll: true });
+    } else if (wasOpen) {
+      toggleRef.current?.focus({ preventScroll: true });
+    }
+    previousOpenRef.current = menuOpen;
+  }, [menuOpen]);
+
   return (
     <div className="relative" ref={containerRef}>
       <button
         type="button"
-        className="inline-flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-900/60 px-3 py-2 text-sm font-medium text-slate-100 shadow-sm transition hover:border-slate-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
+        id="export-menu-button"
+        ref={toggleRef}
+        className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg border border-slate-600 bg-slate-900/70 px-4 py-2.5 text-sm font-medium text-slate-100 shadow-sm transition hover:border-slate-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
         onClick={handleToggleMenu}
         aria-expanded={menuOpen}
         aria-haspopup="menu"
+        aria-controls="export-menu-options"
       >
         <span className="h-2 w-2 rounded-full bg-emerald-400" aria-hidden="true" />
         Export
       </button>
       {menuOpen ? (
         <div
-          className="absolute right-0 z-30 mt-2 w-72 rounded-xl border border-slate-800 bg-slate-950/95 p-4 text-sm text-slate-200 shadow-xl ring-1 ring-slate-900/60 backdrop-blur"
+          id="export-menu-options"
+          className="absolute right-0 z-30 mt-2 w-72 rounded-xl border border-slate-700/70 bg-slate-950/95 p-4 text-sm text-slate-100 shadow-xl ring-1 ring-slate-900/60 backdrop-blur"
           role="menu"
           aria-label="Export options"
         >
-          <div className="flex items-center justify-between text-xs uppercase tracking-[0.3em] text-slate-500">
+          <div className="flex items-center justify-between text-xs uppercase tracking-[0.3em] text-slate-300">
             <span>Downloads</span>
             <span className="font-mono lowercase tracking-tight text-slate-400">{exportId}</span>
           </div>
@@ -274,7 +293,8 @@ export function ExportMenu({ canvasRef }: ExportMenuProps): JSX.Element {
             <button
               type="button"
               role="menuitem"
-              className="w-full rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2 text-left text-sm font-medium transition hover:border-slate-600 disabled:cursor-not-allowed disabled:opacity-60"
+              data-export-action="menu-item"
+              className="w-full rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-3 text-left text-sm font-medium transition hover:border-slate-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 disabled:cursor-not-allowed disabled:border-slate-800 disabled:text-slate-400"
               onClick={handleExportCsv}
               disabled={actionsDisabled}
             >
@@ -284,7 +304,8 @@ export function ExportMenu({ canvasRef }: ExportMenuProps): JSX.Element {
             <button
               type="button"
               role="menuitem"
-              className="w-full rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2 text-left text-sm font-medium transition hover:border-slate-600 disabled:cursor-not-allowed disabled:opacity-60"
+              data-export-action="menu-item"
+              className="w-full rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-3 text-left text-sm font-medium transition hover:border-slate-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 disabled:cursor-not-allowed disabled:border-slate-800 disabled:text-slate-400"
               onClick={handleExportPng}
               disabled={actionsDisabled}
             >
@@ -294,7 +315,8 @@ export function ExportMenu({ canvasRef }: ExportMenuProps): JSX.Element {
             <button
               type="button"
               role="menuitem"
-              className="w-full rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2 text-left text-sm font-medium transition hover:border-slate-600 disabled:cursor-not-allowed disabled:opacity-60"
+              data-export-action="menu-item"
+              className="w-full rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-3 text-left text-sm font-medium transition hover:border-slate-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 disabled:cursor-not-allowed disabled:border-slate-800 disabled:text-slate-400"
               onClick={handleExportReferences}
               disabled={actionsDisabled}
             >
@@ -303,7 +325,7 @@ export function ExportMenu({ canvasRef }: ExportMenuProps): JSX.Element {
             </button>
           </div>
           {!hasResult ? (
-            <p className="mt-3 text-xs text-slate-500">
+            <p className="mt-3 text-xs text-slate-300">
               Exports unlock after the first compute run.
             </p>
           ) : null}
@@ -317,7 +339,7 @@ export function ExportMenu({ canvasRef }: ExportMenuProps): JSX.Element {
             </div>
           ) : null}
           {status === 'loading' ? (
-            <p className="mt-3 text-[11px] uppercase tracking-[0.3em] text-slate-500">
+            <p className="mt-3 text-[11px] uppercase tracking-[0.3em] text-slate-300">
               Recomputing… latest exports reflect last completed run.
             </p>
           ) : null}

@@ -90,7 +90,7 @@ export function LayerToggles({
           return (
             <label
               key={option.id}
-              className={`flex cursor-pointer flex-1 items-start gap-3 rounded-lg border px-3 py-2 transition ${
+              className={`flex min-h-[120px] cursor-pointer flex-1 items-start gap-3 rounded-lg border px-3 py-3 transition ${
                 isActive
                   ? 'border-sky-400/60 bg-sky-500/10 text-slate-100'
                   : 'border-slate-800/70 bg-slate-950/40 text-slate-300 hover:border-slate-700'

@@ -105,7 +105,7 @@ export function PresetGallery(): JSX.Element {
               key={preset.id}
               type="button"
               onClick={() => handleApply(preset)}
-              className={`group flex h-full flex-col justify-between rounded-lg border text-left shadow-sm transition focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 pad-compact ${
+              className={`group flex h-full min-h-[148px] flex-col justify-between rounded-lg border text-left shadow-sm transition focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 pad-compact ${
                 isActive
                   ? 'border-sky-500 bg-sky-500/10 text-slate-100 shadow-sm shadow-sky-900/40'
                   : 'border-slate-800 bg-slate-900/60 text-slate-300 hover:border-slate-600'

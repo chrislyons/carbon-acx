@@ -291,11 +291,11 @@ export function VizCanvas(): JSX.Element {
         </div>
         <div className="flex items-start justify-end gap-1.5 sm:items-start">
           <div className="hidden sm:flex sm:flex-col sm:items-end">
-            <span className="text-[10px] uppercase tracking-[0.35em] text-slate-500">Status</span>
+            <span className="text-[10px] uppercase tracking-[0.35em] text-slate-300">Status</span>
             <span className={`text-[13px] font-semibold ${statusTone}`} aria-live="polite">
               {statusLabel}
             </span>
-            <span className="mt-0.5 text-[10px] uppercase tracking-[0.35em] text-slate-600">
+            <span className="mt-0.5 text-[10px] uppercase tracking-[0.35em] text-slate-300">
               dataset {datasetVersion}
             </span>
           </div>
@@ -316,7 +316,7 @@ export function VizCanvas(): JSX.Element {
                 <button
                   type="button"
                   onClick={refresh}
-                  className="inline-flex items-center rounded-md border border-rose-400/40 bg-rose-500/20 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-rose-50 transition hover:bg-rose-500/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-300"
+                  className="inline-flex min-h-[44px] items-center justify-center rounded-md border border-rose-400/60 bg-rose-500/20 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.25em] text-rose-50 transition hover:bg-rose-500/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-300"
                 >
                   Retry
                 </button>
@@ -338,25 +338,25 @@ export function VizCanvas(): JSX.Element {
             <div className="space-y-4">
               <div className="grid gap-2.5 sm:grid-cols-3">
                 <div className="rounded-lg border border-slate-800/70 bg-slate-900/60 pad-compact">
-                  <p className="text-[10px] uppercase tracking-[0.35em] text-slate-500">Total emissions</p>
+                  <p className="text-[10px] uppercase tracking-[0.35em] text-slate-300">Total emissions</p>
                   <p className="mt-1.5 text-lg font-semibold text-slate-50">{formatEmission(total)}</p>
-                  <p className="mt-1.5 text-[10px] uppercase tracking-[0.35em] text-slate-500">
+                  <p className="mt-1.5 text-[10px] uppercase tracking-[0.35em] text-slate-300">
                     {generatedAt ? `run ${new Date(generatedAt).toLocaleString()}` : 'timestamp pending'}
                   </p>
                 </div>
                 <div className="rounded-lg border border-slate-800/70 bg-slate-900/60 pad-compact">
-                  <p className="text-[10px] uppercase tracking-[0.35em] text-slate-500">Activities tracked</p>
+                  <p className="text-[10px] uppercase tracking-[0.35em] text-slate-300">Activities tracked</p>
                   <p className="mt-1.5 text-lg font-semibold text-slate-50">{count}</p>
-                  <p className="mt-1.5 text-[10px] uppercase tracking-[0.35em] text-slate-500">
+                  <p className="mt-1.5 text-[10px] uppercase tracking-[0.35em] text-slate-300">
                     showing top contributors
                   </p>
                 </div>
                 <div className="rounded-lg border border-slate-800/70 bg-slate-900/60 pad-compact">
-                  <p className="text-[10px] uppercase tracking-[0.35em] text-slate-500">References</p>
+                  <p className="text-[10px] uppercase tracking-[0.35em] text-slate-300">References</p>
                   <p className="mt-1.5 text-lg font-semibold text-slate-50">
                     {referenceCount ?? '—'}
                   </p>
-                  <p className="mt-1.5 text-[10px] uppercase tracking-[0.35em] text-slate-500">source citations</p>
+                  <p className="mt-1.5 text-[10px] uppercase tracking-[0.35em] text-slate-300">source citations</p>
                 </div>
               </div>
               {hasLayerToggles ? (
