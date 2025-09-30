@@ -1,12 +1,20 @@
 export type ComputeRequest = Record<string, unknown>;
 
-export async function compute<TResponse = unknown>(payload: ComputeRequest): Promise<TResponse> {
+export type ComputeOptions = Omit<RequestInit, 'method' | 'body'>;
+
+export async function compute<TResponse = unknown>(
+  payload: ComputeRequest,
+  options: ComputeOptions = {}
+): Promise<TResponse> {
+  const { headers, ...fetchOptions } = options;
   const response = await fetch('/api/compute', {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      ...(headers ?? {})
     },
-    body: JSON.stringify(payload)
+    body: JSON.stringify(payload),
+    ...fetchOptions
   });
 
   if (!response.ok) {
