@@ -125,77 +125,79 @@ export function VizCanvas(): JSX.Element {
     <section
       ref={canvasRef}
       aria-labelledby="viz-canvas-heading"
-      className="relative overflow-hidden rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900/80 via-slate-900 to-slate-950 p-6 shadow-lg shadow-slate-900/50"
+      className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-800/70 bg-gradient-to-br from-slate-900/80 via-slate-900 to-slate-950 p-3 shadow-lg shadow-slate-900/50 sm:p-4"
     >
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 id="viz-canvas-heading" className="text-lg font-semibold">
+          <h2 id="viz-canvas-heading" className="text-[13px] font-semibold">
             Visualization Canvas
           </h2>
-          <p className="mt-1 text-sm text-slate-400">
+          <p className="mt-1 text-compact text-slate-400">
             Connected to the live compute API. Figures refresh automatically when controls change.
           </p>
         </div>
-        <div className="flex items-start justify-end gap-3 sm:items-start">
-          <div className="hidden sm:flex sm:flex-col sm:items-end sm:text-xs sm:text-slate-500">
-            <span>Status</span>
-            <span className={`font-semibold ${statusTone}`} aria-live="polite">
+        <div className="flex items-start justify-end gap-1.5 sm:items-start">
+          <div className="hidden sm:flex sm:flex-col sm:items-end">
+            <span className="text-[10px] uppercase tracking-[0.35em] text-slate-500">Status</span>
+            <span className={`text-[13px] font-semibold ${statusTone}`} aria-live="polite">
               {statusLabel}
             </span>
-            <span className="mt-1 text-[11px] uppercase tracking-[0.3em] text-slate-600">
+            <span className="mt-0.5 text-[10px] uppercase tracking-[0.35em] text-slate-600">
               dataset {datasetVersion}
             </span>
           </div>
           <ExportMenu canvasRef={canvasRef} />
         </div>
       </div>
-      <div className="mt-6 rounded-xl border border-slate-800/80 bg-slate-950/60 p-5">
-        {status === 'error' ? (
-          <div className="space-y-3 text-sm text-rose-200">
-            <p className="font-semibold">Unable to refresh results</p>
-            <p>{error ?? 'An unexpected error occurred while requesting /api/compute.'}</p>
-          </div>
-        ) : null}
-        {status !== 'error' && result === null ? (
-          <div className="grid min-h-[260px] place-items-center text-center text-sm text-slate-400">
-            <div className="space-y-2">
-              <p className="text-base font-medium text-slate-200">Ready for the first compute run</p>
-              <p>Adjust the profile controls to trigger a request.</p>
+      <div className="mt-2.5 flex-1 overflow-hidden rounded-xl border border-slate-800/60 bg-slate-950/50">
+        <div className="flex h-full flex-col overflow-y-auto p-3">
+          {status === 'error' ? (
+            <div className="space-y-2 text-compact text-rose-200">
+              <p className="text-[13px] font-semibold">Unable to refresh results</p>
+              <p>{error ?? 'An unexpected error occurred while requesting /api/compute.'}</p>
             </div>
-          </div>
-        ) : null}
-        {status !== 'error' && result !== null ? (
-          <div className="space-y-6">
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Total emissions</p>
-                <p className="mt-2 text-2xl font-semibold text-slate-50">{formatEmission(total)}</p>
-                <p className="mt-2 text-[11px] uppercase tracking-[0.3em] text-slate-500">
-                  {generatedAt ? `run ${new Date(generatedAt).toLocaleString()}` : 'timestamp pending'}
-                </p>
-              </div>
-              <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Activities tracked</p>
-                <p className="mt-2 text-2xl font-semibold text-slate-50">{count}</p>
-                <p className="mt-2 text-[11px] uppercase tracking-[0.3em] text-slate-500">
-                  showing top contributors
-                </p>
-              </div>
-              <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">References</p>
-                <p className="mt-2 text-2xl font-semibold text-slate-50">
-                  {referenceCount ?? '—'}
-                </p>
-                <p className="mt-2 text-[11px] uppercase tracking-[0.3em] text-slate-500">source citations</p>
+          ) : null}
+          {status !== 'error' && result === null ? (
+            <div className="grid min-h-[200px] flex-1 place-items-center text-center text-compact text-slate-400">
+              <div className="space-y-2">
+                <p className="text-[15px] font-medium text-slate-200">Ready for the first compute run</p>
+                <p>Adjust the profile controls to trigger a request.</p>
               </div>
             </div>
-            <div className="grid gap-4 lg:grid-cols-3">
-              <Stacked data={stackedData} referenceLookup={referenceLookup} />
-              <Bubble data={bubbleData} referenceLookup={referenceLookup} />
-              <Sankey data={sankeyData} referenceLookup={referenceLookup} />
+          ) : null}
+          {status !== 'error' && result !== null ? (
+            <div className="space-y-4">
+              <div className="grid gap-2.5 sm:grid-cols-3">
+                <div className="rounded-lg border border-slate-800/70 bg-slate-900/60 pad-compact">
+                  <p className="text-[10px] uppercase tracking-[0.35em] text-slate-500">Total emissions</p>
+                  <p className="mt-1.5 text-lg font-semibold text-slate-50">{formatEmission(total)}</p>
+                  <p className="mt-1.5 text-[10px] uppercase tracking-[0.35em] text-slate-500">
+                    {generatedAt ? `run ${new Date(generatedAt).toLocaleString()}` : 'timestamp pending'}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-slate-800/70 bg-slate-900/60 pad-compact">
+                  <p className="text-[10px] uppercase tracking-[0.35em] text-slate-500">Activities tracked</p>
+                  <p className="mt-1.5 text-lg font-semibold text-slate-50">{count}</p>
+                  <p className="mt-1.5 text-[10px] uppercase tracking-[0.35em] text-slate-500">
+                    showing top contributors
+                  </p>
+                </div>
+                <div className="rounded-lg border border-slate-800/70 bg-slate-900/60 pad-compact">
+                  <p className="text-[10px] uppercase tracking-[0.35em] text-slate-500">References</p>
+                  <p className="mt-1.5 text-lg font-semibold text-slate-50">
+                    {referenceCount ?? '—'}
+                  </p>
+                  <p className="mt-1.5 text-[10px] uppercase tracking-[0.35em] text-slate-500">source citations</p>
+                </div>
+              </div>
+              <div className="grid gap-2.5 lg:grid-cols-3">
+                <Stacked data={stackedData} referenceLookup={referenceLookup} />
+                <Bubble data={bubbleData} referenceLookup={referenceLookup} />
+                <Sankey data={sankeyData} referenceLookup={referenceLookup} />
+              </div>
             </div>
-          </div>
-        ) : null}
+          ) : null}
+        </div>
       </div>
     </section>
   );

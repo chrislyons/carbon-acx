@@ -41,17 +41,12 @@ export function ReferencesDrawer({ id = 'references', open, onToggle }: Referenc
       id={id}
       aria-labelledby="references-heading"
       aria-live="polite"
-      className="rounded-xl border border-slate-800 bg-slate-900/70 p-6 shadow-lg shadow-slate-900/40 backdrop-blur"
+      className="flex h-full flex-col rounded-2xl border border-slate-800/70 bg-slate-900/60 p-2.5 shadow-lg shadow-slate-900/40 backdrop-blur"
     >
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h2 id="references-heading" className="text-lg font-semibold text-slate-100">
-            References
-          </h2>
-          <p className="mt-1 text-sm text-slate-400">
-            Primary sources supporting the figures. Press <kbd className="rounded bg-slate-800 px-1">Esc</kbd> to close.
-          </p>
-        </div>
+      <div className="flex items-center justify-between gap-2">
+        <p id="references-heading" className="text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-300">
+          References
+        </p>
         <button
           type="button"
           aria-expanded={open}
@@ -63,24 +58,38 @@ export function ReferencesDrawer({ id = 'references', open, onToggle }: Referenc
               onToggle();
             }
           }}
-          className="inline-flex items-center gap-2 rounded-lg border border-slate-700 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-200 transition hover:border-slate-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
+          className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-slate-700 text-slate-200 transition hover:border-slate-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
         >
-          <span className="h-1.5 w-1.5 rounded-full bg-sky-400" aria-hidden="true" />
-          {open ? 'Collapse' : 'Expand'}
+          <span className="sr-only">{open ? 'Collapse references' : 'Expand references'}</span>
+          <svg
+            aria-hidden="true"
+            className={`h-3 w-3 transition-transform ${open ? 'rotate-180 text-sky-300' : 'text-slate-400'}`}
+            viewBox="0 0 12 12"
+            fill="currentColor"
+          >
+            <path d="M6 8.5a1 1 0 0 1-.707-.293l-4-4A1 1 0 0 1 2.707 3.793L6 7.086l3.293-3.293a1 1 0 0 1 1.414 1.414l-4 4A1 1 0 0 1 6 8.5Z" />
+          </svg>
         </button>
       </div>
-      <div id={`${id}-content`} hidden={!open} className="mt-6 space-y-4 text-sm text-slate-300">
+      <p className="mt-1.5 text-compact text-slate-400">
+        Primary sources supporting the figures. Press <kbd className="rounded bg-slate-800 px-1">Esc</kbd> to close.
+      </p>
+      <div
+        id={`${id}-content`}
+        hidden={!open}
+        className="mt-2.5 flex-1 overflow-y-auto rounded-xl border border-slate-800/60 bg-slate-950/30 p-2.5 text-compact text-slate-300"
+      >
         {references.length === 0 ? (
-          <p className="text-sm text-slate-400">No references available for the current selection.</p>
+          <p className="text-compact text-slate-400">No references available for the current selection.</p>
         ) : (
-          <ol className="space-y-3" aria-label="Reference list">
+          <ol className="space-y-2.5" aria-label="Reference list">
             {references.map((reference, index) => (
               <li
                 key={reference}
-                className="rounded-lg border border-slate-800/80 bg-slate-950/40 p-3 text-left shadow-inner shadow-slate-900/30"
+                className="rounded-lg border border-slate-800/70 bg-slate-950/60 pad-compact text-left shadow-inner shadow-slate-900/30"
               >
-                <span className="block text-xs uppercase tracking-[0.3em] text-sky-400">[{index + 1}]</span>
-                <p className="mt-1 text-sm text-slate-200">{reference.replace(/^\[[0-9]+\]\s*/, '')}</p>
+                <span className="block text-[11px] uppercase tracking-[0.3em] text-sky-400">[{index + 1}]</span>
+                <p className="mt-1 text-compact text-slate-200">{reference.replace(/^\[[0-9]+\]\s*/, '')}</p>
               </li>
             ))}
           </ol>

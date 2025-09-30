@@ -24,3 +24,13 @@ select:focus-visible {
   outline: 2px solid theme('colors.sky.400');
   outline-offset: 2px;
 }
+
+@layer utilities {
+  .pad-compact {
+    @apply px-2.5 py-2.5;
+  }
+
+  .text-compact {
+    @apply text-[11px] leading-[1.45];
+  }
+}
