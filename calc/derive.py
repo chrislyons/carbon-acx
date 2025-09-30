@@ -770,11 +770,33 @@ def export_view(
     payload["data"] = records
     _write_json(out_dir / "export_view.json", payload)
 
-    stacked = figures.slice_stacked(df, reference_map=stacked_reference_map)
+    def _with_layer_id(payload: Mapping[str, Any]) -> dict[str, Any]:
+        """Return ``payload`` with a normalised ``layer_id`` field."""
+
+        value = payload.get("layer_id") if isinstance(payload, Mapping) else None
+        if isinstance(value, LayerId):
+            layer_value: str | None = value.value
+        elif isinstance(value, str):
+            layer_value = value
+        else:
+            layer_value = None
+        if payload.get("layer_id") == layer_value:
+            return dict(payload)
+        normalised = dict(payload)
+        normalised["layer_id"] = layer_value
+        return normalised
+
+    stacked = [_with_layer_id(entry) for entry in figures.slice_stacked(df, reference_map=stacked_reference_map)]
     bubble_points = [
-        asdict(point) for point in figures.slice_bubble(df, reference_map=bubble_reference_map)
+        _with_layer_id(asdict(point))
+        for point in figures.slice_bubble(df, reference_map=bubble_reference_map)
     ]
     sankey = figures.slice_sankey(df, reference_map=sankey_reference_map)
+    if isinstance(sankey, Mapping):
+        links = sankey.get("links")
+        if isinstance(links, list):
+            sankey = dict(sankey)
+            sankey["links"] = [_with_layer_id(link) for link in links if isinstance(link, Mapping)]
 
     def _write_figure(name: str, method: str, data: object) -> None:
         meta = figures.build_metadata(

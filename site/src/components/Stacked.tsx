@@ -9,6 +9,7 @@ import {
 } from '../lib/references';
 
 export interface StackedDatum extends ReferenceCarrier {
+  layer_id?: string | null;
   category?: string | null;
   values?: {
     mean?: number | null;

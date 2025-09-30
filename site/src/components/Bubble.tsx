@@ -9,6 +9,7 @@ import {
 } from '../lib/references';
 
 export interface BubbleDatum extends ReferenceCarrier {
+  layer_id?: string | null;
   activity_id?: string | null;
   activity_name?: string | null;
   category?: string | null;
