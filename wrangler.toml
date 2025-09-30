@@ -1,0 +1,9 @@
+name = "carbon-acx-compute"
+main = "workers/compute/index.ts"
+compatibility_date = "2024-05-01"
+
+[vars]
+ACX_DATASET_VERSION = "dev"
+
+[dev]
+port = 8787
