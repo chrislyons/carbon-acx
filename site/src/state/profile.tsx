@@ -8,7 +8,13 @@ import {
   useState
 } from 'react';
 
-import { compute } from '../lib/api';
+import {
+  compute,
+  health,
+  parseComputeResponse,
+  type ComputeResponse as ApiComputeResponse,
+  type ReferenceEntry as ApiReferenceEntry
+} from '../lib/api';
 
 export type DietOption = 'omnivore' | 'vegetarian' | 'vegan';
 
@@ -26,52 +32,16 @@ export interface ProfileControlsState {
 }
 
 export type ProfileStatus = 'idle' | 'loading' | 'success' | 'error';
-
-export interface ComputeResult {
-  manifest?: {
-    profile_id?: string;
-    dataset_version?: string;
-    overrides?: Record<string, number>;
-    sources?: string[];
-    layers?: string[];
-    layer_citation_keys?: Record<string, unknown>;
-    layer_references?: Record<string, unknown>;
-    [key: string]: unknown;
-  };
-  datasetId?: string;
-  figures?: {
-    bubble?: {
-      data?: unknown;
-      citation_keys?: string[];
-      layers?: string[];
-      layer_citation_keys?: Record<string, unknown>;
-      [key: string]: unknown;
-    };
-    stacked?: {
-      data?: unknown;
-      citation_keys?: string[];
-      layers?: string[];
-      layer_citation_keys?: Record<string, unknown>;
-      [key: string]: unknown;
-    };
-    sankey?: {
-      data?: unknown;
-      citation_keys?: string[];
-      layers?: string[];
-      layer_citation_keys?: Record<string, unknown>;
-      [key: string]: unknown;
-    };
-    [key: string]: unknown;
-  };
-  references?: string[];
-  [key: string]: unknown;
-}
+export type ProfileMode = 'live' | 'static';
+export type ReferenceEntry = ApiReferenceEntry;
+export type ComputeResult = ApiComputeResponse;
 
 interface ProfileContextValue {
   profileId: string;
   controls: ProfileControlsState;
   overrides: Record<string, number>;
   status: ProfileStatus;
+  mode: ProfileMode;
   result: ComputeResult | null;
   error: string | null;
   refresh: () => void;
@@ -79,7 +49,7 @@ interface ProfileContextValue {
   availableLayers: string[];
   activeLayers: string[];
   activeReferenceKeys: string[];
-  activeReferences: string[];
+  activeReferences: ReferenceEntry[];
   setActiveLayers: (layers: string[]) => void;
   setCommuteDays: (value: number) => void;
   setModeSplit: (mode: keyof ModeSplit, value: number) => void;
@@ -232,6 +202,54 @@ function cleanReferenceText(value: string): string {
   return value.replace(/^\[[0-9]+\]\s*/, '').trim();
 }
 
+function resolvePublicBasePath(): string {
+  const base = typeof __PUBLIC_BASE_PATH__ === 'string' ? __PUBLIC_BASE_PATH__ : '/';
+  if (!base) {
+    return '/';
+  }
+  return base.endsWith('/') ? base : `${base}/`;
+}
+
+function normaliseReferenceEntries(value: unknown): ReferenceEntry[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  const entries: ReferenceEntry[] = [];
+  value.forEach((item) => {
+    if (!item || typeof item !== 'object') {
+      return;
+    }
+    const record = item as Record<string, unknown>;
+    const textValue = typeof record.text === 'string' ? record.text.trim() : '';
+    if (!textValue) {
+      return;
+    }
+    const entry: ReferenceEntry = { text: textValue };
+    if (typeof record.key === 'string' && record.key.trim()) {
+      entry.key = record.key.trim();
+    }
+    if (typeof record.n === 'number' && Number.isFinite(record.n)) {
+      entry.n = Math.trunc(record.n);
+    }
+    entries.push(entry);
+  });
+  if (entries.length <= 1) {
+    return entries;
+  }
+  return entries.sort((a, b) => {
+    if (typeof a.n === 'number' && typeof b.n === 'number') {
+      return a.n - b.n;
+    }
+    if (typeof a.n === 'number') {
+      return -1;
+    }
+    if (typeof b.n === 'number') {
+      return 1;
+    }
+    return 0;
+  });
+}
+
 function rebalanceSplit(current: ModeSplit, mode: keyof ModeSplit, value: number): ModeSplit {
   const target = clampPercentage(value);
   const otherKeys = (Object.keys(current) as (keyof ModeSplit)[]).filter((key) => key !== mode);
@@ -323,6 +341,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
     const stored = loadStoredControls();
     return stored ?? DEFAULT_CONTROLS;
   });
+  const [mode, setMode] = useState<ProfileMode>('live');
   const [status, setStatus] = useState<ProfileStatus>('idle');
   const [result, setResult] = useState<ComputeResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -332,6 +351,26 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
 
   const overrides = useMemo(() => buildOverrides(controls), [controls]);
   const overridesKey = useMemo(() => JSON.stringify(overrides), [overrides]);
+
+  const assetBasePath = useMemo(() => resolvePublicBasePath(), []);
+  const baselineUrl = useMemo(() => `${assetBasePath}outputs/baseline.json`, [assetBasePath]);
+  const baselineCache = useRef<ComputeResult | null>(null);
+
+  const fetchBaseline = useCallback(async (): Promise<ComputeResult> => {
+    if (baselineCache.current) {
+      return baselineCache.current;
+    }
+    const response = await fetch(baselineUrl, {
+      headers: { Accept: 'application/json' }
+    });
+    if (!response.ok) {
+      throw new Error(`Baseline dataset unavailable (${response.status})`);
+    }
+    const payload = await response.json();
+    const parsed = parseComputeResponse(payload);
+    baselineCache.current = parsed;
+    return parsed;
+  }, [baselineUrl]);
 
   const availableLayers = useMemo(() => {
     const unique = new Set<string>();
@@ -393,18 +432,17 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
     return toStringArray(result?.figures?.sankey?.citation_keys);
   }, [result]);
 
-  const referenceTexts = useMemo(() => toStringArray(result?.references), [result]);
+  const referenceEntries = useMemo(() => normaliseReferenceEntries(result?.references), [result]);
 
-  const referenceTextLookup = useMemo(() => {
-    const lookup = new Map<string, string>();
-    citationOrder.forEach((key, index) => {
-      const text = referenceTexts[index];
-      if (typeof text === 'string') {
-        lookup.set(key, text);
+  const referenceByKey = useMemo(() => {
+    const lookup = new Map<string, ReferenceEntry>();
+    referenceEntries.forEach((entry) => {
+      if (entry.key) {
+        lookup.set(entry.key, entry);
       }
     });
     return lookup;
-  }, [citationOrder, referenceTexts]);
+  }, [referenceEntries]);
 
   const activeReferenceKeys = useMemo(() => {
     const activeSet = new Set<string>();
@@ -434,51 +472,49 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
 
   const activeReferences = useMemo(() => {
     const seen = new Set<string>();
-    const ordered: string[] = [];
-    activeReferenceKeys.forEach((key) => {
-      const text = referenceTextLookup.get(key);
-      if (!text) {
+    const ordered: ReferenceEntry[] = [];
+
+    const pushEntry = (entry: ReferenceEntry | undefined) => {
+      if (!entry || !entry.text) {
         return;
       }
+      const cleaned = cleanReferenceText(entry.text);
+      if (!cleaned || seen.has(cleaned)) {
+        return;
+      }
+      seen.add(cleaned);
+      ordered.push({ ...entry, text: cleaned });
+    };
+
+    const pushText = (text: string) => {
       const cleaned = cleanReferenceText(text);
       if (!cleaned || seen.has(cleaned)) {
         return;
       }
       seen.add(cleaned);
-      ordered.push(cleaned);
+      ordered.push({ text: cleaned });
+    };
+
+    activeReferenceKeys.forEach((key) => {
+      pushEntry(referenceByKey.get(key));
     });
+
     if (ordered.length === 0) {
       activeLayers.forEach((layer) => {
         const references = layerReferenceTexts[layer];
         if (!Array.isArray(references)) {
           return;
         }
-        references.forEach((reference) => {
-          const cleaned = cleanReferenceText(reference);
-          if (cleaned && !seen.has(cleaned)) {
-            seen.add(cleaned);
-            ordered.push(cleaned);
-          }
-        });
+        references.forEach((reference) => pushText(reference));
       });
     }
-    if (ordered.length === 0 && referenceTexts.length > 0) {
-      referenceTexts.forEach((text) => {
-        const cleaned = cleanReferenceText(text);
-        if (cleaned && !seen.has(cleaned)) {
-          seen.add(cleaned);
-          ordered.push(cleaned);
-        }
-      });
+
+    if (ordered.length === 0) {
+      referenceEntries.forEach((entry) => pushEntry(entry));
     }
+
     return ordered;
-  }, [
-    activeLayers,
-    activeReferenceKeys,
-    layerReferenceTexts,
-    referenceTextLookup,
-    referenceTexts
-  ]);
+  }, [activeLayers, activeReferenceKeys, layerReferenceTexts, referenceByKey, referenceEntries]);
 
   useEffect(() => {
     setActiveLayersState((previous) => {
@@ -555,10 +591,63 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
     persistControls(controls);
   }, [controls]);
 
+  useEffect(() => {
+    let cancelled = false;
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), 800);
+
+    const run = async () => {
+      try {
+        await health({ signal: controller.signal });
+        window.clearTimeout(timer);
+        if (cancelled) {
+          return;
+        }
+        setMode('live');
+        setError(null);
+      } catch (healthError) {
+        window.clearTimeout(timer);
+        if (cancelled) {
+          return;
+        }
+        console.warn('Health check failed; switching to static baseline', healthError);
+        setMode('static');
+        setStatus('loading');
+        try {
+          const baseline = await fetchBaseline();
+          if (cancelled) {
+            return;
+          }
+          setResult(baseline);
+          setStatus('success');
+          setError(null);
+        } catch (baselineError) {
+          if (cancelled) {
+            return;
+          }
+          console.error('Failed to load baseline dataset', baselineError);
+          setError('Baseline dataset unavailable');
+          setStatus('error');
+        }
+      }
+    };
+
+    run();
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [fetchBaseline]);
+
   const debounceRef = useRef<number | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
+    if (mode === 'static') {
+      return;
+    }
     if (debounceRef.current !== null) {
       window.clearTimeout(debounceRef.current);
     }
@@ -575,7 +664,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
     const timeoutId = window.setTimeout(async () => {
       try {
         const payload = { profile_id: profileId, overrides };
-        const response = await compute<ComputeResult>(payload, {
+        const response = await compute(payload, {
           signal: controller.signal
         });
         if (controller.signal.aborted) {
@@ -590,6 +679,23 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
         }
         const message =
           requestError instanceof Error ? requestError.message : 'Request failed';
+        if (mode === 'live') {
+          console.warn('Compute request failed; falling back to baseline dataset', requestError);
+          setMode('static');
+          setStatus('loading');
+          try {
+            const baseline = await fetchBaseline();
+            if (controller.signal.aborted) {
+              return;
+            }
+            setResult(baseline);
+            setStatus('success');
+            setError(null);
+            return;
+          } catch (baselineError) {
+            console.error('Unable to load baseline dataset after compute failure', baselineError);
+          }
+        }
         setError(message);
         setStatus('error');
       }
@@ -601,9 +707,10 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
       window.clearTimeout(timeoutId);
       controller.abort();
     };
-  }, [profileId, overrides, overridesKey, refreshToken]);
+  }, [profileId, overrides, overridesKey, refreshToken, mode, fetchBaseline]);
 
   const refresh = useCallback(() => {
+    setMode('live');
     setRefreshToken((value) => value + 1);
   }, []);
 
@@ -672,6 +779,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
       controls,
       overrides,
       status,
+      mode,
       result,
       error,
       refresh,
@@ -692,6 +800,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
       controls,
       overrides,
       status,
+      mode,
       result,
       error,
       refresh,

@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 
-import { useProfile } from '../state/profile';
+import { useProfile, type ReferenceEntry } from '../state/profile';
 
 type ReferencesDrawerProps = {
   id?: string;
@@ -8,19 +8,24 @@ type ReferencesDrawerProps = {
   onToggle: () => void;
 };
 
-function normaliseReferences(value: unknown): string[] {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-  return value
-    .map((entry) => (typeof entry === 'string' ? entry.trim() : null))
-    .filter((entry): entry is string => Boolean(entry));
+function formatReferences(entries: ReferenceEntry[]): Array<{ key: string; text: string; n: number }> {
+  const formatted: Array<{ key: string; text: string; n: number }> = [];
+  entries.forEach((entry, index) => {
+    const text = typeof entry?.text === 'string' ? entry.text.trim() : '';
+    if (!text) {
+      return;
+    }
+    const nValue = typeof entry?.n === 'number' && Number.isFinite(entry.n) ? Math.max(1, Math.trunc(entry.n)) : index + 1;
+    const key = (typeof entry?.key === 'string' && entry.key.trim()) || `${nValue}-${text}`;
+    formatted.push({ key, text, n: nValue });
+  });
+  return formatted;
 }
 
 export function ReferencesDrawer({ id = 'references', open, onToggle }: ReferencesDrawerProps): JSX.Element {
   const { activeReferences } = useProfile();
 
-  const references = useMemo(() => normaliseReferences(activeReferences), [activeReferences]);
+  const references = useMemo(() => formatReferences(activeReferences), [activeReferences]);
 
   useEffect(() => {
     if (!open) {
@@ -82,14 +87,15 @@ export function ReferencesDrawer({ id = 'references', open, onToggle }: Referenc
         {references.length === 0 ? (
           <p className="text-compact text-slate-400">No references available for the current selection.</p>
         ) : (
-          <ol className="space-y-2.5" aria-label="Reference list">
-            {references.map((reference, index) => (
+            <ol className="space-y-2.5" aria-label="Reference list">
+            {references.map((reference) => (
               <li
-                key={reference}
+                key={reference.key}
                 className="rounded-lg border border-slate-800/70 bg-slate-950/60 pad-compact text-left shadow-inner shadow-slate-900/30"
+                data-testid="reference-item"
               >
-                <span className="block text-[11px] uppercase tracking-[0.3em] text-sky-400">[{index + 1}]</span>
-                <p className="mt-1 text-compact text-slate-200">{reference.replace(/^\[[0-9]+\]\s*/, '')}</p>
+                <span className="block text-[11px] uppercase tracking-[0.3em] text-sky-400">[{reference.n}]</span>
+                <p className="mt-1 text-compact text-slate-200">{reference.text}</p>
               </li>
             ))}
           </ol>

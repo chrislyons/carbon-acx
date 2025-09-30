@@ -64,6 +64,12 @@ export interface ComputeFigures {
   };
 }
 
+export interface ReferenceEntry {
+  key: string;
+  n: number;
+  text: string;
+}
+
 export interface ComputeResultPayload {
   manifest: {
     profile_id: string;
@@ -73,11 +79,17 @@ export interface ComputeResultPayload {
     sources: string[];
   };
   figures: ComputeFigures;
-  references: string[];
+  references: ReferenceEntry[];
   datasetId: string;
 }
 
-const DATASET_VERSION = 'demo-2024';
+export interface ComputeOptions {
+  datasetVersion?: string;
+  datasetFingerprint?: string;
+  backend?: string;
+}
+
+const DEFAULT_DATASET_VERSION = 'demo-2024';
 
 const CITATIONS: CitationDefinition[] = [
   {
@@ -215,9 +227,12 @@ function simpleHash(input: string): string {
   return hash.toString(16).padStart(8, '0');
 }
 
-export function computeFigures(context: ComputeContext): ComputeResultPayload {
+export function computeFigures(context: ComputeContext, options: ComputeOptions = {}): ComputeResultPayload {
   const { profileId, overrides } = context;
   const timestamp = new Date().toISOString();
+  const datasetVersion = options.datasetVersion?.trim() || DEFAULT_DATASET_VERSION;
+  const datasetFingerprint = options.datasetFingerprint?.trim() || `sha256:${simpleHash(datasetVersion)}`;
+  const backendLabel = options.backend ?? 'sqlite';
 
   const bubbleData: ComputeFigures['bubble']['data'] = [];
   const stackedMap = new Map<string, { layer: string; mean: number; low: number | null; high: number | null }>();
@@ -300,19 +315,23 @@ export function computeFigures(context: ComputeContext): ComputeResultPayload {
     .sort((a, b) => b.values.mean - a.values.mean);
 
   const citationKeys = Array.from(usedCitations);
-  const references = CITATIONS.filter((citation) => usedCitations.has(citation.key)).map((citation, index) => {
-    return `[${index + 1}] ${citation.text}`;
-  });
+  const references = CITATIONS.filter((citation) => usedCitations.has(citation.key)).map(
+    (citation, index) => ({
+      key: citation.key,
+      n: index + 1,
+      text: citation.text,
+    })
+  );
 
   const manifestSources = CITATIONS.filter((citation) => usedCitations.has(citation.key)).map((citation) => citation.key);
 
-  const hashInput = JSON.stringify({ profileId, overrides, dataset: DATASET_VERSION });
-  const datasetId = `${DATASET_VERSION}-${simpleHash(hashInput)}`;
+  const hashInput = JSON.stringify({ profileId, overrides, dataset: datasetVersion, backend: backendLabel });
+  const datasetId = `${datasetFingerprint}:${simpleHash(hashInput)}`;
 
   return {
     manifest: {
       profile_id: profileId,
-      dataset_version: DATASET_VERSION,
+      dataset_version: datasetVersion,
       overrides,
       generated_at: timestamp,
       sources: manifestSources,
@@ -337,7 +356,7 @@ export function computeFigures(context: ComputeContext): ComputeResultPayload {
 }
 
 export function getDatasetVersion(): string {
-  return DATASET_VERSION;
+  return DEFAULT_DATASET_VERSION;
 }
 
 export function getCitations(): CitationDefinition[] {

@@ -102,6 +102,7 @@ export function ProfileControls(): JSX.Element {
                 onChange={(event) => setCommuteDays(Number(event.target.value))}
                 className="w-full accent-sky-500"
                 aria-valuetext={`${controls.commuteDaysPerWeek} commute days per week`}
+                data-testid="days-in-office-slider"
               />
             </label>
             <div className="space-y-2.5">
@@ -121,7 +122,11 @@ export function ProfileControls(): JSX.Element {
               </div>
               <div className="grid gap-2.5 sm:grid-cols-2">
                 {modeSegments.map(({ key, value, metadata }) => (
-                  <div key={key} className="space-y-1.5 rounded-lg border border-slate-800/70 bg-slate-900/60 pad-compact">
+                  <div
+                    key={key}
+                    className="space-y-1.5 rounded-lg border border-slate-800/70 bg-slate-900/60 pad-compact"
+                    data-testid={`mode-split-${key}`}
+                  >
                     <div className="flex items-center justify-between gap-1.5">
                       <div>
                         <p className="text-[13px] font-semibold text-slate-100">{metadata.label}</p>
@@ -161,6 +166,7 @@ export function ProfileControls(): JSX.Element {
                           ? 'border-sky-500 bg-sky-500/10 text-slate-100'
                           : 'border-slate-800 bg-slate-900/60 text-slate-300 hover:border-slate-600'
                       }`}
+                      data-testid={`diet-option-${key}`}
                     >
                       <span className="text-[13px] font-semibold">{copy.label}</span>
                       <span className="text-compact text-slate-400">{copy.helper}</span>

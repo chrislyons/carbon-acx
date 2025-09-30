@@ -1,0 +1,264 @@
+{
+  "manifest": {
+    "profile_id": "PRO.TO.24_39.HYBRID.2025",
+    "dataset_version": "dev",
+    "overrides": {},
+    "generated_at": "2025-09-30T04:10:41.404Z",
+    "sources": [
+      "SRC.COMMUTE.AUTO",
+      "SRC.COMMUTE.TRANSIT",
+      "SRC.COMMUTE.BIKE",
+      "SRC.DIET",
+      "SRC.MEDIA"
+    ]
+  },
+  "figures": {
+    "stacked": {
+      "data": [
+        {
+          "category": "Diet",
+          "layer_id": "lifestyle",
+          "values": {
+            "mean": 1965600,
+            "low": 1769040,
+            "high": 2162160
+          }
+        },
+        {
+          "category": "Commute",
+          "layer_id": "professional",
+          "values": {
+            "mean": 777192,
+            "low": 655200,
+            "high": 899184
+          }
+        },
+        {
+          "category": "Media",
+          "layer_id": "lifestyle",
+          "values": {
+            "mean": 98280,
+            "low": 68796,
+            "high": 127764
+          }
+        }
+      ],
+      "citation_keys": [
+        "SRC.COMMUTE.AUTO",
+        "SRC.COMMUTE.TRANSIT",
+        "SRC.COMMUTE.BIKE",
+        "SRC.DIET",
+        "SRC.MEDIA"
+      ]
+    },
+    "bubble": {
+      "data": [
+        {
+          "activity_id": "FOOD.DIET.OMNIVORE.WEEK",
+          "activity_name": "Omnivore diet",
+          "category": "Diet",
+          "layer_id": "lifestyle",
+          "annual_emissions_g": 1965600,
+          "values": {
+            "mean": 1965600,
+            "low": 1769040,
+            "high": 2162160
+          }
+        },
+        {
+          "activity_id": "TRAVEL.COMMUTE.CAR.WORKDAY",
+          "activity_name": "Drive to office",
+          "category": "Commute",
+          "layer_id": "professional",
+          "annual_emissions_g": 673920,
+          "values": {
+            "mean": 673920,
+            "low": 572832,
+            "high": 775008
+          }
+        },
+        {
+          "activity_id": "TRAVEL.COMMUTE.TRANSIT.WORKDAY",
+          "activity_name": "Transit to office",
+          "category": "Commute",
+          "layer_id": "professional",
+          "annual_emissions_g": 98280,
+          "values": {
+            "mean": 98280,
+            "low": 78624,
+            "high": 117936
+          }
+        },
+        {
+          "activity_id": "MEDIA.STREAM.HD.HOUR.TV",
+          "activity_name": "HD streaming",
+          "category": "Media",
+          "layer_id": "lifestyle",
+          "annual_emissions_g": 98280,
+          "values": {
+            "mean": 98280,
+            "low": 68796,
+            "high": 127764
+          }
+        },
+        {
+          "activity_id": "TRAVEL.COMMUTE.BIKE.WORKDAY",
+          "activity_name": "Bike to office",
+          "category": "Commute",
+          "layer_id": "professional",
+          "annual_emissions_g": 4992,
+          "values": {
+            "mean": 4992,
+            "low": 3744,
+            "high": 6240
+          }
+        }
+      ],
+      "citation_keys": [
+        "SRC.COMMUTE.AUTO",
+        "SRC.COMMUTE.TRANSIT",
+        "SRC.COMMUTE.BIKE",
+        "SRC.DIET",
+        "SRC.MEDIA"
+      ]
+    },
+    "sankey": {
+      "data": {
+        "nodes": [
+          {
+            "id": "category-commute",
+            "label": "Commute",
+            "type": "category"
+          },
+          {
+            "id": "activity-travel-commute-car-workday",
+            "label": "Drive to office",
+            "type": "activity"
+          },
+          {
+            "id": "activity-travel-commute-transit-workday",
+            "label": "Transit to office",
+            "type": "activity"
+          },
+          {
+            "id": "activity-travel-commute-bike-workday",
+            "label": "Bike to office",
+            "type": "activity"
+          },
+          {
+            "id": "category-diet",
+            "label": "Diet",
+            "type": "category"
+          },
+          {
+            "id": "activity-food-diet-omnivore-week",
+            "label": "Omnivore diet",
+            "type": "activity"
+          },
+          {
+            "id": "category-media",
+            "label": "Media",
+            "type": "category"
+          },
+          {
+            "id": "activity-media-stream-hd-hour-tv",
+            "label": "HD streaming",
+            "type": "activity"
+          }
+        ],
+        "links": [
+          {
+            "source": "category-commute",
+            "target": "activity-travel-commute-car-workday",
+            "category": "Commute",
+            "layer_id": "professional",
+            "values": {
+              "mean": 673920,
+              "low": 572832,
+              "high": 775008
+            }
+          },
+          {
+            "source": "category-commute",
+            "target": "activity-travel-commute-transit-workday",
+            "category": "Commute",
+            "layer_id": "professional",
+            "values": {
+              "mean": 98280,
+              "low": 78624,
+              "high": 117936
+            }
+          },
+          {
+            "source": "category-commute",
+            "target": "activity-travel-commute-bike-workday",
+            "category": "Commute",
+            "layer_id": "professional",
+            "values": {
+              "mean": 4992,
+              "low": 3744,
+              "high": 6240
+            }
+          },
+          {
+            "source": "category-diet",
+            "target": "activity-food-diet-omnivore-week",
+            "category": "Diet",
+            "layer_id": "lifestyle",
+            "values": {
+              "mean": 1965600,
+              "low": 1769040,
+              "high": 2162160
+            }
+          },
+          {
+            "source": "category-media",
+            "target": "activity-media-stream-hd-hour-tv",
+            "category": "Media",
+            "layer_id": "lifestyle",
+            "values": {
+              "mean": 98280,
+              "low": 68796,
+              "high": 127764
+            }
+          }
+        ]
+      },
+      "citation_keys": [
+        "SRC.COMMUTE.AUTO",
+        "SRC.COMMUTE.TRANSIT",
+        "SRC.COMMUTE.BIKE",
+        "SRC.DIET",
+        "SRC.MEDIA"
+      ]
+    }
+  },
+  "references": [
+    {
+      "key": "SRC.COMMUTE.AUTO",
+      "n": 1,
+      "text": "Transport Canada. Commuter Vehicle Emissions, 2023. https://tc.canada.ca"
+    },
+    {
+      "key": "SRC.COMMUTE.TRANSIT",
+      "n": 2,
+      "text": "Canadian Urban Transit Association. Ridership and Emissions Profile, 2023."
+    },
+    {
+      "key": "SRC.COMMUTE.BIKE",
+      "n": 3,
+      "text": "City of Vancouver. Active Transportation Emissions Study, 2022."
+    },
+    {
+      "key": "SRC.DIET",
+      "n": 4,
+      "text": "Agriculture and Agri-Food Canada. Diet-based Life Cycle Assessment, 2022."
+    },
+    {
+      "key": "SRC.MEDIA",
+      "n": 5,
+      "text": "CRTC. Streaming Electricity Intensity in Canadian Households, 2023."
+    }
+  ],
+  "datasetId": "sha256:fb9c0aa7a501b7047312f0392a6626f1:6c979714"
+}

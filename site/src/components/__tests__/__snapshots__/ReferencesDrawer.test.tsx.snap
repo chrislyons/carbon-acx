@@ -61,6 +61,7 @@ exports[`ReferencesDrawer > renders references and closes on escape 1`] = `
       >
         <li
           class="rounded-lg border border-slate-800/70 bg-slate-950/60 pad-compact text-left shadow-inner shadow-slate-900/30"
+          data-testid="reference-item"
         >
           <span
             class="block text-[11px] uppercase tracking-[0.3em] text-sky-400"
@@ -75,6 +76,7 @@ exports[`ReferencesDrawer > renders references and closes on escape 1`] = `
         </li>
         <li
           class="rounded-lg border border-slate-800/70 bg-slate-950/60 pad-compact text-left shadow-inner shadow-slate-900/30"
+          data-testid="reference-item"
         >
           <span
             class="block text-[11px] uppercase tracking-[0.3em] text-sky-400"

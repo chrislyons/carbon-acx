@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { StorySection } from '../components/StorySection';
-import { compute } from '../lib/api';
+import { compute, type ComputeResponse } from '../lib/api';
 import { formatEmission, formatKilograms } from '../lib/format';
 import {
   buildReferenceLookup,
@@ -9,7 +9,7 @@ import {
   resolveReferenceIndices,
   type ReferenceCarrier
 } from '../lib/references';
-import type { ComputeResult } from '../state/profile';
+type ComputeResult = ComputeResponse;
 
 const DEFAULT_PROFILE_ID = 'PRO.TO.24_39.HYBRID.2025';
 
@@ -39,7 +39,14 @@ function normaliseReferences(value: unknown): string[] {
     return [];
   }
   return value
-    .map((entry) => (typeof entry === 'string' ? entry.trim() : null))
+    .map((entry) => {
+      if (!entry || typeof entry !== 'object') {
+        return null;
+      }
+      const record = entry as Record<string, unknown>;
+      const text = typeof record.text === 'string' ? record.text.trim() : '';
+      return text || null;
+    })
     .filter((entry): entry is string => Boolean(entry));
 }
 
@@ -305,10 +312,7 @@ export default function Story(): JSX.Element {
       setStatus('loading');
       setError(null);
       try {
-        const response = await compute<ComputeResult>(
-          { profile_id: DEFAULT_PROFILE_ID, overrides: {} },
-          { signal: controller.signal }
-        );
+        const response = await compute({ profile_id: DEFAULT_PROFILE_ID, overrides: {} }, { signal: controller.signal });
         if (cancelled) {
           return;
         }

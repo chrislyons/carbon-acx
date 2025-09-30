@@ -10,3 +10,6 @@ calc/outputs/
 .pytest_cache/
 node_modules/
 *.csv~
+acx.db
+playwright-report/
+test-results/

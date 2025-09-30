@@ -5,6 +5,7 @@ import { ExportMenu } from './ExportMenu';
 import { LayerToggles } from './LayerToggles';
 import { Sankey, SankeyData, SankeyLink } from './Sankey';
 import { Stacked, StackedDatum } from './Stacked';
+import { AlertInline } from './AlertInline';
 import { formatEmission } from '../lib/format';
 import { buildReferenceLookup } from '../lib/references';
 import { useProfile } from '../state/profile';
@@ -217,6 +218,7 @@ const STATUS_LABEL: Record<string, string> = {
 export function VizCanvas(): JSX.Element {
   const {
     status,
+    mode,
     result,
     error,
     refresh,
@@ -265,8 +267,8 @@ export function VizCanvas(): JSX.Element {
     [activeReferenceKeys]
   );
 
-  const statusTone = resolveStatusTone(status);
-  const statusLabel = STATUS_LABEL[status] ?? status;
+  const statusTone = mode === 'static' ? 'text-amber-300' : resolveStatusTone(status);
+  const statusLabel = mode === 'static' ? 'Baseline mode' : STATUS_LABEL[status] ?? status;
   const canvasRef = useRef<HTMLElement | null>(null);
 
   const hasLayerToggles = useMemo(
@@ -274,11 +276,41 @@ export function VizCanvas(): JSX.Element {
     [availableLayers, baseLayer]
   );
 
+  const showSkeleton = status === 'loading' && result === null;
+
+  const skeletonCards = (
+    <div className="grid gap-2.5 sm:grid-cols-3">
+      {Array.from({ length: 3 }).map((_, index) => (
+        <div
+          key={`skeleton-card-${index}`}
+          className="rounded-lg border border-slate-800/70 bg-slate-900/60 pad-compact"
+        >
+          <div className="h-3 w-24 animate-pulse rounded bg-slate-800/70" />
+          <div className="mt-3 h-6 w-28 animate-pulse rounded bg-slate-800/80" />
+          <div className="mt-3 h-3 w-36 animate-pulse rounded bg-slate-800/70" />
+        </div>
+      ))}
+    </div>
+  );
+
+  const skeletonCharts = (
+    <div className="grid gap-2.5 lg:grid-cols-3">
+      {Array.from({ length: 3 }).map((_, index) => (
+        <div
+          key={`skeleton-chart-${index}`}
+          className="h-64 rounded-xl border border-slate-800/60 bg-slate-900/40"
+        >
+          <div className="h-full w-full animate-pulse rounded-xl bg-slate-800/40" />
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <section
       ref={canvasRef}
       aria-labelledby="viz-canvas-heading"
-      className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-800/70 bg-gradient-to-br from-slate-900/80 via-slate-900 to-slate-950 p-3 shadow-lg shadow-slate-900/50 sm:p-4"
+      className="relative flex min-h-[calc(100vh-120px)] flex-col overflow-hidden rounded-2xl border border-slate-800/70 bg-gradient-to-br from-slate-900/80 via-slate-900 to-slate-950 p-3 shadow-lg shadow-slate-900/50 sm:p-4"
     >
       <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
         <div>
@@ -295,7 +327,10 @@ export function VizCanvas(): JSX.Element {
             <span className={`text-[13px] font-semibold ${statusTone}`} aria-live="polite">
               {statusLabel}
             </span>
-            <span className="mt-0.5 text-[10px] uppercase tracking-[0.35em] text-slate-300">
+            <span
+              className="mt-0.5 text-[10px] uppercase tracking-[0.35em] text-slate-300"
+              data-testid="dataset-id"
+            >
               dataset {datasetVersion}
             </span>
           </div>
@@ -305,28 +340,22 @@ export function VizCanvas(): JSX.Element {
       <div className="mt-2.5 flex-1 overflow-hidden rounded-xl border border-slate-800/60 bg-slate-950/50">
         <div className="flex h-full flex-col overflow-y-auto p-3">
           {status === 'error' ? (
-            <div
-              role="alert"
-              className="mb-3 space-y-1.5 rounded-xl border border-rose-500/40 bg-rose-500/10 p-3 text-compact text-rose-100 shadow-inner shadow-rose-900/30"
-            >
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-[13px] font-semibold uppercase tracking-[0.2em] text-rose-100">
-                  Unable to refresh results
-                </p>
-                <button
-                  type="button"
-                  onClick={refresh}
-                  className="inline-flex min-h-[44px] items-center justify-center rounded-md border border-rose-400/60 bg-rose-500/20 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.25em] text-rose-50 transition hover:bg-rose-500/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-300"
-                >
-                  Retry
-                </button>
-              </div>
-              <p className="text-[13px] text-rose-100/90">
-                {error ?? 'We could not reach the compute service. Please try again.'}
-              </p>
+            <div className="mb-3">
+              <AlertInline
+                tone="error"
+                message={error ?? 'We could not reach the compute service. Please try again.'}
+                actionLabel="Retry"
+                onAction={refresh}
+              />
             </div>
           ) : null}
-          {status !== 'error' && result === null ? (
+          {showSkeleton ? (
+            <div className="space-y-4">
+              {skeletonCards}
+              {skeletonCharts}
+            </div>
+          ) : null}
+          {status !== 'error' && !showSkeleton && result === null ? (
             <div className="grid min-h-[200px] flex-1 place-items-center text-center text-compact text-slate-400">
               <div className="space-y-2">
                 <p className="text-[15px] font-medium text-slate-200">Ready for the first compute run</p>
@@ -334,12 +363,17 @@ export function VizCanvas(): JSX.Element {
               </div>
             </div>
           ) : null}
-          {status !== 'error' && result !== null ? (
+          {status !== 'error' && result !== null && !showSkeleton ? (
             <div className="space-y-4">
               <div className="grid gap-2.5 sm:grid-cols-3">
                 <div className="rounded-lg border border-slate-800/70 bg-slate-900/60 pad-compact">
                   <p className="text-[10px] uppercase tracking-[0.35em] text-slate-300">Total emissions</p>
-                  <p className="mt-1.5 text-lg font-semibold text-slate-50">{formatEmission(total)}</p>
+                  <p
+                    className="mt-1.5 text-lg font-semibold text-slate-50"
+                    data-testid="total-emissions-value"
+                  >
+                    {formatEmission(total)}
+                  </p>
                   <p className="mt-1.5 text-[10px] uppercase tracking-[0.35em] text-slate-300">
                     {generatedAt ? `run ${new Date(generatedAt).toLocaleString()}` : 'timestamp pending'}
                   </p>

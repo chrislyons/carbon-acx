@@ -175,8 +175,55 @@ PY
       - name: Diff backend exports
         run: python tools/diff_exports.py parity/csv/export_view.json parity/duckdb/export_view.json
 
+  compute-smoke:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install site dependencies
+        run: npm --prefix site ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Seed development database
+        run: npm run dev:seed
+
+      - name: Run compute smoke test
+        env:
+          CI: 'true'
+        run: bash scripts/doctor_post_pr13.sh
+
+      - name: Upload Playwright artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-smoke-artifacts
+          path: |
+            playwright-report
+            test-results
+          if-no-files-found: ignore
+
+      - name: Upload smoke logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: doctor-logs
+          path: /tmp/doctor-post-pr13*.log
+          if-no-files-found: ignore
+
   deploy-pages:
-    needs: [build, backend-parity]
+    needs: [build, backend-parity, compute-smoke]
     if: github.ref == 'refs/heads/main'
     permissions:
       pages: write

@@ -126,6 +126,7 @@ Each module is self-documenting with inline comments and docstrings. Start with 
 - Execute the pytest suite: `make test`
 - Run lint + tests together: `make validate`
 - Generate a CycloneDX SBOM: `make sbom`
+- Run the full worker + site smoke test (seeds DB, verifies health, and executes Playwright): `bash scripts/doctor_post_pr13.sh`
 
 ### Production builds
 
