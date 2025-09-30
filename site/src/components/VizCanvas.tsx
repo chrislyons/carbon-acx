@@ -1,6 +1,7 @@
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 
 import { Bubble, BubbleDatum } from './Bubble';
+import { ExportMenu } from './ExportMenu';
 import { Sankey, SankeyData } from './Sankey';
 import { Stacked, StackedDatum } from './Stacked';
 import { formatEmission } from '../lib/format';
@@ -118,13 +119,15 @@ export function VizCanvas(): JSX.Element {
 
   const statusTone = resolveStatusTone(status);
   const statusLabel = STATUS_LABEL[status] ?? status;
+  const canvasRef = useRef<HTMLElement | null>(null);
 
   return (
     <section
+      ref={canvasRef}
       aria-labelledby="viz-canvas-heading"
       className="relative overflow-hidden rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900/80 via-slate-900 to-slate-950 p-6 shadow-lg shadow-slate-900/50"
     >
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 id="viz-canvas-heading" className="text-lg font-semibold">
             Visualization Canvas
@@ -133,14 +136,17 @@ export function VizCanvas(): JSX.Element {
             Connected to the live compute API. Figures refresh automatically when controls change.
           </p>
         </div>
-        <div className="hidden sm:flex sm:flex-col sm:items-end sm:text-xs sm:text-slate-500">
-          <span>Status</span>
-          <span className={`font-semibold ${statusTone}`} aria-live="polite">
-            {statusLabel}
-          </span>
-          <span className="mt-1 text-[11px] uppercase tracking-[0.3em] text-slate-600">
-            dataset {datasetVersion}
-          </span>
+        <div className="flex items-start justify-end gap-3 sm:items-start">
+          <div className="hidden sm:flex sm:flex-col sm:items-end sm:text-xs sm:text-slate-500">
+            <span>Status</span>
+            <span className={`font-semibold ${statusTone}`} aria-live="polite">
+              {statusLabel}
+            </span>
+            <span className="mt-1 text-[11px] uppercase tracking-[0.3em] text-slate-600">
+              dataset {datasetVersion}
+            </span>
+          </div>
+          <ExportMenu canvasRef={canvasRef} />
         </div>
       </div>
       <div className="mt-6 rounded-xl border border-slate-800/80 bg-slate-950/60 p-5">
