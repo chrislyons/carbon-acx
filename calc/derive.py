@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import json
 import math
 import os
@@ -52,6 +53,108 @@ EXPORT_COLUMNS = [
 
 datetime = _datetime_module.datetime
 timezone = _datetime_module.timezone
+
+_FORMULA_PATTERN = re.compile(r"^fu\s*=\s*(.+)$")
+_VARIABLE_NAME_PATTERN = re.compile(r"^[a-z_]+$")
+
+
+class _FormulaValidationError(ValueError):
+    """Internal marker for invalid functional unit formulas."""
+
+
+def _coerce_numeric(value: Any) -> float:
+    if isinstance(value, (int, float, Decimal)):
+        return float(value)
+    raise TypeError(f"Unsupported value type for formula evaluation: {type(value)!r}")
+
+
+def _evaluate_formula_node(node: ast.AST, variables: Mapping[str, Any]) -> Optional[float]:
+    if isinstance(node, ast.Expression):
+        return _evaluate_formula_node(node.body, variables)
+
+    if isinstance(node, ast.BinOp) and isinstance(
+        node.op, (ast.Add, ast.Sub, ast.Mult, ast.Div)
+    ):
+        left = _evaluate_formula_node(node.left, variables)
+        right = _evaluate_formula_node(node.right, variables)
+        if left is None or right is None:
+            return None
+        if isinstance(node.op, ast.Add):
+            return left + right
+        if isinstance(node.op, ast.Sub):
+            return left - right
+        if isinstance(node.op, ast.Mult):
+            return left * right
+        if isinstance(node.op, ast.Div):
+            return left / right
+
+    if isinstance(node, ast.UnaryOp) and isinstance(node.op, (ast.UAdd, ast.USub)):
+        operand = _evaluate_formula_node(node.operand, variables)
+        if operand is None:
+            return None
+        if isinstance(node.op, ast.UAdd):
+            return +operand
+        if isinstance(node.op, ast.USub):
+            return -operand
+
+    if isinstance(node, ast.Name):
+        if not _VARIABLE_NAME_PATTERN.fullmatch(node.id):
+            raise _FormulaValidationError(f"Invalid variable name: {node.id}")
+        if node.id not in variables:
+            return None
+        value = variables[node.id]
+        if value is None:
+            return None
+        try:
+            return _coerce_numeric(value)
+        except TypeError as exc:  # pragma: no cover - defensive guard
+            raise _FormulaValidationError(str(exc)) from exc
+
+    if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
+        return float(node.value)
+
+    raise _FormulaValidationError(f"Unsupported expression element: {ast.dump(node, include_attributes=False)}")
+
+
+def evaluate_functional_unit_formula(
+    formula: Optional[str], variables: Mapping[str, Any]
+) -> Optional[float]:
+    """Evaluate a functional unit conversion formula against provided variables.
+
+    The evaluator only supports a constrained arithmetic grammar with the operators
+    ``+``, ``-``, ``*`` and ``/`` alongside numeric literals and snake_case
+    variable references. When a variable referenced by the formula is missing or
+    resolves to ``None``, ``None`` is returned to indicate that a functional unit
+    could not be derived. Any structural issues with the formula will raise a
+    :class:`ValueError`.
+    """
+
+    if formula is None:
+        return None
+
+    formula = formula.strip()
+    if not formula:
+        return None
+
+    match = _FORMULA_PATTERN.match(formula)
+    if not match:
+        raise ValueError(f"Unsupported functional unit formula: {formula}")
+
+    rhs = match.group(1).strip()
+    if not rhs:
+        return None
+
+    try:
+        parsed = ast.parse(rhs, mode="eval")
+    except SyntaxError as exc:  # pragma: no cover - defensive guard
+        raise ValueError(f"Invalid functional unit formula: {formula}") from exc
+
+    try:
+        result = _evaluate_formula_node(parsed, variables)
+    except _FormulaValidationError as exc:
+        raise ValueError(str(exc)) from exc
+
+    return result
 
 
 def _quantize_float(value: float) -> float:

@@ -1,6 +1,7 @@
 activity_id,layer_id,category,name,default_unit,description,unit_definition,notes
 FOOD.COFFEE.CUP.HOT,professional,food,Coffee—12 oz hot,cup,Cup of coffee,,
 stream,professional,,stream,,HD streaming on TV,,
+MEDIA.STREAM.HD.HOUR,online,media,HD video streaming—per hour,hour,One hour of high-definition video streaming on any device.,,Aggregates playback plus network electricity for representative HD streaming.
 MEDIA.STREAM.HD.HOUR.TV,online,media,HD video streaming on TV—per hour,hour,One hour of high-definition video streaming delivered to a television via broadband.,,Electricity use covers device playback plus network and data-centre demand per hour of 1080p streaming.
 MEDIA.STREAM.UHD.HOUR.TV,online,media,Ultra HD (4K) video streaming on TV—per hour,hour,One hour of ultra-high-definition (4K) streaming to a television.,,EF to be added after validating 4K bandwidth intensity.
 SOCIAL.SCROLL.HOUR.MOBILE,online,social,Mobile social media browsing—per hour,hour,Scrolling a social media feed on a smartphone over mobile or Wi-Fi data.,,Electricity covers handset use plus average data-transfer intensity per hour of social media use.
@@ -10,5 +11,7 @@ AI.LLM.INFER.1K_TOKENS.GENERIC,online,ai,LLM inference—1K token response,1k_to
 DOWNLOAD.GAME.CONSOLE.50GB,online,downloads,Download 50 GB console game,download,Downloading a 50 gigabyte digital game to a console.,"download" equals one 50 GB transfer.,Pending validation against broadband download intensity.
 CLOUD.STORAGE.SYNC.GB_MONTH,online,cloud,Cloud storage sync per GB-month,gb_month,Maintaining one gigabyte of synced cloud storage for one month.,"gb_month" equals one gigabyte stored and synced for one month.,To be updated with hyperscale storage intensity.
 CLOUD.DOWNLOAD.GB,online,downloads,Cloud data download—per GB,GB,Transferring one gigabyte of data from a cloud service to a consumer device.,"GB" refers to a gigabyte of data downloaded.,Electricity covers wide-area data transfer and data-centre egress for cloud content delivery.
+TRAN.SCHOOLRUN.CAR.KM,professional,mobility,School run by car—per kilometre,km,Passenger kilometres for a school run completed by car.,,Passengers default to one when unspecified.
+TRAN.SCHOOLRUN.BIKE.KM,professional,mobility,School run by bike—per kilometre,km,Distance travelled by bicycle for a school run.,,
 IND_LIGHT.LOGISTICS.FORKLIFT.HOUR,industrial_light,logistics,Forklift material handling—per operating hour,hour,Operating an electric or propane forklift for one hour of material handling within a light-industrial facility.,,Pending validated load-factor and fuel split assumptions for forklifts.
 IND_LIGHT.WAREHOUSE.BASE_LOAD.SQFT_MONTH,industrial_light,warehousing,Warehouse base building load—per ft²-month,ft2_month,"Maintaining base building services (lighting, ventilation, idle equipment) for one square foot of light-industrial warehouse over a month.","ft2_month" equals one square foot maintained for one calendar month.,Requires region-specific base-load and occupancy schedule data prior to activation.

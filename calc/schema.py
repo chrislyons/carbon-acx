@@ -130,6 +130,36 @@ class Activity(BaseModel):
         return self
 
 
+class FunctionalUnitDomain(str, Enum):
+    MOBILITY = "mobility"
+    HYDRATION = "hydration"
+    LOGISTICS = "logistics"
+    INFORMATION = "information"
+    NUTRITION = "nutrition"
+    SHELTER = "shelter"
+    COMFORT = "comfort"
+    CARE = "care"
+
+
+class FunctionalUnit(BaseModel):
+    functional_unit_id: str
+    name: str
+    domain: FunctionalUnitDomain
+    si_equiv: Optional[str] = None
+    notes: Optional[str] = None
+
+    model_config = ConfigDict(extra="ignore")
+
+
+class ActivityFunctionalUnitMap(BaseModel):
+    activity_id: str
+    functional_unit_id: str
+    conversion_formula: Optional[str] = None
+    assumption_notes: Optional[str] = None
+
+    model_config = ConfigDict(extra="ignore")
+
+
 class EmissionFactor(BaseModel):
     activity_id: str
     unit: Optional[str] = None
@@ -391,6 +421,53 @@ def load_profiles() -> List[Profile]:
 
 def load_activities() -> List[Activity]:
     return _load_csv_list(DATA_DIR / "activities.csv", Activity)
+
+
+def load_functional_units() -> List[FunctionalUnit]:
+    return _load_csv_list(DATA_DIR / "functional_units.csv", FunctionalUnit)
+
+
+def load_activity_fu_map(
+    *,
+    activities: Sequence[Activity] | None = None,
+    functional_units: Sequence[FunctionalUnit] | None = None,
+) -> List[ActivityFunctionalUnitMap]:
+    mappings = _load_csv_list(DATA_DIR / "activity_fu_map.csv", ActivityFunctionalUnitMap)
+    if not mappings:
+        return mappings
+
+    activity_records = activities if activities is not None else load_activities()
+    functional_unit_records = (
+        functional_units if functional_units is not None else load_functional_units()
+    )
+
+    activity_ids = {activity.activity_id for activity in activity_records}
+    functional_unit_ids = {
+        functional_unit.functional_unit_id for functional_unit in functional_unit_records
+    }
+
+    missing_activities = sorted(
+        {mapping.activity_id for mapping in mappings if mapping.activity_id not in activity_ids}
+    )
+    if missing_activities:
+        raise ValueError(
+            "Unknown activity_id referenced by activity_fu_map: " + ", ".join(missing_activities)
+        )
+
+    missing_functional_units = sorted(
+        {
+            mapping.functional_unit_id
+            for mapping in mappings
+            if mapping.functional_unit_id not in functional_unit_ids
+        }
+    )
+    if missing_functional_units:
+        raise ValueError(
+            "Unknown functional_unit_id referenced by activity_fu_map: "
+            + ", ".join(missing_functional_units)
+        )
+
+    return mappings
 
 
 def load_activity_schedule() -> List[ActivitySchedule]:
