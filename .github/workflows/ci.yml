@@ -48,47 +48,9 @@ jobs:
         run: |
           set -euo pipefail
           make db_init db_import build_db
-          python - "SQLite" "SQLITE_OUTPUTS" <<'PY'
-import json
-import os
-import pathlib
-import sys
-
-manifest_path = pathlib.Path("dist/artifacts/latest-build.json")
-if not manifest_path.exists():
-    raise SystemExit("latest-build.json not found after database build")
-
-manifest = json.loads(manifest_path.read_text())
-artifact_dir = pathlib.Path(manifest["artifact_dir"]).expanduser().resolve()
-outputs_dir = artifact_dir / "calc" / "outputs"
-if not outputs_dir.is_dir():
-    raise SystemExit(f"{sys.argv[1]} build outputs not found at {outputs_dir}")
-
-print(f"{sys.argv[1]} build outputs: {outputs_dir}")
-with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env_file:
-    print(f"{sys.argv[2]}={outputs_dir}", file=env_file)
-PY
+          python tools/record_calc_outputs.py "SQLite" "SQLITE_OUTPUTS"
           make build_csv
-          python - "CSV" "CSV_OUTPUTS" <<'PY'
-import json
-import os
-import pathlib
-import sys
-
-manifest_path = pathlib.Path("dist/artifacts/latest-build.json")
-if not manifest_path.exists():
-    raise SystemExit("latest-build.json not found after CSV build")
-
-manifest = json.loads(manifest_path.read_text())
-artifact_dir = pathlib.Path(manifest["artifact_dir"]).expanduser().resolve()
-outputs_dir = artifact_dir / "calc" / "outputs"
-if not outputs_dir.is_dir():
-    raise SystemExit(f"{sys.argv[1]} build outputs not found at {outputs_dir}")
-
-print(f"{sys.argv[1]} build outputs: {outputs_dir}")
-with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env_file:
-    print(f"{sys.argv[2]}={outputs_dir}", file=env_file)
-PY
+          python tools/record_calc_outputs.py "CSV" "CSV_OUTPUTS"
 
       - name: Diff CSV and SQLite outputs
         if: matrix.backend == 'csv'
