@@ -93,16 +93,27 @@ async function buildCacheKey(
   return new Request(cacheUrl.toString(), { method: "GET" });
 }
 
-async function fetchBackend(env: Env, payload: ComputePayload): Promise<Response> {
-  const target = env.ACX_COMPUTE_SERVICE_URL;
-  if (!target) {
-    return errorResponse(500, "ACX_COMPUTE_SERVICE_URL is not configured");
+function resolveBackendUrl(env: Env, suffix: string, search: string): string | null {
+  const base = env.ACX_COMPUTE_SERVICE_URL;
+  if (!base) {
+    return null;
   }
+  const trimmedBase = base.replace(/\/+$/, "");
+  const normalisedSuffix = suffix ? `/${suffix.replace(/^\/+/, "")}` : "";
+  const query = search ?? "";
+  return `${trimmedBase}${normalisedSuffix}${query}`;
+}
+
+async function proxyBackend(
+  target: string,
+  payload: ComputePayload,
+  accept: string,
+): Promise<Response> {
   const backendRequest = new Request(target, {
     method: "POST",
     headers: {
       "content-type": JSON_TYPE,
-      "accept": JSON_TYPE,
+      accept,
     },
     body: JSON.stringify(payload),
   });
@@ -124,6 +135,92 @@ function cacheControlHeaders(): HeadersInit {
   };
 }
 
+async function handleCompute(request: Request, env: Env, target: string): Promise<Response> {
+  if (request.method !== "POST") {
+    return errorResponse(405, "method not allowed");
+  }
+
+  let payload: ComputePayload;
+  try {
+    payload = normaliseRequest(await request.json());
+  } catch (error) {
+    return errorResponse(400, error instanceof Error ? error.message : "invalid payload");
+  }
+
+  const cache = caches.default;
+  const datasetHint = env.ACX_DATASET_VERSION ?? cachedDatasetVersion;
+  if (datasetHint) {
+    const cacheRequest = await buildCacheKey(payload.profile_id, payload.overrides, datasetHint);
+    const cached = await cache.match(cacheRequest);
+    if (cached) {
+      return cached;
+    }
+  }
+
+  const backendResponse = await proxyBackend(target, payload, JSON_TYPE);
+  if (!backendResponse.ok) {
+    return backendResponse;
+  }
+
+  const result = await backendResponse.json();
+  const manifest = result?.manifest;
+  const datasetVersion =
+    typeof manifest?.dataset_version === "string" && manifest.dataset_version
+      ? manifest.dataset_version
+      : env.ACX_DATASET_VERSION ?? "unknown";
+
+  cachedDatasetVersion = datasetVersion;
+
+  const body = JSON.stringify(result);
+  const response = new Response(body, {
+    status: 200,
+    headers: cacheControlHeaders(),
+  });
+
+  const cacheRequest = await buildCacheKey(payload.profile_id, payload.overrides, datasetVersion);
+  await cache.put(cacheRequest, response.clone());
+
+  return response;
+}
+
+async function handleExport(request: Request, target: string, url: URL): Promise<Response> {
+  if (request.method !== "POST") {
+    return errorResponse(405, "method not allowed");
+  }
+
+  let payload: ComputePayload;
+  try {
+    payload = normaliseRequest(await request.json());
+  } catch (error) {
+    return errorResponse(400, error instanceof Error ? error.message : "invalid payload");
+  }
+
+  const format = url.searchParams.get("format")?.toLowerCase() ?? "csv";
+  const acceptHeader =
+    format === "csv"
+      ? "text/csv"
+      : format === "json"
+        ? JSON_TYPE
+        : format === "txt" || format === "text"
+          ? "text/plain"
+          : request.headers.get("accept") ?? "application/octet-stream";
+
+  const backendResponse = await proxyBackend(target, payload, acceptHeader);
+  if (!backendResponse.ok) {
+    return backendResponse;
+  }
+
+  const headers = new Headers(backendResponse.headers);
+  if (!headers.has("cache-control")) {
+    headers.set("cache-control", "private, max-age=60");
+  }
+
+  return new Response(backendResponse.body, {
+    status: backendResponse.status,
+    headers,
+  });
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     if (request.method === "OPTIONS") {
@@ -137,50 +234,28 @@ export default {
       });
     }
 
-    if (request.method !== "POST") {
-      return errorResponse(405, "method not allowed");
+    const url = new URL(request.url);
+    if (!url.pathname.startsWith("/api/compute")) {
+      return errorResponse(404, "not found");
     }
 
-    let payload: ComputePayload;
-    try {
-      payload = normaliseRequest(await request.json());
-    } catch (error) {
-      return errorResponse(400, error instanceof Error ? error.message : "invalid payload");
+    const remainder = url.pathname.slice("/api/compute".length);
+    const trimmed = remainder.replace(/^\/+/, "").replace(/\/+$/, "");
+    const suffix = trimmed ? trimmed : "";
+
+    const target = resolveBackendUrl(env, suffix, url.search);
+    if (!target) {
+      return errorResponse(500, "ACX_COMPUTE_SERVICE_URL is not configured");
     }
 
-    const cache = caches.default;
-    const datasetHint = env.ACX_DATASET_VERSION ?? cachedDatasetVersion;
-    if (datasetHint) {
-      const cacheRequest = await buildCacheKey(payload.profile_id, payload.overrides, datasetHint);
-      const cached = await cache.match(cacheRequest);
-      if (cached) {
-        return cached;
-      }
+    if (!suffix) {
+      return handleCompute(request, env, target);
     }
 
-    const backendResponse = await fetchBackend(env, payload);
-    if (!backendResponse.ok) {
-      return backendResponse;
+    if (suffix === "export") {
+      return handleExport(request, target, url);
     }
 
-    const result = await backendResponse.json();
-    const manifest = result?.manifest;
-    const datasetVersion =
-      typeof manifest?.dataset_version === "string" && manifest.dataset_version
-        ? manifest.dataset_version
-        : env.ACX_DATASET_VERSION ?? "unknown";
-
-    cachedDatasetVersion = datasetVersion;
-
-    const body = JSON.stringify(result);
-    const response = new Response(body, {
-      status: 200,
-      headers: cacheControlHeaders(),
-    });
-
-    const cacheRequest = await buildCacheKey(payload.profile_id, payload.overrides, datasetVersion);
-    await cache.put(cacheRequest, response.clone());
-
-    return response;
+    return errorResponse(404, "not found");
   },
 };
