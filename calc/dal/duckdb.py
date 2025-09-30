@@ -8,7 +8,17 @@ try:  # pragma: no cover - optional dependency
 except ImportError:  # pragma: no cover - handled lazily
     duckdb = None
 
-from ..schema import Activity, ActivitySchedule, EmissionFactor, GridIntensity, Profile
+from ..schema import (
+    Activity,
+    ActivitySchedule,
+    Asset,
+    EmissionFactor,
+    Entity,
+    GridIntensity,
+    Operation,
+    Profile,
+    Site,
+)
 
 DATA_DIR = Path(__file__).resolve().parents[2] / "data"
 
@@ -53,6 +63,22 @@ class DuckDbStore:
             }
             payload.append(record)
         return payload
+
+    def load_entities(self) -> Sequence[Entity]:
+        rows = self._load("entities.csv")
+        return [Entity(**row) for row in rows]
+
+    def load_sites(self) -> Sequence[Site]:
+        rows = self._load("sites.csv")
+        return [Site(**row) for row in rows]
+
+    def load_assets(self) -> Sequence[Asset]:
+        rows = self._load("assets.csv")
+        return [Asset(**row) for row in rows]
+
+    def load_operations(self) -> Sequence[Operation]:
+        rows = self._load("operations.csv")
+        return [Operation(**row) for row in rows]
 
     def load_activities(self) -> Sequence[Activity]:
         rows = self._load("activities.csv")

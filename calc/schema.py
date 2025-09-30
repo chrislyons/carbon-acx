@@ -12,7 +12,7 @@ from __future__ import annotations
 from pathlib import Path
 from datetime import date
 from enum import Enum
-from typing import Dict, List, Optional, Literal, Tuple
+from typing import Dict, List, Optional, Literal, Sequence, Set, Tuple
 
 import pandas as pd
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -88,6 +88,18 @@ class LayerId(str, Enum):
         if self is LayerId.INDUSTRIAL_HEAVY:
             return "Industrial (Heavy)"
         return self.value.title()
+
+
+class EntityType(str, Enum):
+    CORPORATE = "corporate"
+    MUNICIPAL = "municipal"
+    NGO = "ngo"
+    SOVEREIGN = "sovereign"
+
+
+class UtilizationBasis(str, Enum):
+    METERED = "metered"
+    MODELED = "modeled"
 
 
 ScopeBoundary = Literal[
@@ -199,6 +211,56 @@ class Profile(BaseModel):
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
 
 
+class Entity(BaseModel):
+    entity_id: str
+    name: Optional[str] = None
+    type: EntityType
+    parent_entity_id: Optional[str] = None
+    notes: Optional[str] = None
+
+    model_config = ConfigDict(extra="ignore")
+
+
+class Site(BaseModel):
+    site_id: str
+    entity_id: str
+    name: Optional[str] = None
+    region_code: Optional[RegionCode] = None
+    lat: Optional[float] = None
+    lon: Optional[float] = None
+    notes: Optional[str] = None
+
+    model_config = ConfigDict(extra="ignore")
+
+
+class Asset(BaseModel):
+    asset_id: str
+    site_id: str
+    asset_type: Optional[str] = None
+    name: Optional[str] = None
+    year: Optional[int] = None
+    power_rating_kw: Optional[float] = None
+    fuel_type: Optional[str] = None
+    notes: Optional[str] = None
+
+    model_config = ConfigDict(extra="ignore")
+
+
+class Operation(BaseModel):
+    operation_id: str
+    asset_id: str
+    activity_id: str
+    functional_unit_id: Optional[str] = None
+    utilization_basis: Optional[UtilizationBasis] = None
+    period_start: Optional[str] = None
+    period_end: Optional[str] = None
+    throughput_value: Optional[float] = None
+    throughput_unit: Optional[str] = None
+    notes: Optional[str] = None
+
+    model_config = ConfigDict(extra="ignore")
+
+
 class ActivitySchedule(BaseModel):
     profile_id: str
     activity_id: str
@@ -233,6 +295,90 @@ class GridIntensity(BaseModel):
 
 
 # Loader helpers
+
+
+def load_entities() -> List[Entity]:
+    entities = _load_csv_list(DATA_DIR / "entities.csv", Entity)
+    if not entities:
+        return entities
+
+    entity_ids = {entity.entity_id for entity in entities}
+    missing_parents = sorted(
+        {
+            entity.parent_entity_id
+            for entity in entities
+            if entity.parent_entity_id and entity.parent_entity_id not in entity_ids
+        }
+    )
+    if missing_parents:
+        raise ValueError(
+            "Unknown parent_entity_id referenced by entities: " + ", ".join(missing_parents)
+        )
+    return entities
+
+
+def load_sites(*, entities: Sequence[Entity] | None = None) -> List[Site]:
+    sites = _load_csv_list(DATA_DIR / "sites.csv", Site)
+    if not sites:
+        return sites
+
+    entity_records = entities if entities is not None else load_entities()
+    entity_ids = {entity.entity_id for entity in entity_records}
+    missing_entities = sorted(
+        {site.entity_id for site in sites if site.entity_id not in entity_ids}
+    )
+    if missing_entities:
+        raise ValueError("Unknown entity_id referenced by sites: " + ", ".join(missing_entities))
+    return sites
+
+
+def load_assets(
+    *, sites: Sequence[Site] | None = None, entities: Sequence[Entity] | None = None
+) -> List[Asset]:
+    assets = _load_csv_list(DATA_DIR / "assets.csv", Asset)
+    if not assets:
+        return assets
+
+    site_records = sites if sites is not None else load_sites(entities=entities)
+    site_ids = {site.site_id for site in site_records}
+    missing_sites = sorted({asset.site_id for asset in assets if asset.site_id not in site_ids})
+    if missing_sites:
+        raise ValueError("Unknown site_id referenced by assets: " + ", ".join(missing_sites))
+    return assets
+
+
+def load_operations(
+    *,
+    assets: Sequence[Asset] | None = None,
+    activities: Sequence[Activity] | None = None,
+) -> List[Operation]:
+    operations = _load_csv_list(DATA_DIR / "operations.csv", Operation)
+    if not operations:
+        return operations
+
+    asset_records = assets if assets is not None else load_assets()
+    asset_ids: Set[str] = {asset.asset_id for asset in asset_records}
+    missing_assets = sorted(
+        {operation.asset_id for operation in operations if operation.asset_id not in asset_ids}
+    )
+    if missing_assets:
+        raise ValueError("Unknown asset_id referenced by operations: " + ", ".join(missing_assets))
+
+    activity_records = activities if activities is not None else load_activities()
+    activity_ids = {activity.activity_id for activity in activity_records}
+    missing_activities = sorted(
+        {
+            operation.activity_id
+            for operation in operations
+            if operation.activity_id not in activity_ids
+        }
+    )
+    if missing_activities:
+        raise ValueError(
+            "Unknown activity_id referenced by operations: " + ", ".join(missing_activities)
+        )
+
+    return operations
 
 
 def load_emission_factors() -> List[EmissionFactor]:

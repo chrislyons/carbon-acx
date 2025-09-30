@@ -5,7 +5,17 @@ from typing import List, Sequence
 
 import pandas as pd
 
-from ..schema import Activity, ActivitySchedule, EmissionFactor, GridIntensity, Profile
+from ..schema import (
+    Activity,
+    ActivitySchedule,
+    Asset,
+    EmissionFactor,
+    Entity,
+    GridIntensity,
+    Operation,
+    Profile,
+    Site,
+)
 
 DATA_DIR = Path(__file__).resolve().parents[2] / "data"
 
@@ -18,6 +28,22 @@ def _load_csv(path: Path) -> List[dict]:
 
 class CsvStore:
     """CSV-backed implementation of DataStore."""
+
+    def load_entities(self) -> Sequence[Entity]:
+        rows = _load_csv(DATA_DIR / "entities.csv")
+        return [Entity(**row) for row in rows]
+
+    def load_sites(self) -> Sequence[Site]:
+        rows = _load_csv(DATA_DIR / "sites.csv")
+        return [Site(**row) for row in rows]
+
+    def load_assets(self) -> Sequence[Asset]:
+        rows = _load_csv(DATA_DIR / "assets.csv")
+        return [Asset(**row) for row in rows]
+
+    def load_operations(self) -> Sequence[Operation]:
+        rows = _load_csv(DATA_DIR / "operations.csv")
+        return [Operation(**row) for row in rows]
 
     def load_activities(self) -> Sequence[Activity]:
         rows = _load_csv(DATA_DIR / "activities.csv")

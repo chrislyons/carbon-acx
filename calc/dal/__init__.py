@@ -4,7 +4,17 @@ import os
 from pathlib import Path
 from typing import Protocol, Sequence
 
-from ..schema import Activity, ActivitySchedule, EmissionFactor, GridIntensity, Profile
+from ..schema import (
+    Activity,
+    ActivitySchedule,
+    Asset,
+    EmissionFactor,
+    Entity,
+    GridIntensity,
+    Operation,
+    Profile,
+    Site,
+)
 from .csv import CsvStore
 from .duckdb import DuckDbStore
 from ..dal_sql import SqlStore
@@ -12,18 +22,30 @@ from ..dal_sql import SqlStore
 __all__ = [
     "Activity",
     "ActivitySchedule",
+    "Asset",
     "CsvStore",
     "DataStore",
     "DuckDbStore",
     "EmissionFactor",
+    "Entity",
     "GridIntensity",
+    "Operation",
     "Profile",
+    "Site",
     "SqlStore",
     "choose_backend",
 ]
 
 
 class DataStore(Protocol):
+    def load_entities(self) -> Sequence[Entity]: ...
+
+    def load_sites(self) -> Sequence[Site]: ...
+
+    def load_assets(self) -> Sequence[Asset]: ...
+
+    def load_operations(self) -> Sequence[Operation]: ...
+
     def load_activities(self) -> Sequence[Activity]: ...
 
     def load_emission_factors(self) -> Sequence[EmissionFactor]: ...

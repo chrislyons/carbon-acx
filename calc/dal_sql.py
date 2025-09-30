@@ -10,7 +10,17 @@ try:  # pragma: no cover - optional dependency
 except ImportError:  # pragma: no cover - handled lazily
     duckdb = None
 
-from .schema import Activity, ActivitySchedule, EmissionFactor, GridIntensity, Profile
+from .schema import (
+    Activity,
+    ActivitySchedule,
+    Asset,
+    EmissionFactor,
+    Entity,
+    GridIntensity,
+    Operation,
+    Profile,
+    Site,
+)
 
 _PLACEHOLDER_NOTE = "__IMPORT_PLACEHOLDER__"
 
@@ -126,6 +136,18 @@ class SqlStore:
             """
         )
         return [GridIntensity(**row) for row in rows]
+
+    def load_entities(self) -> Sequence[Entity]:
+        return []
+
+    def load_sites(self) -> Sequence[Site]:
+        return []
+
+    def load_assets(self) -> Sequence[Asset]:
+        return []
+
+    def load_operations(self) -> Sequence[Operation]:
+        return []
 
     def __enter__(self) -> "SqlStore":
         return self

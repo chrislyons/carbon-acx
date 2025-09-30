@@ -246,7 +246,9 @@ def _build_manifest_payload(
             "emission_factors": sorted(manifest_ef_vintages),
             "grid_intensity": sorted(manifest_grid_vintages),
         },
-        "vintage_matrix": {key: manifest_vintage_matrix[key] for key in sorted(manifest_vintage_matrix)},
+        "vintage_matrix": {
+            key: manifest_vintage_matrix[key] for key in sorted(manifest_vintage_matrix)
+        },
     }
     if layer_citation_keys:
         payload["layer_citation_keys"] = layer_citation_keys
@@ -300,18 +302,14 @@ def compute_profile(
     should_close = datastore is None and hasattr(store, "close")
     try:
         activities = {activity.activity_id: activity for activity in store.load_activities()}
-        emission_factors = {
-            ef.activity_id: ef for ef in store.load_emission_factors()
-        }
+        emission_factors = {ef.activity_id: ef for ef in store.load_emission_factors()}
         profiles = {item.profile_id: item for item in store.load_profiles()}
         profile = _resolve_profile(profiles, profile_id)
 
         grid_lookup, grid_by_region = _collect_grid_maps(store.load_grid_intensity())
 
         schedules = [
-            sched
-            for sched in store.load_activity_schedule()
-            if sched.profile_id == profile_id
+            sched for sched in store.load_activity_schedule() if sched.profile_id == profile_id
         ]
         if not schedules:
             raise ValueError(f"profile {profile_id!r} has no associated schedule rows")
@@ -371,7 +369,9 @@ def compute_profile(
                     "activity_id": sched.activity_id,
                     "layer_id": layer_id,
                     "activity_name": activity.name if isinstance(activity, Activity) else None,
-                    "activity_category": activity.category if isinstance(activity, Activity) else None,
+                    "activity_category": (
+                        activity.category if isinstance(activity, Activity) else None
+                    ),
                     "scope_boundary": ef.scope_boundary if isinstance(ef, EmissionFactor) else None,
                     "emission_factor_vintage_year": (
                         int(ef.vintage_year)
@@ -400,7 +400,9 @@ def compute_profile(
                     "profile": profile,
                     "schedule": sched,
                     "activity_id": sched.activity_id,
-                    "activity_category": activity.category if isinstance(activity, Activity) else None,
+                    "activity_category": (
+                        activity.category if isinstance(activity, Activity) else None
+                    ),
                     "emission_factor": ef,
                     "grid_intensity": grid_row,
                     "annual_emissions_g": emission,
@@ -417,7 +419,9 @@ def compute_profile(
         profile_list = sorted(resolved_profiles)
         layers_sorted = sorted(manifest_layers)
 
-        layer_citation_keys, layer_references = _collect_layer_references(derived_rows, citation_keys)
+        layer_citation_keys, layer_references = _collect_layer_references(
+            derived_rows, citation_keys
+        )
 
         stacked_map, bubble_map, sankey_map = _reference_maps(derived_rows, citation_keys)
 
