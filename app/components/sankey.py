@@ -19,7 +19,11 @@ from ._plotly_settings import apply_figure_layout_defaults
 
 
 def _build_figure(
-    payload: dict, reference_lookup: Mapping[str, int], *, dark: bool = False
+    payload: dict,
+    reference_lookup: Mapping[str, int],
+    *,
+    dark: bool = False,
+    selected_activity: str | None = None,
 ) -> go.Figure:
     data = payload.get("data", {}) if payload else {}
     nodes = data.get("nodes", [])
@@ -48,6 +52,7 @@ def _build_figure(
     targets: list[int] = []
     values: list[float] = []
     formatted_values: list[str] = []
+    activity_ids: list[str | None] = []
     meta_entries: list[dict[str, object]] = []
 
     for link in links:
@@ -62,6 +67,11 @@ def _build_figure(
         targets.append(target_id)
         values.append(mean)
         formatted_values.append(format_emissions(mean))
+        raw_activity_id = link.get("activity_id")
+        if raw_activity_id in (None, ""):
+            activity_ids.append(None)
+        else:
+            activity_ids.append(str(raw_activity_id))
         indices = list(link.get("hover_reference_indices") or [])
         if not indices:
             indices = reference_numbers(link.get("citation_keys"), reference_lookup)
@@ -81,8 +91,29 @@ def _build_figure(
         return figure
 
     link_color = "rgba(37, 99, 235, 0.45)"
+    dim_color = "rgba(37, 99, 235, 0.15)"
     if dark:
         link_color = "rgba(96, 165, 250, 0.6)"
+        dim_color = "rgba(96, 165, 250, 0.18)"
+
+    selected_links: list[bool] = []
+    if selected_activity:
+        selected_links = [activity_id == selected_activity for activity_id in activity_ids]
+
+    if selected_links and any(selected_links):
+        link_colors = [link_color if match else dim_color for match in selected_links]
+    else:
+        link_colors = [link_color] * len(values)
+
+    customdata = [
+        [formatted_value, activity_id]
+        for formatted_value, activity_id in zip(formatted_values, activity_ids)
+    ]
+    customdata_value_token = f"%{{customdata{chr(91)}0{chr(93)}}}"
+    hover_template = (
+        f"%{{source.label}} → %{{target.label}}<br>Annual emissions: {customdata_value_token}<br>[%{{meta.source_index}}]"
+        + "<extra></extra>"
+    )
     figure.add_trace(
         go.Sankey(
             arrangement="snap",
@@ -96,9 +127,9 @@ def _build_figure(
                 source=sources,
                 target=targets,
                 value=values,
-                color=[link_color] * len(values),
-                customdata=formatted_values,
-                hovertemplate="%{source.label} → %{target.label}<br>Annual emissions: %{customdata}<br>[%{meta.source_index}]<extra></extra>",
+                color=link_colors,
+                customdata=customdata,
+                hovertemplate=hover_template,
             ),
             meta=meta_entries,
             valueformat=",.0f",
@@ -119,11 +150,18 @@ def render(
     *,
     title_suffix: str | None = None,
     dark: bool = False,
+    layer_id: str | None = None,
+    active_activity: str | None = None,
 ) -> html.Section:
     title = "Activity flow"
     if title_suffix:
         title = f"{title} — {title_suffix}"
-    figure = _build_figure(figure_payload or {}, reference_lookup, dark=dark)
+    figure = _build_figure(
+        figure_payload or {},
+        reference_lookup,
+        dark=dark,
+        selected_activity=active_activity,
+    )
 
     if not figure.data:
         message = "No flow data available."
@@ -131,7 +169,11 @@ def render(
             message = f"No flow data available for {title_suffix}."
         content = html.P(message)
     else:
+        graph_id: str | dict = "sankey-chart"
+        if layer_id:
+            graph_id = {"component": "sankey-chart", "layer": layer_id}
         content = dcc.Graph(
+            id=graph_id,
             figure=figure,
             config={"displayModeBar": False, "responsive": True},
             style={"height": "420px"},

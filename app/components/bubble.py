@@ -19,7 +19,11 @@ from ._plotly_settings import apply_figure_layout_defaults
 
 
 def _build_figure(
-    payload: dict, reference_lookup: Mapping[str, int], *, dark: bool = False
+    payload: dict,
+    reference_lookup: Mapping[str, int],
+    *,
+    dark: bool = False,
+    selected_activity: str | None = None,
 ) -> go.Figure:
     data = payload.get("data", []) if payload else []
 
@@ -29,6 +33,7 @@ def _build_figure(
     errors_high: list[float] = []
     errors_low: list[float] = []
     formatted_values: list[str] = []
+    activity_ids: list[str | None] = []
     meta_entries: list[dict[str, object]] = []
 
     for row in data:
@@ -45,6 +50,11 @@ def _build_figure(
         errors_high.append(max((high or mean) - mean, 0.0))
         errors_low.append(max(mean - (low or mean), 0.0))
         formatted_values.append(format_emissions(mean))
+        raw_activity_id = row.get("activity_id")
+        if raw_activity_id in (None, ""):
+            activity_ids.append(None)
+        else:
+            activity_ids.append(str(raw_activity_id))
         indices = list(row.get("hover_reference_indices") or [])
         if not indices:
             indices = reference_numbers(row.get("citation_keys"), reference_lookup)
@@ -83,10 +93,22 @@ def _build_figure(
         else None
     )
 
+    customdata_value_token = f"%{{customdata{chr(91)}0{chr(93)}}}"
     hover_template = (
-        "<b>%{text}</b><br>Category: %{x}<br>Annual emissions: %{customdata}<br>[%{meta.source_index}]"
+        f"<b>%{{text}}</b><br>Category: %{{x}}<br>Annual emissions: {customdata_value_token}<br>[%{{meta.source_index}}]"
         + "<extra></extra>"
     )
+
+    selected_indices: list[int] = []
+    if selected_activity:
+        selected_indices = [
+            idx for idx, activity_id in enumerate(activity_ids) if activity_id == selected_activity
+        ]
+
+    customdata = [
+        [formatted_value, activity_id]
+        for formatted_value, activity_id in zip(formatted_values, activity_ids)
+    ]
 
     trace_kwargs = dict(
         x=categories,
@@ -101,13 +123,17 @@ def _build_figure(
             opacity=0.8,
             line=dict(color=palette["muted_border"], width=1),
         ),
-        customdata=formatted_values,
+        customdata=customdata,
         meta=meta_entries,
         hovertemplate=hover_template,
     )
     if error_kwargs:
         error_kwargs["color"] = palette["accent_strong"]
         trace_kwargs["error_y"] = error_kwargs
+    if selected_indices:
+        trace_kwargs["selectedpoints"] = selected_indices
+        trace_kwargs["selected"] = dict(marker=dict(opacity=0.9))
+        trace_kwargs["unselected"] = dict(marker=dict(opacity=0.25))
 
     figure.add_trace(go.Scatter(**trace_kwargs))
 
@@ -127,11 +153,18 @@ def render(
     *,
     title_suffix: str | None = None,
     dark: bool = False,
+    layer_id: str | None = None,
+    active_activity: str | None = None,
 ) -> html.Section:
     title = "Activity bubble chart"
     if title_suffix:
         title = f"{title} — {title_suffix}"
-    figure = _build_figure(figure_payload or {}, reference_lookup, dark=dark)
+    figure = _build_figure(
+        figure_payload or {},
+        reference_lookup,
+        dark=dark,
+        selected_activity=active_activity,
+    )
 
     if not figure.data:
         message = "No activity data available."
@@ -139,7 +172,11 @@ def render(
             message = f"No activity data available for {title_suffix}."
         content = html.P(message)
     else:
+        graph_id: str | dict = "bubble-chart"
+        if layer_id:
+            graph_id = {"component": "bubble-chart", "layer": layer_id}
         content = dcc.Graph(
+            id=graph_id,
             figure=figure,
             config={"displayModeBar": False, "responsive": True},
             style={"height": "360px"},

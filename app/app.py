@@ -9,7 +9,7 @@ from urllib.parse import parse_qs, urlencode, quote
 import dash
 
 import copy
-from dash import Dash, Input, Output, State, dcc, html, no_update
+from dash import ALL, Dash, Input, Output, State, dcc, html, no_update
 
 from calc import citations
 from calc.schema import LayerId
@@ -291,6 +291,44 @@ def _order_reference_keys(keys: Iterable[str], reference_lookup: Mapping[str, in
     return sorted(unique, key=lambda item: _reference_rank(item, reference_lookup))
 
 
+def _coerce_activity_id(value) -> str | None:
+    if value in (None, ""):
+        return None
+    if isinstance(value, str):
+        return value
+    if isinstance(value, (list, tuple)):
+        for item in value:
+            candidate = _coerce_activity_id(item)
+            if candidate:
+                return candidate
+        return None
+    if isinstance(value, Mapping):
+        for key in ("activity_id", "activityId", "id"):
+            candidate = _coerce_activity_id(value.get(key))
+            if candidate:
+                return candidate
+        return None
+    return str(value)
+
+
+def _extract_activity_id(click_data) -> str | None:
+    if not isinstance(click_data, Mapping):
+        return None
+    points = click_data.get("points")
+    if not isinstance(points, list):
+        return None
+    for point in points:
+        if not isinstance(point, Mapping):
+            continue
+        candidate = _coerce_activity_id(point.get("customdata"))
+        if candidate:
+            return candidate
+        candidate = _coerce_activity_id(point.get("activity_id"))
+        if candidate:
+            return candidate
+    return None
+
+
 def create_app() -> Dash:
     artifact_dir = _artifact_dir()
     figures = {name: _load_figure_payload(artifact_dir, name) for name in FIGURE_NAMES}
@@ -507,6 +545,7 @@ def create_app() -> Dash:
             dcc.Store(id="share-data", data=initial_share_data),
             dcc.Store(id="copy-status"),
             dcc.Store(id="download-status"),
+            dcc.Store(id="acx-active-activity"),
             dcc.Store(id="intensity-records", data=intensity_records),
             dcc.Store(
                 id="intensity-functional-unit-labels", data=intensity_labels
@@ -631,6 +670,13 @@ def create_app() -> Dash:
                                                 id="download-png-btn",
                                                 className="chart-downloads__button",
                                                 type="button",
+                                            ),
+                                            html.Button(
+                                                "Clear selection",
+                                                id="clear-activity-selection",
+                                                className="chart-downloads__button",
+                                                type="button",
+                                                disabled=True,
                                             ),
                                             html.Span(
                                                 id="share-status",
@@ -763,9 +809,16 @@ def create_app() -> Dash:
         Input("layer-selector", "value"),
         Input("view-mode", "value"),
         Input("theme-mode", "data"),
+        Input("acx-active-activity", "data"),
         State("figures-store", "data"),
     )
-    def _update_panels(selected_layers, view_mode, theme_mode=None, figures_store=None):
+    def _update_panels(
+        selected_layers,
+        view_mode,
+        theme_mode=None,
+        active_activity=None,
+        figures_store=None,
+    ):
         panels_class = "layer-panels"
         if figures_store is None and not isinstance(theme_mode, (str, type(None))):
             figures_store = theme_mode
@@ -804,18 +857,24 @@ def create_app() -> Dash:
                             reference_lookup,
                             title_suffix=label,
                             dark=dark_mode,
+                            layer_id=layer_id,
+                            active_activity=active_activity,
                         ),
                         bubble.render(
                             filtered.get("bubble"),
                             reference_lookup,
                             title_suffix=label,
                             dark=dark_mode,
+                            layer_id=layer_id,
+                            active_activity=active_activity,
                         ),
                         sankey.render(
                             filtered.get("sankey"),
                             reference_lookup,
                             title_suffix=label,
                             dark=dark_mode,
+                            layer_id=layer_id,
+                            active_activity=active_activity,
                         ),
                     ],
                 )
@@ -831,6 +890,41 @@ def create_app() -> Dash:
                 html.Span(value, className="chart-badge__value"),
             ],
         )
+
+    @app.callback(
+        Output("acx-active-activity", "data"),
+        Input({"component": "stacked-chart", "layer": ALL}, "clickData"),
+        Input({"component": "bubble-chart", "layer": ALL}, "clickData"),
+        Input({"component": "sankey-chart", "layer": ALL}, "clickData"),
+        Input("clear-activity-selection", "n_clicks"),
+        State("acx-active-activity", "data"),
+        prevent_initial_call=True,
+    )
+    def _sync_active_activity(
+        stacked_clicks, bubble_clicks, sankey_clicks, clear_clicks, current_value
+    ):
+        if not dash.callback_context.triggered:
+            return no_update
+        triggered = dash.callback_context.triggered[0]
+        prop_id = triggered.get("prop_id")
+        if prop_id == "clear-activity-selection.n_clicks":
+            return None
+        value = triggered.get("value")
+        activity_id = _extract_activity_id(value)
+        if activity_id:
+            return activity_id
+        if isinstance(value, Mapping):
+            return no_update
+        if prop_id and prop_id.endswith("clickData"):
+            return no_update if current_value is None else current_value
+        return no_update
+
+    @app.callback(
+        Output("clear-activity-selection", "disabled"),
+        Input("acx-active-activity", "data"),
+    )
+    def _toggle_clear_button(active_activity):
+        return active_activity in (None, "")
 
     @app.callback(
         Output("chart-badges", "children"),
