@@ -2,11 +2,12 @@ import { useMemo, useRef } from 'react';
 
 import { Bubble, BubbleDatum } from './Bubble';
 import { ExportMenu } from './ExportMenu';
-import { Sankey, SankeyData } from './Sankey';
+import { LayerToggles } from './LayerToggles';
+import { Sankey, SankeyData, SankeyLink } from './Sankey';
 import { Stacked, StackedDatum } from './Stacked';
 import { formatEmission } from '../lib/format';
 import { buildReferenceLookup } from '../lib/references';
-import { ComputeResult, useProfile } from '../state/profile';
+import { useProfile } from '../state/profile';
 
 interface ActivityRow {
   id: string;
@@ -14,13 +15,11 @@ interface ActivityRow {
   emissions: number;
 }
 
-function resolveActivities(result: ComputeResult | null): {
+function resolveActivities(rows: BubbleDatum[]): {
   topActivities: ActivityRow[];
   total: number | null;
   count: number;
 } {
-  const bubble = result?.figures?.bubble;
-  const rows = Array.isArray(bubble?.data) ? (bubble?.data as unknown[]) : [];
   const aggregated = rows
     .map((entry, index) => {
       const row = (entry as Record<string, unknown>) ?? {};
@@ -54,6 +53,147 @@ function resolveActivities(result: ComputeResult | null): {
   return { topActivities, total: aggregated.length > 0 ? total : null, count: aggregated.length };
 }
 
+function toLayerId(value: unknown): string | null {
+  if (typeof value === 'string' && value.trim()) {
+    return value;
+  }
+  return null;
+}
+
+function filterStackedByLayers(
+  data: readonly StackedDatum[],
+  activeLayers: ReadonlySet<string>
+): StackedDatum[] {
+  if (!Array.isArray(data) || data.length === 0) {
+    return [];
+  }
+  const aggregates = new Map<
+    string,
+    {
+      category: string | null;
+      mean: number;
+      low: number;
+      hasLow: boolean;
+      high: number;
+      hasHigh: boolean;
+      units: Record<string, string | null> | null;
+      citationKeys: Set<string>;
+      hoverIndices: Set<number>;
+    }
+  >();
+
+  const includeAll = activeLayers.size === 0;
+
+  data.forEach((row) => {
+    const layer = toLayerId(row?.layer_id);
+    if (layer && !includeAll && !activeLayers.has(layer)) {
+      return;
+    }
+    const category = row?.category ?? null;
+    const key = category ?? '__null__';
+    let bucket = aggregates.get(key);
+    if (!bucket) {
+      bucket = {
+        category,
+        mean: 0,
+        low: 0,
+        hasLow: false,
+        high: 0,
+        hasHigh: false,
+        units: row?.units ?? null,
+        citationKeys: new Set<string>(),
+        hoverIndices: new Set<number>()
+      };
+      aggregates.set(key, bucket);
+    }
+    const values = row?.values ?? undefined;
+    const mean = typeof values?.mean === 'number' && Number.isFinite(values.mean) ? values.mean : null;
+    if (mean !== null) {
+      bucket.mean += mean;
+    }
+    const low = typeof values?.low === 'number' && Number.isFinite(values.low) ? values.low : null;
+    if (low !== null) {
+      bucket.low += low;
+      bucket.hasLow = true;
+    }
+    const high = typeof values?.high === 'number' && Number.isFinite(values.high) ? values.high : null;
+    if (high !== null) {
+      bucket.high += high;
+      bucket.hasHigh = true;
+    }
+    const keys = Array.isArray(row?.citation_keys) ? row.citation_keys : [];
+    keys.forEach((keyValue) => {
+      if (typeof keyValue === 'string' && keyValue.trim()) {
+        bucket?.citationKeys.add(keyValue);
+      }
+    });
+    const indices = Array.isArray(row?.hover_reference_indices) ? row.hover_reference_indices : [];
+    indices.forEach((index) => {
+      if (typeof index === 'number' && Number.isFinite(index)) {
+        bucket?.hoverIndices.add(Math.trunc(index));
+      }
+    });
+    if (!bucket.units && row?.units) {
+      bucket.units = row.units;
+    }
+  });
+
+  return Array.from(aggregates.values()).map((bucket) => {
+    const values: StackedDatum['values'] = { mean: bucket.mean };
+    if (bucket.hasLow) {
+      values.low = bucket.low;
+    }
+    if (bucket.hasHigh) {
+      values.high = bucket.high;
+    }
+    return {
+      category: bucket.category,
+      values,
+      units: bucket.units,
+      citation_keys: Array.from(bucket.citationKeys),
+      hover_reference_indices: Array.from(bucket.hoverIndices).sort((a, b) => a - b)
+    } satisfies StackedDatum;
+  });
+}
+
+function filterBubbleByLayers(
+  data: readonly BubbleDatum[],
+  activeLayers: ReadonlySet<string>
+): BubbleDatum[] {
+  if (!Array.isArray(data) || data.length === 0) {
+    return [];
+  }
+  const includeAll = activeLayers.size === 0;
+  return data.filter((row) => {
+    const layer = toLayerId(row?.layer_id);
+    return !layer || includeAll || activeLayers.has(layer);
+  });
+}
+
+function filterSankeyByLayers(data: SankeyData, activeLayers: ReadonlySet<string>): SankeyData {
+  const rawLinks = Array.isArray(data?.links) ? (data.links as SankeyLink[]) : [];
+  const includeAll = activeLayers.size === 0;
+  const links = rawLinks
+    .filter((link) => {
+      const layer = toLayerId(link?.layer_id);
+      return !layer || includeAll || activeLayers.has(layer);
+    })
+    .map((link) => ({ ...link }));
+  const nodeIds = new Set<string>();
+  links.forEach((link) => {
+    if (typeof link.source === 'string') {
+      nodeIds.add(link.source);
+    }
+    if (typeof link.target === 'string') {
+      nodeIds.add(link.target);
+    }
+  });
+  const nodes = Array.isArray(data?.nodes)
+    ? data.nodes.filter((node) => typeof node?.id === 'string' && nodeIds.has(node.id))
+    : [];
+  return { nodes, links };
+}
+
 function resolveStatusTone(status: string): string {
   switch (status) {
     case 'loading':
@@ -75,9 +215,21 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 export function VizCanvas(): JSX.Element {
-  const { status, result, error, refresh } = useProfile();
+  const {
+    status,
+    result,
+    error,
+    refresh,
+    primaryLayer,
+    availableLayers,
+    activeLayers,
+    activeReferenceKeys,
+    activeReferences,
+    setActiveLayers
+  } = useProfile();
 
-  const { total, count } = useMemo(() => resolveActivities(result), [result]);
+  const activeLayerSet = useMemo(() => new Set(activeLayers), [activeLayers]);
+  const baseLayer = primaryLayer;
 
   const datasetVersion =
     typeof result?.datasetId === 'string' && result.datasetId.trim().length > 0
@@ -87,41 +239,40 @@ export function VizCanvas(): JSX.Element {
         : 'unknown';
   const generatedAt =
     typeof result?.manifest?.generated_at === 'string' ? result?.manifest?.generated_at : null;
-  const referenceCount = Array.isArray(result?.references) ? result?.references.length : null;
+  const referenceCount = activeReferences.length;
 
-  const sources = useMemo(() => {
-    const manifestSources = Array.isArray(result?.manifest?.sources)
-      ? (result?.manifest?.sources as string[])
-      : [];
-    if (manifestSources.length > 0) {
-      return manifestSources;
-    }
-    const collected: string[] = [];
-    const pushUnique = (values: unknown) => {
-      if (!Array.isArray(values)) {
-        return;
-      }
-      values.forEach((value) => {
-        if (typeof value === 'string' && !collected.includes(value)) {
-          collected.push(value);
-        }
-      });
-    };
-    pushUnique(result?.figures?.stacked?.citation_keys);
-    pushUnique(result?.figures?.bubble?.citation_keys);
-    pushUnique(result?.figures?.sankey?.citation_keys);
-    return collected;
-  }, [result]);
+  const rawStacked = (result?.figures?.stacked?.data as StackedDatum[]) ?? [];
+  const rawBubble = (result?.figures?.bubble?.data as BubbleDatum[]) ?? [];
+  const rawSankey = (result?.figures?.sankey?.data as SankeyData) ?? { nodes: [], links: [] };
 
-  const referenceLookup = useMemo(() => buildReferenceLookup(sources), [sources]);
+  const stackedData = useMemo(
+    () => filterStackedByLayers(rawStacked, activeLayerSet),
+    [rawStacked, activeLayerSet]
+  );
+  const bubbleData = useMemo(
+    () => filterBubbleByLayers(rawBubble, activeLayerSet),
+    [rawBubble, activeLayerSet]
+  );
+  const sankeyData = useMemo(
+    () => filterSankeyByLayers(rawSankey, activeLayerSet),
+    [rawSankey, activeLayerSet]
+  );
 
-  const stackedData = (result?.figures?.stacked?.data as StackedDatum[]) ?? [];
-  const bubbleData = (result?.figures?.bubble?.data as BubbleDatum[]) ?? [];
-  const sankeyData = (result?.figures?.sankey?.data as SankeyData) ?? { nodes: [], links: [] };
+  const { total, count } = useMemo(() => resolveActivities(bubbleData), [bubbleData]);
+
+  const referenceLookup = useMemo(
+    () => buildReferenceLookup(activeReferenceKeys),
+    [activeReferenceKeys]
+  );
 
   const statusTone = resolveStatusTone(status);
   const statusLabel = STATUS_LABEL[status] ?? status;
   const canvasRef = useRef<HTMLElement | null>(null);
+
+  const hasLayerToggles = useMemo(
+    () => availableLayers.some((layer) => layer !== baseLayer),
+    [availableLayers, baseLayer]
+  );
 
   return (
     <section
@@ -208,6 +359,14 @@ export function VizCanvas(): JSX.Element {
                   <p className="mt-1.5 text-[10px] uppercase tracking-[0.35em] text-slate-500">source citations</p>
                 </div>
               </div>
+              {hasLayerToggles ? (
+                <LayerToggles
+                  baseLayer={baseLayer}
+                  availableLayers={availableLayers}
+                  activeLayers={activeLayers}
+                  onChange={setActiveLayers}
+                />
+              ) : null}
               <div className="grid gap-2.5 lg:grid-cols-3">
                 <Stacked data={stackedData} referenceLookup={referenceLookup} />
                 <Bubble data={bubbleData} referenceLookup={referenceLookup} />

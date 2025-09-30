@@ -18,9 +18,9 @@ function normaliseReferences(value: unknown): string[] {
 }
 
 export function ReferencesDrawer({ id = 'references', open, onToggle }: ReferencesDrawerProps): JSX.Element {
-  const { result } = useProfile();
+  const { activeReferences } = useProfile();
 
-  const references = useMemo(() => normaliseReferences(result?.references), [result]);
+  const references = useMemo(() => normaliseReferences(activeReferences), [activeReferences]);
 
   useEffect(() => {
     if (!open) {

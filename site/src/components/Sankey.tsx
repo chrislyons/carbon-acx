@@ -17,6 +17,7 @@ export interface SankeyNode {
 export interface SankeyLink extends ReferenceCarrier {
   source: string;
   target: string;
+  layer_id?: string | null;
   category?: string | null;
   values?: {
     mean?: number | null;

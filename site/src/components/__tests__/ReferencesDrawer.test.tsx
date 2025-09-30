@@ -5,9 +5,7 @@ import { ReferencesDrawer } from '../ReferencesDrawer';
 
 vi.mock('../../state/profile', () => ({
   useProfile: () => ({
-    result: {
-      references: ['[1] First reference.', '[2] Second reference.']
-    }
+    activeReferences: ['First reference.', 'Second reference.']
   })
 }));
 

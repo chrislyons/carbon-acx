@@ -33,6 +33,9 @@ export interface ComputeResult {
     dataset_version?: string;
     overrides?: Record<string, number>;
     sources?: string[];
+    layers?: string[];
+    layer_citation_keys?: Record<string, unknown>;
+    layer_references?: Record<string, unknown>;
     [key: string]: unknown;
   };
   datasetId?: string;
@@ -40,21 +43,27 @@ export interface ComputeResult {
     bubble?: {
       data?: unknown;
       citation_keys?: string[];
+      layers?: string[];
+      layer_citation_keys?: Record<string, unknown>;
       [key: string]: unknown;
     };
     stacked?: {
       data?: unknown;
       citation_keys?: string[];
+      layers?: string[];
+      layer_citation_keys?: Record<string, unknown>;
       [key: string]: unknown;
     };
     sankey?: {
       data?: unknown;
       citation_keys?: string[];
+      layers?: string[];
+      layer_citation_keys?: Record<string, unknown>;
       [key: string]: unknown;
     };
     [key: string]: unknown;
   };
-  references?: unknown;
+  references?: string[];
   [key: string]: unknown;
 }
 
@@ -66,6 +75,12 @@ interface ProfileContextValue {
   result: ComputeResult | null;
   error: string | null;
   refresh: () => void;
+  primaryLayer: string;
+  availableLayers: string[];
+  activeLayers: string[];
+  activeReferenceKeys: string[];
+  activeReferences: string[];
+  setActiveLayers: (layers: string[]) => void;
   setCommuteDays: (value: number) => void;
   setModeSplit: (mode: keyof ModeSplit, value: number) => void;
   setDiet: (diet: DietOption) => void;
@@ -77,6 +92,7 @@ const STORAGE_KEY = 'acx:profile-controls';
 const DEFAULT_PROFILE_ID = 'PRO.TO.24_39.HYBRID.2025';
 const DEBOUNCE_MS = 250;
 const DAYS_PER_WEEK = 7;
+export const PRIMARY_LAYER_ID = 'professional';
 
 const COMMUTE_ACTIVITY_IDS: Record<keyof ModeSplit, string> = {
   car: 'TRAVEL.COMMUTE.CAR.WORKDAY',
@@ -188,6 +204,34 @@ function distributeIntegerTotal(total: number, weights: number[]): number[] {
   return distributed;
 }
 
+function toStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value
+    .map((item) => (typeof item === 'string' ? item.trim() : null))
+    .filter((item): item is string => Boolean(item));
+}
+
+function normaliseLayerMapping(value: unknown): Record<string, string[]> {
+  if (!value || typeof value !== 'object') {
+    return {};
+  }
+  const entries = value as Record<string, unknown>;
+  const mapping: Record<string, string[]> = {};
+  Object.entries(entries).forEach(([layer, raw]) => {
+    const values = toStringArray(raw);
+    if (values.length > 0) {
+      mapping[layer] = values;
+    }
+  });
+  return mapping;
+}
+
+function cleanReferenceText(value: string): string {
+  return value.replace(/^\[[0-9]+\]\s*/, '').trim();
+}
+
 function rebalanceSplit(current: ModeSplit, mode: keyof ModeSplit, value: number): ModeSplit {
   const target = clampPercentage(value);
   const otherKeys = (Object.keys(current) as (keyof ModeSplit)[]).filter((key) => key !== mode);
@@ -284,9 +328,210 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
   const [error, setError] = useState<string | null>(null);
   const [profileId] = useState<string>(DEFAULT_PROFILE_ID);
   const [refreshToken, setRefreshToken] = useState(0);
+  const [activeLayers, setActiveLayersState] = useState<string[]>([PRIMARY_LAYER_ID]);
 
   const overrides = useMemo(() => buildOverrides(controls), [controls]);
   const overridesKey = useMemo(() => JSON.stringify(overrides), [overrides]);
+
+  const availableLayers = useMemo(() => {
+    const unique = new Set<string>();
+    const push = (values: unknown) => {
+      toStringArray(values).forEach((layer) => unique.add(layer));
+    };
+    push(result?.manifest?.layers);
+    push(result?.figures?.stacked?.layers);
+    push(result?.figures?.bubble?.layers);
+    push(result?.figures?.sankey?.layers);
+    if (unique.size === 0) {
+      unique.add(PRIMARY_LAYER_ID);
+    }
+    return Array.from(unique);
+  }, [result]);
+
+  const layerCitationKeys = useMemo(() => {
+    const combined: Record<string, string[]> = {};
+    const merge = (mapping: Record<string, string[]>) => {
+      Object.entries(mapping).forEach(([layer, keys]) => {
+        if (!combined[layer]) {
+          combined[layer] = [...keys];
+          return;
+        }
+        const existing = new Set(combined[layer]);
+        keys.forEach((key) => {
+          if (!existing.has(key)) {
+            combined[layer].push(key);
+            existing.add(key);
+          }
+        });
+      });
+    };
+    merge(normaliseLayerMapping(result?.manifest?.layer_citation_keys));
+    merge(normaliseLayerMapping(result?.figures?.stacked?.layer_citation_keys));
+    merge(normaliseLayerMapping(result?.figures?.bubble?.layer_citation_keys));
+    merge(normaliseLayerMapping(result?.figures?.sankey?.layer_citation_keys));
+    return combined;
+  }, [result]);
+
+  const layerReferenceTexts = useMemo(
+    () => normaliseLayerMapping(result?.manifest?.layer_references),
+    [result]
+  );
+
+  const citationOrder = useMemo(() => {
+    const manifestSources = toStringArray(result?.manifest?.sources);
+    if (manifestSources.length > 0) {
+      return manifestSources;
+    }
+    const stackedKeys = toStringArray(result?.figures?.stacked?.citation_keys);
+    if (stackedKeys.length > 0) {
+      return stackedKeys;
+    }
+    const bubbleKeys = toStringArray(result?.figures?.bubble?.citation_keys);
+    if (bubbleKeys.length > 0) {
+      return bubbleKeys;
+    }
+    return toStringArray(result?.figures?.sankey?.citation_keys);
+  }, [result]);
+
+  const referenceTexts = useMemo(() => toStringArray(result?.references), [result]);
+
+  const referenceTextLookup = useMemo(() => {
+    const lookup = new Map<string, string>();
+    citationOrder.forEach((key, index) => {
+      const text = referenceTexts[index];
+      if (typeof text === 'string') {
+        lookup.set(key, text);
+      }
+    });
+    return lookup;
+  }, [citationOrder, referenceTexts]);
+
+  const activeReferenceKeys = useMemo(() => {
+    const activeSet = new Set<string>();
+    activeLayers.forEach((layer) => {
+      const keys = layerCitationKeys[layer];
+      if (Array.isArray(keys)) {
+        keys.forEach((key) => {
+          if (typeof key === 'string' && key) {
+            activeSet.add(key);
+          }
+        });
+      }
+    });
+    if (activeSet.size === 0) {
+      return citationOrder;
+    }
+    const ordered: string[] = [];
+    citationOrder.forEach((key) => {
+      if (activeSet.has(key)) {
+        ordered.push(key);
+        activeSet.delete(key);
+      }
+    });
+    activeSet.forEach((key) => ordered.push(key));
+    return ordered;
+  }, [activeLayers, layerCitationKeys, citationOrder]);
+
+  const activeReferences = useMemo(() => {
+    const seen = new Set<string>();
+    const ordered: string[] = [];
+    activeReferenceKeys.forEach((key) => {
+      const text = referenceTextLookup.get(key);
+      if (!text) {
+        return;
+      }
+      const cleaned = cleanReferenceText(text);
+      if (!cleaned || seen.has(cleaned)) {
+        return;
+      }
+      seen.add(cleaned);
+      ordered.push(cleaned);
+    });
+    if (ordered.length === 0) {
+      activeLayers.forEach((layer) => {
+        const references = layerReferenceTexts[layer];
+        if (!Array.isArray(references)) {
+          return;
+        }
+        references.forEach((reference) => {
+          const cleaned = cleanReferenceText(reference);
+          if (cleaned && !seen.has(cleaned)) {
+            seen.add(cleaned);
+            ordered.push(cleaned);
+          }
+        });
+      });
+    }
+    if (ordered.length === 0 && referenceTexts.length > 0) {
+      referenceTexts.forEach((text) => {
+        const cleaned = cleanReferenceText(text);
+        if (cleaned && !seen.has(cleaned)) {
+          seen.add(cleaned);
+          ordered.push(cleaned);
+        }
+      });
+    }
+    return ordered;
+  }, [
+    activeLayers,
+    activeReferenceKeys,
+    layerReferenceTexts,
+    referenceTextLookup,
+    referenceTexts
+  ]);
+
+  useEffect(() => {
+    setActiveLayersState((previous) => {
+      const fallback = availableLayers.includes(PRIMARY_LAYER_ID)
+        ? PRIMARY_LAYER_ID
+        : availableLayers[0] ?? PRIMARY_LAYER_ID;
+      const nextSet = new Set<string>();
+      previous.forEach((layer) => {
+        if (typeof layer === 'string' && availableLayers.includes(layer)) {
+          nextSet.add(layer);
+        }
+      });
+      nextSet.add(fallback);
+      const ordered: string[] = [];
+      availableLayers.forEach((layer) => {
+        if (nextSet.has(layer)) {
+          ordered.push(layer);
+          nextSet.delete(layer);
+        }
+      });
+      nextSet.forEach((layer) => ordered.push(layer));
+      return ordered;
+    });
+  }, [availableLayers]);
+
+  const setActiveLayers = useCallback(
+    (layers: string[]) => {
+      setActiveLayersState(() => {
+        const fallback = availableLayers.includes(PRIMARY_LAYER_ID)
+          ? PRIMARY_LAYER_ID
+          : availableLayers[0] ?? PRIMARY_LAYER_ID;
+        const nextSet = new Set<string>();
+        if (Array.isArray(layers)) {
+          layers.forEach((layer) => {
+            if (typeof layer === 'string' && availableLayers.includes(layer)) {
+              nextSet.add(layer);
+            }
+          });
+        }
+        nextSet.add(fallback);
+        const ordered: string[] = [];
+        availableLayers.forEach((layer) => {
+          if (nextSet.has(layer)) {
+            ordered.push(layer);
+            nextSet.delete(layer);
+          }
+        });
+        nextSet.forEach((layer) => ordered.push(layer));
+        return ordered;
+      });
+    },
+    [availableLayers]
+  );
 
   const hasHydrated = useRef(false);
   useEffect(() => {
@@ -420,6 +665,12 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
       result,
       error,
       refresh,
+      primaryLayer: PRIMARY_LAYER_ID,
+      availableLayers,
+      activeLayers,
+      activeReferenceKeys,
+      activeReferences,
+      setActiveLayers,
       setCommuteDays,
       setModeSplit,
       setDiet,
@@ -434,6 +685,11 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
       result,
       error,
       refresh,
+      availableLayers,
+      activeLayers,
+      activeReferenceKeys,
+      activeReferences,
+      setActiveLayers,
       setCommuteDays,
       setModeSplit,
       setDiet,
