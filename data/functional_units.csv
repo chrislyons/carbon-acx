@@ -1,0 +1,4 @@
+functional_unit_id,name,domain,si_equiv,notes
+FU.PERSON_KM,person-kilometre,mobility,person*km,"Person travel distance"
+FU.LITRE_DELIVERED,litre delivered,logistics,L,"Beverage or liquid delivered"
+FU.VIEW_HOUR,viewing-hour,information,hour,"One hour of content viewed"
