@@ -261,18 +261,18 @@ function StoryReferencesDrawer({
             Supporting sources for the story. Press <kbd className="rounded bg-slate-800 px-1">Esc</kbd> to close.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={onToggle}
-          className="inline-flex items-center gap-2 rounded-full border border-slate-700/70 bg-slate-900/60 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-100 transition hover:border-slate-500 hover:text-sky-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
-        >
+          <button
+            type="button"
+            onClick={onToggle}
+            className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-slate-700/70 bg-slate-900/60 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-slate-100 transition hover:border-slate-500 hover:text-sky-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
+          >
           <span className="h-1.5 w-1.5 rounded-full bg-sky-400" aria-hidden="true" />
           {open ? 'Hide sources' : 'View sources'}
         </button>
       </div>
       <div hidden={!open} className="mt-6 space-y-4 text-sm text-slate-300">
         {references.length === 0 ? (
-          <p className="text-sm text-slate-500">No references available for this story.</p>
+          <p className="text-sm text-slate-300">No references available for this story.</p>
         ) : (
           <ol className="space-y-3" aria-label="Story references">
             {references.map((reference, index) => (

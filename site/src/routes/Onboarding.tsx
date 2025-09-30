@@ -153,7 +153,7 @@ export default function Onboarding(): JSX.Element {
                   aria-valuenow={draft.commuteDaysPerWeek}
                   aria-labelledby="commute-days-label"
                 />
-                <div className="mt-3 flex items-center justify-between text-xs uppercase tracking-[0.25em] text-slate-500">
+                <div className="mt-3 flex items-center justify-between text-xs uppercase tracking-[0.25em] text-slate-300">
                   <span id="commute-days-label">Days per week</span>
                   <span className="font-semibold text-slate-200">
                     {formatCommuteDays(draft.commuteDaysPerWeek)}
@@ -170,13 +170,13 @@ export default function Onboarding(): JSX.Element {
                 {COMMUTE_STYLES.map((style) => {
                   const isActive = style.id === selectedCommuteStyleId;
                   return (
-                    <label
-                      key={style.id}
-                      className={`group flex h-full cursor-pointer flex-col justify-between rounded-lg border p-4 text-left text-sm transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-sky-500 ${
-                        isActive
-                          ? 'border-sky-500 bg-sky-500/10 text-slate-100 shadow-sm shadow-sky-900/40'
-                          : 'border-slate-800 bg-slate-900/60 text-slate-300 hover:border-slate-600'
-                      }`}
+                  <label
+                    key={style.id}
+                    className={`group flex h-full min-h-[148px] cursor-pointer flex-col justify-between rounded-lg border p-4 text-left text-sm transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-sky-500 ${
+                      isActive
+                        ? 'border-sky-500 bg-sky-500/10 text-slate-100 shadow-sm shadow-sky-900/40'
+                        : 'border-slate-800 bg-slate-900/60 text-slate-300 hover:border-slate-600'
+                    }`}
                     >
                       <input
                         type="radio"
@@ -195,7 +195,7 @@ export default function Onboarding(): JSX.Element {
                         <p className="text-sm font-semibold text-slate-100">{style.title}</p>
                         <p className="mt-2 text-xs text-slate-400">{style.summary}</p>
                       </div>
-                      <dl className="mt-4 flex flex-wrap gap-x-2 gap-y-1 text-[11px] uppercase tracking-[0.3em] text-slate-500">
+                      <dl className="mt-4 flex flex-wrap gap-x-2 gap-y-1 text-[11px] uppercase tracking-[0.3em] text-slate-300">
                         <div>
                           <dt className="sr-only">Car</dt>
                           <dd>{style.split.car}% car</dd>
@@ -229,7 +229,7 @@ export default function Onboarding(): JSX.Element {
                 return (
                   <label
                     key={option.id}
-                    className={`group flex h-full cursor-pointer flex-col justify-between rounded-lg border p-4 text-left text-sm transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-sky-500 ${
+                    className={`group flex h-full min-h-[148px] cursor-pointer flex-col justify-between rounded-lg border p-4 text-left text-sm transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-sky-500 ${
                       isActive
                         ? 'border-sky-500 bg-sky-500/10 text-slate-100 shadow-sm shadow-sky-900/40'
                         : 'border-slate-800 bg-slate-900/60 text-slate-300 hover:border-slate-600'
@@ -288,7 +288,7 @@ export default function Onboarding(): JSX.Element {
                   aria-valuenow={draft.streamingHoursPerDay}
                   aria-labelledby="streaming-hours-label"
                 />
-                <div className="mt-3 flex items-center justify-between text-xs uppercase tracking-[0.25em] text-slate-500">
+                <div className="mt-3 flex items-center justify-between text-xs uppercase tracking-[0.25em] text-slate-300">
                   <span id="streaming-hours-label">Hours per day</span>
                   <span className="font-semibold text-slate-200">
                     {draft.streamingHoursPerDay.toFixed(1)} hours
@@ -321,7 +321,7 @@ export default function Onboarding(): JSX.Element {
                   </span>
                 </li>
               </ul>
-              <p className="mt-3 text-[11px] uppercase tracking-[0.3em] text-slate-500">
+              <p className="mt-3 text-[11px] uppercase tracking-[0.3em] text-slate-300">
                 You can fine-tune all of these from the dashboard later on.
               </p>
             </div>
@@ -355,7 +355,7 @@ export default function Onboarding(): JSX.Element {
           </div>
           <a
             href="/"
-            className="hidden text-xs font-semibold uppercase tracking-[0.25em] text-slate-400 transition hover:text-sky-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 sm:inline-flex"
+            className="hidden min-h-[44px] items-center justify-center rounded-md px-3 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-slate-200 transition hover:text-sky-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 sm:inline-flex"
           >
             Skip onboarding
           </a>

@@ -91,7 +91,7 @@ export function Stacked({ title = 'Annual emissions by category', data, referenc
         <h3 id="stacked-heading" className="text-base font-semibold text-slate-100">
           {title}
         </h3>
-        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Total {formatEmission(total)}</p>
+        <p className="text-xs uppercase tracking-[0.3em] text-slate-300">Total {formatEmission(total)}</p>
       </div>
       <ol role="list" className="mt-5 space-y-3">
         {prepared.map((row, index) => {
@@ -122,7 +122,7 @@ export function Stacked({ title = 'Annual emissions by category', data, referenc
           );
         })}
       </ol>
-      <p className="mt-6 text-xs uppercase tracking-[0.3em] text-slate-500">Annual emissions (adaptive units)</p>
+      <p className="mt-6 text-xs uppercase tracking-[0.3em] text-slate-300">Annual emissions (adaptive units)</p>
     </section>
   );
 }

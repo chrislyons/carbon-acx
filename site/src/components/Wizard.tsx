@@ -119,7 +119,7 @@ export function Wizard({
           <button
             type="button"
             onClick={onSkip}
-            className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400 transition hover:text-sky-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
+            className="inline-flex min-h-[44px] items-center justify-center rounded-md px-3 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-slate-200 transition hover:text-sky-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
           >
             Skip
           </button>
@@ -142,14 +142,14 @@ export function Wizard({
           type="button"
           onClick={handleBack}
           disabled={isFirstStep}
-          className="inline-flex items-center justify-center rounded-lg border border-slate-700 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-slate-100 transition hover:border-slate-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 disabled:cursor-not-allowed disabled:border-slate-800 disabled:text-slate-500"
+          className="inline-flex min-h-[44px] items-center justify-center rounded-lg border border-slate-600 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.25em] text-slate-100 transition hover:border-slate-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 disabled:cursor-not-allowed disabled:border-slate-800 disabled:text-slate-400"
         >
           Back
         </button>
         <button
           type="button"
           onClick={handleNext}
-          className="inline-flex items-center justify-center rounded-lg bg-sky-500 px-5 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-slate-900 shadow transition hover:bg-sky-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
+          className="inline-flex min-h-[44px] items-center justify-center rounded-lg bg-sky-500 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.25em] text-slate-900 shadow transition hover:bg-sky-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
         >
           {isLastStep ? finishLabel : 'Next'}
         </button>

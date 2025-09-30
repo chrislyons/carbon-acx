@@ -87,7 +87,7 @@ export function StorySection({
           <button
             type="button"
             onClick={onRequestReferences}
-            className="inline-flex items-center gap-2 rounded-full border border-slate-700/70 bg-slate-900/60 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-100 transition hover:border-slate-500 hover:text-sky-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
+            className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-slate-600/70 bg-slate-900/60 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-slate-100 transition hover:border-slate-400 hover:text-sky-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
           >
             <span className="h-1.5 w-1.5 rounded-full bg-sky-400" aria-hidden="true" />
             View sources {referenceHint ? <span className="text-slate-400">{referenceHint}</span> : null}

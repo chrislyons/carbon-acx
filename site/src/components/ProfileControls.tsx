@@ -156,7 +156,7 @@ export function ProfileControls(): JSX.Element {
                   return (
                     <label
                       key={key}
-                      className={`relative flex cursor-pointer flex-col gap-1.5 rounded-lg border text-left shadow-sm transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-sky-500 pad-compact ${
+                      className={`relative flex min-h-[132px] cursor-pointer flex-col gap-1.5 rounded-lg border text-left shadow-sm transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-sky-500 pad-compact ${
                         isActive
                           ? 'border-sky-500 bg-sky-500/10 text-slate-100'
                           : 'border-slate-800 bg-slate-900/60 text-slate-300 hover:border-slate-600'
@@ -214,18 +214,18 @@ export function ProfileControls(): JSX.Element {
             <dl className="grid gap-1.5 md:grid-cols-2">
               {modeSegments.map(({ key, value, metadata }) => (
                 <Fragment key={`override-${key}`}>
-                  <dt className="text-[10px] uppercase tracking-[0.3em] text-slate-500">{metadata.label} days/wk</dt>
+                  <dt className="text-[10px] uppercase tracking-[0.3em] text-slate-300">{metadata.label} days/wk</dt>
                   <dd className="text-[13px] font-semibold text-slate-200">
                     {((controls.commuteDaysPerWeek * value) / 100).toFixed(2)}
                   </dd>
                 </Fragment>
               ))}
               <Fragment key="override-diet">
-                <dt className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Diet selection</dt>
+                <dt className="text-[10px] uppercase tracking-[0.3em] text-slate-300">Diet selection</dt>
                 <dd className="text-[13px] font-semibold text-slate-200">{DIET_COPY[controls.diet].label}</dd>
               </Fragment>
               <Fragment key="override-stream">
-                <dt className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Streaming hours/week</dt>
+                <dt className="text-[10px] uppercase tracking-[0.3em] text-slate-300">Streaming hours/week</dt>
                 <dd className="text-[13px] font-semibold text-slate-200">
                   {(controls.streamingHoursPerDay * 7).toFixed(1)}
                 </dd>
