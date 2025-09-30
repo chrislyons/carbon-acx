@@ -68,6 +68,7 @@ interface ProfileContextValue {
   setModeSplit: (mode: keyof ModeSplit, value: number) => void;
   setDiet: (diet: DietOption) => void;
   setStreamingHours: (value: number) => void;
+  setControlsState: (next: ProfileControlsState) => void;
 }
 
 const STORAGE_KEY = 'acx:profile-controls';
@@ -125,6 +126,26 @@ function normaliseSplit(split: ModeSplit): ModeSplit {
 
   const distributed = distributeIntegerTotal(100, weights);
   return { car: distributed[0], transit: distributed[1], bike: distributed[2] };
+}
+
+function controlsAreEqual(a: ProfileControlsState, b: ProfileControlsState): boolean {
+  if (a === b) {
+    return true;
+  }
+
+  if (
+    a.commuteDaysPerWeek !== b.commuteDaysPerWeek ||
+    a.streamingHoursPerDay !== b.streamingHoursPerDay ||
+    a.diet !== b.diet
+  ) {
+    return false;
+  }
+
+  return (
+    a.modeSplit.car === b.modeSplit.car &&
+    a.modeSplit.transit === b.modeSplit.transit &&
+    a.modeSplit.bike === b.modeSplit.bike
+  );
 }
 
 function roundTo(value: number, precision: number): number {
@@ -373,6 +394,16 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
     });
   }, []);
 
+  const setControlsState = useCallback((next: ProfileControlsState) => {
+    setControls((previous) => {
+      const normalised = normaliseControls(next);
+      if (controlsAreEqual(previous, normalised)) {
+        return previous;
+      }
+      return normalised;
+    });
+  }, []);
+
   const contextValue = useMemo<ProfileContextValue>(
     () => ({
       profileId,
@@ -384,7 +415,8 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
       setCommuteDays,
       setModeSplit,
       setDiet,
-      setStreamingHours
+      setStreamingHours,
+      setControlsState
     }),
     [
       profileId,
@@ -396,7 +428,8 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
       setCommuteDays,
       setModeSplit,
       setDiet,
-      setStreamingHours
+      setStreamingHours,
+      setControlsState
     ]
   );
 

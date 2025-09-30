@@ -1,0 +1,98 @@
+[
+  {
+    "id": "remote",
+    "title": "Remote knowledge worker",
+    "summary": "WFH default with vegetarian meals and a little extra streaming.",
+    "controls": {
+      "commuteDaysPerWeek": 0,
+      "modeSplit": {
+        "car": 60,
+        "transit": 30,
+        "bike": 10
+      },
+      "diet": "vegetarian",
+      "streamingHoursPerDay": 2
+    },
+    "overrides": {
+      "TRAVEL.COMMUTE.CAR.WORKDAY": 0,
+      "TRAVEL.COMMUTE.TRANSIT.WORKDAY": 0,
+      "TRAVEL.COMMUTE.BIKE.WORKDAY": 0,
+      "FOOD.DIET.OMNIVORE.WEEK": 0,
+      "FOOD.DIET.VEGETARIAN.WEEK": 7,
+      "FOOD.DIET.VEGAN.WEEK": 0,
+      "MEDIA.STREAM.HD.HOUR.TV": 14
+    }
+  },
+  {
+    "id": "suburban",
+    "title": "Suburban commuter",
+    "summary": "Five office days, car-heavy trips, and a standard omnivore diet.",
+    "controls": {
+      "commuteDaysPerWeek": 5,
+      "modeSplit": {
+        "car": 85,
+        "transit": 10,
+        "bike": 5
+      },
+      "diet": "omnivore",
+      "streamingHoursPerDay": 1
+    },
+    "overrides": {
+      "TRAVEL.COMMUTE.CAR.WORKDAY": 4.25,
+      "TRAVEL.COMMUTE.TRANSIT.WORKDAY": 0.5,
+      "TRAVEL.COMMUTE.BIKE.WORKDAY": 0.25,
+      "FOOD.DIET.OMNIVORE.WEEK": 7,
+      "FOOD.DIET.VEGETARIAN.WEEK": 0,
+      "FOOD.DIET.VEGAN.WEEK": 0,
+      "MEDIA.STREAM.HD.HOUR.TV": 7
+    }
+  },
+  {
+    "id": "gamer",
+    "title": "Gamer / streamer",
+    "summary": "Minimal commuting, omnivore meals, and heavy daily streaming.",
+    "controls": {
+      "commuteDaysPerWeek": 1,
+      "modeSplit": {
+        "car": 40,
+        "transit": 40,
+        "bike": 20
+      },
+      "diet": "omnivore",
+      "streamingHoursPerDay": 5
+    },
+    "overrides": {
+      "TRAVEL.COMMUTE.CAR.WORKDAY": 0.4,
+      "TRAVEL.COMMUTE.TRANSIT.WORKDAY": 0.4,
+      "TRAVEL.COMMUTE.BIKE.WORKDAY": 0.2,
+      "FOOD.DIET.OMNIVORE.WEEK": 7,
+      "FOOD.DIET.VEGETARIAN.WEEK": 0,
+      "FOOD.DIET.VEGAN.WEEK": 0,
+      "MEDIA.STREAM.HD.HOUR.TV": 35
+    }
+  },
+  {
+    "id": "minimalist",
+    "title": "Minimalist urbanite",
+    "summary": "Transit-forward lifestyle, vegan diet, and limited screen time.",
+    "controls": {
+      "commuteDaysPerWeek": 2,
+      "modeSplit": {
+        "car": 15,
+        "transit": 25,
+        "bike": 60
+      },
+      "diet": "vegan",
+      "streamingHoursPerDay": 0.5
+    },
+    "overrides": {
+      "TRAVEL.COMMUTE.CAR.WORKDAY": 0.3,
+      "TRAVEL.COMMUTE.TRANSIT.WORKDAY": 0.5,
+      "TRAVEL.COMMUTE.BIKE.WORKDAY": 1.2,
+      "FOOD.DIET.OMNIVORE.WEEK": 0,
+      "FOOD.DIET.VEGETARIAN.WEEK": 0,
+      "FOOD.DIET.VEGAN.WEEK": 7,
+      "MEDIA.STREAM.HD.HOUR.TV": 3.5
+    }
+  }
+]
