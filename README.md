@@ -353,3 +353,7 @@ Legend: ✅ implemented · 🚧 in-progress or partially scaffolded · 🧭 plan
 
 _Note: To satisfy repo hygiene tests, avoid using the contiguous token spelled “F a s t A P I” in docs._
 
+
+### Serials & Traceability
+
+Refer to [docs/CONTRIBUTING_SERIES.md](docs/CONTRIBUTING_SERIES.md) for guidance on citing ACX specifications, CDX prompts, and the PR lineage required for every contribution.
