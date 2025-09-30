@@ -2,6 +2,8 @@ import { Fragment, useMemo } from 'react';
 
 import { DietOption, ModeSplit, useProfile } from '../state/profile';
 
+import { PresetGallery } from './PresetGallery';
+
 const MODE_METADATA: Record<keyof ModeSplit, { label: string; description: string; color: string }> = {
   car: {
     label: 'Car',
@@ -79,6 +81,7 @@ export function ProfileControls(): JSX.Element {
           </p>
         </div>
       </div>
+      <PresetGallery />
       <form className="mt-6 space-y-7" aria-describedby="profile-controls-heading">
         <fieldset className="space-y-4">
           <legend className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Commute cadence</legend>
