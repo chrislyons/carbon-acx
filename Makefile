@@ -55,10 +55,11 @@ $(PACKAGED_MANIFEST): $(LATEST_BUILD)
 	PYTHONPATH=. poetry run python -m scripts.package_artifacts --src $(DIST_ARTIFACTS_DIR) --dest $(PACKAGED_ARTIFACTS_DIR)
 
 package: $(PACKAGED_MANIFEST) site sbom
+	PYTHONPATH=. poetry run python -m scripts.prepare_pages_bundle --site $(DIST_SITE_DIR) --artifacts $(PACKAGED_ARTIFACTS_DIR)
 
-ci_build_pages: install lint test site
+ci_build_pages: install lint test package
 
-build-static: site
+build-static: package
 	@echo "Static site available at $(DIST_SITE_DIR)"
 
 app:
