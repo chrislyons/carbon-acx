@@ -70,6 +70,13 @@ export function installFetchLogger(): void {
       url: request.url,
       method
     });
+    if (method !== 'GET') {
+      // eslint-disable-next-line no-console
+      console.warn(`${logPrefix} non-GET request`, {
+        url: request.url,
+        method
+      });
+    }
     try {
       const response = await originalFetch(request);
       // eslint-disable-next-line no-console
