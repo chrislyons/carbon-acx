@@ -12,7 +12,7 @@ from collections import defaultdict
 from dataclasses import asdict, dataclass
 from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence
 
 import pandas as pd
 
@@ -21,12 +21,16 @@ from .api import collect_activity_source_keys
 from .dal import DataStore, choose_backend
 from .schema import (
     Activity,
+    ActivityFunctionalUnitMap,
     ActivitySchedule,
     EmissionFactor,
+    FunctionalUnit,
     GridIntensity,
     LayerId,
     Profile,
     RegionCode,
+    load_activity_fu_map,
+    load_functional_units,
 )
 
 FLOAT_QUANTISER = Decimal("0.000001")
@@ -50,6 +54,35 @@ EXPORT_COLUMNS = [
     "annual_emissions_g_low",
     "annual_emissions_g_high",
 ]
+
+INTENSITY_COLUMNS = [
+    "alt_id",
+    "activity_id",
+    "activity_name",
+    "functional_unit_id",
+    "fu_name",
+    "intensity_g_per_fu",
+    "intensity_low_g_per_fu",
+    "intensity_high_g_per_fu",
+    "annual_fu",
+    "annual_kg",
+    "scope_boundary",
+    "region",
+    "source_ids_csv",
+]
+
+_UNIT_VARIABLE_HINTS: dict[str, tuple[str, ...]] = {
+    "km": ("distance_km",),
+    "kilometre": ("distance_km",),
+    "kilometer": ("distance_km",),
+    "passenger-km": ("distance_km",),
+    "passenger_km": ("distance_km",),
+    "passenger-kilometre": ("distance_km",),
+    "passenger_kilometre": ("distance_km",),
+    "hour": ("hours",),
+    "participant-hour": ("hours",),
+    "participant_hour": ("hours",),
+}
 
 datetime = _datetime_module.datetime
 timezone = _datetime_module.timezone
@@ -576,6 +609,327 @@ def _write_reference_file(directory: Path, stem: str, references: List[str]) -> 
     (directory / f"{stem}_refs.txt").write_text(text, encoding="utf-8")
 
 
+def _schedule_variable_map(sched: ActivitySchedule) -> dict[str, float]:
+    data = sched.model_dump(exclude_none=True)
+    variables: dict[str, float] = {}
+    for key, value in data.items():
+        if isinstance(value, (int, float)):
+            variables[key] = float(value)
+    return variables
+
+
+def _activity_unit_value(
+    sched: ActivitySchedule,
+    activity: Activity | None,
+    ef: EmissionFactor,
+) -> Optional[float]:
+    candidates: list[str] = []
+    if ef.unit:
+        candidates.extend(_UNIT_VARIABLE_HINTS.get(str(ef.unit).lower(), ()))
+    if activity and activity.default_unit:
+        candidates.extend(_UNIT_VARIABLE_HINTS.get(activity.default_unit.lower(), ()))
+
+    ordered: list[str] = []
+    seen: set[str] = set()
+    for name in candidates:
+        if name in seen:
+            continue
+        seen.add(name)
+        ordered.append(name)
+
+    for fallback in ("distance_km", "hours"):
+        if fallback not in seen:
+            ordered.append(fallback)
+            seen.add(fallback)
+
+    for name in ordered:
+        value = getattr(sched, name, None)
+        if value is not None:
+            return float(value)
+    return None
+
+
+def _dedupe_preserve_order(values: Iterable[str | None]) -> list[str]:
+    ordered: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        if not value:
+            continue
+        text = str(value)
+        if text in seen:
+            continue
+        seen.add(text)
+        ordered.append(text)
+    return ordered
+
+
+def build_intensity_matrix(
+    profile_id: str | None = None,
+    fu_id: str | None = None,
+    *,
+    ds: DataStore | None = None,
+    output_dir: Path | None = None,
+    emission_factors: Sequence[EmissionFactor] | None = None,
+    activity_fu_map: Sequence[ActivityFunctionalUnitMap] | None = None,
+    functional_units: Sequence[FunctionalUnit] | None = None,
+    profiles: Sequence[Profile] | None = None,
+    activity_schedule: Sequence[ActivitySchedule] | None = None,
+    activities: Sequence[Activity] | None = None,
+    grid_lookup: Mapping[str | RegionCode, float | None] | None = None,
+    grid_by_region: Mapping[str | RegionCode, GridIntensity] | None = None,
+) -> pd.DataFrame:
+    datastore = ds or choose_backend()
+
+    activities_seq = list(activities) if activities is not None else list(datastore.load_activities())
+    activities_by_id = {activity.activity_id: activity for activity in activities_seq}
+
+    functional_units_seq = (
+        list(functional_units)
+        if functional_units is not None
+        else list(load_functional_units())
+    )
+    functional_units_by_id = {
+        fu.functional_unit_id: fu for fu in functional_units_seq
+    }
+
+    emission_factors_seq = (
+        list(emission_factors)
+        if emission_factors is not None
+        else list(datastore.load_emission_factors())
+    )
+    ef_by_activity: dict[str, EmissionFactor] = {}
+    for ef in emission_factors_seq:
+        if ef.activity_id not in ef_by_activity:
+            ef_by_activity[ef.activity_id] = ef
+
+    profiles_seq = list(profiles) if profiles is not None else list(datastore.load_profiles())
+    profiles_by_id = {profile.profile_id: profile for profile in profiles_seq}
+
+    schedules_seq = (
+        list(activity_schedule)
+        if activity_schedule is not None
+        else list(datastore.load_activity_schedule())
+    )
+
+    activity_fu_seq = (
+        list(activity_fu_map)
+        if activity_fu_map is not None
+        else list(
+            load_activity_fu_map(
+                activities=activities_seq,
+                functional_units=functional_units_seq,
+            )
+        )
+    )
+
+    if grid_lookup is None or grid_by_region is None:
+        lookup: dict[str | RegionCode, float | None] = {}
+        by_region: dict[str | RegionCode, GridIntensity] = {}
+        for grid in datastore.load_grid_intensity():
+            lookup[grid.region] = grid.intensity_g_per_kwh
+            by_region[grid.region] = grid
+            if hasattr(grid.region, "value"):
+                lookup[grid.region.value] = grid.intensity_g_per_kwh
+                by_region[grid.region.value] = grid
+        grid_lookup = lookup if grid_lookup is None else grid_lookup
+        grid_by_region = by_region if grid_by_region is None else grid_by_region
+
+    schedules_by_activity: dict[str, list[ActivitySchedule]] = defaultdict(list)
+    for sched in schedules_seq:
+        if profile_id and sched.profile_id != profile_id:
+            continue
+        schedules_by_activity[sched.activity_id].append(sched)
+
+    rows: list[dict[str, Any]] = []
+    reference_order: list[str] = []
+
+    for mapping in activity_fu_seq:
+        if fu_id and mapping.functional_unit_id != fu_id:
+            continue
+
+        schedule_list = schedules_by_activity.get(mapping.activity_id)
+        if not schedule_list:
+            continue
+
+        ef = ef_by_activity.get(mapping.activity_id)
+        if ef is None:
+            continue
+
+        activity = activities_by_id.get(mapping.activity_id)
+        functional_unit = functional_units_by_id.get(mapping.functional_unit_id)
+
+        for sched in schedule_list:
+            profile = profiles_by_id.get(sched.profile_id)
+            if profile is None:
+                continue
+
+            variables = _schedule_variable_map(sched)
+            fu_value = evaluate_functional_unit_formula(mapping.conversion_formula, variables)
+            if fu_value is None or not math.isfinite(fu_value) or fu_value <= 0:
+                continue
+
+            activity_units = _activity_unit_value(sched, activity, ef)
+            if activity_units is None or not math.isfinite(activity_units) or activity_units <= 0:
+                continue
+
+            units_per_fu = activity_units / fu_value
+            if not math.isfinite(units_per_fu) or units_per_fu <= 0:
+                continue
+
+            intensity_mean: float | None = None
+            intensity_low: float | None = None
+            intensity_high: float | None = None
+            region_value: str | None = None
+            grid_row: GridIntensity | None = None
+
+            if ef.value_g_per_unit is not None:
+                factor = float(ef.value_g_per_unit)
+                intensity_mean = factor * units_per_fu
+                if ef.uncert_low_g_per_unit is not None:
+                    intensity_low = float(ef.uncert_low_g_per_unit) * units_per_fu
+                if ef.uncert_high_g_per_unit is not None:
+                    intensity_high = float(ef.uncert_high_g_per_unit) * units_per_fu
+                if ef.region is not None:
+                    region_value = (
+                        ef.region.value if hasattr(ef.region, "value") else str(ef.region)
+                    )
+            elif ef.is_grid_indexed:
+                if grid_by_region:
+                    grid_row = _resolve_grid_row(sched, profile, grid_by_region)
+                grid_intensity = None
+                grid_low = None
+                grid_high = None
+                if grid_row:
+                    region_value = (
+                        grid_row.region.value
+                        if hasattr(grid_row.region, "value")
+                        else str(grid_row.region)
+                    )
+                    if grid_row.intensity_g_per_kwh is not None:
+                        grid_intensity = float(grid_row.intensity_g_per_kwh)
+                    if grid_row.intensity_low_g_per_kwh is not None:
+                        grid_low = float(grid_row.intensity_low_g_per_kwh)
+                    if grid_row.intensity_high_g_per_kwh is not None:
+                        grid_high = float(grid_row.intensity_high_g_per_kwh)
+
+                if grid_intensity is None and grid_lookup is not None:
+                    grid_intensity = get_grid_intensity(
+                        profile,
+                        grid_lookup,
+                        sched.region_override,
+                        sched.mix_region,
+                        sched.use_canada_average,
+                    )
+
+                kwh_per_unit = ef.electricity_kwh_per_unit
+                if grid_intensity is None or kwh_per_unit is None:
+                    continue
+
+                kwh_per_fu = float(kwh_per_unit) * units_per_fu
+                intensity_mean = float(grid_intensity) * kwh_per_fu
+
+                if grid_low is not None or ef.electricity_kwh_per_unit_low is not None:
+                    grid_low_val = grid_low if grid_low is not None else float(grid_intensity)
+                    kwh_low_val = (
+                        float(ef.electricity_kwh_per_unit_low) * units_per_fu
+                        if ef.electricity_kwh_per_unit_low is not None
+                        else kwh_per_fu
+                    )
+                    intensity_low = grid_low_val * kwh_low_val
+
+                if grid_high is not None or ef.electricity_kwh_per_unit_high is not None:
+                    grid_high_val = grid_high if grid_high is not None else float(grid_intensity)
+                    kwh_high_val = (
+                        float(ef.electricity_kwh_per_unit_high) * units_per_fu
+                        if ef.electricity_kwh_per_unit_high is not None
+                        else kwh_per_fu
+                    )
+                    intensity_high = grid_high_val * kwh_high_val
+            else:
+                continue
+
+            if intensity_mean is None or not math.isfinite(intensity_mean):
+                continue
+
+            weekly_frequency = _weekly_quantity(sched, profile) if profile else None
+            daily_frequency = (
+                (float(weekly_frequency) / 7.0) if weekly_frequency is not None else None
+            )
+            annual_fu = (
+                fu_value * daily_frequency * 365
+                if daily_frequency is not None
+                else None
+            )
+            annual_kg = (
+                (annual_fu * intensity_mean / 1000)
+                if annual_fu is not None
+                else None
+            )
+
+            source_candidates = []
+            if ef.source_id:
+                source_candidates.append(str(ef.source_id))
+            if grid_row and grid_row.source_id:
+                source_candidates.append(str(grid_row.source_id))
+            source_ids = _dedupe_preserve_order(source_candidates)
+
+            row_context = {"emission_factor": ef}
+            if grid_row:
+                row_context["grid_intensity"] = grid_row
+            citation_keys = collect_activity_source_keys([row_context])
+
+            if citation_keys:
+                ordered_keys: list[str] = []
+                for key in source_ids:
+                    if key in citation_keys and key not in ordered_keys:
+                        ordered_keys.append(key)
+                for key in sorted(citation_keys):
+                    if key not in ordered_keys:
+                        ordered_keys.append(key)
+            else:
+                ordered_keys = list(source_ids)
+
+            for key in ordered_keys:
+                if key not in reference_order:
+                    reference_order.append(key)
+
+            rows.append(
+                {
+                    "alt_id": sched.profile_id,
+                    "activity_id": mapping.activity_id,
+                    "activity_name": activity.name if activity else None,
+                    "functional_unit_id": mapping.functional_unit_id,
+                    "fu_name": functional_unit.name if functional_unit else None,
+                    "intensity_g_per_fu": intensity_mean,
+                    "intensity_low_g_per_fu": intensity_low,
+                    "intensity_high_g_per_fu": intensity_high,
+                    "annual_fu": annual_fu,
+                    "annual_kg": annual_kg,
+                    "scope_boundary": ef.scope_boundary,
+                    "region": region_value,
+                    "source_ids_csv": ",".join(source_ids),
+                }
+            )
+
+    df = pd.DataFrame(rows, columns=INTENSITY_COLUMNS)
+    if not df.empty:
+        df = df.sort_values(
+            ["functional_unit_id", "alt_id", "activity_id"],
+            na_position="last",
+        ).reset_index(drop=True)
+
+    if output_dir is not None:
+        output_dir.mkdir(parents=True, exist_ok=True)
+        csv_path = output_dir / "intensity_matrix.csv"
+        df.to_csv(csv_path, index=False, na_rep="")
+
+        references = _format_references(reference_order)
+        reference_dir = output_dir / "references"
+        _write_reference_file(reference_dir, "intensity", references)
+
+    return df
+
+
 def _resolve_grid_row(
     sched: ActivitySchedule,
     profile: Profile | None,
@@ -611,6 +965,21 @@ def export_view(
     activities = {activity.activity_id: activity for activity in datastore.load_activities()}
     efs = {ef.activity_id: ef for ef in datastore.load_emission_factors()}
     profiles = {p.profile_id: p for p in datastore.load_profiles()}
+    if activities:
+        try:
+            functional_units = list(load_functional_units())
+            activity_fu_mappings = list(
+                load_activity_fu_map(
+                    activities=list(activities.values()),
+                    functional_units=functional_units,
+                )
+            )
+        except ValueError:
+            functional_units = []
+            activity_fu_mappings = []
+    else:
+        functional_units = []
+        activity_fu_mappings = []
     grid_lookup: Dict[str | RegionCode, Optional[float]] = {}
     grid_by_region: Dict[str | RegionCode, GridIntensity] = {}
     for gi in datastore.load_grid_intensity():
@@ -856,6 +1225,19 @@ def export_view(
     _prepare_output_dir(reference_dir)
 
     _write_reference_file(reference_dir, "export_view", references)
+
+    build_intensity_matrix(
+        ds=datastore,
+        output_dir=out_dir,
+        emission_factors=list(efs.values()),
+        activity_fu_map=activity_fu_mappings,
+        functional_units=functional_units,
+        profiles=list(profiles.values()),
+        activity_schedule=schedules,
+        activities=list(activities.values()),
+        grid_lookup=grid_lookup,
+        grid_by_region=grid_by_region,
+    )
 
     export_csv_path = out_dir / "export_view.csv"
     with export_csv_path.open("w", encoding="utf-8") as fh:
