@@ -34,6 +34,11 @@ def main(label: str, env_var: str) -> None:
     with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env_file:
         print(f"{env_var}={outputs_dir}", file=env_file)
 
+    cache_dir = pathlib.Path("dist/.calc-outputs")
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    cache_file = cache_dir / f"{env_var}.path"
+    cache_file.write_text(f"{outputs_dir}\n", encoding="utf-8")
+
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
