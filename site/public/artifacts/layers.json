@@ -1,0 +1,46 @@
+[
+  {
+    "id": "professional",
+    "title": "Professional services",
+    "summary": "Baseline knowledge worker footprint anchored to hybrid office routines.",
+    "icon": "professional.svg",
+    "optional": false,
+    "examples": [
+      "Coffee—12 oz hot",
+      "Toronto subway—per passenger-kilometre"
+    ]
+  },
+  {
+    "id": "online",
+    "title": "Online services",
+    "summary": "SaaS, meetings, and streaming workloads for remote-first teams.",
+    "icon": "online.svg",
+    "optional": true,
+    "examples": [
+      "Video conferencing hour",
+      "SaaS productivity suite seat"
+    ]
+  },
+  {
+    "id": "industrial_light",
+    "title": "Industrial (Light)",
+    "summary": "Lab, prototyping, and light fabrication scenarios for innovation hubs.",
+    "icon": "industrial_light.svg",
+    "optional": true,
+    "examples": [
+      "Lab bench operation",
+      "Prototyping print run"
+    ]
+  },
+  {
+    "id": "industrial_heavy",
+    "title": "Industrial (Heavy)",
+    "summary": "Full-scale manufacturing and heavy industry references for R&D insight.",
+    "icon": "industrial_heavy.svg",
+    "optional": true,
+    "examples": [
+      "Steel batch furnace",
+      "Heavy equipment runtime"
+    ]
+  }
+]

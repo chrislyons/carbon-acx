@@ -87,6 +87,7 @@ export function Bubble({ title = 'Activity emissions bubble chart', data, refere
         aria-labelledby="bubble-heading"
         className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-5 shadow-inner shadow-slate-900/40"
         id="bubble"
+        tabIndex={-1}
       >
         <h3 id="bubble-heading" className="text-base font-semibold text-slate-100">
           {title}
@@ -107,6 +108,7 @@ export function Bubble({ title = 'Activity emissions bubble chart', data, refere
       aria-labelledby="bubble-heading"
       className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-5 shadow-inner shadow-slate-900/40"
       id="bubble"
+      tabIndex={-1}
     >
       <h3 id="bubble-heading" className="text-base font-semibold text-slate-100">
         {title}

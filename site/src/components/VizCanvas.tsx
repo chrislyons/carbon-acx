@@ -1,14 +1,16 @@
 import { useMemo, useRef } from 'react';
 
+import { USE_COMPUTE_API } from '../lib/api';
+import { useLayerCatalog } from '../lib/useLayerCatalog';
+import { formatEmission } from '../lib/format';
+import { buildReferenceLookup } from '../lib/references';
+import { useProfile } from '../state/profile';
+
 import { Bubble, BubbleDatum } from './Bubble';
 import { ExportMenu } from './ExportMenu';
 import { LayerToggles } from './LayerToggles';
 import { Sankey, SankeyData, SankeyLink } from './Sankey';
 import { Stacked, StackedDatum } from './Stacked';
-import { USE_COMPUTE_API } from '../lib/api';
-import { formatEmission } from '../lib/format';
-import { buildReferenceLookup } from '../lib/references';
-import { useProfile } from '../state/profile';
 
 interface ActivityRow {
   id: string;
@@ -228,6 +230,7 @@ export function VizCanvas(): JSX.Element {
     activeReferences,
     setActiveLayers
   } = useProfile();
+  const { layers: layerCatalog } = useLayerCatalog();
 
   const activeLayerSet = useMemo(() => new Set(activeLayers), [activeLayers]);
   const baseLayer = primaryLayer;
@@ -368,6 +371,7 @@ export function VizCanvas(): JSX.Element {
                   availableLayers={availableLayers}
                   activeLayers={activeLayers}
                   onChange={setActiveLayers}
+                  layerCatalog={layerCatalog}
                 />
               ) : null}
               <div className="grid gap-[var(--gap-1)] lg:grid-cols-3">

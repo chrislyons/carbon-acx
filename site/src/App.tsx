@@ -1,8 +1,9 @@
 import { useState } from 'react';
 
+import { Layout } from './components/Layout';
+import { LayerBrowser } from './components/LayerBrowser';
 import { ProfileControls } from './components/ProfileControls';
 import { ReferencesDrawer } from './components/ReferencesDrawer';
-import { Layout } from './components/Layout';
 import { VizCanvas } from './components/VizCanvas';
 import { ProfileProvider } from './state/profile';
 
@@ -52,6 +53,7 @@ export default function App(): JSX.Element {
           className="flex min-h-0 flex-1 flex-col gap-[var(--gap-1)] px-[var(--gap-2)] py-[var(--gap-2)] sm:px-[var(--gap-2)] lg:px-[var(--gap-2)]"
         >
           <Layout
+            layerBrowser={<LayerBrowser />}
             controls={<ProfileControls />}
             canvas={<VizCanvas />}
             references={

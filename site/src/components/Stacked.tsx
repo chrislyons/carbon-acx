@@ -72,6 +72,7 @@ export function Stacked({ title = 'Annual emissions by category', data, referenc
         aria-labelledby="stacked-heading"
         className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-5 shadow-inner shadow-slate-900/40"
         id="stacked"
+        tabIndex={-1}
       >
         <h3 id="stacked-heading" className="text-base font-semibold text-slate-100">
           {title}
@@ -86,6 +87,7 @@ export function Stacked({ title = 'Annual emissions by category', data, referenc
       aria-labelledby="stacked-heading"
       className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-5 shadow-inner shadow-slate-900/40"
       id="stacked"
+      tabIndex={-1}
     >
       <div className="flex items-baseline justify-between gap-4">
         <h3 id="stacked-heading" className="text-base font-semibold text-slate-100">

@@ -1,0 +1,5 @@
+layer_id,title,summary,ui_optional,icon_slug,example_activities
+professional,Professional services,"Baseline knowledge worker footprint anchored to hybrid office routines.",false,professional.svg,"Coffee—12 oz hot; Toronto subway—per passenger-kilometre"
+online,Online services,"SaaS, meetings, and streaming workloads for remote-first teams.",true,online.svg,"Video conferencing hour; SaaS productivity suite seat"
+industrial_light,Industrial (Light),"Lab, prototyping, and light fabrication scenarios for innovation hubs.",true,industrial_light.svg,"Lab bench operation; Prototyping print run"
+industrial_heavy,Industrial (Heavy),"Full-scale manufacturing and heavy industry references for R&D insight.",true,industrial_heavy.svg,"Steel batch furnace; Heavy equipment runtime"
