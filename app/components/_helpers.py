@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Mapping
-from typing import Sequence
-
+from collections.abc import Iterable, Mapping, Sequence
 
 _NA_LABELS = {
     "na",
@@ -15,6 +13,19 @@ _NA_LABELS = {
     "not modelled",
     "not modeled",
 }
+
+_THIN_SPACE = "\u202f"
+
+
+def _format_with_thin_space(pattern: str, value: float) -> str:
+    return format(value, pattern).replace(",", _THIN_SPACE)
+
+
+def format_number(value: float, *, decimals: int = 0) -> str:
+    """Return a compact string representation with thin-space separators."""
+
+    pattern = f",.{decimals}f"
+    return _format_with_thin_space(pattern, value)
 
 
 def _is_na_label(value: object) -> bool:
@@ -101,10 +112,44 @@ def format_emissions(value: float) -> str:
 
     abs_value = abs(value)
     if abs_value >= 1_000_000:
-        return f"{value / 1_000_000:.2f} t CO₂e"
+        return f"{format_number(value / 1_000_000, decimals=2)} t CO₂e"
     if abs_value >= 1_000:
-        return f"{value / 1_000:.2f} kg CO₂e"
-    return f"{value:,.0f} g CO₂e"
+        return f"{format_number(value / 1_000, decimals=2)} kg CO₂e"
+    return f"{format_number(value, decimals=0)} g CO₂e"
+
+
+def format_range(low: float | None, high: float | None, units: str) -> str | None:
+    """Return a formatted low/high range when values exist."""
+
+    if low is None and high is None:
+        return None
+    if low is not None and high is not None:
+        return f"Range: {format_number(low, decimals=0)} – {format_number(high, decimals=0)} {units}"
+    if low is not None:
+        return f"Low: {format_number(low, decimals=0)} {units}"
+    if high is not None:
+        return f"High: {format_number(high, decimals=0)} {units}"
+    return None
+
+
+def format_reference_line(indices: Sequence[int]) -> str:
+    """Return a compact source identifier list."""
+
+    if not indices:
+        return "Sources: [–]"
+    body = _THIN_SPACE.join(str(index) for index in indices)
+    return f"Sources: [{body}]"
+
+
+def truncate_label(value: str | None, *, limit: int = 20) -> str:
+    """Return a truncated string with ellipsis when beyond ``limit``."""
+
+    if not value:
+        return ""
+    text = value.strip()
+    if len(text) <= limit:
+        return text
+    return text[: limit - 1] + "…"
 
 
 def clamp_optional(value: float | int | None) -> float | None:
@@ -129,9 +174,13 @@ def extend_unique(values: Iterable[str], existing: list[str]) -> list[str]:
 __all__ = [
     "clamp_optional",
     "extend_unique",
+    "format_number",
     "format_emissions",
+    "format_range",
+    "format_reference_line",
     "format_reference_hint",
     "has_na_segments",
     "primary_reference_index",
     "reference_numbers",
+    "truncate_label",
 ]

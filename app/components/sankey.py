@@ -6,11 +6,14 @@ import plotly.graph_objects as go
 from dash import dcc, html
 
 from calc.ui.theme import get_palette, get_plotly_template
+from app.lib.plotly_theme import DENSE_LAYOUT
 
 from . import na_notice
 from ._helpers import (
     clamp_optional,
     format_emissions,
+    format_range,
+    format_reference_line,
     has_na_segments,
     primary_reference_index,
     reference_numbers,
@@ -54,6 +57,8 @@ def _build_figure(
     formatted_values: list[str] = []
     activity_ids: list[str | None] = []
     meta_entries: list[dict[str, object]] = []
+    range_lines: list[str] = []
+    reference_lines: list[str] = []
 
     for link in links:
         mean = clamp_optional(link.get("values", {}).get("mean"))
@@ -85,6 +90,18 @@ def _build_figure(
                 "reference_indices": indices,
             }
         )
+        units_raw = link.get("units")
+        units = "g CO₂e"
+        if isinstance(units_raw, Mapping):
+            candidate = units_raw.get("mean") or units_raw.get("intensity") or units_raw.get("value")
+            if isinstance(candidate, str) and candidate.strip():
+                units = candidate.strip()
+        values_map = link.get("values") or {}
+        low = clamp_optional(values_map.get("low")) if isinstance(values_map, Mapping) else None
+        high = clamp_optional(values_map.get("high")) if isinstance(values_map, Mapping) else None
+        range_text = format_range(low, high, units)
+        range_lines.append(range_text or "")
+        reference_lines.append(format_reference_line(indices))
 
     figure = apply_figure_layout_defaults(go.Figure())
     if not values:
@@ -106,13 +123,22 @@ def _build_figure(
         link_colors = [link_color] * len(values)
 
     customdata = [
-        [formatted_value, activity_id]
-        for formatted_value, activity_id in zip(formatted_values, activity_ids)
+        [
+            formatted_value,
+            f"<br>{range_line}" if range_line else "",
+            reference_line,
+            activity_id,
+        ]
+        for formatted_value, range_line, reference_line, activity_id in zip(
+            formatted_values, range_lines, reference_lines, activity_ids
+        )
     ]
-    customdata_value_token = f"%{{customdata{chr(91)}0{chr(93)}}}"
     hover_template = (
-        f"%{{source.label}} → %{{target.label}}<br>Annual emissions: {customdata_value_token}<br>[%{{meta.source_index}}]"
-        + "<extra></extra>"
+        "<b>%{source.label} → %{target.label}</b>"
+        "<br>Annual emissions: %{customdata[0]}"
+        "%{customdata[1]}"
+        "<br>%{customdata[2]}"
+        "<extra></extra>"
     )
     figure.add_trace(
         go.Sankey(
@@ -139,8 +165,8 @@ def _build_figure(
 
     figure.update_layout(
         template=get_plotly_template(dark=dark),
-        margin=dict(l=40, r=40, t=40, b=40),
     )
+    figure.update_layout(**DENSE_LAYOUT)
     return figure
 
 

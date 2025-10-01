@@ -6,14 +6,18 @@ import plotly.graph_objects as go
 from dash import dcc, html
 
 from calc.ui.theme import get_palette, get_plotly_template
+from app.lib.plotly_theme import DENSE_LAYOUT
 
 from . import na_notice
 from ._helpers import (
     clamp_optional,
     format_emissions,
+    format_range,
+    format_reference_line,
     has_na_segments,
     primary_reference_index,
     reference_numbers,
+    truncate_label,
 )
 from ._plotly_settings import apply_figure_layout_defaults
 
@@ -28,13 +32,17 @@ def _build_figure(
     data = payload.get("data", []) if payload else []
 
     categories: list[str] = []
+    full_categories: list[str] = []
     activities: list[str] = []
+    full_activities: list[str] = []
     means: list[float] = []
     errors_high: list[float] = []
     errors_low: list[float] = []
     formatted_values: list[str] = []
     activity_ids: list[str | None] = []
     meta_entries: list[dict[str, object]] = []
+    range_lines: list[str] = []
+    reference_lines: list[str] = []
 
     for row in data:
         values = row.get("values", {})
@@ -44,8 +52,12 @@ def _build_figure(
         high = clamp_optional(values.get("high"))
         low = clamp_optional(values.get("low"))
 
-        categories.append(str(row.get("category", "uncategorized")))
-        activities.append(str(row.get("activity_name") or row.get("activity_id")))
+        category_label = str(row.get("category", "uncategorized"))
+        categories.append(truncate_label(category_label, limit=20))
+        full_categories.append(category_label)
+        activity_label = str(row.get("activity_name") or row.get("activity_id") or "Activity")
+        activities.append(truncate_label(activity_label, limit=22))
+        full_activities.append(activity_label)
         means.append(mean)
         errors_high.append(max((high or mean) - mean, 0.0))
         errors_low.append(max(mean - (low or mean), 0.0))
@@ -68,6 +80,15 @@ def _build_figure(
                 "reference_indices": indices,
             }
         )
+        units_raw = row.get("units")
+        units = "g CO₂e"
+        if isinstance(units_raw, Mapping):
+            candidate = units_raw.get("mean") or units_raw.get("intensity") or units_raw.get("value")
+            if isinstance(candidate, str) and candidate.strip():
+                units = candidate.strip()
+        range_text = format_range(low, high, units)
+        range_lines.append(range_text or "")
+        reference_lines.append(format_reference_line(indices))
 
     palette = get_palette(dark=dark)
 
@@ -93,10 +114,13 @@ def _build_figure(
         else None
     )
 
-    customdata_value_token = f"%{{customdata{chr(91)}0{chr(93)}}}"
     hover_template = (
-        f"<b>%{{text}}</b><br>Category: %{{x}}<br>Annual emissions: {customdata_value_token}<br>[%{{meta.source_index}}]"
-        + "<extra></extra>"
+        "<b>%{customdata[0]}</b>"
+        "<br>Category: %{customdata[1]}"
+        "<br>Annual emissions: %{customdata[2]}"
+        "%{customdata[3]}"
+        "<br>%{customdata[4]}"
+        "<extra></extra>"
     )
 
     selected_indices: list[int] = []
@@ -106,8 +130,22 @@ def _build_figure(
         ]
 
     customdata = [
-        [formatted_value, activity_id]
-        for formatted_value, activity_id in zip(formatted_values, activity_ids)
+        [
+            full_activity,
+            full_category,
+            formatted_value,
+            f"<br>{range_line}" if range_line else "",
+            reference_line,
+            activity_id,
+        ]
+        for full_activity, full_category, formatted_value, range_line, reference_line, activity_id in zip(
+            full_activities,
+            full_categories,
+            formatted_values,
+            range_lines,
+            reference_lines,
+            activity_ids,
+        )
     ]
 
     trace_kwargs = dict(
@@ -139,11 +177,11 @@ def _build_figure(
 
     figure.update_layout(
         template=get_plotly_template(dark=dark),
-        margin=dict(l=60, r=20, t=40, b=60),
         xaxis=dict(title="Activity category", type="category"),
         yaxis=dict(title="Annual emissions (g CO₂e)", rangemode="tozero"),
         showlegend=False,
     )
+    figure.update_layout(**DENSE_LAYOUT)
     return figure
 
 

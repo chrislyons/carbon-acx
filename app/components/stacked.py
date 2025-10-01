@@ -6,14 +6,18 @@ import plotly.graph_objects as go
 from dash import dcc, html
 
 from calc.ui.theme import get_palette, get_plotly_template
+from app.lib.plotly_theme import DENSE_LAYOUT
 
 from . import na_notice
 from ._helpers import (
     clamp_optional,
     format_emissions,
+    format_range,
+    format_reference_line,
     has_na_segments,
     primary_reference_index,
     reference_numbers,
+    truncate_label,
 )
 from ._plotly_settings import apply_figure_layout_defaults
 
@@ -27,12 +31,15 @@ def _build_figure(
 ) -> go.Figure:
     data = payload.get("data", []) if payload else []
     categories: list[str] = []
+    full_categories: list[str] = []
     means: list[float] = []
     err_plus: list[float] = []
     err_minus: list[float] = []
     formatted_values: list[str] = []
     activity_ids: list[str | None] = []
     meta_entries: list[dict[str, object]] = []
+    range_lines: list[str] = []
+    reference_lines: list[str] = []
 
     for row in data:
         values = row.get("values", {})
@@ -42,7 +49,9 @@ def _build_figure(
         high = clamp_optional(values.get("high"))
         low = clamp_optional(values.get("low"))
 
-        categories.append(str(row.get("category", "uncategorized")))
+        full_label = str(row.get("category", "uncategorized"))
+        categories.append(truncate_label(full_label, limit=22))
+        full_categories.append(full_label)
         means.append(mean)
         err_plus.append(max((high or mean) - mean, 0.0))
         err_minus.append(max(mean - (low or mean), 0.0))
@@ -70,6 +79,15 @@ def _build_figure(
                 "reference_indices": indices,
             }
         )
+        units_raw = row.get("units")
+        units = "g CO₂e"
+        if isinstance(units_raw, Mapping):
+            candidate = units_raw.get("mean") or units_raw.get("intensity") or units_raw.get("value")
+            if isinstance(candidate, str) and candidate.strip():
+                units = candidate.strip()
+        range_text = format_range(low, high, units)
+        range_lines.append(range_text or "")
+        reference_lines.append(format_reference_line(indices))
 
     palette = get_palette(dark=dark)
 
@@ -90,10 +108,12 @@ def _build_figure(
         else None
     )
 
-    customdata_value_token = f"%{{customdata{chr(91)}0{chr(93)}}}"
     hover_template = (
-        f"<b>%{{y}}</b><br>Annual emissions: {customdata_value_token}<br>[%{{meta.source_index}}]"
-        + "<extra></extra>"
+        "<b>%{customdata[0]}</b>"
+        "<br>Annual emissions: %{customdata[1]}"
+        "%{customdata[2]}"
+        "<br>%{customdata[3]}"
+        "<extra></extra>"
     )
 
     selected_indices: list[int] = []
@@ -103,8 +123,16 @@ def _build_figure(
         ]
 
     customdata = [
-        [formatted_value, activity_id]
-        for formatted_value, activity_id in zip(formatted_values, activity_ids)
+        [
+            full_label,
+            formatted_value,
+            f"<br>{range_line}" if range_line else "",
+            reference_line,
+            activity_id,
+        ]
+        for full_label, formatted_value, range_line, reference_line, activity_id in zip(
+            full_categories, formatted_values, range_lines, reference_lines, activity_ids
+        )
     ]
 
     trace_kwargs = dict(
@@ -127,11 +155,11 @@ def _build_figure(
 
     figure.update_layout(
         template=get_plotly_template(dark=dark),
-        margin=dict(l=80, r=20, t=40, b=40),
         xaxis=dict(title="Annual emissions (g CO₂e)", showgrid=True, zeroline=False),
         yaxis=dict(title="Activity category", autorange="reversed"),
         showlegend=False,
     )
+    figure.update_layout(**DENSE_LAYOUT)
     return figure
 
 

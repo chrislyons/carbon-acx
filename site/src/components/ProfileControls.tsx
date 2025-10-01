@@ -68,28 +68,28 @@ export function ProfileControls(): JSX.Element {
   return (
     <section
       aria-labelledby="profile-controls-heading"
-      className="flex flex-col rounded-2xl border border-slate-800/70 bg-slate-900/60 p-2.5 shadow-lg shadow-slate-900/40 backdrop-blur"
+      className="acx-card flex flex-col gap-[var(--gap-1)] bg-slate-950/60 shadow-lg shadow-slate-900/40"
     >
-      <header className="sticky top-0 z-10 -mx-2.5 -mt-2.5 rounded-t-2xl bg-black/30 px-2.5 py-1.5 backdrop-blur-sm">
+      <header className="sticky top-0 z-10 -mx-[var(--card-pad)] -mt-[var(--card-pad)] rounded-t-[var(--card-radius)] bg-black/30 px-[var(--card-pad)] py-[var(--gap-0)] backdrop-blur-sm">
         <h2 id="profile-controls-heading" className="text-[13px] font-semibold tracking-tight">
           Profile Controls
         </h2>
-        <p className="mt-1 text-compact text-slate-400">
+        <p className="mt-[var(--gap-0)] text-compact text-slate-400">
           Tune lifestyle assumptions for <span className="font-semibold text-slate-200">{profileId}</span>. Updates
           propagate to the compute API automatically.
         </p>
       </header>
-      <div className="mt-2.5 space-y-2.5">
+      <div className="mt-[var(--gap-0)] space-y-[var(--gap-1)]">
         <PresetGallery />
-        <form className="grid grid-cols-2 gap-2.5" aria-describedby="profile-controls-heading">
-          <fieldset className="relative col-span-2 space-y-2.5 rounded-xl border border-slate-800/70 bg-slate-950/40 p-2.5">
-            <legend className="sticky top-0 z-10 -mx-2.5 -mt-2.5 bg-black/30 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.25em] text-slate-300 backdrop-blur-sm">
+        <form className="grid grid-cols-2 gap-[var(--gap-1)]" aria-describedby="profile-controls-heading">
+          <fieldset className="relative col-span-2 space-y-[var(--gap-1)] rounded-xl border border-slate-800/70 bg-slate-950/40 p-[var(--gap-1)]">
+            <legend className="sticky top-0 z-10 -mx-[var(--gap-1)] -mt-[var(--gap-1)] bg-black/30 px-[var(--gap-1)] py-[3px] text-[10px] font-semibold uppercase tracking-[0.25em] text-slate-300 backdrop-blur-sm">
               Commute cadence
             </legend>
-            <label className="block space-y-1.5">
+            <label className="block space-y-[var(--gap-0)]">
               <span className="flex items-center justify-between text-[10px] uppercase tracking-[0.3em] text-slate-400">
                 <span>Days in office</span>
-                <span className="rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-semibold text-slate-200">
+                <span className="rounded-full bg-slate-800 px-[var(--gap-1)] py-[2px] text-[10px] font-semibold text-slate-200">
                   {pluraliseDays(controls.commuteDaysPerWeek)}
                 </span>
               </span>
@@ -104,7 +104,7 @@ export function ProfileControls(): JSX.Element {
                 aria-valuetext={`${controls.commuteDaysPerWeek} commute days per week`}
               />
             </label>
-            <div className="space-y-2.5">
+            <div className="space-y-[var(--gap-1)]">
               <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.3em] text-slate-400">
                 <span>Mode split</span>
                 <span>{controls.modeSplit.car + controls.modeSplit.transit + controls.modeSplit.bike}%</span>
@@ -119,10 +119,10 @@ export function ProfileControls(): JSX.Element {
                   />
                 ))}
               </div>
-              <div className="grid gap-2.5 sm:grid-cols-2">
+              <div className="grid gap-[var(--gap-1)] sm:grid-cols-2">
                 {modeSegments.map(({ key, value, metadata }) => (
-                  <div key={key} className="space-y-1.5 rounded-lg border border-slate-800/70 bg-slate-900/60 pad-compact">
-                    <div className="flex items-center justify-between gap-1.5">
+                  <div key={key} className="space-y-[var(--gap-0)] rounded-lg border border-slate-800/70 bg-slate-900/60 pad-compact">
+                    <div className="flex items-center justify-between gap-[var(--gap-0)]">
                       <div>
                         <p className="text-[13px] font-semibold text-slate-100">{metadata.label}</p>
                         <p className="text-compact text-slate-400">{metadata.description}</p>
@@ -145,25 +145,25 @@ export function ProfileControls(): JSX.Element {
             </div>
           </fieldset>
 
-          <fieldset className="col-span-2 space-y-2.5 rounded-xl border border-slate-800/70 bg-slate-950/40 p-2.5">
-            <legend className="sticky top-0 z-10 -mx-2.5 -mt-2.5 bg-black/30 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.25em] text-slate-300 backdrop-blur-sm">
+          <fieldset className="col-span-2 space-y-[var(--gap-1)] rounded-xl border border-slate-800/70 bg-slate-950/40 p-[var(--gap-1)]">
+            <legend className="sticky top-0 z-10 -mx-[var(--gap-1)] -mt-[var(--gap-1)] bg-black/30 px-[var(--gap-1)] py-[3px] text-[10px] font-semibold uppercase tracking-[0.25em] text-slate-300 backdrop-blur-sm">
               Dietary baseline
             </legend>
-            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-[var(--gap-1)] sm:grid-cols-3">
               {(Object.entries(DIET_COPY) as [DietOption, { label: string; helper: string }][]).map(
                 ([key, copy]) => {
                   const isActive = controls.diet === key;
                   return (
                     <label
                       key={key}
-                      className={`relative flex min-h-[132px] cursor-pointer flex-col gap-1.5 rounded-lg border text-left shadow-sm transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-sky-500 pad-compact ${
+                      className={`relative flex min-h-[128px] cursor-pointer flex-col gap-[var(--gap-0)] rounded-lg border text-left shadow-sm transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-sky-500 pad-compact ${
                         isActive
                           ? 'border-sky-500 bg-sky-500/10 text-slate-100'
                           : 'border-slate-800 bg-slate-900/60 text-slate-300 hover:border-slate-600'
                       }`}
                     >
                       <span className="text-[13px] font-semibold">{copy.label}</span>
-                      <span className="text-compact text-slate-400">{copy.helper}</span>
+                      <span className="form-helper text-slate-400">{copy.helper}</span>
                       <input
                         type="radio"
                         name="diet"
@@ -185,14 +185,14 @@ export function ProfileControls(): JSX.Element {
             </div>
           </fieldset>
 
-          <fieldset className="col-span-2 space-y-2.5 rounded-xl border border-slate-800/70 bg-slate-950/40 p-2.5">
-            <legend className="sticky top-0 z-10 -mx-2.5 -mt-2.5 bg-black/30 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.25em] text-slate-300 backdrop-blur-sm">
+          <fieldset className="col-span-2 space-y-[var(--gap-1)] rounded-xl border border-slate-800/70 bg-slate-950/40 p-[var(--gap-1)]">
+            <legend className="sticky top-0 z-10 -mx-[var(--gap-1)] -mt-[var(--gap-1)] bg-black/30 px-[var(--gap-1)] py-[3px] text-[10px] font-semibold uppercase tracking-[0.25em] text-slate-300 backdrop-blur-sm">
               Streaming intensity
             </legend>
-            <label className="block space-y-1.5">
+            <label className="block space-y-[var(--gap-0)]">
               <span className="flex items-center justify-between text-[10px] uppercase tracking-[0.3em] text-slate-400">
                 <span>HD streaming</span>
-                <span className="rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-semibold text-slate-200">
+                <span className="rounded-full bg-slate-800 px-[var(--gap-1)] py-[2px] text-[10px] font-semibold text-slate-200">
                   {formatHoursPerDay(controls.streamingHoursPerDay)}
                 </span>
               </span>
@@ -209,9 +209,9 @@ export function ProfileControls(): JSX.Element {
             </label>
           </fieldset>
 
-          <div className="col-span-2 space-y-2.5 rounded-xl border border-slate-800/70 bg-slate-950/30 p-2.5 text-compact text-slate-400">
+          <div className="col-span-2 space-y-[var(--gap-1)] rounded-xl border border-slate-800/70 bg-slate-950/30 p-[var(--gap-1)] text-compact text-slate-400">
             <p className="text-[13px] font-semibold text-slate-200">Live overrides</p>
-            <dl className="grid gap-1.5 md:grid-cols-2">
+            <dl className="grid gap-[var(--gap-0)] md:grid-cols-2">
               {modeSegments.map(({ key, value, metadata }) => (
                 <Fragment key={`override-${key}`}>
                   <dt className="text-[10px] uppercase tracking-[0.3em] text-slate-300">{metadata.label} days/wk</dt>

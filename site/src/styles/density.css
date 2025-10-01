@@ -1,0 +1,145 @@
+:root {
+  /* compact type scale */
+  --font-0: 11.5px;
+  --font-1: 12.5px;
+  --font-2: 14px;
+  --font-3: 16px;
+
+  /* spacing */
+  --gap-0: 6px;
+  --gap-1: 8px;
+  --gap-2: 12px;
+
+  /* cards & borders */
+  --card-pad: var(--gap-1);
+  --card-radius: 10px;
+  --hairline: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+body {
+  letter-spacing: 0;
+  font-size: var(--font-2);
+  line-height: 1.45;
+}
+
+.acx-condensed {
+  font-size: var(--font-2);
+  line-height: 1.45;
+  letter-spacing: 0;
+}
+
+.acx-condensed h1,
+.acx-condensed h2,
+.acx-condensed h3 {
+  line-height: 1.15;
+  margin: 0 0 var(--gap-1);
+}
+
+.acx-card {
+  padding: var(--card-pad);
+  border-radius: var(--card-radius);
+  border: var(--hairline);
+  backdrop-filter: blur(2px);
+}
+
+.acx-condensed .label-sm {
+  font-size: var(--font-1);
+  line-height: 1.2;
+}
+
+.acx-condensed .axis-text {
+  font-size: var(--font-0);
+}
+
+.acx-condensed .legend-sm {
+  font-size: var(--font-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.acx-condensed .stack-gap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-0);
+}
+
+.acx-condensed .grid-gap {
+  display: grid;
+  gap: var(--gap-1);
+}
+
+.acx-condensed button,
+.acx-condensed select,
+.acx-condensed [role='button'],
+.acx-condensed input[type='text'],
+.acx-condensed input[type='number'],
+.acx-condensed input[type='email'],
+.acx-condensed input[type='search'] {
+  min-height: 32px;
+  font-size: var(--font-1);
+  line-height: 1.2;
+}
+
+.acx-condensed input[type='range'] {
+  height: 32px;
+}
+
+.acx-condensed .form-helper {
+  font-size: var(--font-0);
+  line-height: 1.35;
+}
+
+.acx-condensed .visually-tight {
+  gap: var(--gap-0);
+}
+
+.acx-condensed .gap-sm {
+  gap: var(--gap-1);
+}
+
+.acx-condensed .gap-xs {
+  gap: var(--gap-0);
+}
+
+.acx-condensed .pad-stack {
+  padding: var(--gap-1);
+}
+
+.acx-condensed .pad-stack-lg {
+  padding: var(--gap-2);
+}
+
+.acx-condensed .text-compact {
+  font-size: var(--font-0);
+  line-height: 1.35;
+}
+
+.acx-condensed .text-subtle {
+  font-size: var(--font-1);
+  line-height: 1.3;
+}
+
+.acx-condensed .text-xs-tight {
+  font-size: var(--font-0);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.acx-condensed .card-scroll {
+  scrollbar-width: thin;
+}
+
+@media (max-width: 767px) {
+  body {
+    font-size: var(--font-1);
+  }
+
+  .acx-condensed {
+    font-size: var(--font-1);
+  }
+
+  .acx-condensed .legend-sm {
+    max-width: 160px;
+  }
+}
