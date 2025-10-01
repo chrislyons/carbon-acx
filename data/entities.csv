@@ -9,3 +9,6 @@ ENTITY.NOVA.CHEM.CA,NOVA Chemicals,corporate,,Canadian petrochemicals producer w
 ENTITY.MAPLELEAF.CA,Maple Leaf Foods,corporate,,Canadian meat and poultry processor operating national brands.
 ENTITY.CARGILL.CA,Cargill Meat Solutions (Canada),corporate,,Canadian beef processor operating High River plant.
 ENTITY.NESTLE.CA,Nestlé Canada,corporate,,Canadian packaged food company with coffee processing operations.
+ENTITY.AMAZON.CA,Amazon Canada Fulfillment Services,corporate,,Canadian e-commerce logistics subsidiary handling national fulfillment and delivery.
+ENTITY.FEDEX.CA,FedEx Express Canada,corporate,,Express parcel and freight carrier serving Canadian markets.
+ENTITY.CNRAIL.CA,Canadian National Railway,corporate,,National freight railway with intermodal trucking and logistics services.

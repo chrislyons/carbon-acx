@@ -9,3 +9,6 @@ ASSET.NOVA.PET.REACTOR,SITE.NOVA.ON.PET,polymer_line,Sarnia PET polymerisation t
 ASSET.CARGILL.HIGHRIVER.BEEF_LINE,SITE.CARGILL.AB.BEEF,slaughter_fabrication,High River beef harvest and fabrication train,2024,,natural_gas,"Integrated slaughter, carcass chilling, and fabrication line."
 ASSET.MAPLELEAF.LONDON.POULTRY_LINE,SITE.MAPLELEAF.ON.POULTRY,poultry_line,London evisceration and chilling line,2024,,electricity,"Large-scale ready-to-cook poultry processing line."
 ASSET.NESTLE.BRIDGEWATER.COFFEE_ROASTER,SITE.NESTLE.NS.COFFEE,roaster,Bridgewater coffee roasting battery,2024,,natural_gas,"Nescafé spray-dry and roasting operations."
+ASSET.AMAZON.ON.LASTMILE,SITE.AMAZON.ON.YYZ1,delivery_network,Amazon Logistics last-mile fleet,2024,,diesel,"Mixed electric and diesel vans dispatching dense urban parcel routes."
+ASSET.FEDEX.ON.AIR_NET,SITE.FEDEX.ON.YYZHUB,air_network,FedEx Express YYZ air network,2024,,jet_fuel,"Pearson-based express air cargo sortation and flight operations."
+ASSET.CNRAIL.QC.TRUCK,SITE.CNRAIL.QC.INTERMODAL,truck_fleet,CN intermodal drayage fleet,2024,,diesel,"Heavy-duty trucks handling first/last-mile moves for intermodal containers."
