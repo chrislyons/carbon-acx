@@ -1,0 +1,442 @@
+{
+  "activities_by_layer": {
+    "industrial_heavy": {
+      "activities": [
+        {
+          "category": "freight",
+          "id": "LOGI.AIR.TONNEKM",
+          "name": "Air freight linehaul\u2014per tonne-kilometre"
+        },
+        {
+          "category": "food_processing",
+          "id": "AGRI.BEEF.CARCASS.KG",
+          "name": "Beef carcass throughput\u2014per kg"
+        },
+        {
+          "category": "materials",
+          "id": "MATERIAL.CEMENT.CLINKER.TONNE",
+          "name": "Clinker production\u2014per tonne"
+        },
+        {
+          "category": "materials",
+          "id": "MATERIAL.STEEL.CRUDESLAB.TONNE",
+          "name": "Crude steel slab production\u2014per tonne"
+        },
+        {
+          "category": "energy",
+          "id": "ENERGY.KWH.DELIVERED",
+          "name": "Electricity delivered (kWh)"
+        },
+        {
+          "category": "energy",
+          "id": "ENERGY.GASOLINE.LITRE",
+          "name": "Gasoline refined & delivered (L)"
+        },
+        {
+          "category": "energy",
+          "id": "ENERGY.NATGAS.M3",
+          "name": "Natural gas delivered (m3)"
+        },
+        {
+          "category": "freight",
+          "id": "LOGI.TRUCK.TONNEKM",
+          "name": "Truck freight linehaul\u2014per tonne-kilometre"
+        },
+        {
+          "category": "materials",
+          "id": "MATERIAL.PET.VIRGIN.TONNE",
+          "name": "Virgin PET polymer production\u2014per tonne"
+        }
+      ],
+      "count": 9
+    },
+    "industrial_light": {
+      "activities": [
+        {
+          "category": "logistics",
+          "id": "TRAN.DELIVERY.TRUCK.CLASS6.KM",
+          "name": "Class-6 beverage delivery\u2014per kilometre"
+        },
+        {
+          "category": "logistics",
+          "id": "IND_LIGHT.LOGISTICS.FORKLIFT.HOUR",
+          "name": "Forklift material handling\u2014per operating hour"
+        },
+        {
+          "category": "municipal_services",
+          "id": "MUNI.WASTE.LANDFILL.KG",
+          "name": "Mixed MSW managed via landfill\u2014per kg"
+        },
+        {
+          "category": "municipal_services",
+          "id": "MUNI.WASTE.INCINERATION.KG",
+          "name": "Mixed MSW sent to energy-from-waste\u2014per kg"
+        },
+        {
+          "category": "municipal_services",
+          "id": "MUNI.WATER.POTABLE.M3",
+          "name": "Potable water treatment & delivery\u2014per m\u00b3"
+        },
+        {
+          "category": "food_processing",
+          "id": "AGRI.POULTRY.READY.KG",
+          "name": "Poultry ready-to-cook throughput\u2014per kg"
+        },
+        {
+          "category": "food_processing",
+          "id": "FOOD.COFFEE.ROASTED.KG",
+          "name": "Roasted coffee throughput\u2014per kg"
+        },
+        {
+          "category": "logistics",
+          "id": "LOGI.PARCEL.URBAN",
+          "name": "Urban parcel delivery\u2014per parcel"
+        },
+        {
+          "category": "warehousing",
+          "id": "IND_LIGHT.WAREHOUSE.BASE_LOAD.SQFT_MONTH",
+          "name": "Warehouse base building load\u2014per ft\u00b2-month"
+        }
+      ],
+      "count": 9
+    },
+    "online": {
+      "activities": [
+        {
+          "category": "conferencing",
+          "id": "CONF.AUDIO.PER_PARTICIPANT_HOUR",
+          "name": "Audio-only conference per participant-hour"
+        },
+        {
+          "category": "downloads",
+          "id": "CLOUD.DOWNLOAD.GB",
+          "name": "Cloud data download\u2014per GB"
+        },
+        {
+          "category": "cloud",
+          "id": "CLOUD.STORAGE.SYNC.GB_MONTH",
+          "name": "Cloud storage sync per GB-month"
+        },
+        {
+          "category": "downloads",
+          "id": "DOWNLOAD.GAME.CONSOLE.50GB",
+          "name": "Download 50 GB console game"
+        },
+        {
+          "category": "social",
+          "id": "SOCIAL.FACEBOOK.HOUR",
+          "name": "Facebook usage\u2014per hour"
+        },
+        {
+          "category": "conferencing",
+          "id": "CONF.HD.PARTICIPANT_HOUR",
+          "name": "HD video conference per participant-hour"
+        },
+        {
+          "category": "media",
+          "id": "MEDIA.STREAM.HD.HOUR.TV",
+          "name": "HD video streaming on TV\u2014per hour"
+        },
+        {
+          "category": "media",
+          "id": "MEDIA.STREAM.HD.HOUR",
+          "name": "HD video streaming\u2014per hour"
+        },
+        {
+          "category": "social",
+          "id": "SOCIAL.INSTAGRAM.HOUR",
+          "name": "Instagram usage\u2014per hour"
+        },
+        {
+          "category": "social",
+          "id": "SOCIAL.LINKEDIN.HOUR",
+          "name": "LinkedIn usage\u2014per hour"
+        },
+        {
+          "category": "ai",
+          "id": "AI.LLM.INFER.1K_TOKENS.GENERIC",
+          "name": "LLM inference\u20141K token response"
+        },
+        {
+          "category": "ai",
+          "id": "AI.USAGE.ANTHROPIC.QUERY",
+          "name": "LLM usage\u2014Anthropic Claude query"
+        },
+        {
+          "category": "ai",
+          "id": "AI.USAGE.GOOGLE.QUERY",
+          "name": "LLM usage\u2014Google Gemini query"
+        },
+        {
+          "category": "ai",
+          "id": "AI.USAGE.GPT.QUERY",
+          "name": "LLM usage\u2014OpenAI GPT query"
+        },
+        {
+          "category": "social",
+          "id": "SOCIAL.SCROLL.HOUR.MOBILE",
+          "name": "Mobile social media browsing\u2014per hour"
+        },
+        {
+          "category": "social",
+          "id": "SOCIAL.SNAPCHAT.HOUR",
+          "name": "Snapchat usage\u2014per hour"
+        },
+        {
+          "category": "social",
+          "id": "SOCIAL.TIKTOK.HOUR",
+          "name": "TikTok usage\u2014per hour"
+        },
+        {
+          "category": "social",
+          "id": "SOCIAL.TWITTER.HOUR",
+          "name": "Twitter/X usage\u2014per hour"
+        },
+        {
+          "category": "media",
+          "id": "MEDIA.STREAM.UHD.HOUR",
+          "name": "UHD video streaming\u2014per hour"
+        },
+        {
+          "category": "media",
+          "id": "MEDIA.STREAM.UHD.HOUR.TV",
+          "name": "Ultra HD (4K) video streaming on TV\u2014per hour"
+        },
+        {
+          "category": "social",
+          "id": "SOCIAL.YOUTUBE.HOUR",
+          "name": "YouTube usage\u2014per hour"
+        }
+      ],
+      "count": 21
+    },
+    "professional": {
+      "activities": [
+        {
+          "category": "food",
+          "id": "FOOD.COFFEE.CUP.HOT",
+          "name": "Coffee\u201412 oz hot"
+        },
+        {
+          "category": "clothing",
+          "id": "CLOTHING.TSHIRT.COTTON",
+          "name": "Cotton T-shirt"
+        },
+        {
+          "category": "clothing",
+          "id": "CLOTHING.JEANS.DENIM",
+          "name": "Denim jeans"
+        },
+        {
+          "category": "food",
+          "id": "FOOD.MEAL.BEEF.SERVING",
+          "name": "Meal with beef\u2014per serving"
+        },
+        {
+          "category": "food",
+          "id": "FOOD.MEAL.CHICKEN.SERVING",
+          "name": "Meal with chicken\u2014per serving"
+        },
+        {
+          "category": "energy",
+          "id": "ENERGY.CA-ON.GRID.KWH",
+          "name": "Ontario grid electricity\u2014per kWh"
+        },
+        {
+          "category": "mobility",
+          "id": "TRAN.SCHOOLRUN.BIKE.KM",
+          "name": "School run by bike\u2014per kilometre"
+        },
+        {
+          "category": "mobility",
+          "id": "TRAN.SCHOOLRUN.CAR.KM",
+          "name": "School run by car\u2014per kilometre"
+        },
+        {
+          "category": "clothing",
+          "id": "CLOTHING.SHOES.SNEAKERS",
+          "name": "Sneakers"
+        },
+        {
+          "category": "",
+          "id": "stream",
+          "name": "stream"
+        },
+        {
+          "category": "clothing",
+          "id": "CLOTHING.JACKET.SYNTH",
+          "name": "Synthetic jacket"
+        },
+        {
+          "category": "mobility",
+          "id": "TRAN.TTC.BUS.KM",
+          "name": "Toronto bus\u2014per passenger-kilometre"
+        },
+        {
+          "category": "mobility",
+          "id": "TRAN.TTC.SUBWAY.KM",
+          "name": "Toronto subway\u2014per passenger-kilometre"
+        },
+        {
+          "category": "food",
+          "id": "FOOD.MEAL.VEG.SERVING",
+          "name": "Vegetarian meal\u2014per serving"
+        }
+      ],
+      "count": 14
+    }
+  },
+  "ef_coverage": {
+    "industrial_heavy": {
+      "activities": 9,
+      "coverage_ratio": 1.0,
+      "missing_activity_ids": [],
+      "with_emission_factors": 9
+    },
+    "industrial_light": {
+      "activities": 9,
+      "coverage_ratio": 0.778,
+      "missing_activity_ids": [
+        "IND_LIGHT.LOGISTICS.FORKLIFT.HOUR",
+        "IND_LIGHT.WAREHOUSE.BASE_LOAD.SQFT_MONTH"
+      ],
+      "with_emission_factors": 7
+    },
+    "online": {
+      "activities": 21,
+      "coverage_ratio": 0.81,
+      "missing_activity_ids": [
+        "CLOUD.STORAGE.SYNC.GB_MONTH",
+        "CONF.AUDIO.PER_PARTICIPANT_HOUR",
+        "DOWNLOAD.GAME.CONSOLE.50GB",
+        "MEDIA.STREAM.UHD.HOUR.TV"
+      ],
+      "with_emission_factors": 17
+    },
+    "professional": {
+      "activities": 14,
+      "coverage_ratio": 1.0,
+      "missing_activity_ids": [],
+      "with_emission_factors": 14
+    }
+  },
+  "generated_at": "2025-10-01T17:38:03.633476+00:00",
+  "layers_present": [
+    {
+      "activities": 9,
+      "emission_factor_coverage": {
+        "activities": 9,
+        "coverage_ratio": 1.0,
+        "missing_activity_ids": [],
+        "with_emission_factors": 9
+      },
+      "has_references": false,
+      "icon": "industrial_heavy.svg",
+      "id": "industrial_heavy",
+      "operations": 9,
+      "optional": true,
+      "summary": "Full-scale manufacturing and heavy industry references for R&D insight.",
+      "title": "Industrial (Heavy)",
+      "ui_configured": true
+    },
+    {
+      "activities": 9,
+      "emission_factor_coverage": {
+        "activities": 9,
+        "coverage_ratio": 0.778,
+        "missing_activity_ids": [
+          "IND_LIGHT.LOGISTICS.FORKLIFT.HOUR",
+          "IND_LIGHT.WAREHOUSE.BASE_LOAD.SQFT_MONTH"
+        ],
+        "with_emission_factors": 7
+      },
+      "has_references": false,
+      "icon": "industrial_light.svg",
+      "id": "industrial_light",
+      "operations": 7,
+      "optional": true,
+      "summary": "Lab, prototyping, and light fabrication scenarios for innovation hubs.",
+      "title": "Industrial (Light)",
+      "ui_configured": true
+    },
+    {
+      "activities": 21,
+      "emission_factor_coverage": {
+        "activities": 21,
+        "coverage_ratio": 0.81,
+        "missing_activity_ids": [
+          "CLOUD.STORAGE.SYNC.GB_MONTH",
+          "CONF.AUDIO.PER_PARTICIPANT_HOUR",
+          "DOWNLOAD.GAME.CONSOLE.50GB",
+          "MEDIA.STREAM.UHD.HOUR.TV"
+        ],
+        "with_emission_factors": 17
+      },
+      "has_references": false,
+      "icon": "online.svg",
+      "id": "online",
+      "operations": 6,
+      "optional": true,
+      "summary": "SaaS, meetings, and streaming workloads for remote-first teams.",
+      "title": "Online services",
+      "ui_configured": true
+    },
+    {
+      "activities": 14,
+      "emission_factor_coverage": {
+        "activities": 14,
+        "coverage_ratio": 1.0,
+        "missing_activity_ids": [],
+        "with_emission_factors": 14
+      },
+      "has_references": false,
+      "icon": "professional.svg",
+      "id": "professional",
+      "operations": 0,
+      "optional": false,
+      "summary": "Baseline knowledge worker footprint anchored to hybrid office routines.",
+      "title": "Professional services",
+      "ui_configured": true
+    }
+  ],
+  "missing_icons": [],
+  "missing_refs": [
+    "industrial_heavy",
+    "industrial_light",
+    "online",
+    "professional"
+  ],
+  "ops_by_layer": {
+    "industrial_heavy": {
+      "count": 9,
+      "examples": [
+        "ENERGY.KWH.DELIVERED",
+        "ENERGY.NATGAS.M3",
+        "ENERGY.GASOLINE.LITRE",
+        "MATERIAL.CEMENT.CLINKER.TONNE",
+        "MATERIAL.STEEL.CRUDESLAB.TONNE"
+      ]
+    },
+    "industrial_light": {
+      "count": 7,
+      "examples": [
+        "TRAN.DELIVERY.TRUCK.CLASS6.KM",
+        "AGRI.POULTRY.READY.KG",
+        "MUNI.WASTE.LANDFILL.KG",
+        "MUNI.WASTE.INCINERATION.KG",
+        "MUNI.WATER.POTABLE.M3"
+      ]
+    },
+    "online": {
+      "count": 6,
+      "examples": [
+        "SOCIAL.YOUTUBE.HOUR",
+        "SOCIAL.INSTAGRAM.HOUR",
+        "SOCIAL.TIKTOK.HOUR",
+        "AI.USAGE.GPT.QUERY",
+        "AI.USAGE.ANTHROPIC.QUERY"
+      ]
+    }
+  },
+  "seeded_not_configured": []
+}
