@@ -1,0 +1,1 @@
+P. Henderson et al., “Towards the Systematic Reporting of the Energy and Carbon Footprints of Machine Learning,” Journal of Machine Learning Research, vol. 21, no. 248, pp. 1–43, 2020. Available: https://www.jmlr.org/papers/v21/20-312.html.
