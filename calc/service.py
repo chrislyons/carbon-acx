@@ -14,7 +14,19 @@ import pandas as pd
 from . import citations, figures
 from .api import collect_activity_source_keys
 from .dal import DataStore, SqlStore
-from .schema import Activity, ActivitySchedule, EmissionFactor, GridIntensity, Profile, RegionCode
+from .schema import (
+    Activity,
+    ActivitySchedule,
+    EmissionFactor,
+    GridIntensity,
+    LayerId,
+    Operation,
+    Profile,
+    RegionCode,
+    load_activities as schema_load_activities,
+    load_activity_dependencies,
+    load_operations as schema_load_operations,
+)
 
 # ``calc.derive`` hosts the bulk of the data orchestration logic for the static
 # build pipeline.  The live compute path mirrors that behaviour to ensure API
@@ -302,11 +314,77 @@ def compute_profile(
     should_close = datastore is None and hasattr(store, "close")
     try:
         activities = {activity.activity_id: activity for activity in store.load_activities()}
+        if not activities:
+            try:
+                activities = {activity.activity_id: activity for activity in schema_load_activities()}
+            except Exception:  # pragma: no cover - defensive fallback
+                activities = {}
+        load_operations_fn = getattr(store, "load_operations", None)
+        operations_iter = load_operations_fn() if callable(load_operations_fn) else []
+        operations = {op.operation_id: op for op in operations_iter}
+        if not operations:
+            try:
+                operations = {op.operation_id: op for op in schema_load_operations()}
+            except Exception:  # pragma: no cover - defensive fallback
+                operations = {}
         emission_factors = {ef.activity_id: ef for ef in store.load_emission_factors()}
         profiles = {item.profile_id: item for item in store.load_profiles()}
         profile = _resolve_profile(profiles, profile_id)
 
         grid_lookup, grid_by_region = _collect_grid_maps(store.load_grid_intensity())
+
+        dependency_loader = getattr(store, "load_activity_dependencies", None)
+        dependency_records = list(dependency_loader()) if callable(dependency_loader) else []
+        if not dependency_records:
+            try:
+                dependency_records = load_activity_dependencies(
+                    activities=list(activities.values()) or None,
+                    operations=list(operations.values()) or None,
+                )
+            except Exception:  # pragma: no cover - defensive fallback
+                dependency_records = []
+        dependency_map: dict[str, list[dict[str, Any]]] = {}
+        for dependency in dependency_records:
+            child_id = dependency.child_activity_id
+            if child_id not in activities:
+                raise ValueError(
+                    f"Unknown child_activity_id referenced by dependencies: {child_id}"
+                )
+            parent = operations.get(dependency.parent_operation_id)
+            if parent is None:
+                raise ValueError(
+                    "Unknown parent_operation_id referenced by dependencies: "
+                    f"{dependency.parent_operation_id}"
+                )
+            entry = {
+                "operation_id": parent.operation_id,
+                "share": float(dependency.share),
+            }
+            if dependency.notes:
+                entry["notes"] = dependency.notes
+            if parent.activity_id:
+                entry["operation_activity_id"] = parent.activity_id
+            if parent.asset_id:
+                entry["operation_asset_id"] = parent.asset_id
+            if parent.functional_unit_id:
+                entry["operation_functional_unit_id"] = parent.functional_unit_id
+            dependency_map.setdefault(child_id, []).append(entry)
+
+        for child_id, entries in dependency_map.items():
+            total_share = sum(entry.get("share", 0.0) for entry in entries)
+            if total_share > 1.0000001:
+                raise ValueError(
+                    f"Dependency shares for {child_id} exceed 1.0 (received {total_share:.6f})"
+                )
+
+        def _clone_chain(activity_id: str) -> list[dict[str, Any]]:
+            chain = dependency_map.get(activity_id)
+            if not chain:
+                return []
+            return [dict(entry) for entry in chain]
+
+        civilian_layers = {LayerId.PROFESSIONAL.value, LayerId.ONLINE.value}
+        bubble_upstream_lookup: dict[tuple[str | None, str], list[dict[str, Any]]] = {}
 
         schedules = [
             sched for sched in store.load_activity_schedule() if sched.profile_id == profile_id
@@ -363,6 +441,13 @@ def compute_profile(
                 details = derive.compute_emission_details(sched, profile, ef, grid_lookup, grid_row)
                 emission = details.mean
 
+            upstream_chain: list[dict[str, Any]] | None = None
+            if layer_id and layer_id in civilian_layers:
+                upstream_chain = _clone_chain(sched.activity_id)
+                bubble_upstream_lookup[(layer_id, sched.activity_id)] = [
+                    dict(entry) for entry in upstream_chain
+                ]
+
             rows.append(
                 {
                     "profile_id": sched.profile_id,
@@ -391,6 +476,7 @@ def compute_profile(
                     "annual_emissions_g": emission,
                     "annual_emissions_g_low": details.low,
                     "annual_emissions_g_high": details.high,
+                    "upstream_chain": upstream_chain,
                 }
             )
 
@@ -407,6 +493,7 @@ def compute_profile(
                     "grid_intensity": grid_row,
                     "annual_emissions_g": emission,
                     "layer_id": layer_id,
+                    "upstream_chain": upstream_chain,
                 }
             )
 
@@ -453,10 +540,20 @@ def compute_profile(
             manifest["overrides"] = override_values
         manifest["dataset_version"] = dataset_version
 
+        stacked_result = figures.slice_stacked(df, reference_map=stacked_map)
+        bubble_points = [asdict(point) for point in figures.slice_bubble(df, reference_map=bubble_map)]
+        for point in bubble_points:
+            layer_value = point.get("layer_id")
+            activity_value = point.get("activity_id")
+            chain = bubble_upstream_lookup.get((layer_value, activity_value))
+            if chain is not None and layer_value in civilian_layers:
+                point["upstream_chain"] = [dict(entry) for entry in chain]
+        sankey_result = figures.slice_sankey(df, reference_map=sankey_map)
+
         figures_payload = {
             "stacked": _figure_payload(
                 "figures.stacked",
-                figures.slice_stacked(df, reference_map=stacked_map),
+                stacked_result,
                 generated_at=generated_at,
                 profiles=profile_list,
                 citation_keys=citation_keys,
@@ -467,7 +564,7 @@ def compute_profile(
             ),
             "bubble": _figure_payload(
                 "figures.bubble",
-                [asdict(point) for point in figures.slice_bubble(df, reference_map=bubble_map)],
+                bubble_points,
                 generated_at=generated_at,
                 profiles=profile_list,
                 citation_keys=citation_keys,
@@ -478,7 +575,7 @@ def compute_profile(
             ),
             "sankey": _figure_payload(
                 "figures.sankey",
-                figures.slice_sankey(df, reference_map=sankey_map),
+                sankey_result,
                 generated_at=generated_at,
                 profiles=profile_list,
                 citation_keys=citation_keys,

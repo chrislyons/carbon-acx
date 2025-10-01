@@ -10,6 +10,7 @@ except ImportError:  # pragma: no cover - handled lazily
 
 from ..schema import (
     Activity,
+    ActivityDependency,
     ActivitySchedule,
     Asset,
     EmissionFactor,
@@ -99,3 +100,7 @@ class DuckDbStore:
     def load_grid_intensity(self) -> Sequence[GridIntensity]:
         rows = self._load("grid_intensity.csv")
         return [GridIntensity(**row) for row in rows]
+
+    def load_activity_dependencies(self) -> Sequence[ActivityDependency]:
+        rows = self._load("dependencies.csv")
+        return [ActivityDependency(**row) for row in rows]
