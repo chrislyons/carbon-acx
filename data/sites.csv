@@ -9,3 +9,6 @@ SITE.NOVA.ON.PET,ENTITY.NOVA.CHEM.CA,Sarnia Chemical Complex,CA-ON,,,"PET polyme
 SITE.CARGILL.AB.BEEF,ENTITY.CARGILL.CA,High River Beef Plant,CA-AB,50.572,-113.872,"Major federally inspected beef slaughter and fabrication site."
 SITE.MAPLELEAF.ON.POULTRY,ENTITY.MAPLELEAF.CA,London Poultry Complex,CA-ON,42.931,-81.147,"New Maple Leaf Foods value-added poultry processing plant."
 SITE.NESTLE.NS.COFFEE,ENTITY.NESTLE.CA,Bridgewater Coffee Factory,CA-NS,44.378,-64.513,"Nestlé Canada instant coffee roasting and packaging facility."
+SITE.AMAZON.ON.YYZ1,ENTITY.AMAZON.CA,Amazon YYZ1 Fulfillment Centre,CA-ON,43.676,-79.615,"Greater Toronto Area fulfillment hub supporting last-mile delivery."
+SITE.FEDEX.ON.YYZHUB,ENTITY.FEDEX.CA,FedEx Express Toronto Hub,CA-ON,43.681,-79.611,"Pearson International express air cargo hub."
+SITE.CNRAIL.QC.INTERMODAL,ENTITY.CNRAIL.CA,CN Montreal Intermodal Terminal,CA-QC,45.653,-73.535,"Rail-to-road logistics hub supporting drayage trucking."

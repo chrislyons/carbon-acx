@@ -51,6 +51,9 @@ class CsvStore:
 
     def load_emission_factors(self) -> Sequence[EmissionFactor]:
         rows = _load_csv(DATA_DIR / "emission_factors.csv")
+        for row in rows:
+            if row.get("region") == "GLOBAL":
+                row["region"] = None
         return [EmissionFactor(**row) for row in rows]
 
     def load_profiles(self) -> Sequence[Profile]:
