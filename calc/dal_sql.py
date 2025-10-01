@@ -118,8 +118,23 @@ class SqlStore:
     def load_activity_schedule(self) -> Sequence[ActivitySchedule]:
         rows = self._fetch_all(
             """
-            SELECT profile_id, activity_id, layer_id, freq_per_day,
-                   freq_per_week, office_days_only, region_override, schedule_notes
+            SELECT profile_id,
+                   activity_id,
+                   layer_id,
+                   quantity_per_week,
+                   office_only,
+                   freq_per_day,
+                   freq_per_week,
+                   office_days_only,
+                   region_override,
+                   mix_region,
+                   use_canada_average,
+                   schedule_notes,
+                   distance_km,
+                   passengers,
+                   hours,
+                   viewers,
+                   servings
             FROM activity_schedule
             ORDER BY profile_id, activity_id
             """

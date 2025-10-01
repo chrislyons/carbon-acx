@@ -139,6 +139,7 @@ class FunctionalUnitDomain(str, Enum):
     SHELTER = "shelter"
     COMFORT = "comfort"
     CARE = "care"
+    ENERGY = "energy"
 
 
 class FunctionalUnit(BaseModel):
