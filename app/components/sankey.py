@@ -201,6 +201,7 @@ def render(
             id=graph_id,
             figure=figure,
             config={"displayModeBar": False, "responsive": True},
+            responsive=True,
             style={"height": "420px"},
             className="chart-figure",
         )

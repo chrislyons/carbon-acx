@@ -729,7 +729,6 @@ def create_app() -> Dash:
                                             html.Details(
                                                 className="references-accordion",
                                                 id="references-accordion",
-                                                open=True,
                                                 **{"data-behavior": "references-accordion"},
                                                 children=[
                                                     html.Summary("References"),

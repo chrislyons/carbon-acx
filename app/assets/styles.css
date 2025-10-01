@@ -282,9 +282,13 @@ p {
 .overview-grid {
   display: grid;
   gap: var(--space-md);
+  grid-template-areas:
+    "visual"
+    "controls";
 }
 
 .overview-controls {
+  grid-area: controls;
   position: sticky;
   top: var(--space-md);
   align-self: start;
@@ -329,6 +333,7 @@ p {
 }
 
 .overview-visualization {
+  grid-area: visual;
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
@@ -690,11 +695,13 @@ p {
 }
 
 .chart-controls__checklist label,
-.chart-controls__radios label {
+.chart-controls__radios label,
+.chart-toggle label {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.4rem 0.9rem;
+  padding: 0.5rem 1rem;
+  min-height: 40px;
   border-radius: 999px;
   background-color: var(--color-highlight-soft);
   color: var(--color-highlight-text);
@@ -703,19 +710,28 @@ p {
 }
 
 .chart-controls__checklist label:focus-within,
-.chart-controls__radios label:focus-within {
+.chart-controls__radios label:focus-within,
+.chart-toggle label:focus-within {
   box-shadow: 0 0 0 3px var(--color-focus-ring);
   outline: none;
 }
 
 .chart-controls__checklist label:hover,
-.chart-controls__radios label:hover {
+.chart-controls__radios label:hover,
+.chart-toggle label:hover {
   background-color: var(--color-highlight-strong);
 }
 
 .chart-controls__checklist input,
-.chart-controls__radios input {
+.chart-controls__radios input,
+.chart-toggle input {
   margin: 0;
+}
+
+.chart-toggle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
 }
 
 .chart-badges {
@@ -1039,6 +1055,7 @@ pre {
   .overview-grid {
     grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
     align-items: start;
+    grid-template-areas: "controls visual";
   }
 
   .chart-toolbar {
@@ -1064,6 +1081,7 @@ pre {
 @media (min-width: 1024px) {
   .overview-grid {
     grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    grid-template-areas: "controls visual";
   }
 }
 
