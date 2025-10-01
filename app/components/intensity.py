@@ -20,9 +20,11 @@ _DEFAULT_REFERENCE_KEY = "__default__"
 class IntensityRecord:
     functional_unit_id: str
     alternative: str
-    intensity: float
+    intensity: float | None
     low: float | None = None
     high: float | None = None
+    alt_id: str | None = None
+    record_type: str = "alternative"
 
     def to_json(self) -> dict[str, float | str | None]:
         return {
@@ -31,6 +33,8 @@ class IntensityRecord:
             "intensity": self.intensity,
             "low": self.low,
             "high": self.high,
+            "alt_id": self.alt_id,
+            "record_type": self.record_type,
         }
 
 
@@ -76,37 +80,34 @@ def load_intensity_records() -> list[dict[str, float | str | None]]:
         reader = csv.DictReader(handle)
         for row in reader:
             functional_unit = (
-                row.get("functional_unit_id")
-                or row.get("functional_unit")
-                or row.get("fu")
+                row.get("functional_unit_id") or row.get("functional_unit") or row.get("fu")
             )
             alternative = (
                 row.get("alternative")
                 or row.get("activity")
                 or row.get("operation")
                 or row.get("name")
+                or row.get("alt_id")
             )
             intensity = _coerce_float(row.get("intensity_g_per_fu") or row.get("intensity"))
             low = _coerce_float(
-                row.get("intensity_low_g_per_fu")
-                or row.get("low_g_per_fu")
-                or row.get("low")
+                row.get("intensity_low_g_per_fu") or row.get("low_g_per_fu") or row.get("low")
             )
             high = _coerce_float(
-                row.get("intensity_high_g_per_fu")
-                or row.get("high_g_per_fu")
-                or row.get("high")
+                row.get("intensity_high_g_per_fu") or row.get("high_g_per_fu") or row.get("high")
             )
 
-            if not functional_unit or not alternative or intensity is None:
+            if not functional_unit or not alternative:
                 continue
 
             record = IntensityRecord(
                 functional_unit_id=str(functional_unit),
                 alternative=str(alternative),
-                intensity=float(intensity),
+                intensity=float(intensity) if intensity is not None else None,
                 low=low,
                 high=high,
+                alt_id=str(row.get("alt_id")) if row.get("alt_id") else None,
+                record_type=str(row.get("record_type") or "alternative"),
             )
             records.append(record)
 
@@ -182,7 +183,10 @@ def load_reference_sections() -> dict[str, dict[str, object]]:
         paragraphs = _split_paragraphs(buffer)
         existing = sections.setdefault(
             buffer_key,
-            {"title": buffer_key if buffer_key != _DEFAULT_REFERENCE_KEY else "References", "paragraphs": []},
+            {
+                "title": buffer_key if buffer_key != _DEFAULT_REFERENCE_KEY else "References",
+                "paragraphs": [],
+            },
         )
         existing_paragraphs = existing.setdefault("paragraphs", [])
         existing_paragraphs.extend(paragraphs)
@@ -221,7 +225,9 @@ def functional_unit_options(
 
     seen: set[str] = set()
     options: list[dict[str, object]] = []
-    for record in sorted(records, key=lambda item: labels.get(str(item.get("functional_unit_id")), "")):
+    for record in sorted(
+        records, key=lambda item: labels.get(str(item.get("functional_unit_id")), "")
+    ):
         fu_id = str(record.get("functional_unit_id"))
         if not fu_id or fu_id in seen:
             continue
@@ -235,6 +241,7 @@ def build_figure(
     functional_unit_id: str | None,
     *,
     dark: bool = False,
+    include_operations: bool = False,
 ) -> go.Figure:
     """Build the Plotly figure for the intensity leaderboard."""
 
@@ -249,24 +256,58 @@ def build_figure(
         )
         return figure
 
+    visible_records = [
+        record
+        for record in records
+        if include_operations or str(record.get("record_type") or "").lower() != "operation"
+    ]
+
+    if not visible_records:
+        figure.update_layout(
+            template=get_plotly_template(dark=dark),
+            margin=dict(l=60, r=20, t=40, b=60),
+            xaxis=dict(title="Alternative", type="category"),
+            yaxis=dict(title="g CO₂e per functional unit", rangemode="tozero"),
+            showlegend=False,
+        )
+        return figure
+
     if functional_unit_id:
         filtered = [
             record
-            for record in records
+            for record in visible_records
             if str(record.get("functional_unit_id")) == functional_unit_id
         ]
     else:
-        filtered = list(records)
+        filtered = list(visible_records)
 
     if not filtered:
-        return build_figure(records, None, dark=dark)
+        return build_figure(visible_records, None, dark=dark, include_operations=include_operations)
 
-    filtered.sort(key=lambda item: float(item.get("intensity") or 0))
+    filtered.sort(key=lambda item: _coerce_float(item.get("intensity")) or 0)
 
-    alternatives = [str(item.get("alternative")) for item in filtered]
-    intensities = [float(item.get("intensity") or 0) for item in filtered]
-    lows = [_coerce_float(item.get("low")) for item in filtered]
-    highs = [_coerce_float(item.get("high")) for item in filtered]
+    plotted: list[Mapping[str, object]] = []
+    intensities: list[float] = []
+    for record in filtered:
+        value = _coerce_float(record.get("intensity"))
+        if value is None:
+            continue
+        plotted.append(record)
+        intensities.append(float(value))
+
+    if not plotted:
+        figure.update_layout(
+            template=get_plotly_template(dark=dark),
+            margin=dict(l=60, r=20, t=40, b=60),
+            xaxis=dict(title="Alternative", type="category"),
+            yaxis=dict(title="g CO₂e per functional unit", rangemode="tozero"),
+            showlegend=False,
+        )
+        return figure
+
+    alternatives = [str(item.get("alternative")) for item in plotted]
+    lows = [_coerce_float(item.get("low")) for item in plotted]
+    highs = [_coerce_float(item.get("high")) for item in plotted]
 
     palette = get_palette(dark=dark)
     error_kwargs = None
@@ -290,9 +331,7 @@ def build_figure(
             color=palette.get("accent_strong", palette.get("positive")),
         )
 
-    hover_template = (
-        "<b>%{x}</b><br>Intensity: %{y:,.0f} g CO₂e per FU" "<extra></extra>"
-    )
+    hover_template = "<b>%{x}</b><br>Intensity: %{y:,.0f} g CO₂e per FU" "<extra></extra>"
 
     figure.add_trace(
         go.Bar(
@@ -319,17 +358,36 @@ def status_message(
     records: Sequence[Mapping[str, object]],
     functional_unit_id: str | None,
     labels: Mapping[str, str],
+    *,
+    include_operations: bool = False,
 ) -> str:
-    if records:
-        if functional_unit_id and any(
-            str(record.get("functional_unit_id")) == functional_unit_id for record in records
-        ):
-            return ""
-        if functional_unit_id:
+    visible_records = [
+        record
+        for record in records
+        if include_operations or str(record.get("record_type") or "").lower() != "operation"
+    ]
+
+    if not visible_records:
+        return "No intensity data available."
+
+    def _has_intensity(items: Sequence[Mapping[str, object]]) -> bool:
+        return any(_coerce_float(item.get("intensity")) is not None for item in items)
+
+    if functional_unit_id:
+        relevant = [
+            record
+            for record in visible_records
+            if str(record.get("functional_unit_id")) == functional_unit_id
+        ]
+        if not relevant or not _has_intensity(relevant):
             label = labels.get(functional_unit_id, functional_unit_id)
             return f"No intensity data available for {label}."
         return ""
-    return "No intensity data available."
+
+    if not _has_intensity(visible_records):
+        return "No intensity data available."
+
+    return ""
 
 
 def render_layout(
@@ -363,6 +421,24 @@ def render_layout(
                         children=[
                             html.Label("Functional unit", htmlFor="intensity-functional-unit"),
                             dcc.Dropdown(**dropdown_kwargs),
+                        ],
+                    ),
+                    html.Div(
+                        className="chart-controls__group",
+                        children=[
+                            dcc.Checklist(
+                                id="intensity-include-operations",
+                                options=[
+                                    {
+                                        "label": "Include corporate operations",
+                                        "value": "operations",
+                                    }
+                                ],
+                                value=[],
+                                inputStyle={"marginRight": "0.5rem"},
+                                labelStyle={"display": "inline-flex", "alignItems": "center"},
+                                className="chart-toggle",
+                            ),
                         ],
                     ),
                     dcc.Graph(

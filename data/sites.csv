@@ -1,2 +1,2 @@
 site_id,entity_id,name,region_code,lat,lon,notes
-SITE.COKE.TO.DC01,ENTITY.COKE.CA,Toronto DC 01,CA-ON,,,Urban distribution center (demo)
+SITE.COKE.TO.DC01,ENTITY.COKE.CA,Toronto DC 01,CA-ON,,,Urban distribution center
