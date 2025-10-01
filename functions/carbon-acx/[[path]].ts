@@ -47,5 +47,15 @@ export const onRequest: PagesFunction<{
     return out;
   }
 
-  return next();
+  const nextResponse = await next();
+  const headers = nextResponse.headers;
+
+  if (reqUrl.pathname.startsWith("/carbon-acx/artifacts/")) {
+    headers.set("Cache-Control", "public, max-age=31536000, immutable");
+    if (!headers.has("content-type")) {
+      headers.set("content-type", "application/json; charset=utf-8");
+    }
+  }
+
+  return nextResponse;
 };
