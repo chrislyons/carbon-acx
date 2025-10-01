@@ -1,6 +1,7 @@
-import { Fragment, useMemo } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 
-import { DietOption, ModeSplit, useProfile } from '../state/profile';
+import { useDebouncedCallback } from '../lib/useDebouncedCallback';
+import { DietOption, ModeSplit, rebalanceSplit, useProfile } from '../state/profile';
 
 import { PresetGallery } from './PresetGallery';
 
@@ -46,6 +47,8 @@ function formatHoursPerDay(value: number): string {
   return `${value.toFixed(1)} h/day`;
 }
 
+const INPUT_DEBOUNCE_MS = 250;
+
 export function ProfileControls(): JSX.Element {
   const {
     profileId,
@@ -56,14 +59,96 @@ export function ProfileControls(): JSX.Element {
     setStreamingHours
   } = useProfile();
 
+  const [commuteDays, setCommuteDaysLocal] = useState<number>(controls.commuteDaysPerWeek);
+  const [modeSplit, setModeSplitLocal] = useState<ModeSplit>({ ...controls.modeSplit });
+  const [diet, setDietLocal] = useState<DietOption>(controls.diet);
+  const [streamingHours, setStreamingHoursLocal] = useState<number>(controls.streamingHoursPerDay);
+
+  const [commitCommuteDays, cancelCommuteDebounce] = useDebouncedCallback(setCommuteDays, INPUT_DEBOUNCE_MS);
+  const [commitModeSplit, cancelModeSplitDebounce] = useDebouncedCallback(setModeSplit, INPUT_DEBOUNCE_MS);
+  const [commitDiet, cancelDietDebounce] = useDebouncedCallback(setDiet, INPUT_DEBOUNCE_MS);
+  const [commitStreamingHours, cancelStreamingDebounce] = useDebouncedCallback(
+    setStreamingHours,
+    INPUT_DEBOUNCE_MS
+  );
+
+  useEffect(() => {
+    setCommuteDaysLocal((previous) =>
+      previous === controls.commuteDaysPerWeek ? previous : controls.commuteDaysPerWeek
+    );
+    cancelCommuteDebounce();
+  }, [controls.commuteDaysPerWeek, cancelCommuteDebounce]);
+
+  useEffect(() => {
+    setModeSplitLocal((previous) => {
+      const next = controls.modeSplit;
+      if (
+        previous.car === next.car &&
+        previous.transit === next.transit &&
+        previous.bike === next.bike
+      ) {
+        return previous;
+      }
+      return { ...next };
+    });
+    cancelModeSplitDebounce();
+  }, [controls.modeSplit.car, controls.modeSplit.transit, controls.modeSplit.bike, cancelModeSplitDebounce]);
+
+  useEffect(() => {
+    setDietLocal((previous) => (previous === controls.diet ? previous : controls.diet));
+    cancelDietDebounce();
+  }, [controls.diet, cancelDietDebounce]);
+
+  useEffect(() => {
+    setStreamingHoursLocal((previous) =>
+      previous === controls.streamingHoursPerDay ? previous : controls.streamingHoursPerDay
+    );
+    cancelStreamingDebounce();
+  }, [controls.streamingHoursPerDay, cancelStreamingDebounce]);
+
+  const handleCommuteChange = useCallback(
+    (value: number) => {
+      const next = Math.max(0, Math.min(7, Math.round(value)));
+      setCommuteDaysLocal(next);
+      commitCommuteDays(next);
+    },
+    [commitCommuteDays]
+  );
+
+  const handleModeSplitChange = useCallback(
+    (mode: keyof ModeSplit, value: number) => {
+      const nextValue = Number.isNaN(value) ? 0 : value;
+      setModeSplitLocal((previous) => rebalanceSplit(previous, mode, nextValue));
+      commitModeSplit(mode, nextValue);
+    },
+    [commitModeSplit]
+  );
+
+  const handleDietChange = useCallback(
+    (nextDiet: DietOption) => {
+      setDietLocal(nextDiet);
+      commitDiet(nextDiet);
+    },
+    [commitDiet]
+  );
+
+  const handleStreamingChange = useCallback(
+    (value: number) => {
+      const next = Math.max(0, Math.min(6, Math.round(value * 10) / 10));
+      setStreamingHoursLocal(next);
+      commitStreamingHours(next);
+    },
+    [commitStreamingHours]
+  );
+
   const modeSegments = useMemo(() => {
-    const entries = Object.entries(controls.modeSplit) as [keyof ModeSplit, number][];
+    const entries = Object.entries(modeSplit) as [keyof ModeSplit, number][];
     return entries.map(([key, value]) => ({
       key,
       value,
       metadata: MODE_METADATA[key]
     }));
-  }, [controls.modeSplit]);
+  }, [modeSplit.car, modeSplit.transit, modeSplit.bike]);
 
   return (
     <section
@@ -90,7 +175,7 @@ export function ProfileControls(): JSX.Element {
               <span className="flex items-center justify-between text-[10px] uppercase tracking-[0.3em] text-slate-400">
                 <span>Days in office</span>
                 <span className="rounded-full bg-slate-800 px-[var(--gap-1)] py-[2px] text-[10px] font-semibold text-slate-200">
-                  {pluraliseDays(controls.commuteDaysPerWeek)}
+                  {pluraliseDays(commuteDays)}
                 </span>
               </span>
               <input
@@ -98,16 +183,16 @@ export function ProfileControls(): JSX.Element {
                 min={0}
                 max={7}
                 step={1}
-                value={controls.commuteDaysPerWeek}
-                onChange={(event) => setCommuteDays(Number(event.target.value))}
+                value={commuteDays}
+                onChange={(event) => handleCommuteChange(Number(event.target.value))}
                 className="w-full accent-sky-500"
-                aria-valuetext={`${controls.commuteDaysPerWeek} commute days per week`}
+                aria-valuetext={`${commuteDays} commute days per week`}
               />
             </label>
             <div className="space-y-[var(--gap-1)]">
               <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.3em] text-slate-400">
                 <span>Mode split</span>
-                <span>{controls.modeSplit.car + controls.modeSplit.transit + controls.modeSplit.bike}%</span>
+                <span>{modeSplit.car + modeSplit.transit + modeSplit.bike}%</span>
               </div>
               <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
                 {modeSegments.map(({ key, value, metadata }) => (
@@ -135,7 +220,7 @@ export function ProfileControls(): JSX.Element {
                       max={100}
                       step={1}
                       value={value}
-                      onChange={(event) => setModeSplit(key, Number(event.target.value))}
+                      onChange={(event) => handleModeSplitChange(key, Number(event.target.value))}
                       className="w-full accent-slate-200"
                       aria-valuetext={`${metadata.label} ${value}% share`}
                     />
@@ -152,7 +237,7 @@ export function ProfileControls(): JSX.Element {
             <div className="grid grid-cols-1 gap-[var(--gap-1)] sm:grid-cols-3">
               {(Object.entries(DIET_COPY) as [DietOption, { label: string; helper: string }][]).map(
                 ([key, copy]) => {
-                  const isActive = controls.diet === key;
+                  const isActive = diet === key;
                   return (
                     <label
                       key={key}
@@ -169,7 +254,7 @@ export function ProfileControls(): JSX.Element {
                         name="diet"
                         value={key}
                         checked={isActive}
-                        onChange={() => setDiet(key)}
+                        onChange={() => handleDietChange(key)}
                         className="sr-only"
                       />
                       <span
@@ -193,7 +278,7 @@ export function ProfileControls(): JSX.Element {
               <span className="flex items-center justify-between text-[10px] uppercase tracking-[0.3em] text-slate-400">
                 <span>HD streaming</span>
                 <span className="rounded-full bg-slate-800 px-[var(--gap-1)] py-[2px] text-[10px] font-semibold text-slate-200">
-                  {formatHoursPerDay(controls.streamingHoursPerDay)}
+                  {formatHoursPerDay(streamingHours)}
                 </span>
               </span>
               <input
@@ -201,10 +286,10 @@ export function ProfileControls(): JSX.Element {
                 min={0}
                 max={6}
                 step={0.1}
-                value={controls.streamingHoursPerDay}
-                onChange={(event) => setStreamingHours(Number(event.target.value))}
+                value={streamingHours}
+                onChange={(event) => handleStreamingChange(Number(event.target.value))}
                 className="w-full accent-pink-400"
-                aria-valuetext={`${controls.streamingHoursPerDay.toFixed(1)} hours per day of streaming`}
+                aria-valuetext={`${streamingHours.toFixed(1)} hours per day of streaming`}
               />
             </label>
           </fieldset>
@@ -216,18 +301,18 @@ export function ProfileControls(): JSX.Element {
                 <Fragment key={`override-${key}`}>
                   <dt className="text-[10px] uppercase tracking-[0.3em] text-slate-300">{metadata.label} days/wk</dt>
                   <dd className="text-[13px] font-semibold text-slate-200">
-                    {((controls.commuteDaysPerWeek * value) / 100).toFixed(2)}
+                    {((commuteDays * value) / 100).toFixed(2)}
                   </dd>
                 </Fragment>
               ))}
               <Fragment key="override-diet">
                 <dt className="text-[10px] uppercase tracking-[0.3em] text-slate-300">Diet selection</dt>
-                <dd className="text-[13px] font-semibold text-slate-200">{DIET_COPY[controls.diet].label}</dd>
+                <dd className="text-[13px] font-semibold text-slate-200">{DIET_COPY[diet].label}</dd>
               </Fragment>
               <Fragment key="override-stream">
                 <dt className="text-[10px] uppercase tracking-[0.3em] text-slate-300">Streaming hours/week</dt>
                 <dd className="text-[13px] font-semibold text-slate-200">
-                  {(controls.streamingHoursPerDay * 7).toFixed(1)}
+                  {(streamingHours * 7).toFixed(1)}
                 </dd>
               </Fragment>
             </dl>

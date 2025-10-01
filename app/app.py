@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+from functools import lru_cache
 from pathlib import Path
 from typing import Dict, Iterable, Mapping
 from urllib.parse import parse_qs, urlencode, quote
@@ -40,34 +41,30 @@ def _artifact_dir() -> Path:
     return DEFAULT_ARTIFACT_DIR
 
 
-def _load_figure_payload(base_dir: Path, name: str) -> dict | None:
-    path = base_dir / "figures" / f"{name}.json"
-    if not path.exists():
+@lru_cache(maxsize=None)
+def _cached_json_payload(path: str) -> dict | None:
+    path_obj = Path(path)
+    if not path_obj.exists():
         return None
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
+        return json.loads(path_obj.read_text(encoding="utf-8"))
     except json.JSONDecodeError:
         return None
+
+
+def _load_figure_payload(base_dir: Path, name: str) -> dict | None:
+    path = base_dir / "figures" / f"{name}.json"
+    return _cached_json_payload(str(path))
 
 
 def _load_export_payload(base_dir: Path) -> dict | None:
     path = base_dir / "export_view.json"
-    if not path.exists():
-        return None
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
-        return None
+    return _cached_json_payload(str(path))
 
 
 def _load_manifest_payload(base_dir: Path) -> dict | None:
     path = base_dir / "manifest.json"
-    if not path.exists():
-        return None
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
-        return None
+    return _cached_json_payload(str(path))
 
 
 def _reference_keys(figures: Dict[str, dict | None]) -> list[str]:

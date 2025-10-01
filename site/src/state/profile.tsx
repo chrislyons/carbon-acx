@@ -232,7 +232,7 @@ function cleanReferenceText(value: string): string {
   return value.replace(/^\[[0-9]+\]\s*/, '').trim();
 }
 
-function rebalanceSplit(current: ModeSplit, mode: keyof ModeSplit, value: number): ModeSplit {
+export function rebalanceSplit(current: ModeSplit, mode: keyof ModeSplit, value: number): ModeSplit {
   const target = clampPercentage(value);
   const otherKeys = (Object.keys(current) as (keyof ModeSplit)[]).filter((key) => key !== mode);
   const otherWeights = otherKeys.map((key) => current[key]);

@@ -17,6 +17,10 @@ function resolveArtifactUrl(path: string): string {
   return `${ARTIFACTS()}/${normalisePath(path)}`;
 }
 
+const jsonArtifactCache = new Map<string, unknown>();
+const textArtifactCache = new Map<string, string>();
+const referenceListCache = new Map<string, string[]>();
+
 async function fetchArtifact(
   path: string,
   init: RequestInit = {}
@@ -37,28 +41,44 @@ async function fetchArtifact(
 }
 
 async function loadArtifactJson(path: string, signal?: AbortSignal): Promise<unknown> {
+  if (jsonArtifactCache.has(path)) {
+    return jsonArtifactCache.get(path)!;
+  }
   const response = await fetchArtifact(path, { signal, headers: { Accept: 'application/json' } });
-  return response.json();
+  const data = await response.json();
+  jsonArtifactCache.set(path, data);
+  return data;
 }
 
 async function loadArtifactText(path: string, signal?: AbortSignal): Promise<string> {
+  if (textArtifactCache.has(path)) {
+    return textArtifactCache.get(path)!;
+  }
   const response = await fetchArtifact(path, { signal, headers: { Accept: 'text/plain' } });
-  return response.text();
+  const data = await response.text();
+  textArtifactCache.set(path, data);
+  return data;
 }
 
 async function loadComputeArtifacts(signal?: AbortSignal): Promise<ComputeResult> {
+  const referencesPath = 'references/export_view_refs.txt';
   const [manifestJson, stackedJson, bubbleJson, sankeyJson, referencesText] = await Promise.all([
     loadArtifactJson('manifest.json', signal),
     loadArtifactJson('figures/stacked.json', signal),
     loadArtifactJson('figures/bubble.json', signal),
     loadArtifactJson('figures/sankey.json', signal),
-    loadArtifactText('references/export_view_refs.txt', signal)
+    loadArtifactText(referencesPath, signal)
   ]);
 
-  const references = referencesText
-    .split('\n')
-    .map((entry) => entry.trim())
-    .filter((entry) => entry.length > 0);
+  const references = referenceListCache.get(referencesPath) ??
+    referencesText
+      .split('\n')
+      .map((entry) => entry.trim())
+      .filter((entry) => entry.length > 0);
+
+  if (!referenceListCache.has(referencesPath)) {
+    referenceListCache.set(referencesPath, references);
+  }
 
   const result = {
     manifest: manifestJson,

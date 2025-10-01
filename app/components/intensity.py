@@ -4,6 +4,7 @@ import csv
 import re
 from dataclasses import dataclass
 from pathlib import Path
+from functools import lru_cache
 from typing import Iterable, Mapping, Sequence
 
 import plotly.graph_objects as go
@@ -139,6 +140,7 @@ def _coerce_float(value: object) -> float | None:
         return None
 
 
+@lru_cache(maxsize=None)
 def load_intensity_records() -> list[dict[str, float | str | None]]:
     """Load intensity records from the packaged artifact if present."""
 
@@ -185,6 +187,7 @@ def load_intensity_records() -> list[dict[str, float | str | None]]:
     return [record.to_json() for record in records]
 
 
+@lru_cache(maxsize=None)
 def load_functional_unit_labels() -> dict[str, str]:
     """Return a mapping of functional unit identifiers to display labels."""
 
