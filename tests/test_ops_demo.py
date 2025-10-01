@@ -40,7 +40,7 @@ def test_demo_operation_integrity():
     operation = operations["OP.COKE.DELIVERY.URBAN_2025"]
     assert operation.asset_id == asset.asset_id
     assert operation.functional_unit_id == "FU.LITRE_DELIVERED"
-    assert not operation.notes
+    assert "route-km" in operation.notes
 
     activity_ids = {activity.activity_id for activity in store.load_activities()}
     assert operation.activity_id in activity_ids
