@@ -3,3 +3,6 @@ ASSET.COKE.TRUCK.C6.DIESEL.2023,SITE.COKE.TO.DC01,vehicle,Class-6 Beverage Truck
 ASSET.HYDROONE.GRID.CAON,SITE.HYDROONE.ON.GRID,line,CA-ON grid,2024,,electricity,
 ASSET.ENBRIDGE.PIPE.CAON,SITE.ENBRIDGE.ON.PIPE,pipeline,Ontario pipeline,2024,,natural_gas,
 ASSET.SHELL.REF.AB,SITE.SHELL.AB.REFINERY,refinery,Edmonton refinery,2024,,liquid_fuels,
+ASSET.LAFARGE.CLINKER.KILN,SITE.LAFARGE.BC.CLINKER,kiln,Richmond clinker kiln,2024,,coal_and_altfuels,"Precalciner kiln with alternative fuel co-firing"
+ASSET.ARCELORMITTAL.BOF.LINE,SITE.ARCELORMITTAL.ON.STEEL,steelworks,Hamilton BF-BOF line,2024,,metallurgical_coal,"Integrated blast furnace and basic oxygen furnace line"
+ASSET.NOVA.PET.REACTOR,SITE.NOVA.ON.PET,polymer_line,Sarnia PET polymerisation train,2024,,natural_gas,"Ethylene glycol and PTA polymerisation/reactor system"
