@@ -4,11 +4,12 @@ export type ComputeRequest = Record<string, unknown>;
 
 export type ComputeOptions = Omit<RequestInit, 'method' | 'body'>;
 
-const ARTIFACT_BASE_PATH = '/carbon-acx/artifacts';
+const BASE_PATH = (import.meta.env.BASE_URL ?? '/').replace(/\/$/, '');
+const ARTIFACT_BASE_PATH = `${BASE_PATH}/artifacts`;
 
-function isDevelopment(): boolean {
-  return process.env.NODE_ENV === 'development';
-}
+const RAW_USE_COMPUTE_FLAG = import.meta.env.VITE_USE_COMPUTE_API;
+export const USE_COMPUTE_API =
+  RAW_USE_COMPUTE_FLAG === 'true' || (RAW_USE_COMPUTE_FLAG !== 'false' && import.meta.env.DEV);
 
 function normalisePath(path: string): string {
   return path.replace(/^\/+/, '');
@@ -85,7 +86,7 @@ export async function compute<TResponse = unknown>(
   payload: ComputeRequest,
   options: ComputeOptions = {}
 ): Promise<TResponse> {
-  if (isDevelopment()) {
+  if (USE_COMPUTE_API) {
     const { headers, ...fetchOptions } = options;
     const response = await fetch('/api/compute', {
       method: 'POST',
@@ -117,7 +118,7 @@ export async function exportView(
   payload: ComputeRequest,
   options: ComputeOptions = {}
 ): Promise<Response> {
-  if (isDevelopment()) {
+  if (USE_COMPUTE_API) {
     const { headers, ...fetchOptions } = options;
     const params = new URLSearchParams({ format });
     const accept =
