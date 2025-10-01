@@ -3,3 +3,6 @@ ENTITY.COKE.CA,Coca-Cola Canada,corporate,,Demo rows for comparison
 ENTITY.HYDROONE.CA,Hydro One,corporate,,
 ENTITY.ENBRIDGE.CA,Enbridge,corporate,,
 ENTITY.SHELL.CA,Shell Canada,corporate,,
+ENTITY.LAFARGE.CA,Lafarge Canada,corporate,,Major Canadian cement producer with integrated clinker facilities.
+ENTITY.ARCELORMITTAL.CA,ArcelorMittal Dofasco,corporate,,Integrated steelmaker producing crude slabs in Ontario.
+ENTITY.NOVA.CHEM.CA,NOVA Chemicals,corporate,,Canadian petrochemicals producer with PET resin operations.

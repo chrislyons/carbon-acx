@@ -40,3 +40,6 @@ CLOTHING.SHOES.SNEAKERS,professional,clothing,Sneakers,garment,Production of one
 ENERGY.KWH.DELIVERED,industrial_heavy,energy,Electricity delivered (kWh),kWh,Retail electricity delivered to end users,,
 ENERGY.NATGAS.M3,industrial_heavy,energy,Natural gas delivered (m3),m3,Pipeline gas delivered,,
 ENERGY.GASOLINE.LITRE,industrial_heavy,energy,Gasoline refined & delivered (L),L,Motor gasoline supply,,
+MATERIAL.CEMENT.CLINKER.TONNE,industrial_heavy,materials,Clinker production—per tonne,tonne,Producing one metric tonne of Portland cement clinker.,"tonne" refers to one metric tonne of output.,Baseline kiln emissions for representative Canadian operations.
+MATERIAL.STEEL.CRUDESLAB.TONNE,industrial_heavy,materials,Crude steel slab production—per tonne,tonne,Producing one metric tonne of crude steel slab via integrated route.,"tonne" refers to one metric tonne of output.,Includes blast furnace-basic oxygen furnace route cradle-to-gate intensity.
+MATERIAL.PET.VIRGIN.TONNE,industrial_heavy,materials,Virgin PET polymer production—per tonne,tonne,Producing one metric tonne of virgin polyethylene terephthalate (PET) resin.,"tonne" refers to one metric tonne of output.,Covers cradle-to-gate polymerisation of PTA and MEG into PET pellets.

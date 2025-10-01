@@ -3,3 +3,6 @@ SITE.COKE.TO.DC01,ENTITY.COKE.CA,Toronto DC 01,CA-ON,,,Urban distribution center
 SITE.HYDROONE.ON.GRID,ENTITY.HYDROONE.CA,Ontario Grid Node,CA-ON,,,
 SITE.ENBRIDGE.ON.PIPE,ENTITY.ENBRIDGE.CA,Ontario Gas Network,CA-ON,,,
 SITE.SHELL.AB.REFINERY,ENTITY.SHELL.CA,Edmonton Refinery,CA-AB,,,
+SITE.LAFARGE.BC.CLINKER,ENTITY.LAFARGE.CA,Richmond Cement Plant,CA-BC,,,"Primary West Coast clinker kiln complex"
+SITE.ARCELORMITTAL.ON.STEEL,ENTITY.ARCELORMITTAL.CA,Hamilton Steelworks,CA-ON,,,"Integrated blast furnace–basic oxygen furnace site"
+SITE.NOVA.ON.PET,ENTITY.NOVA.CHEM.CA,Sarnia Chemical Complex,CA-ON,,,"PET polymerisation and packaging resins facility"
