@@ -12,6 +12,7 @@ except ImportError:  # pragma: no cover - handled lazily
 
 from .schema import (
     Activity,
+    ActivityDependency,
     ActivitySchedule,
     Asset,
     EmissionFactor,
@@ -162,6 +163,9 @@ class SqlStore:
         return []
 
     def load_operations(self) -> Sequence[Operation]:
+        return []
+
+    def load_activity_dependencies(self) -> Sequence[ActivityDependency]:
         return []
 
     def __enter__(self) -> "SqlStore":

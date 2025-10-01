@@ -6,6 +6,7 @@ from typing import Protocol, Sequence
 
 from ..schema import (
     Activity,
+    ActivityDependency,
     ActivitySchedule,
     Asset,
     EmissionFactor,
@@ -21,6 +22,7 @@ from ..dal_sql import SqlStore
 
 __all__ = [
     "Activity",
+    "ActivityDependency",
     "ActivitySchedule",
     "Asset",
     "CsvStore",
@@ -55,6 +57,8 @@ class DataStore(Protocol):
     def load_activity_schedule(self) -> Sequence[ActivitySchedule]: ...
 
     def load_grid_intensity(self) -> Sequence[GridIntensity]: ...
+
+    def load_activity_dependencies(self) -> Sequence[ActivityDependency]: ...
 
 
 def _resolve_db_path(candidate: str | os.PathLike[str] | None) -> Path:

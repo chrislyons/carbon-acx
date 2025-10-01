@@ -298,6 +298,23 @@ class Operation(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
 
+class ActivityDependency(BaseModel):
+    child_activity_id: str
+    parent_operation_id: str
+    share: float
+    notes: Optional[str] = None
+
+    model_config = ConfigDict(extra="ignore")
+
+    @model_validator(mode="after")
+    def validate_share(self):
+        if self.share is None:
+            raise ValueError("dependency share is required")
+        if not 0 < self.share <= 1:
+            raise ValueError("dependency share must be between 0 and 1")
+        return self
+
+
 class ActivitySchedule(BaseModel):
     profile_id: str
     activity_id: str
@@ -421,6 +438,59 @@ def load_operations(
         )
 
     return operations
+
+
+def load_activity_dependencies(
+    *,
+    activities: Sequence[Activity] | None = None,
+    operations: Sequence[Operation] | None = None,
+) -> List[ActivityDependency]:
+    dependencies = _load_csv_list(DATA_DIR / "dependencies.csv", ActivityDependency)
+    if not dependencies:
+        return dependencies
+
+    activity_records = activities if activities is not None else load_activities()
+    operation_records = operations if operations is not None else load_operations()
+
+    activity_ids = {activity.activity_id for activity in activity_records}
+    missing_children = sorted(
+        {
+            dependency.child_activity_id
+            for dependency in dependencies
+            if dependency.child_activity_id not in activity_ids
+        }
+    )
+    if missing_children:
+        raise ValueError(
+            "Unknown child_activity_id referenced by dependencies: "
+            + ", ".join(missing_children)
+        )
+
+    operation_ids = {operation.operation_id for operation in operation_records}
+    missing_parents = sorted(
+        {
+            dependency.parent_operation_id
+            for dependency in dependencies
+            if dependency.parent_operation_id not in operation_ids
+        }
+    )
+    if missing_parents:
+        raise ValueError(
+            "Unknown parent_operation_id referenced by dependencies: "
+            + ", ".join(missing_parents)
+        )
+
+    grouped: dict[str, float] = {}
+    for dependency in dependencies:
+        key = dependency.child_activity_id
+        grouped[key] = grouped.get(key, 0.0) + float(dependency.share)
+    for activity_id, total in grouped.items():
+        if total > 1.0000001:
+            raise ValueError(
+                f"Dependency shares for {activity_id} exceed 1.0 (received {total:.6f})"
+            )
+
+    return dependencies
 
 
 def load_emission_factors() -> List[EmissionFactor]:

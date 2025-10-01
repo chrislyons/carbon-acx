@@ -1,0 +1,31 @@
+{
+  "TRAN.SCHOOLRUN.CAR.KM": [
+    {
+      "operation_id": "OP.SHELL.GASOLINE2024",
+      "share": 1.0,
+      "notes": "Fuel supply",
+      "operation_activity_id": "ENERGY.GASOLINE.LITRE",
+      "operation_asset_id": "ASSET.SHELL.REF.AB",
+      "operation_functional_unit_id": "FU.L_GASOLINE"
+    }
+  ],
+  "TRAN.TTC.SUBWAY.KM": [
+    {
+      "operation_id": "OP.HYDROONE.KWH2024",
+      "share": 1.0,
+      "notes": "Traction electricity",
+      "operation_activity_id": "ENERGY.KWH.DELIVERED",
+      "operation_asset_id": "ASSET.HYDROONE.GRID.CAON",
+      "operation_functional_unit_id": "FU.KWH"
+    }
+  ],
+  "MEDIA.STREAM.HD.HOUR": [
+    {
+      "operation_id": "OP.YOUTUBE.HD.HOUR2025",
+      "share": 1.0,
+      "notes": "Platform infra",
+      "operation_activity_id": "MEDIA.STREAM.HD.HOUR",
+      "operation_asset_id": "ASSET.GOOGLE.YOUTUBE.GLOBAL"
+    }
+  ]
+}

@@ -7,6 +7,7 @@ import pandas as pd
 
 from ..schema import (
     Activity,
+    ActivityDependency,
     ActivitySchedule,
     Asset,
     EmissionFactor,
@@ -67,3 +68,7 @@ class CsvStore:
     def load_grid_intensity(self) -> Sequence[GridIntensity]:
         rows = _load_csv(DATA_DIR / "grid_intensity.csv")
         return [GridIntensity(**row) for row in rows]
+
+    def load_activity_dependencies(self) -> Sequence[ActivityDependency]:
+        rows = _load_csv(DATA_DIR / "dependencies.csv")
+        return [ActivityDependency(**row) for row in rows]

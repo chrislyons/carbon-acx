@@ -1,0 +1,4 @@
+child_activity_id,parent_operation_id,share,notes
+TRAN.SCHOOLRUN.CAR.KM,OP.SHELL.GASOLINE2024,1.0,"Fuel supply"
+TRAN.TTC.SUBWAY.KM,OP.HYDROONE.KWH2024,1.0,"Traction electricity"
+MEDIA.STREAM.HD.HOUR,OP.YOUTUBE.HD.HOUR2025,1.0,"Platform infra"

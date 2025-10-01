@@ -21,6 +21,7 @@ from .api import collect_activity_source_keys
 from .dal import DataStore, choose_backend
 from .schema import (
     Activity,
+    ActivityDependency,
     ActivityFunctionalUnitMap,
     ActivitySchedule,
     EmissionFactor,
@@ -30,8 +31,11 @@ from .schema import (
     Operation,
     Profile,
     RegionCode,
+    load_activities as schema_load_activities,
+    load_activity_dependencies,
     load_activity_fu_map,
     load_functional_units,
+    load_operations as schema_load_operations,
 )
 
 FLOAT_QUANTISER = Decimal("0.000001")
@@ -54,6 +58,7 @@ EXPORT_COLUMNS = [
     "annual_emissions_g",
     "annual_emissions_g_low",
     "annual_emissions_g_high",
+    "upstream_chain",
 ]
 
 INTENSITY_COLUMNS = [
@@ -1146,6 +1151,19 @@ def export_view(
 ) -> pd.DataFrame:
     datastore = ds or choose_backend()
     activities = {activity.activity_id: activity for activity in datastore.load_activities()}
+    if not activities:
+        try:
+            activities = {activity.activity_id: activity for activity in schema_load_activities()}
+        except Exception:  # pragma: no cover - defensive fallback
+            activities = {}
+    load_operations_fn = getattr(datastore, "load_operations", None)
+    operations_iter = load_operations_fn() if callable(load_operations_fn) else []
+    operations = {operation.operation_id: operation for operation in operations_iter}
+    if not operations:
+        try:
+            operations = {op.operation_id: op for op in schema_load_operations()}
+        except Exception:  # pragma: no cover - defensive fallback
+            operations = {}
     efs = {ef.activity_id: ef for ef in datastore.load_emission_factors()}
     profiles = {p.profile_id: p for p in datastore.load_profiles()}
     if activities:
@@ -1171,6 +1189,59 @@ def export_view(
         if hasattr(gi.region, "value"):
             grid_lookup[gi.region.value] = gi.intensity_g_per_kwh
             grid_by_region[gi.region.value] = gi
+
+    dependency_loader = getattr(datastore, "load_activity_dependencies", None)
+    dependency_records = list(dependency_loader()) if callable(dependency_loader) else []
+    if not dependency_records:
+        try:
+            dependency_records = load_activity_dependencies(
+                activities=list(activities.values()) or None,
+                operations=list(operations.values()) or None,
+            )
+        except Exception:  # pragma: no cover - defensive fallback
+            dependency_records = []
+    dependency_map: dict[str, list[dict[str, Any]]] = {}
+    for dependency in dependency_records:
+        child_id = dependency.child_activity_id
+        if child_id not in activities:
+            raise ValueError(
+                f"Unknown child_activity_id referenced by dependencies: {child_id}"
+            )
+        parent = operations.get(dependency.parent_operation_id)
+        if parent is None:
+            raise ValueError(
+                "Unknown parent_operation_id referenced by dependencies: "
+                f"{dependency.parent_operation_id}"
+            )
+        entry = {
+            "operation_id": parent.operation_id,
+            "share": float(dependency.share),
+        }
+        if dependency.notes:
+            entry["notes"] = dependency.notes
+        if parent.activity_id:
+            entry["operation_activity_id"] = parent.activity_id
+        if parent.asset_id:
+            entry["operation_asset_id"] = parent.asset_id
+        if parent.functional_unit_id:
+            entry["operation_functional_unit_id"] = parent.functional_unit_id
+        dependency_map.setdefault(child_id, []).append(entry)
+
+    for child_id, entries in dependency_map.items():
+        total_share = sum(entry.get("share", 0.0) for entry in entries)
+        if total_share > 1.0000001:
+            raise ValueError(
+                f"Dependency shares for {child_id} exceed 1.0 (received {total_share:.6f})"
+            )
+
+    def _clone_chain(activity_id: str) -> list[dict[str, Any]]:
+        chain = dependency_map.get(activity_id)
+        if not chain:
+            return []
+        return [dict(entry) for entry in chain]
+
+    civilian_layers = {LayerId.PROFESSIONAL.value, LayerId.ONLINE.value}
+    bubble_upstream_lookup: dict[tuple[str | None, str], list[dict[str, Any]]] = {}
 
     rows: List[dict] = []
     derived_rows: List[dict] = []
@@ -1219,6 +1290,13 @@ def export_view(
             details = compute_emission_details(sched, profile, ef, grid_lookup, grid_row)
             emission = details.mean
 
+        upstream_chain: list[dict[str, Any]] | None = None
+        if layer_id and layer_id in civilian_layers:
+            upstream_chain = _clone_chain(sched.activity_id)
+            bubble_upstream_lookup[(layer_id, sched.activity_id)] = [
+                dict(entry) for entry in upstream_chain
+            ]
+
         rows.append(
             {
                 "profile_id": sched.profile_id,
@@ -1245,6 +1323,7 @@ def export_view(
                 "annual_emissions_g": emission,
                 "annual_emissions_g_low": details.low,
                 "annual_emissions_g_high": details.high,
+                "upstream_chain": upstream_chain,
             }
         )
 
@@ -1261,6 +1340,7 @@ def export_view(
                 "grid_intensity": grid_row,
                 "annual_emissions_g": emission,
                 "layer_id": layer_id,
+                "upstream_chain": upstream_chain,
             }
         )
 
@@ -1438,6 +1518,13 @@ def export_view(
     payload["data"] = records
     _write_json(out_dir / "export_view.json", payload)
 
+    dependency_payload = {
+        activity_id: [dict(entry) for entry in entries]
+        for activity_id, entries in sorted(dependency_map.items())
+    }
+    if dependency_payload:
+        _write_json(out_dir / "dependency_map.json", dependency_payload)
+
     def _with_layer_id(payload: Mapping[str, Any]) -> dict[str, Any]:
         """Return ``payload`` with a normalised ``layer_id`` field."""
 
@@ -1462,6 +1549,13 @@ def export_view(
         _with_layer_id(asdict(point))
         for point in figures.slice_bubble(df, reference_map=bubble_reference_map)
     ]
+    for point in bubble_points:
+        layer_value = point.get("layer_id")
+        activity_value = point.get("activity_id")
+        key = (layer_value, activity_value)
+        chain = bubble_upstream_lookup.get(key)
+        if chain is not None and layer_value in civilian_layers:
+            point["upstream_chain"] = [dict(entry) for entry in chain]
     sankey = figures.slice_sankey(df, reference_map=sankey_reference_map)
     if isinstance(sankey, Mapping):
         links = sankey.get("links")
