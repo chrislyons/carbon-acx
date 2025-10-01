@@ -8,3 +8,5 @@ TRAN.TTC.SUBWAY.KM,FU.PERSON_KM,"fu = distance_km * passengers","Passengers defa
 TRAN.TTC.BUS.KM,FU.PERSON_KM,"fu = distance_km * passengers","Passengers defaults to 1 if not provided"
 ENERGY.CA-ON.GRID.KWH,FU.KWH,"fu = kwh",""
 FOOD.MEAL.BEEF.SERVING,FU.NUTRITIONAL_SERVING,"fu = servings",""
+FOOD.MEAL.CHICKEN.SERVING,FU.NUTRITIONAL_SERVING,"fu = servings",""
+FOOD.MEAL.VEG.SERVING,FU.NUTRITIONAL_SERVING,"fu = servings",""
