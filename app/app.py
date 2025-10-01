@@ -548,9 +548,7 @@ def create_app() -> Dash:
             dcc.Store(id="download-status"),
             dcc.Store(id="acx-active-activity"),
             dcc.Store(id="intensity-records", data=intensity_records),
-            dcc.Store(
-                id="intensity-functional-unit-labels", data=intensity_labels
-            ),
+            dcc.Store(id="intensity-functional-unit-labels", data=intensity_labels),
             dcc.Store(id="intensity-reference-sections", data=intensity_sections),
             html.Main(
                 className="chart-column",
@@ -1340,6 +1338,7 @@ def create_app() -> Dash:
         Output("intensity-status", "children"),
         Output("intensity-references", "children"),
         Input("intensity-functional-unit", "value"),
+        Input("intensity-include-operations", "value"),
         Input("theme-mode", "data"),
         State("intensity-records", "data"),
         State("intensity-reference-sections", "data"),
@@ -1347,6 +1346,7 @@ def create_app() -> Dash:
     )
     def _update_intensity_view(
         functional_unit_value,
+        include_operations_value,
         theme_mode_value,
         records_state,
         reference_sections_state,
@@ -1358,8 +1358,21 @@ def create_app() -> Dash:
             reference_sections_state if isinstance(reference_sections_state, dict) else {}
         )
         dark_mode = isinstance(theme_mode_value, str) and theme_mode_value.lower() == "dark"
-        figure = intensity.build_figure(records, functional_unit_value, dark=dark_mode)
-        status_text = intensity.status_message(records, functional_unit_value, labels)
+        include_operations = False
+        if isinstance(include_operations_value, (list, tuple, set)):
+            include_operations = "operations" in include_operations_value
+        figure = intensity.build_figure(
+            records,
+            functional_unit_value,
+            dark=dark_mode,
+            include_operations=include_operations,
+        )
+        status_text = intensity.status_message(
+            records,
+            functional_unit_value,
+            labels,
+            include_operations=include_operations,
+        )
         reference_children = intensity.render_references_children(
             references_state,
             functional_unit_value,

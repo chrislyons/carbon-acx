@@ -1,2 +1,2 @@
 asset_id,site_id,asset_type,name,year,power_rating_kw,fuel_type,notes
-ASSET.COKE.TRUCK.C6.DIESEL.2023,SITE.COKE.TO.DC01,vehicle,Class-6 Beverage Truck (demo),2023,,diesel,Demo seed only
+ASSET.COKE.TRUCK.C6.DIESEL.2023,SITE.COKE.TO.DC01,vehicle,Class-6 Beverage Truck,2023,,diesel,Demo spec only

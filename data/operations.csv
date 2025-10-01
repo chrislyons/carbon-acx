@@ -1,2 +1,2 @@
 operation_id,asset_id,activity_id,functional_unit_id,utilization_basis,period_start,period_end,throughput_value,throughput_unit,notes
-OP.COKE.DELIVERY.URBAN_2025,ASSET.COKE.TRUCK.C6.DIESEL.2023,TRAN.DELIVERY.TRUCK.CLASS6.KM,FU.LITRE_DELIVERED,modeled,2025-01-01,2025-12-31,,,"Demo: throughput variables set at runtime"
+OP.COKE.DELIVERY.URBAN_2025,ASSET.COKE.TRUCK.C6.DIESEL.2023,TRAN.DELIVERY.TRUCK.CLASS6.KM,FU.LITRE_DELIVERED,modeled,2025-01-01,2025-12-31,,,
