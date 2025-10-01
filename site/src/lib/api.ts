@@ -1,11 +1,9 @@
+import { ARTIFACTS } from '../basePath';
 import type { ComputeResult } from '../state/profile';
 
 export type ComputeRequest = Record<string, unknown>;
 
 export type ComputeOptions = Omit<RequestInit, 'method' | 'body'>;
-
-const BASE_PATH = (import.meta.env.BASE_URL ?? '/').replace(/\/$/, '');
-const ARTIFACT_BASE_PATH = `${BASE_PATH}/artifacts`;
 
 const RAW_USE_COMPUTE_FLAG = import.meta.env.VITE_USE_COMPUTE_API;
 export const USE_COMPUTE_API =
@@ -16,7 +14,7 @@ function normalisePath(path: string): string {
 }
 
 function resolveArtifactUrl(path: string): string {
-  return `${ARTIFACT_BASE_PATH}/${normalisePath(path)}`;
+  return `${ARTIFACTS()}/${normalisePath(path)}`;
 }
 
 async function fetchArtifact(
