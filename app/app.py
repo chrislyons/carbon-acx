@@ -32,6 +32,7 @@ DEFAULT_ARTIFACT_DIR = Path(__file__).resolve().parent.parent / "calc" / "output
 FIGURE_NAMES = ("stacked", "bubble", "sankey")
 
 LAYER_ORDER = [layer.value for layer in LayerId]
+CIVILIAN_LAYERS = {LayerId.PROFESSIONAL.value, LayerId.ONLINE.value}
 
 
 def _artifact_dir() -> Path:
@@ -421,6 +422,58 @@ def create_app() -> Dash:
             return ordered[:1]
         return ordered
 
+    def _resolve_upstream_chain(
+        activity_id: str | None,
+        figures_store_value,
+        *,
+        layer_hint: str | None = None,
+    ) -> tuple[str | None, list[dict[str, object]]]:
+        if not activity_id or not isinstance(figures_store_value, Mapping):
+            return None, []
+        bubble_payload = figures_store_value.get("bubble")
+        if not isinstance(bubble_payload, Mapping):
+            return None, []
+        data = bubble_payload.get("data")
+        if not isinstance(data, list):
+            return None, []
+
+        best_layer: str | None = None
+        best_entries: list[dict[str, object]] = []
+
+        def _share_value(payload: Mapping[str, object]) -> float:
+            try:
+                return float(payload.get("share") or 0.0)
+            except (TypeError, ValueError):
+                return 0.0
+
+        for row in data:
+            if not isinstance(row, Mapping):
+                continue
+            raw_activity = row.get("activity_id")
+            if not raw_activity:
+                continue
+            if str(raw_activity) != activity_id:
+                continue
+            row_layer = _row_layer(row)
+            raw_chain = row.get("upstream_chain")
+            if isinstance(raw_chain, list):
+                entries = [dict(entry) for entry in raw_chain if isinstance(entry, Mapping)]
+            else:
+                entries = []
+            entries.sort(key=_share_value, reverse=True)
+            if layer_hint and row_layer != layer_hint:
+                if best_layer is None and entries:
+                    best_layer = row_layer
+                    best_entries = entries
+                continue
+            if entries:
+                return row_layer, entries
+            if best_layer is None:
+                best_layer = row_layer
+                best_entries = entries
+
+        return best_layer, best_entries
+
     def _summarise_layers(
         layers: list[str], metadata_store_value: Mapping | None
     ) -> dict[str, list[str]]:
@@ -719,6 +772,10 @@ def create_app() -> Dash:
                                         children=[
                                             html.Div(id="layer-panels", className="layer-panels"),
                                             html.Div(
+                                                id="upstream-chips",
+                                                className="upstream-chips",
+                                            ),
+                                            html.Div(
                                                 id="activity-narrative",
                                                 className="chart-narrative",
                                                 **{"aria-live": "polite", "role": "status"},
@@ -960,6 +1017,104 @@ def create_app() -> Dash:
         return html.P(blurb)
 
     @app.callback(
+        Output("upstream-chips", "children"),
+        Input({"component": "bubble-chart", "layer": ALL}, "hoverData"),
+        Input("acx-active-activity", "data"),
+        State("figures-store", "data"),
+    )
+    def _render_upstream_chips(bubble_hovers, active_activity, figures_store_value):
+        triggered_id = getattr(dash.callback_context, "triggered_id", None)
+        activity_id = None
+        layer_hint = None
+
+        if isinstance(triggered_id, dict) and triggered_id.get("component") == "bubble-chart":
+            triggered_value = dash.callback_context.triggered[0]["value"]
+            activity_id = _extract_activity_id(triggered_value)
+            layer_hint = triggered_id.get("layer")
+
+        if not activity_id and isinstance(bubble_hovers, list):
+            for hover in bubble_hovers:
+                candidate = _extract_activity_id(hover)
+                if candidate:
+                    activity_id = candidate
+                    break
+
+        if not activity_id and isinstance(active_activity, str):
+            activity_id = active_activity
+
+        if not activity_id:
+            return []
+
+        layer_id, upstream_entries = _resolve_upstream_chain(
+            activity_id,
+            figures_store_value,
+            layer_hint=layer_hint,
+        )
+
+        effective_layer = layer_id or layer_hint
+        if effective_layer not in CIVILIAN_LAYERS:
+            return []
+        if not upstream_entries:
+            return []
+
+        chips: list[html.Component] = []
+        for entry in upstream_entries:
+            operation_id = entry.get("operation_id")
+            if not operation_id:
+                continue
+            label = (
+                entry.get("operation_activity_label")
+                or entry.get("operation_activity_name")
+                or entry.get("operation_activity_id")
+                or operation_id
+            )
+            brand = entry.get("operation_entity_name") or entry.get("operation_asset_name")
+            children: list[html.Component] = [
+                html.Span(str(label), className="upstream-chip__name")
+            ]
+            if brand:
+                children.append(html.Span(str(brand), className="upstream-chip__brand"))
+
+            share = entry.get("share")
+            share_text = None
+            try:
+                if share is not None:
+                    share_value = float(share)
+                    share_text = f"{share_value * 100:.0f}% share"
+            except (TypeError, ValueError):
+                share_text = None
+
+            notes = entry.get("notes")
+            tooltip_parts = [part for part in (share_text, notes) if part]
+            chip_kwargs: dict[str, object] = {}
+            if tooltip_parts:
+                chip_kwargs["title"] = " — ".join(str(part) for part in tooltip_parts)
+
+            fu_id = entry.get("operation_functional_unit_id")
+            chip_id = {
+                "component": "upstream-chip",
+                "operation": str(operation_id),
+                "fu": str(fu_id) if fu_id else "__none__",
+            }
+            chips.append(
+                html.Button(
+                    children,
+                    id=chip_id,
+                    className="upstream-chip",
+                    type="button",
+                    **chip_kwargs,
+                )
+            )
+
+        if not chips:
+            return []
+
+        return [
+            html.Span("Upstream:", className="upstream-chips__label"),
+            html.Div(chips, className="upstream-chips__list"),
+        ]
+
+    @app.callback(
         Output("chart-badges", "children"),
         Input("layer-selector", "value"),
         Input("view-mode", "value"),
@@ -996,6 +1151,35 @@ def create_app() -> Dash:
         ]
 
         return badges
+
+    @app.callback(
+        Output("app-view-tabs", "value"),
+        Output("intensity-functional-unit", "value"),
+        Output("intensity-include-operations", "value"),
+        Input({"component": "upstream-chip", "operation": ALL, "fu": ALL}, "n_clicks"),
+        State("intensity-functional-unit", "value"),
+        State("intensity-include-operations", "value"),
+        prevent_initial_call=True,
+    )
+    def _drill_to_intensity(chip_clicks, current_fu, include_operations_state):
+        triggered_id = getattr(dash.callback_context, "triggered_id", None)
+        if not isinstance(triggered_id, dict) or triggered_id.get("component") != "upstream-chip":
+            raise dash.exceptions.PreventUpdate
+
+        fu_id = triggered_id.get("fu")
+        target_fu = current_fu
+        if fu_id and fu_id != "__none__":
+            target_fu = fu_id
+
+        include_operations: list[str] = []
+        if isinstance(include_operations_state, (list, tuple)):
+            include_operations = [
+                str(item) for item in include_operations_state if isinstance(item, str)
+            ]
+        if "operations" not in include_operations:
+            include_operations = include_operations + ["operations"]
+
+        return "intensity", target_fu, include_operations
 
     @app.callback(
         Output("url", "search"),

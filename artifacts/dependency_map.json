@@ -6,7 +6,13 @@
       "notes": "Fuel supply",
       "operation_activity_id": "ENERGY.GASOLINE.LITRE",
       "operation_asset_id": "ASSET.SHELL.REF.AB",
-      "operation_functional_unit_id": "FU.L_GASOLINE"
+      "operation_functional_unit_id": "FU.L_GASOLINE",
+      "operation_activity_name": "Gasoline refined & delivered (L)",
+      "operation_activity_label": "Gasoline refined & delivered",
+      "operation_activity_category": "energy",
+      "operation_entity_name": "Shell Canada",
+      "operation_asset_name": "Edmonton refinery",
+      "operation_functional_unit_name": "Refined motor gasoline delivered"
     }
   ],
   "TRAN.TTC.SUBWAY.KM": [
@@ -16,7 +22,13 @@
       "notes": "Traction electricity",
       "operation_activity_id": "ENERGY.KWH.DELIVERED",
       "operation_asset_id": "ASSET.HYDROONE.GRID.CAON",
-      "operation_functional_unit_id": "FU.KWH"
+      "operation_functional_unit_id": "FU.KWH",
+      "operation_activity_name": "Electricity delivered (kWh)",
+      "operation_activity_label": "Electricity delivered",
+      "operation_activity_category": "energy",
+      "operation_entity_name": "Hydro One",
+      "operation_asset_name": "CA-ON grid",
+      "operation_functional_unit_name": "Electrical energy delivered"
     }
   ],
   "MEDIA.STREAM.HD.HOUR": [
@@ -25,7 +37,12 @@
       "share": 1.0,
       "notes": "Platform infra",
       "operation_activity_id": "MEDIA.STREAM.HD.HOUR",
-      "operation_asset_id": "ASSET.GOOGLE.YOUTUBE.GLOBAL"
+      "operation_asset_id": "ASSET.GOOGLE.YOUTUBE.GLOBAL",
+      "operation_activity_name": "HD video streaming—per hour",
+      "operation_activity_label": "HD video streaming",
+      "operation_activity_category": "media",
+      "operation_entity_name": "Google LLC",
+      "operation_asset_name": "YouTube content delivery infrastructure"
     }
   ]
 }
