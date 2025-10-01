@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title>Industrial heavy layer icon</title>
+  <rect width="64" height="64" rx="14" fill="#0f172a" />
+  <g fill="none" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M16 44h32" />
+    <path d="M22 28h20l6 10v6H16v-6z" fill="#1b263b" />
+    <path d="M26 20h12l4 8H22z" fill="#11253d" />
+    <circle cx="24" cy="38" r="4" fill="#38bdf8" stroke="#0f172a" stroke-width="1.5" />
+    <circle cx="40" cy="38" r="4" fill="#38bdf8" stroke="#0f172a" stroke-width="1.5" />
+    <path d="M24 16h16" />
+  </g>
+</svg>

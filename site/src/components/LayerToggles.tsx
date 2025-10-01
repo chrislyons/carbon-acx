@@ -1,12 +1,14 @@
 import { useMemo } from 'react';
 
+import type { LayerDescriptor } from '../lib/useLayerCatalog';
+
 interface LayerOption {
   id: string;
   label: string;
   description: string;
 }
 
-const OPTIONAL_LAYERS: LayerOption[] = [
+const FALLBACK_OPTIONAL_LAYERS: LayerOption[] = [
   {
     id: 'online',
     label: 'Online services',
@@ -29,6 +31,7 @@ export interface LayerTogglesProps {
   availableLayers: readonly string[];
   activeLayers: readonly string[];
   onChange: (layers: string[]) => void;
+  layerCatalog?: readonly LayerDescriptor[];
 }
 
 function normaliseLayerList(values: readonly string[] | undefined): string[] {
@@ -42,7 +45,8 @@ export function LayerToggles({
   baseLayer,
   availableLayers,
   activeLayers,
-  onChange
+  onChange,
+  layerCatalog
 }: LayerTogglesProps): JSX.Element | null {
   const available = useMemo(() => new Set(normaliseLayerList(availableLayers)), [availableLayers]);
   const activeSet = useMemo(() => new Set(normaliseLayerList(activeLayers)), [activeLayers]);
@@ -51,7 +55,22 @@ export function LayerToggles({
     return null;
   }
 
-  const options = OPTIONAL_LAYERS.filter((option) => available.has(option.id));
+  const options = useMemo(() => {
+    if (Array.isArray(layerCatalog) && layerCatalog.length > 0) {
+      return layerCatalog
+        .filter((entry) => entry.id !== baseLayer && (entry.optional ?? entry.id !== baseLayer))
+        .map((entry) => ({
+          id: entry.id,
+          label: entry.title,
+          description:
+            typeof entry.summary === 'string' && entry.summary.trim().length > 0
+              ? entry.summary
+              : 'Toggle this layer to compare against the baseline.'
+        }))
+        .filter((option) => available.has(option.id));
+    }
+    return FALLBACK_OPTIONAL_LAYERS.filter((option) => available.has(option.id));
+  }, [available, baseLayer, layerCatalog]);
   if (options.length === 0) {
     return null;
   }

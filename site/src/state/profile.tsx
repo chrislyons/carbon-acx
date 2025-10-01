@@ -232,6 +232,37 @@ function cleanReferenceText(value: string): string {
   return value.replace(/^\[[0-9]+\]\s*/, '').trim();
 }
 
+function parseLayersFromSearch(search: string, available: readonly string[]): string[] {
+  if (typeof search !== 'string' || search.length === 0) {
+    return [];
+  }
+  const params = new URLSearchParams(search.startsWith('?') ? search : `?${search}`);
+  const values = params.getAll('layer');
+  if (values.length === 0) {
+    return [];
+  }
+  const availableSet = new Set(available);
+  const seen = new Set<string>();
+  const ordered: string[] = [];
+  values.forEach((value) => {
+    value
+      .split(',')
+      .map((part) => part.trim())
+      .filter((part) => part.length > 0)
+      .forEach((layer) => {
+        if (seen.has(layer)) {
+          return;
+        }
+        if (availableSet.size > 0 && !availableSet.has(layer)) {
+          return;
+        }
+        seen.add(layer);
+        ordered.push(layer);
+      });
+  });
+  return ordered;
+}
+
 export function rebalanceSplit(current: ModeSplit, mode: keyof ModeSplit, value: number): ModeSplit {
   const target = clampPercentage(value);
   const otherKeys = (Object.keys(current) as (keyof ModeSplit)[]).filter((key) => key !== mode);
@@ -486,19 +517,28 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
         ? PRIMARY_LAYER_ID
         : availableLayers[0] ?? PRIMARY_LAYER_ID;
       const availableSet = new Set(availableLayers);
+      const fromUrl =
+        typeof window !== 'undefined'
+          ? parseLayersFromSearch(window.location.search, availableLayers)
+          : [];
       const nextSet = new Set<string>();
-      previous.forEach((layer) => {
-        if (typeof layer === 'string' && availableSet.has(layer)) {
-          nextSet.add(layer);
-        }
-      });
+
+      if (fromUrl.length > 0) {
+        fromUrl.forEach((layer) => {
+          if (availableSet.size === 0 || availableSet.has(layer)) {
+            nextSet.add(layer);
+          }
+        });
+      } else {
+        previous.forEach((layer) => {
+          if (typeof layer === 'string' && availableSet.has(layer)) {
+            nextSet.add(layer);
+          }
+        });
+      }
 
       if (availableSet.size === 0) {
         return [fallback];
-      }
-
-      if (nextSet.size === 0 || (nextSet.size === 1 && nextSet.has(fallback))) {
-        return Array.from(availableSet);
       }
 
       nextSet.add(fallback);
@@ -537,11 +577,48 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
           }
         });
         nextSet.forEach((layer) => ordered.push(layer));
-        return ordered;
-      });
-    },
-    [availableLayers]
-  );
+      return ordered;
+    });
+  },
+  [availableLayers]
+);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    const optional = activeLayers.filter((layer) => layer !== PRIMARY_LAYER_ID);
+    const existing = parseLayersFromSearch(window.location.search, []);
+    const existingOptional = existing.filter((layer) => layer !== PRIMARY_LAYER_ID);
+    const nextValue = optional.join(',');
+    const existingValue = existingOptional.join(',');
+    if (nextValue === existingValue) {
+      return;
+    }
+    const params = new URLSearchParams(window.location.search);
+    if (optional.length > 0) {
+      params.set('layer', nextValue);
+    } else {
+      params.delete('layer');
+    }
+    const nextSearch = params.toString();
+    const nextUrl = `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ''}${window.location.hash}`;
+    window.history.replaceState({}, '', nextUrl);
+  }, [activeLayers]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    const handlePopState = () => {
+      const layersFromUrl = parseLayersFromSearch(window.location.search, availableLayers);
+      setActiveLayers(layersFromUrl);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [availableLayers, setActiveLayers]);
 
   const hasHydrated = useRef(false);
   useEffect(() => {

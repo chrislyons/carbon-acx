@@ -10,25 +10,39 @@ Carbon ACX is a reference implementation for building reproducible carbon accoun
    - [Mission & scope](#mission--scope)
    - [Architecture & problem domain](#architecture--problem-domain)
    - [Positioning](#positioning)
-2. [Features](#features)
-3. [Repository structure](#repository-structure)
-4. [Installation & setup](#installation--setup)
+2. [At-a-glance](#at-a-glance)
+3. [Features](#features)
+4. [Repository structure](#repository-structure)
+5. [Installation & setup](#installation--setup)
    - [Local development](#local-development)
    - [Test automation](#test-automation)
    - [Production builds](#production-builds)
-5. [Usage](#usage)
+6. [Usage](#usage)
    - [Derivation CLI](#derivation-cli)
    - [Dash exploration client](#dash-exploration-client)
    - [Static site bundle](#static-site-bundle)
    - [Programmatic aggregates](#programmatic-aggregates)
-6. [Configuration](#configuration)
-7. [Build & deployment](#build--deployment)
-8. [Testing & QA](#testing--qa)
-9. [Contributing guide](#contributing-guide)
-10. [Security & compliance](#security--compliance)
-11. [Roadmap](#roadmap)
-12. [FAQ & troubleshooting](#faq--troubleshooting)
-13. [References](#references)
+7. [Configuration](#configuration)
+8. [Build & deployment](#build--deployment)
+9. [Testing & QA](#testing--qa)
+10. [Contributing guide](#contributing-guide)
+11. [Security & compliance](#security--compliance)
+12. [Roadmap](#roadmap)
+13. [FAQ & troubleshooting](#faq--troubleshooting)
+14. [References](#references)
+
+---
+
+## At-a-glance
+
+| Layer | Summary | Example activities |
+| --- | --- | --- |
+| Professional services | Baseline knowledge worker footprint anchored to hybrid office routines. | Coffee—12 oz hot · Toronto subway—per passenger-kilometre |
+| Online services | SaaS, meetings, and streaming workloads for remote-first teams. | Video conferencing hour · SaaS productivity suite seat |
+| Industrial (Light) | Lab, prototyping, and light fabrication scenarios for innovation hubs. | Lab bench operation · Prototyping print run |
+| Industrial (Heavy) | Full-scale manufacturing and heavy industry references for R&D insight. | Steel batch furnace · Heavy equipment runtime |
+
+The layer catalog is sourced from [`data/layers.csv`](./data/layers.csv) and mirrored for the site bundle in [`site/public/artifacts/layers.json`](./site/public/artifacts/layers.json). Run `python scripts/audit_layers.py` to regenerate the discovery report ([`artifacts/audit_report.json`](./artifacts/audit_report.json)), which lists every seeded activity, operation coverage, icon status, and UI wiring health for quick QA.
 
 ---
 
@@ -231,6 +245,17 @@ Additional configuration:
 
 - `calc/config.yaml` sets the default profile used in figures and aggregate metadata.
 - The Makefile exposes `ACX_DATA_BACKEND` and `OUTPUT_BASE` variables for build invocations (`make build-backend B=duckdb`).
+
+### Artifact loading & layer switching
+
+- The static site serves derived JSON from `/artifacts/*`, resolved at runtime by [`site/src/basePath.ts`](./site/src/basePath.ts). Keeping [`site/public/artifacts`](./site/public/artifacts) in sync with the latest build ensures development servers and the production bundle load the same payloads.
+- Layer discovery combines [`site/public/artifacts/layers.json`](./site/public/artifacts/layers.json) with the QA summary in [`artifacts/audit_report.json`](./artifacts/audit_report.json). Update both by running `python scripts/audit_layers.py` whenever activities, operations, or icon assets change.
+- UI filtering is URL-driven: `?layer=` parameters are parsed by the profile state (`useProfile`) so bookmarking or deep-linking to specific layer combinations remains stable.
+
+### Preset gallery
+
+- The preset cards surfaced in the controls drawer live in [`site/src/data/presets.json`](./site/src/data/presets.json). Each entry includes the serialized profile controls and activity overrides; edit or append entries here to expose new "one-click" scenarios in the UI.
+- Presets are purely client-side—no server restart is needed after editing the JSON file beyond rebuilding the static site bundle.
 
 ---
 
