@@ -139,6 +139,8 @@ class FunctionalUnitDomain(str, Enum):
     LOGISTICS = "logistics"
     INFORMATION = "information"
     NUTRITION = "nutrition"
+    AGRICULTURE = "agriculture"
+    MATERIALS = "materials"
     SHELTER = "shelter"
     COMFORT = "comfort"
     CARE = "care"
