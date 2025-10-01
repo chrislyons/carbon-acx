@@ -73,10 +73,16 @@ def render_children(
         for key in keys or []:
             payload = entry_lookup.get(key)
             if payload:
-                start_index = payload[0]
+                index_value, _ = payload
+                start_index = index_value
                 break
         if start_index is None:
-            start_index = entry_lookup[combined_keys[0]][0]
+            first_key = next(iter(combined_keys), None)
+            if first_key is not None:
+                index_value, _ = entry_lookup[first_key]
+                start_index = index_value
+            else:
+                start_index = 1
         return html.Div(
             [
                 html.H3(title),
