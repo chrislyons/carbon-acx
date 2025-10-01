@@ -5,6 +5,7 @@ import { ExportMenu } from './ExportMenu';
 import { LayerToggles } from './LayerToggles';
 import { Sankey, SankeyData, SankeyLink } from './Sankey';
 import { Stacked, StackedDatum } from './Stacked';
+import { USE_COMPUTE_API } from '../lib/api';
 import { formatEmission } from '../lib/format';
 import { buildReferenceLookup } from '../lib/references';
 import { useProfile } from '../state/profile';
@@ -286,7 +287,9 @@ export function VizCanvas(): JSX.Element {
             Visualization Canvas
           </h2>
           <p className="mt-1 text-compact text-slate-400">
-            Connected to the live compute API. Figures refresh automatically when controls change.
+            {USE_COMPUTE_API
+              ? 'Connected to the live compute API. Figures refresh automatically when controls change.'
+              : 'Static artifacts mode'}
           </p>
         </div>
         <div className="flex items-start justify-end gap-1.5 sm:items-start">
