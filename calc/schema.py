@@ -69,6 +69,7 @@ class RegionCode(str, Enum):
     CA_SK = "CA-SK"
     CA_YT = "CA-YT"
     CA = "CA"
+    GLOBAL = "GLOBAL"
 
 
 class LayerId(str, Enum):
@@ -140,6 +141,7 @@ class FunctionalUnitDomain(str, Enum):
     COMFORT = "comfort"
     CARE = "care"
     ENERGY = "energy"
+    CONSUMPTION = "consumption"
 
 
 class FunctionalUnit(BaseModel):

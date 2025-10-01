@@ -13,3 +13,6 @@ ONLINE.QC.CONSUMER.2025,online,Online Services — Quebec consumer (2025),CA-QC,
 ONLINE.AB.CONSUMER.2025,online,Online Services — Alberta consumer (2025),CA-AB,region_default,,,
 ONLINE.BC.CONSUMER.2025,online,Online Services — British Columbia consumer (2025),CA-BC,region_default,,,
 IND_LIGHT.ON.CONSTRUCTION.2025,industrial_light,Ontario light-industrial construction (2025),CA-ON,region_default,,,,"Pending activity schedules; defaults held inactive until trade mix validated."
+PROFILE.CHILD.CLOTHING.2025,professional,Child clothing consumption (2025),GLOBAL,region_default,,,0,"Annualized clothing purchases for a representative child cohort."
+PROFILE.ADULT.CLOTHING.2025,professional,Adult clothing consumption (2025),GLOBAL,region_default,,,0,"Annualized clothing purchases for a representative adult cohort."
+PROFILE.SENIOR.CLOTHING.2025,professional,Senior clothing consumption (2025),GLOBAL,region_default,,,0,"Annualized clothing purchases for a representative senior cohort."

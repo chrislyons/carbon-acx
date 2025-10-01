@@ -88,6 +88,8 @@ _UNIT_VARIABLE_HINTS: dict[str, tuple[str, ...]] = {
     "participant_hour": ("hours",),
     "serving": ("servings",),
     "servings": ("servings",),
+    "garment": ("servings",),
+    "wear": ("servings",),
 }
 
 _CASE_TO_LITRE_MULTIPLIER = 24.0 * 0.355
