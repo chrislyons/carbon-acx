@@ -2,6 +2,7 @@ activity_id,functional_unit_id,conversion_formula,assumption_notes
 TRAN.SCHOOLRUN.CAR.KM,FU.PERSON_KM,"fu = distance_km * passengers","Passengers defaults to 1 if not provided"
 TRAN.SCHOOLRUN.BIKE.KM,FU.PERSON_KM,"fu = distance_km * 1",""
 MEDIA.STREAM.HD.HOUR,FU.VIEW_HOUR,"fu = hours * viewers","viewers defaults to 1"
+MEDIA.STREAM.UHD.HOUR,FU.VIEW_HOUR,"fu = hours * viewers","viewers defaults to 1"
 TRAN.DELIVERY.TRUCK.CLASS6.KM,FU.LITRE_DELIVERED,"fu = litres_delivered","Compute litres from cases if provided"
 TRAN.TTC.SUBWAY.KM,FU.PERSON_KM,"fu = distance_km * passengers","Passengers defaults to 1 if not provided"
 TRAN.TTC.BUS.KM,FU.PERSON_KM,"fu = distance_km * passengers","Passengers defaults to 1 if not provided"

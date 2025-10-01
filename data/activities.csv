@@ -2,6 +2,7 @@ activity_id,layer_id,category,name,default_unit,description,unit_definition,note
 FOOD.COFFEE.CUP.HOT,professional,food,Coffee—12 oz hot,cup,Cup of coffee,,
 stream,professional,,stream,,HD streaming on TV,,
 MEDIA.STREAM.HD.HOUR,online,media,HD video streaming—per hour,hour,One hour of high-definition video streaming on any device.,,Aggregates playback plus network electricity for representative HD streaming.
+MEDIA.STREAM.UHD.HOUR,online,media,UHD video streaming—per hour,hour,One hour of ultra-high-definition (4K) streaming on any device.,,Aggregates playback plus network electricity for representative UHD streaming.
 MEDIA.STREAM.HD.HOUR.TV,online,media,HD video streaming on TV—per hour,hour,One hour of high-definition video streaming delivered to a television via broadband.,,Electricity use covers device playback plus network and data-centre demand per hour of 1080p streaming.
 FOOD.MEAL.BEEF.SERVING,professional,food,Meal with beef—per serving,serving,One serving of a meal including 150 grams of cooked beef.,,Includes cradle-to-grave emissions for a representative beef meal portion.
 MEDIA.STREAM.UHD.HOUR.TV,online,media,Ultra HD (4K) video streaming on TV—per hour,hour,One hour of ultra-high-definition (4K) streaming to a television.,,EF to be added after validating 4K bandwidth intensity.
