@@ -10,8 +10,10 @@ import plotly.graph_objects as go
 from dash import dcc, html
 
 from calc.ui.theme import get_palette, get_plotly_template
+from app.lib.plotly_theme import DENSE_LAYOUT
 
 from ._plotly_settings import apply_figure_layout_defaults
+from ._helpers import format_number, format_range, format_reference_line
 
 _DEFAULT_REFERENCE_KEY = "__default__"
 
@@ -249,11 +251,11 @@ def build_figure(
     if not records:
         figure.update_layout(
             template=get_plotly_template(dark=dark),
-            margin=dict(l=60, r=20, t=40, b=60),
             xaxis=dict(title="Alternative", type="category"),
             yaxis=dict(title="g CO₂e per functional unit", rangemode="tozero"),
             showlegend=False,
         )
+        figure.update_layout(**DENSE_LAYOUT)
         return figure
 
     visible_records = [
@@ -265,11 +267,11 @@ def build_figure(
     if not visible_records:
         figure.update_layout(
             template=get_plotly_template(dark=dark),
-            margin=dict(l=60, r=20, t=40, b=60),
             xaxis=dict(title="Alternative", type="category"),
             yaxis=dict(title="g CO₂e per functional unit", rangemode="tozero"),
             showlegend=False,
         )
+        figure.update_layout(**DENSE_LAYOUT)
         return figure
 
     if functional_unit_id:
@@ -288,21 +290,33 @@ def build_figure(
 
     plotted: list[Mapping[str, object]] = []
     intensities: list[float] = []
+    reference_indices: list[list[int]] = []
     for record in filtered:
         value = _coerce_float(record.get("intensity"))
         if value is None:
             continue
         plotted.append(record)
         intensities.append(float(value))
+        raw_indices = record.get("hover_reference_indices") or record.get("reference_indices")
+        indices: list[int] = []
+        if isinstance(raw_indices, Sequence):
+            for entry in raw_indices:
+                try:
+                    number = int(entry)
+                except (TypeError, ValueError):
+                    continue
+                if number not in indices:
+                    indices.append(number)
+        reference_indices.append(indices)
 
     if not plotted:
         figure.update_layout(
             template=get_plotly_template(dark=dark),
-            margin=dict(l=60, r=20, t=40, b=60),
             xaxis=dict(title="Alternative", type="category"),
             yaxis=dict(title="g CO₂e per functional unit", rangemode="tozero"),
             showlegend=False,
         )
+        figure.update_layout(**DENSE_LAYOUT)
         return figure
 
     alternatives = [str(item.get("alternative")) for item in plotted]
@@ -331,7 +345,29 @@ def build_figure(
             color=palette.get("accent_strong", palette.get("positive")),
         )
 
-    hover_template = "<b>%{x}</b><br>Intensity: %{y:,.0f} g CO₂e per FU" "<extra></extra>"
+    value_texts = [f"{format_number(value, decimals=0)} g CO₂e per FU" for value in intensities]
+    range_lines = [format_range(low, high, "g CO₂e per FU") or "" for low, high in zip(lows, highs)]
+    reference_lines = [format_reference_line(indices) for indices in reference_indices]
+
+    customdata = [
+        [
+            alternative,
+            value_text,
+            f"<br>{range_line}" if range_line else "",
+            reference_line,
+        ]
+        for alternative, value_text, range_line, reference_line in zip(
+            alternatives, value_texts, range_lines, reference_lines
+        )
+    ]
+
+    hover_template = (
+        "<b>%{customdata[0]}</b>"
+        "<br>Intensity: %{customdata[1]}"
+        "%{customdata[2]}"
+        "<br>%{customdata[3]}"
+        "<extra></extra>"
+    )
 
     figure.add_trace(
         go.Bar(
@@ -340,16 +376,17 @@ def build_figure(
             marker=dict(color=palette.get("positive", "#2ca02c")),
             error_y=error_kwargs,
             hovertemplate=hover_template,
+            customdata=customdata,
         )
     )
 
     figure.update_layout(
         template=get_plotly_template(dark=dark),
-        margin=dict(l=60, r=20, t=40, b=60),
         xaxis=dict(title="Alternative", type="category"),
         yaxis=dict(title="g CO₂e per functional unit", rangemode="tozero"),
         showlegend=False,
     )
+    figure.update_layout(**DENSE_LAYOUT)
 
     return figure
 

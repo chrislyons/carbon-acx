@@ -279,38 +279,38 @@ export function VizCanvas(): JSX.Element {
     <section
       ref={canvasRef}
       aria-labelledby="viz-canvas-heading"
-      className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-800/70 bg-gradient-to-br from-slate-900/80 via-slate-900 to-slate-950 p-3 shadow-lg shadow-slate-900/50 sm:p-4"
+      className="acx-card relative flex h-full flex-col gap-[var(--gap-1)] overflow-hidden bg-gradient-to-br from-slate-900/80 via-slate-900 to-slate-950 sm:px-[var(--gap-2)] sm:py-[var(--gap-2)]"
     >
-      <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex flex-col gap-[var(--gap-1)] sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 id="viz-canvas-heading" className="text-[13px] font-semibold">
             Visualization Canvas
           </h2>
-          <p className="mt-1 text-compact text-slate-400">
+          <p className="mt-[var(--gap-0)] text-compact text-slate-400">
             {USE_COMPUTE_API
               ? 'Connected to the live compute API. Figures refresh automatically when controls change.'
               : 'Static artifacts mode'}
           </p>
         </div>
-        <div className="flex items-start justify-end gap-1.5 sm:items-start">
+        <div className="flex items-start justify-end gap-[var(--gap-0)] sm:items-start">
           <div className="hidden sm:flex sm:flex-col sm:items-end">
             <span className="text-[10px] uppercase tracking-[0.35em] text-slate-300">Status</span>
             <span className={`text-[13px] font-semibold ${statusTone}`} aria-live="polite">
               {statusLabel}
             </span>
-            <span className="mt-0.5 text-[10px] uppercase tracking-[0.35em] text-slate-300">
+            <span className="mt-[2px] text-[10px] uppercase tracking-[0.35em] text-slate-300">
               dataset {datasetVersion}
             </span>
           </div>
           <ExportMenu canvasRef={canvasRef} />
         </div>
       </div>
-      <div className="mt-2.5 flex-1 overflow-hidden rounded-xl border border-slate-800/60 bg-slate-950/50">
-        <div className="flex h-full flex-col overflow-y-auto p-3">
+      <div className="mt-[var(--gap-1)] flex-1 overflow-hidden rounded-xl border border-slate-800/60 bg-slate-950/50">
+        <div className="flex h-full flex-col overflow-y-auto p-[var(--gap-1)] sm:p-[var(--gap-2)]">
           {status === 'error' ? (
             <div
               role="alert"
-              className="mb-3 space-y-1.5 rounded-xl border border-rose-500/40 bg-rose-500/10 p-3 text-compact text-rose-100 shadow-inner shadow-rose-900/30"
+              className="mb-[var(--gap-1)] space-y-[var(--gap-0)] rounded-xl border border-rose-500/40 bg-rose-500/10 p-[var(--gap-1)] text-compact text-rose-100 shadow-inner shadow-rose-900/30"
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="text-[13px] font-semibold uppercase tracking-[0.2em] text-rose-100">
@@ -319,7 +319,7 @@ export function VizCanvas(): JSX.Element {
                 <button
                   type="button"
                   onClick={refresh}
-                  className="inline-flex min-h-[44px] items-center justify-center rounded-md border border-rose-400/60 bg-rose-500/20 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.25em] text-rose-50 transition hover:bg-rose-500/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-300"
+                  className="inline-flex min-h-[32px] items-center justify-center rounded-md border border-rose-400/60 bg-rose-500/20 px-[var(--gap-1)] py-[var(--gap-0)] text-[11px] font-semibold uppercase tracking-[0.25em] text-rose-50 transition hover:bg-rose-500/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-300"
                 >
                   Retry
                 </button>
@@ -331,35 +331,35 @@ export function VizCanvas(): JSX.Element {
           ) : null}
           {status !== 'error' && result === null ? (
             <div className="grid min-h-[200px] flex-1 place-items-center text-center text-compact text-slate-400">
-              <div className="space-y-2">
+              <div className="space-y-[var(--gap-0)]">
                 <p className="text-[15px] font-medium text-slate-200">Ready for the first compute run</p>
                 <p>Adjust the profile controls to trigger a request.</p>
               </div>
             </div>
           ) : null}
           {status !== 'error' && result !== null ? (
-            <div className="space-y-4">
-              <div className="grid gap-2.5 sm:grid-cols-3">
-                <div className="rounded-lg border border-slate-800/70 bg-slate-900/60 pad-compact">
+            <div className="space-y-[var(--gap-2)]">
+              <div className="grid gap-[var(--gap-1)] sm:grid-cols-3">
+                <div className="acx-card bg-slate-900/60">
                   <p className="text-[10px] uppercase tracking-[0.35em] text-slate-300">Total emissions</p>
-                  <p className="mt-1.5 text-lg font-semibold text-slate-50">{formatEmission(total)}</p>
-                  <p className="mt-1.5 text-[10px] uppercase tracking-[0.35em] text-slate-300">
+                  <p className="mt-[var(--gap-0)] text-lg font-semibold text-slate-50">{formatEmission(total)}</p>
+                  <p className="mt-[var(--gap-0)] text-[10px] uppercase tracking-[0.35em] text-slate-300">
                     {generatedAt ? `run ${new Date(generatedAt).toLocaleString()}` : 'timestamp pending'}
                   </p>
                 </div>
-                <div className="rounded-lg border border-slate-800/70 bg-slate-900/60 pad-compact">
+                <div className="acx-card bg-slate-900/60">
                   <p className="text-[10px] uppercase tracking-[0.35em] text-slate-300">Activities tracked</p>
-                  <p className="mt-1.5 text-lg font-semibold text-slate-50">{count}</p>
-                  <p className="mt-1.5 text-[10px] uppercase tracking-[0.35em] text-slate-300">
+                  <p className="mt-[var(--gap-0)] text-lg font-semibold text-slate-50">{count}</p>
+                  <p className="mt-[var(--gap-0)] text-[10px] uppercase tracking-[0.35em] text-slate-300">
                     showing top contributors
                   </p>
                 </div>
-                <div className="rounded-lg border border-slate-800/70 bg-slate-900/60 pad-compact">
+                <div className="acx-card bg-slate-900/60">
                   <p className="text-[10px] uppercase tracking-[0.35em] text-slate-300">References</p>
-                  <p className="mt-1.5 text-lg font-semibold text-slate-50">
+                  <p className="mt-[var(--gap-0)] text-lg font-semibold text-slate-50">
                     {referenceCount ?? '—'}
                   </p>
-                  <p className="mt-1.5 text-[10px] uppercase tracking-[0.35em] text-slate-300">source citations</p>
+                  <p className="mt-[var(--gap-0)] text-[10px] uppercase tracking-[0.35em] text-slate-300">source citations</p>
                 </div>
               </div>
               {hasLayerToggles ? (
@@ -370,7 +370,7 @@ export function VizCanvas(): JSX.Element {
                   onChange={setActiveLayers}
                 />
               ) : null}
-              <div className="grid gap-2.5 lg:grid-cols-3">
+              <div className="grid gap-[var(--gap-1)] lg:grid-cols-3">
                 <Stacked data={stackedData} referenceLookup={referenceLookup} />
                 <Bubble data={bubbleData} referenceLookup={referenceLookup} />
                 <Sankey data={sankeyData} referenceLookup={referenceLookup} />

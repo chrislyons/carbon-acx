@@ -27,10 +27,11 @@ select:focus-visible {
 
 @layer utilities {
   .pad-compact {
-    @apply px-2.5 py-2.5;
+    padding: var(--gap-1);
   }
 
   .text-compact {
-    @apply text-[11px] leading-[1.45];
+    font-size: var(--font-0);
+    line-height: 1.35;
   }
 }

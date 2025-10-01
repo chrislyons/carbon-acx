@@ -41,9 +41,9 @@ export function ReferencesDrawer({ id = 'references', open, onToggle }: Referenc
       id={id}
       aria-labelledby="references-heading"
       aria-live="polite"
-      className="flex h-full flex-col rounded-2xl border border-slate-800/70 bg-slate-900/60 p-2.5 shadow-lg shadow-slate-900/40 backdrop-blur"
+      className="acx-card flex h-full flex-col gap-[var(--gap-1)] bg-slate-950/60 shadow-lg shadow-slate-900/40"
     >
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex items-center justify-between gap-[var(--gap-0)]">
         <p id="references-heading" className="text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-300">
           References
         </p>
@@ -58,7 +58,7 @@ export function ReferencesDrawer({ id = 'references', open, onToggle }: Referenc
               onToggle();
             }
           }}
-          className="inline-flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-slate-600 text-slate-100 transition hover:border-slate-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
+          className="inline-flex h-9 w-9 min-h-[32px] min-w-[32px] items-center justify-center rounded-full border border-slate-600 text-slate-100 transition hover:border-slate-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
         >
           <span className="sr-only">{open ? 'Collapse references' : 'Expand references'}</span>
           <svg
@@ -71,18 +71,18 @@ export function ReferencesDrawer({ id = 'references', open, onToggle }: Referenc
           </svg>
         </button>
       </div>
-      <p className="mt-1.5 text-compact text-slate-400">
+      <p className="text-compact text-slate-400">
         Primary sources supporting the figures. Press <kbd className="rounded bg-slate-800 px-1">Esc</kbd> to close.
       </p>
       <div
         id={`${id}-content`}
         hidden={!open}
-        className="mt-2.5 flex-1 overflow-y-auto rounded-xl border border-slate-800/60 bg-slate-950/30 p-2.5 text-compact text-slate-300"
+        className="flex-1 overflow-y-auto rounded-xl border border-slate-800/60 bg-slate-950/30 p-[var(--gap-1)] text-compact text-slate-300"
       >
         {references.length === 0 ? (
           <p className="text-compact text-slate-400">No references available for the current selection.</p>
         ) : (
-          <ol className="space-y-2.5" aria-label="Reference list">
+          <ol className="space-y-[var(--gap-1)]" aria-label="Reference list">
             {references.map((reference, index) => (
               <li
                 key={reference}

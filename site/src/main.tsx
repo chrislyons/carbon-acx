@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom/client';
 import { installFetchLogger } from './lib/fetchLogger';
 import { purgeStaleServiceWorkersOnce } from './lib/purgeServiceWorkers';
 import App from './App';
+import './styles/density.css';
 import './index.css';
 
 installFetchLogger();
