@@ -17,6 +17,7 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence
 import pandas as pd
 
 from . import citations, figures
+from .upstream import dependency_metadata
 from .api import collect_activity_source_keys
 from .dal import DataStore, choose_backend
 from .schema import (
@@ -24,18 +25,24 @@ from .schema import (
     ActivityDependency,
     ActivityFunctionalUnitMap,
     ActivitySchedule,
+    Asset,
     EmissionFactor,
+    Entity,
     FunctionalUnit,
     GridIntensity,
     LayerId,
     Operation,
     Profile,
     RegionCode,
+    Site,
     load_activities as schema_load_activities,
     load_activity_dependencies,
     load_activity_fu_map,
+    load_assets as schema_load_assets,
+    load_entities as schema_load_entities,
     load_functional_units,
     load_operations as schema_load_operations,
+    load_sites as schema_load_sites,
 )
 
 FLOAT_QUANTISER = Decimal("0.000001")
@@ -1164,6 +1171,34 @@ def export_view(
             operations = {op.operation_id: op for op in schema_load_operations()}
         except Exception:  # pragma: no cover - defensive fallback
             operations = {}
+    load_entities_fn = getattr(datastore, "load_entities", None)
+    entity_iter = list(load_entities_fn()) if callable(load_entities_fn) else []
+    if not entity_iter:
+        try:
+            entity_iter = list(schema_load_entities())
+        except Exception:  # pragma: no cover - defensive fallback
+            entity_iter = []
+    entities = {entity.entity_id: entity for entity in entity_iter if entity.entity_id}
+
+    load_sites_fn = getattr(datastore, "load_sites", None)
+    site_iter = list(load_sites_fn()) if callable(load_sites_fn) else []
+    if not site_iter:
+        try:
+            site_iter = list(schema_load_sites(entities=entity_iter or None))
+        except Exception:  # pragma: no cover - defensive fallback
+            site_iter = []
+    sites = {site.site_id: site for site in site_iter if site.site_id}
+
+    load_assets_fn = getattr(datastore, "load_assets", None)
+    asset_iter = list(load_assets_fn()) if callable(load_assets_fn) else []
+    if not asset_iter:
+        try:
+            asset_iter = list(
+                schema_load_assets(sites=site_iter or None, entities=entity_iter or None)
+            )
+        except Exception:  # pragma: no cover - defensive fallback
+            asset_iter = []
+    assets = {asset.asset_id: asset for asset in asset_iter if asset.asset_id}
     efs = {ef.activity_id: ef for ef in datastore.load_emission_factors()}
     profiles = {p.profile_id: p for p in datastore.load_profiles()}
     if activities:
@@ -1181,6 +1216,9 @@ def export_view(
     else:
         functional_units = []
         activity_fu_mappings = []
+    functional_units_by_id = {
+        fu.functional_unit_id: fu for fu in functional_units if getattr(fu, "functional_unit_id", None)
+    }
     grid_lookup: Dict[str | RegionCode, Optional[float]] = {}
     grid_by_region: Dict[str | RegionCode, GridIntensity] = {}
     for gi in datastore.load_grid_intensity():
@@ -1225,6 +1263,16 @@ def export_view(
             entry["operation_asset_id"] = parent.asset_id
         if parent.functional_unit_id:
             entry["operation_functional_unit_id"] = parent.functional_unit_id
+        metadata = dependency_metadata(
+            parent,
+            activities=activities,
+            assets=assets,
+            sites=sites,
+            entities=entities,
+            functional_units=functional_units_by_id,
+        )
+        if metadata:
+            entry.update(metadata)
         dependency_map.setdefault(child_id, []).append(entry)
 
     for child_id, entries in dependency_map.items():

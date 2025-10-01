@@ -22,6 +22,29 @@ from ._helpers import (
 from ._plotly_settings import apply_figure_layout_defaults
 
 
+def _compose_upstream_label(entry: Mapping[str, object]) -> str:
+    if not isinstance(entry, Mapping):
+        return ""
+
+    def _first_text(keys: list[str]) -> str:
+        for key in keys:
+            value = entry.get(key)
+            if value in (None, ""):
+                continue
+            text = str(value).strip()
+            if text:
+                return text
+        return ""
+
+    activity_label = _first_text(
+        ["operation_activity_label", "operation_activity_name", "operation_activity_id"]
+    )
+    entity_label = _first_text(["operation_entity_name", "operation_asset_name"])
+    if activity_label and entity_label:
+        return f"{activity_label} ({entity_label})"
+    return activity_label or entity_label or _first_text(["operation_id"])
+
+
 def _build_figure(
     payload: dict,
     reference_lookup: Mapping[str, int],
@@ -43,6 +66,7 @@ def _build_figure(
     meta_entries: list[dict[str, object]] = []
     range_lines: list[str] = []
     reference_lines: list[str] = []
+    upstream_hover_lines: list[str] = []
 
     for row in data:
         values = row.get("values", {})
@@ -69,20 +93,38 @@ def _build_figure(
         formatted_values.append(format_emissions(mean_g))
         raw_activity_id = row.get("activity_id")
         if raw_activity_id in (None, ""):
-            activity_ids.append(None)
+            activity_id = None
         else:
-            activity_ids.append(str(raw_activity_id))
+            activity_id = str(raw_activity_id)
+        activity_ids.append(activity_id)
         indices = list(row.get("hover_reference_indices") or [])
         if not indices:
             indices = reference_numbers(row.get("citation_keys"), reference_lookup)
         primary = next(iter(indices), None)
         if primary is None:
             primary = primary_reference_index(row.get("citation_keys"), reference_lookup)
+        layer_value = row.get("layer_id")
+        layer_id = str(layer_value) if layer_value not in (None, "") else None
+        raw_chain = row.get("upstream_chain")
+        chain_entries = [
+            entry for entry in raw_chain if isinstance(entry, Mapping)
+        ] if isinstance(raw_chain, list) else []
+        chain_copies = [dict(entry) for entry in chain_entries]
+        upstream_labels = [
+            label for label in (_compose_upstream_label(entry) for entry in chain_entries)
+            if label
+        ]
+        upstream_hover_lines.append(
+            f"<br>Upstream: {' · '.join(upstream_labels)}" if upstream_labels else ""
+        )
         meta_entries.append(
             {
                 "source_index": str(primary) if primary is not None else "–",
                 "source_index_value": primary,
                 "reference_indices": indices,
+                "layer_id": layer_id,
+                "activity_id": activity_id,
+                "upstream_chain": chain_copies,
             }
         )
         range_text = format_range(low, high, "kg/yr")
@@ -113,14 +155,15 @@ def _build_figure(
         else None
     )
 
-    custom_idx = ["[" + str(i) + "]" for i in range(6)]
-    idx0, idx1, idx2, idx3, idx4, _idx5 = custom_idx
+    custom_idx = ["[" + str(i) + "]" for i in range(7)]
+    idx0, idx1, idx2, idx3, idx4, idx5, _idx6 = custom_idx
     hover_template = (
         f"<b>%{{customdata{idx0}}}</b>"
         f"<br>Category: %{{customdata{idx1}}}"
         f"<br>Annual emissions: %{{customdata{idx2}}}"
         f"%{{customdata{idx3}}}"
         f"<br>%{{customdata{idx4}}}"
+        f"%{{customdata{idx5}}}"
         "<extra></extra>"
     )
 
@@ -137,14 +180,24 @@ def _build_figure(
             formatted_value,
             f"<br>{range_line}" if range_line else "",
             reference_line,
+            upstream_line,
             activity_id,
         ]
-        for full_activity, full_category, formatted_value, range_line, reference_line, activity_id in zip(
+        for (
+            full_activity,
+            full_category,
+            formatted_value,
+            range_line,
+            reference_line,
+            upstream_line,
+            activity_id,
+        ) in zip(
             full_activities,
             full_categories,
             formatted_values,
             range_lines,
             reference_lines,
+            upstream_hover_lines,
             activity_ids,
         )
     ]
