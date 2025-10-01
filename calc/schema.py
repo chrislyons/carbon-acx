@@ -106,6 +106,8 @@ class UtilizationBasis(str, Enum):
 ScopeBoundary = Literal[
     "WTT+TTW",
     "cradle-to-grave",
+    "cradle-to-gate",
+    "cradle-to-farmgate",
     "Electricity LCA",
     "gate-to-gate",
     "Operational electricity",
@@ -137,6 +139,8 @@ class FunctionalUnitDomain(str, Enum):
     LOGISTICS = "logistics"
     INFORMATION = "information"
     NUTRITION = "nutrition"
+    AGRICULTURE = "agriculture"
+    MATERIALS = "materials"
     SHELTER = "shelter"
     COMFORT = "comfort"
     CARE = "care"

@@ -6,3 +6,6 @@ ASSET.SHELL.REF.AB,SITE.SHELL.AB.REFINERY,refinery,Edmonton refinery,2024,,liqui
 ASSET.LAFARGE.CLINKER.KILN,SITE.LAFARGE.BC.CLINKER,kiln,Richmond clinker kiln,2024,,coal_and_altfuels,"Precalciner kiln with alternative fuel co-firing"
 ASSET.ARCELORMITTAL.BOF.LINE,SITE.ARCELORMITTAL.ON.STEEL,steelworks,Hamilton BF-BOF line,2024,,metallurgical_coal,"Integrated blast furnace and basic oxygen furnace line"
 ASSET.NOVA.PET.REACTOR,SITE.NOVA.ON.PET,polymer_line,Sarnia PET polymerisation train,2024,,natural_gas,"Ethylene glycol and PTA polymerisation/reactor system"
+ASSET.CARGILL.HIGHRIVER.BEEF_LINE,SITE.CARGILL.AB.BEEF,slaughter_fabrication,High River beef harvest and fabrication train,2024,,natural_gas,"Integrated slaughter, carcass chilling, and fabrication line."
+ASSET.MAPLELEAF.LONDON.POULTRY_LINE,SITE.MAPLELEAF.ON.POULTRY,poultry_line,London evisceration and chilling line,2024,,electricity,"Large-scale ready-to-cook poultry processing line."
+ASSET.NESTLE.BRIDGEWATER.COFFEE_ROASTER,SITE.NESTLE.NS.COFFEE,roaster,Bridgewater coffee roasting battery,2024,,natural_gas,"Nescafé spray-dry and roasting operations."

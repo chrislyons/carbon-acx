@@ -7,6 +7,9 @@ MEDIA.STREAM.HD.HOUR.TV,online,media,HD video streaming on TV—per hour,hour,On
 FOOD.MEAL.BEEF.SERVING,professional,food,Meal with beef—per serving,serving,One serving of a meal including 150 grams of cooked beef.,,Includes cradle-to-grave emissions for a representative beef meal portion.
 FOOD.MEAL.CHICKEN.SERVING,professional,food,Meal with chicken—per serving,serving,One serving of a meal including 150 grams of cooked chicken.,,Includes cradle-to-grave emissions for a representative chicken meal portion.
 FOOD.MEAL.VEG.SERVING,professional,food,Vegetarian meal—per serving,serving,One serving of a vegetarian meal centered on legumes and vegetables.,,Includes cradle-to-grave emissions for a representative plant-based meal portion.
+AGRI.BEEF.CARCASS.KG,industrial_heavy,food_processing,Beef carcass throughput—per kg,kg,Hot carcass weight throughput leaving a Canadian beef processing line.,,Captures dressed beef output at large-scale slaughter and fabrication plants.
+AGRI.POULTRY.READY.KG,industrial_light,food_processing,Poultry ready-to-cook throughput—per kg,kg,Eviscerated poultry weight ready for chill/pack.,,Represents chilled poultry throughput after defeathering and evisceration.
+FOOD.COFFEE.ROASTED.KG,industrial_light,food_processing,Roasted coffee throughput—per kg,kg,Roasted coffee beans exiting industrial roasters.,,Covers roasted or instant coffee production ready for packaging.
 MEDIA.STREAM.UHD.HOUR.TV,online,media,Ultra HD (4K) video streaming on TV—per hour,hour,One hour of ultra-high-definition (4K) streaming to a television.,,EF to be added after validating 4K bandwidth intensity.
 SOCIAL.YOUTUBE.HOUR,online,social,YouTube usage—per hour,hour,Streaming video on YouTube for 1 hour.,,
 SOCIAL.FACEBOOK.HOUR,online,social,Facebook usage—per hour,hour,Scrolling and watching media on Facebook for 1 hour.,,
