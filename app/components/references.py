@@ -17,7 +17,11 @@ def _reference_texts(reference_keys: Sequence[str] | None) -> list[str]:
     return references
 
 
-def render_children(reference_keys: Sequence[str] | None) -> list[html.Component]:
+def render_children(
+    reference_keys: Sequence[str] | None,
+    *,
+    include_heading: bool = True,
+) -> list[html.Component]:
     references = _reference_texts(reference_keys)
     has_indices = bool(reference_keys)
     items = []
@@ -26,7 +30,11 @@ def render_children(reference_keys: Sequence[str] | None) -> list[html.Component
         if has_indices:
             attrs["data-reference-index"] = str(idx)
         items.append(html.Li(**attrs))
-    return [html.H2("References"), html.Ol(items, className="references-list")]
+    children: list[html.Component] = []
+    if include_heading:
+        children.append(html.H2("References"))
+    children.append(html.Ol(items, className="references-list"))
+    return children
 
 
 def render(reference_keys: Sequence[str] | None) -> html.Aside:

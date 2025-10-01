@@ -551,174 +551,199 @@ def create_app() -> Dash:
             dcc.Store(id="intensity-functional-unit-labels", data=intensity_labels),
             dcc.Store(id="intensity-reference-sections", data=intensity_sections),
             html.Main(
-                className="chart-column",
-                id="overview-main",
+                className="app-main",
                 children=[
-                    html.Header(
-                        [
+                    html.Div(
+                        id="overview-view",
+                        className="overview-view",
+                        children=[
                             html.Div(
-                                [
-                                    html.H1("Carbon ACX emissions overview"),
-                                    html.Button(
-                                        [
-                                            html.Span(
-                                                className="theme-toggle__icon",
-                                                **{"aria-hidden": "true"},
-                                            ),
-                                            html.Span(
-                                                "Theme: System (Light)",
-                                                id="theme-toggle-label",
-                                                className="theme-toggle__label",
-                                            ),
-                                        ],
-                                        id="theme-toggle",
-                                        className="theme-toggle",
-                                        title="Cycle theme (system preference: Light)",
-                                        **{"aria-label": "Cycle theme (system preference: Light)"},
-                                        **{"data-mode": "system"},
-                                    ),
-                                ],
-                                className="page-header__top",
-                            ),
-                            html.P(
-                                "Figures sourced from precomputed artifacts. "
-                                "Hover a chart to see supporting references."
-                            ),
-                            dcc.Tabs(
-                                id="app-view-tabs",
-                                value="overview",
-                                className="chart-tabs",
+                                className="overview-grid",
                                 children=[
-                                    dcc.Tab(
-                                        label="Overview",
-                                        value="overview",
-                                        className="chart-tabs__tab",
-                                        selected_className="chart-tabs__tab--selected",
-                                    ),
-                                    dcc.Tab(
-                                        label="Intensity",
-                                        value="intensity",
-                                        className="chart-tabs__tab",
-                                        selected_className="chart-tabs__tab--selected",
-                                    ),
-                                ],
-                            ),
-                            html.Div(
-                                className="chart-toolbar",
-                                id="overview-toolbar",
-                                children=[
-                                    html.Section(
-                                        className="chart-controls",
+                                    html.Aside(
+                                        className="overview-controls",
                                         children=[
-                                            html.Div(
+                                            html.Header(
                                                 [
-                                                    html.Label(
-                                                        "Select layers",
-                                                        htmlFor="layer-selector",
-                                                        className="chart-controls__label",
-                                                    ),
-                                                    dcc.Checklist(
-                                                        id="layer-selector",
-                                                        options=layer_options,
-                                                        value=default_layers,
-                                                        inline=True,
-                                                        className="chart-controls__checklist",
-                                                    ),
-                                                ],
-                                                className="chart-controls__group",
-                                            ),
-                                            html.Div(
-                                                [
-                                                    html.Label(
-                                                        "View mode",
-                                                        htmlFor="view-mode",
-                                                        className="chart-controls__label",
-                                                    ),
-                                                    dcc.RadioItems(
-                                                        id="view-mode",
-                                                        options=[
-                                                            {
-                                                                "label": "Single layer",
-                                                                "value": "single",
-                                                            },
-                                                            {
-                                                                "label": "Compare layers",
-                                                                "value": "compare",
-                                                            },
+                                                    html.Div(
+                                                        [
+                                                            html.H1("Carbon ACX emissions overview"),
+                                                            html.Button(
+                                                                [
+                                                                    html.Span(
+                                                                        className="theme-toggle__icon",
+                                                                        **{"aria-hidden": "true"},
+                                                                    ),
+                                                                    html.Span(
+                                                                        "Theme: System (Light)",
+                                                                        id="theme-toggle-label",
+                                                                        className="theme-toggle__label",
+                                                                    ),
+                                                                ],
+                                                                id="theme-toggle",
+                                                                className="theme-toggle",
+                                                                title="Cycle theme (system preference: Light)",
+                                                                **{"aria-label": "Cycle theme (system preference: Light)"},
+                                                                **{"data-mode": "system"},
+                                                            ),
                                                         ],
-                                                        value="single",
-                                                        inline=True,
-                                                        className="chart-controls__radios",
+                                                        className="page-header__top",
+                                                    ),
+                                                ]
+                                            ),
+                                            html.P(
+                                                "Figures sourced from precomputed artifacts. "
+                                                "Hover a chart to see supporting references.",
+                                            ),
+                                            dcc.Tabs(
+                                                id="app-view-tabs",
+                                                value="overview",
+                                                className="chart-tabs",
+                                                children=[
+                                                    dcc.Tab(
+                                                        label="Overview",
+                                                        value="overview",
+                                                        className="chart-tabs__tab",
+                                                        selected_className="chart-tabs__tab--selected",
+                                                    ),
+                                                    dcc.Tab(
+                                                        label="Intensity",
+                                                        value="intensity",
+                                                        className="chart-tabs__tab",
+                                                        selected_className="chart-tabs__tab--selected",
                                                     ),
                                                 ],
-                                                className="chart-controls__group",
                                             ),
+                                            html.Section(
+                                                className="chart-controls",
+                                                children=[
+                                                    html.Div(
+                                                        [
+                                                            html.Label(
+                                                                "Select layers",
+                                                                htmlFor="layer-selector",
+                                                                className="chart-controls__label",
+                                                            ),
+                                                            dcc.Checklist(
+                                                                id="layer-selector",
+                                                                options=layer_options,
+                                                                value=default_layers,
+                                                                inline=True,
+                                                                className="chart-controls__checklist",
+                                                            ),
+                                                        ],
+                                                        className="chart-controls__group",
+                                                    ),
+                                                    html.Div(
+                                                        [
+                                                            html.Label(
+                                                                "View mode",
+                                                                htmlFor="view-mode",
+                                                                className="chart-controls__label",
+                                                            ),
+                                                            dcc.RadioItems(
+                                                                id="view-mode",
+                                                                options=[
+                                                                    {
+                                                                        "label": "Single layer",
+                                                                        "value": "single",
+                                                                    },
+                                                                    {
+                                                                        "label": "Compare layers",
+                                                                        "value": "compare",
+                                                                    },
+                                                                ],
+                                                                value="single",
+                                                                inline=True,
+                                                                className="chart-controls__radios",
+                                                            ),
+                                                        ],
+                                                        className="chart-controls__group",
+                                                    ),
+                                                ],
+                                            ),
+                                            html.Div(
+                                                className="chart-downloads",
+                                                children=[
+                                                    html.Button(
+                                                        "Copy link",
+                                                        id="copy-link-btn",
+                                                        className="chart-downloads__button",
+                                                        type="button",
+                                                    ),
+                                                    html.Button(
+                                                        "Download PNG",
+                                                        id="download-png-btn",
+                                                        className="chart-downloads__button",
+                                                        type="button",
+                                                    ),
+                                                    html.Button(
+                                                        "Clear selection",
+                                                        id="clear-activity-selection",
+                                                        className="chart-downloads__button",
+                                                        type="button",
+                                                        disabled=True,
+                                                    ),
+                                                    html.Span(
+                                                        id="share-status",
+                                                        className="chart-downloads__status",
+                                                        **{"aria-live": "polite", "role": "status"},
+                                                    ),
+                                                ],
+                                            ),
+                                            html.Div(
+                                                id="chart-badges",
+                                                className="chart-badges",
+                                            ),
+                                            html.Details(
+                                                className="disclosure-panel",
+                                                id="overview-disclosure",
+                                                open=True,
+                                                children=[
+                                                    html.Summary("Disclosure"),
+                                                    html.Div(
+                                                        disclosure.render(manifest_payload),
+                                                        className="disclosure-panel__content",
+                                                    ),
+                                                ],
+                                            ),
+                                            vintages.render(manifest_payload),
                                         ],
                                     ),
-                                    html.Div(
-                                        className="chart-downloads",
+                                    html.Section(
+                                        id="overview-visualization",
+                                        className="overview-visualization",
                                         children=[
-                                            html.Button(
-                                                "Copy link",
-                                                id="copy-link-btn",
-                                                className="chart-downloads__button",
-                                                type="button",
-                                            ),
-                                            html.Button(
-                                                "Download PNG",
-                                                id="download-png-btn",
-                                                className="chart-downloads__button",
-                                                type="button",
-                                            ),
-                                            html.Button(
-                                                "Clear selection",
-                                                id="clear-activity-selection",
-                                                className="chart-downloads__button",
-                                                type="button",
-                                                disabled=True,
-                                            ),
-                                            html.Span(
-                                                id="share-status",
-                                                className="chart-downloads__status",
+                                            html.Div(id="layer-panels", className="layer-panels"),
+                                            html.Div(
+                                                id="activity-narrative",
+                                                className="chart-narrative",
                                                 **{"aria-live": "polite", "role": "status"},
                                             ),
+                                            html.Details(
+                                                className="references-accordion",
+                                                id="references-accordion",
+                                                open=True,
+                                                **{"data-behavior": "references-accordion"},
+                                                children=[
+                                                    html.Summary("References"),
+                                                    html.Div(
+                                                        references.render_children(
+                                                            initial_reference_keys,
+                                                            include_heading=False,
+                                                        ),
+                                                        id="references",
+                                                        className="references-panel",
+                                                    ),
+                                                ],
+                                            ),
                                         ],
                                     ),
-                                    html.Div(
-                                        id="chart-badges",
-                                        className="chart-badges",
-                                    ),
                                 ],
-                            ),
-                            html.Details(
-                                className="disclosure-panel",
-                                id="overview-disclosure",
-                                open=True,
-                                children=[
-                                    html.Summary("Disclosure"),
-                                    html.Div(
-                                        disclosure.render(manifest_payload),
-                                        className="disclosure-panel__content",
-                                    ),
-                                ],
-                            ),
-                        ]
-                    ),
-                    html.Div(id="layer-panels", className="layer-panels"),
-                    html.Div(
-                        id="activity-narrative",
-                        className="chart-narrative",
-                        **{"aria-live": "polite", "role": "status"},
+                            )
+                        ],
                     ),
                 ],
-            ),
-            html.Div(
-                [
-                    vintages.render(manifest_payload),
-                    references.render(initial_reference_keys),
-                ],
-                className="sidebar-panels",
-                id="overview-sidebar",
             ),
             html.Div(
                 intensity.render_layout(
@@ -736,25 +761,15 @@ def create_app() -> Dash:
     )
 
     @app.callback(
-        Output("overview-main", "style"),
-        Output("overview-sidebar", "style"),
+        Output("overview-view", "style"),
         Output("intensity-view", "style"),
-        Output("overview-toolbar", "style"),
-        Output("overview-disclosure", "style"),
         Input("app-view-tabs", "value"),
     )
     def _toggle_view(tab_value: str | None):
         if tab_value == "intensity":
-            hidden_style = {"display": "none"}
-            return (
-                hidden_style,
-                hidden_style,
-                {"display": "flex"},
-                hidden_style,
-                hidden_style,
-            )
+            return {"display": "none"}, {"display": "block"}
         default_style: dict[str, str] = {}
-        return default_style, default_style, {"display": "none"}, default_style, default_style
+        return default_style, {"display": "none"}
 
     @app.callback(
         Output("layer-selector", "value"),
@@ -1331,7 +1346,10 @@ def create_app() -> Dash:
             }
 
         reference_keys_for_layers = _resolve_reference_keys(ordered_layers, mapping)
-        return references.render_children(reference_keys_for_layers)
+        return references.render_children(
+            reference_keys_for_layers,
+            include_heading=False,
+        )
 
     @app.callback(
         Output("intensity-figure", "figure"),
