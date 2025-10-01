@@ -1,2 +1,5 @@
 site_id,entity_id,name,region_code,lat,lon,notes
 SITE.COKE.TO.DC01,ENTITY.COKE.CA,Toronto DC 01,CA-ON,,,Urban distribution center
+SITE.HYDROONE.ON.GRID,ENTITY.HYDROONE.CA,Ontario Grid Node,CA-ON,,,
+SITE.ENBRIDGE.ON.PIPE,ENTITY.ENBRIDGE.CA,Ontario Gas Network,CA-ON,,,
+SITE.SHELL.AB.REFINERY,ENTITY.SHELL.CA,Edmonton Refinery,CA-AB,,,

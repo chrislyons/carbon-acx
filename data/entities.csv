@@ -1,2 +1,5 @@
 entity_id,name,type,parent_entity_id,notes
 ENTITY.COKE.CA,Coca-Cola Canada,corporate,,Demo rows for comparison
+ENTITY.HYDROONE.CA,Hydro One,corporate,,
+ENTITY.ENBRIDGE.CA,Enbridge,corporate,,
+ENTITY.SHELL.CA,Shell Canada,corporate,,
