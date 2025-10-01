@@ -1,0 +1,1 @@
+D. Patterson et al., “Carbon Emissions and Large Neural Network Training,” 2021. Available: https://arxiv.org/abs/2104.10350.

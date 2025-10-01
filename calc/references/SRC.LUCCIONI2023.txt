@@ -1,0 +1,1 @@
+A. Luccioni, A. Ligozat, and Y. Bengio, “Estimating the Carbon Footprint of Inference,” 2023. Available: https://arxiv.org/abs/2304.03271.
