@@ -34,12 +34,15 @@ build: $(LATEST_BUILD)
 
 NPM ?= npm
 
+SITE_LAYERS_JSON := $(SITE_DIR)/public/artifacts/layers.json
+DATA_LAYERS_CSV := data/layers.csv
+
 .PHONY: site_install site_build site_dev
 
 site_install:
 	cd $(SITE_DIR) && $(NPM) install
 
-$(SITE_BUILD_DIR)/index.html: site_install
+$(SITE_BUILD_DIR)/index.html: site_install $(SITE_LAYERS_JSON)
 	cd $(SITE_DIR) && $(NPM) run build
 
 site_build: $(SITE_BUILD_DIR)/index.html
@@ -52,11 +55,16 @@ site: site_build
 site_dev: site_install
 	cd $(SITE_DIR) && $(NPM) run dev -- --host 0.0.0.0
 
+$(SITE_LAYERS_JSON): $(DATA_LAYERS_CSV) scripts/sync_layers_json.py
+	PYTHONPATH=. poetry run python -m scripts.sync_layers_json --csv $(DATA_LAYERS_CSV) --output $(SITE_LAYERS_JSON)
+
 $(PACKAGED_MANIFEST): $(LATEST_BUILD)
 	PYTHONPATH=. poetry run python -m scripts.package_artifacts --src $(DIST_ARTIFACTS_DIR) --dest $(PACKAGED_ARTIFACTS_DIR)
 
 package: $(PACKAGED_MANIFEST) site sbom
 	PYTHONPATH=. poetry run python -m scripts.prepare_pages_bundle --site $(DIST_SITE_DIR) --artifacts $(PACKAGED_ARTIFACTS_DIR)
+	@test -f $(SITE_LAYERS_JSON) || (echo "Missing site layer catalog: $(SITE_LAYERS_JSON)" >&2; exit 1)
+	@test -f $(DIST_SITE_DIR)/artifacts/layers.json || (echo "Missing packaged layer catalog: $(DIST_SITE_DIR)/artifacts/layers.json" >&2; exit 1)
 
 ci_build_pages: install lint test package
 

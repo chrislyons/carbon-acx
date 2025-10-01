@@ -1,4 +1,5 @@
-import { ARTIFACTS } from '../basePath';
+import { artifactUrl } from './paths';
+import { fetchJSON } from './fetchJSON';
 import type { ComputeResult } from '../state/profile';
 
 export type ComputeRequest = Record<string, unknown>;
@@ -14,7 +15,7 @@ function normalisePath(path: string): string {
 }
 
 function resolveArtifactUrl(path: string): string {
-  return `${ARTIFACTS()}/${normalisePath(path)}`;
+  return artifactUrl(normalisePath(path));
 }
 
 const jsonArtifactCache = new Map<string, unknown>();
@@ -44,8 +45,11 @@ async function loadArtifactJson(path: string, signal?: AbortSignal): Promise<unk
   if (jsonArtifactCache.has(path)) {
     return jsonArtifactCache.get(path)!;
   }
-  const response = await fetchArtifact(path, { signal, headers: { Accept: 'application/json' } });
-  const data = await response.json();
+  const data = await fetchJSON<unknown>(resolveArtifactUrl(path), {
+    signal,
+    headers: { Accept: 'application/json' },
+    cache: 'no-store',
+  });
   jsonArtifactCache.set(path, data);
   return data;
 }

@@ -1,8 +1,8 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react-swc';
 
-// Use env override; fall back to '/carbon-acx/' only when deploying under subpath
-const base = process.env.BUILD_BASE || '/';
+const rawBase = process.env.PUBLIC_BASE_PATH || '/carbon-acx/';
+const base = rawBase.startsWith('/') ? (rawBase.endsWith('/') ? rawBase : `${rawBase}/`) : `/${rawBase.replace(/^\/+/, '')}/`;
 
 export default defineConfig({
   base,
