@@ -6,7 +6,44 @@ on:
   pull_request:
 
 jobs:
+  check-traceability:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ensure PR description includes ACX/CDX traceability markers
+        run: |
+          body=$(jq -r '.pull_request.body // ""' "${GITHUB_EVENT_PATH}")
+          missing=()
+          if ! grep -Fq "Implements (spec): ACX" <<<"${body}"; then
+            missing+=("\"Implements (spec): ACX\"")
+          fi
+          if ! grep -Fq "Prompt (execution): CDX" <<<"${body}"; then
+            missing+=("\"Prompt (execution): CDX\"")
+          fi
+          if [ ${#missing[@]} -gt 0 ]; then
+            printf 'PR description must include %s.\n' "$(IFS=' and '; echo "${missing[*]}")" >&2
+            exit 1
+          fi
+          echo "PR description contains required traceability markers."
+
+  check-no-node-modules:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Ensure node_modules directories are not tracked
+        run: |
+          if git ls-files | grep -E '(^|/)node_modules/' >/dev/null; then
+            echo "Tracked files must not live inside node_modules/." >&2
+            echo "Remove the offending paths or add them to .gitignore." >&2
+            git ls-files | grep -E '(^|/)node_modules/' >&2
+            exit 1
+          fi
+          echo "No tracked node_modules/ paths detected."
+
   build:
+    needs: [check-no-node-modules]
     runs-on: ubuntu-latest
     strategy:
       matrix:
