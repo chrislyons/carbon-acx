@@ -3,4 +3,5 @@ TRAN.SCHOOLRUN.CAR.KM,FU.PERSON_KM,"fu = distance_km * passengers","Passengers d
 TRAN.SCHOOLRUN.BIKE.KM,FU.PERSON_KM,"fu = distance_km * 1",""
 MEDIA.STREAM.HD.HOUR,FU.VIEW_HOUR,"fu = hours * viewers","viewers defaults to 1"
 TRAN.DELIVERY.TRUCK.CLASS6.KM,FU.LITRE_DELIVERED,"fu = litres_delivered","Compute litres from cases if provided"
-TRAN.SCHOOLRUN.CAR.KM,FU.PERSON_KM,"fu = distance_km * passengers","passengers defaults to 1"
+TRAN.TTC.SUBWAY.KM,FU.PERSON_KM,"fu = distance_km * passengers","Passengers defaults to 1 if not provided"
+FOOD.MEAL.BEEF.SERVING,FU.NUTRITIONAL_SERVING,"fu = servings",""
