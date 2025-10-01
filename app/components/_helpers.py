@@ -21,6 +21,19 @@ def _format_with_thin_space(pattern: str, value: float) -> str:
     return format(value, pattern).replace(",", _THIN_SPACE)
 
 
+def _range_decimals(value: float | None) -> int:
+    if value is None:
+        return 0
+    magnitude = abs(value)
+    if magnitude >= 100:
+        return 0
+    if magnitude >= 10:
+        return 1
+    if magnitude >= 1:
+        return 1
+    return 2
+
+
 def format_number(value: float, *, decimals: int = 0) -> str:
     """Return a compact string representation with thin-space separators."""
 
@@ -111,11 +124,13 @@ def format_emissions(value: float) -> str:
     """Format emission values with adaptive units for readability."""
 
     abs_value = abs(value)
+    if abs_value >= 1_000_000_000:
+        return f"{format_number(value / 1_000_000_000, decimals=2)} Gt/yr"
     if abs_value >= 1_000_000:
-        return f"{format_number(value / 1_000_000, decimals=2)} t CO₂e"
+        return f"{format_number(value / 1_000_000, decimals=2)} t/yr"
     if abs_value >= 1_000:
-        return f"{format_number(value / 1_000, decimals=2)} kg CO₂e"
-    return f"{format_number(value, decimals=0)} g CO₂e"
+        return f"{format_number(value / 1_000, decimals=2)} kg/yr"
+    return f"{format_number(value, decimals=0)} g/yr"
 
 
 def format_range(low: float | None, high: float | None, units: str) -> str | None:
@@ -124,11 +139,14 @@ def format_range(low: float | None, high: float | None, units: str) -> str | Non
     if low is None and high is None:
         return None
     if low is not None and high is not None:
-        return f"Range: {format_number(low, decimals=0)} – {format_number(high, decimals=0)} {units}"
+        return (
+            f"Range: {format_number(low, decimals=_range_decimals(low))} – "
+            f"{format_number(high, decimals=_range_decimals(high))} {units}"
+        )
     if low is not None:
-        return f"Low: {format_number(low, decimals=0)} {units}"
+        return f"Low: {format_number(low, decimals=_range_decimals(low))} {units}"
     if high is not None:
-        return f"High: {format_number(high, decimals=0)} {units}"
+        return f"High: {format_number(high, decimals=_range_decimals(high))} {units}"
     return None
 
 
@@ -139,6 +157,19 @@ def format_reference_line(indices: Sequence[int]) -> str:
         return "Sources: [–]"
     body = _THIN_SPACE.join(str(index) for index in indices)
     return f"Sources: [{body}]"
+
+
+def format_source_summary(
+    identifiers: Sequence[str] | None, indices: Sequence[int] | None
+) -> str:
+    """Return a combined identifier and citation summary."""
+
+    ids = [item.strip() for item in identifiers or [] if str(item).strip()]
+    id_text = ", ".join(ids) if ids else "–"
+    if not indices:
+        return f"Sources: {id_text} [–]"
+    numbers = _THIN_SPACE.join(str(index) for index in indices)
+    return f"Sources: {id_text} [{numbers}]"
 
 
 def truncate_label(value: str | None, *, limit: int = 20) -> str:
@@ -178,6 +209,7 @@ __all__ = [
     "format_emissions",
     "format_range",
     "format_reference_line",
+    "format_source_summary",
     "format_reference_hint",
     "has_na_segments",
     "primary_reference_index",

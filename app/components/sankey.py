@@ -61,9 +61,10 @@ def _build_figure(
     reference_lines: list[str] = []
 
     for link in links:
-        mean = clamp_optional(link.get("values", {}).get("mean"))
-        if mean is None or mean <= 0:
+        mean_g = clamp_optional(link.get("values", {}).get("mean"))
+        if mean_g is None or mean_g <= 0:
             continue
+        mean = mean_g / 1000.0
         source_id = id_to_index.get(str(link.get("source")))
         target_id = id_to_index.get(str(link.get("target")))
         if source_id is None or target_id is None:
@@ -71,7 +72,7 @@ def _build_figure(
         sources.append(source_id)
         targets.append(target_id)
         values.append(mean)
-        formatted_values.append(format_emissions(mean))
+        formatted_values.append(format_emissions(mean_g))
         raw_activity_id = link.get("activity_id")
         if raw_activity_id in (None, ""):
             activity_ids.append(None)
@@ -90,16 +91,12 @@ def _build_figure(
                 "reference_indices": indices,
             }
         )
-        units_raw = link.get("units")
-        units = "g CO₂e"
-        if isinstance(units_raw, Mapping):
-            candidate = units_raw.get("mean") or units_raw.get("intensity") or units_raw.get("value")
-            if isinstance(candidate, str) and candidate.strip():
-                units = candidate.strip()
         values_map = link.get("values") or {}
         low = clamp_optional(values_map.get("low")) if isinstance(values_map, Mapping) else None
         high = clamp_optional(values_map.get("high")) if isinstance(values_map, Mapping) else None
-        range_text = format_range(low, high, units)
+        low_kg = (low / 1000.0) if low is not None else None
+        high_kg = (high / 1000.0) if high is not None else None
+        range_text = format_range(low_kg, high_kg, "kg/yr")
         range_lines.append(range_text or "")
         reference_lines.append(format_reference_line(indices))
 
@@ -133,11 +130,13 @@ def _build_figure(
             formatted_values, range_lines, reference_lines, activity_ids
         )
     ]
+    custom_idx = ["[" + str(i) + "]" for i in range(4)]
+    idx0, idx1, idx2, _idx3 = custom_idx
     hover_template = (
         "<b>%{source.label} → %{target.label}</b>"
-        "<br>Annual emissions: %{customdata[0]}"
-        "%{customdata[1]}"
-        "<br>%{customdata[2]}"
+        f"<br>Annual emissions: %{{customdata{idx0}}}"
+        f"%{{customdata{idx1}}}"
+        f"<br>%{{customdata{idx2}}}"
         "<extra></extra>"
     )
     figure.add_trace(
@@ -158,8 +157,8 @@ def _build_figure(
                 hovertemplate=hover_template,
             ),
             meta=meta_entries,
-            valueformat=",.0f",
-            valuesuffix=" g CO₂e",
+            valueformat=",.1f",
+            valuesuffix=" kg/yr",
         )
     )
 
