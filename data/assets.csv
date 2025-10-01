@@ -1,2 +1,5 @@
 asset_id,site_id,asset_type,name,year,power_rating_kw,fuel_type,notes
 ASSET.COKE.TRUCK.C6.DIESEL.2023,SITE.COKE.TO.DC01,vehicle,Class-6 Beverage Truck,2023,,diesel,Demo spec only
+ASSET.HYDROONE.GRID.CAON,SITE.HYDROONE.ON.GRID,line,CA-ON grid,2024,,electricity,
+ASSET.ENBRIDGE.PIPE.CAON,SITE.ENBRIDGE.ON.PIPE,pipeline,Ontario pipeline,2024,,natural_gas,
+ASSET.SHELL.REF.AB,SITE.SHELL.AB.REFINERY,refinery,Edmonton refinery,2024,,liquid_fuels,

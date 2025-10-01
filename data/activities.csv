@@ -37,3 +37,6 @@ CLOTHING.TSHIRT.COTTON,professional,clothing,Cotton T-shirt,garment,Production o
 CLOTHING.JEANS.DENIM,professional,clothing,Denim jeans,garment,Production of one pair of jeans,,
 CLOTHING.JACKET.SYNTH,professional,clothing,Synthetic jacket,garment,Production of one synthetic jacket,,
 CLOTHING.SHOES.SNEAKERS,professional,clothing,Sneakers,garment,Production of one pair of sneakers,,
+ENERGY.KWH.DELIVERED,industrial_heavy,energy,Electricity delivered (kWh),kWh,Retail electricity delivered to end users,,
+ENERGY.NATGAS.M3,industrial_heavy,energy,Natural gas delivered (m3),m3,Pipeline gas delivered,,
+ENERGY.GASOLINE.LITRE,industrial_heavy,energy,Gasoline refined & delivered (L),L,Motor gasoline supply,,
