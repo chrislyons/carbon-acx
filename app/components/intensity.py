@@ -13,9 +13,78 @@ from calc.ui.theme import get_palette, get_plotly_template
 from app.lib.plotly_theme import DENSE_LAYOUT
 
 from ._plotly_settings import apply_figure_layout_defaults
-from ._helpers import format_number, format_range, format_reference_line
+from ._helpers import format_number, format_source_summary
 
 _DEFAULT_REFERENCE_KEY = "__default__"
+_MINUS_SIGN = "\u2212"
+
+
+def _intensity_decimals(value: float | None) -> int:
+    if value is None:
+        return 0
+    magnitude = abs(value)
+    if magnitude >= 100:
+        return 0
+    if magnitude >= 10:
+        return 1
+    return 2
+
+
+def _format_intensity_value(value: float) -> str:
+    return format_number(value, decimals=_intensity_decimals(value))
+
+
+def _format_delta(value: float | None) -> str | None:
+    if value is None or value <= 0:
+        return None
+    decimals = 0 if value >= 10 else 1 if value >= 1 else 2
+    return format_number(value, decimals=decimals)
+
+
+def _format_bounds(mean: float, low: float | None, high: float | None) -> str | None:
+    plus = (high - mean) if high is not None else None
+    minus = (mean - low) if low is not None else None
+    plus_text = _format_delta(plus)
+    minus_text = _format_delta(minus)
+    if plus_text and minus_text:
+        if plus_text == minus_text:
+            return f"±{plus_text}"
+        return f"+{plus_text} / {_MINUS_SIGN}{minus_text}"
+    if plus_text:
+        return f"+{plus_text}"
+    if minus_text:
+        return f"{_MINUS_SIGN}{minus_text}"
+    return None
+
+
+def _format_scope_label(value: object) -> str | None:
+    if value in (None, ""):
+        return None
+    text = str(value)
+    if "." in text:
+        text = text.split(".")[-1]
+    text = text.replace("_", " ").replace("-", " ").strip()
+    if not text:
+        return None
+    text = text.title()
+    if text.lower().startswith("scope"):
+        return text.replace("scope", "Scope", 1)
+    return text
+
+
+def _format_region_label(value: object) -> str | None:
+    if value in (None, ""):
+        return None
+    text = str(value).strip()
+    return text or None
+
+
+def _parse_source_ids(value: object) -> list[str]:
+    if value in (None, ""):
+        return []
+    if isinstance(value, (list, tuple, set)):
+        return [str(item).strip() for item in value if str(item).strip()]
+    return [part.strip() for part in str(value).split(",") if part.strip()]
 
 
 @dataclass(slots=True)
@@ -252,7 +321,7 @@ def build_figure(
         figure.update_layout(
             template=get_plotly_template(dark=dark),
             xaxis=dict(title="Alternative", type="category"),
-            yaxis=dict(title="g CO₂e per functional unit", rangemode="tozero"),
+            yaxis=dict(title="g/FU", rangemode="tozero"),
             showlegend=False,
         )
         figure.update_layout(**DENSE_LAYOUT)
@@ -268,7 +337,7 @@ def build_figure(
         figure.update_layout(
             template=get_plotly_template(dark=dark),
             xaxis=dict(title="Alternative", type="category"),
-            yaxis=dict(title="g CO₂e per functional unit", rangemode="tozero"),
+            yaxis=dict(title="g/FU", rangemode="tozero"),
             showlegend=False,
         )
         figure.update_layout(**DENSE_LAYOUT)
@@ -313,7 +382,7 @@ def build_figure(
         figure.update_layout(
             template=get_plotly_template(dark=dark),
             xaxis=dict(title="Alternative", type="category"),
-            yaxis=dict(title="g CO₂e per functional unit", rangemode="tozero"),
+            yaxis=dict(title="g/FU", rangemode="tozero"),
             showlegend=False,
         )
         figure.update_layout(**DENSE_LAYOUT)
@@ -345,27 +414,39 @@ def build_figure(
             color=palette.get("accent_strong", palette.get("positive")),
         )
 
-    value_texts = [f"{format_number(value, decimals=0)} g CO₂e per FU" for value in intensities]
-    range_lines = [format_range(low, high, "g CO₂e per FU") or "" for low, high in zip(lows, highs)]
-    reference_lines = [format_reference_line(indices) for indices in reference_indices]
-
-    customdata = [
-        [
-            alternative,
-            value_text,
-            f"<br>{range_line}" if range_line else "",
-            reference_line,
-        ]
-        for alternative, value_text, range_line, reference_line in zip(
-            alternatives, value_texts, range_lines, reference_lines
+    customdata: list[list[str]] = []
+    for alternative, mean, low, high, indices, record in zip(
+        alternatives, intensities, lows, highs, reference_indices, plotted
+    ):
+        value_text = _format_intensity_value(mean)
+        intensity_line = f"Intensity: {value_text} g/FU"
+        bounds = _format_bounds(mean, low, high)
+        if bounds:
+            intensity_line = f"{intensity_line} ({bounds})"
+        scope_label = _format_scope_label(record.get("scope_boundary"))
+        scope_line = f"<br>Scope: {scope_label}" if scope_label else ""
+        region_label = _format_region_label(record.get("region"))
+        region_line = f"<br>Region: {region_label}" if region_label else ""
+        source_ids = _parse_source_ids(record.get("source_ids_csv"))
+        source_line = format_source_summary(source_ids, indices)
+        customdata.append(
+            [
+                alternative,
+                intensity_line,
+                scope_line,
+                region_line,
+                source_line,
+            ]
         )
-    ]
 
+    custom_idx = ["[" + str(i) + "]" for i in range(5)]
+    idx0, idx1, idx2, idx3, idx4 = custom_idx
     hover_template = (
-        "<b>%{customdata[0]}</b>"
-        "<br>Intensity: %{customdata[1]}"
-        "%{customdata[2]}"
-        "<br>%{customdata[3]}"
+        f"<b>%{{customdata{idx0}}}</b>"
+        f"<br>%{{customdata{idx1}}}"
+        f"%{{customdata{idx2}}}"
+        f"%{{customdata{idx3}}}"
+        f"<br>%{{customdata{idx4}}}"
         "<extra></extra>"
     )
 
@@ -382,8 +463,8 @@ def build_figure(
 
     figure.update_layout(
         template=get_plotly_template(dark=dark),
-        xaxis=dict(title="Alternative", type="category"),
-        yaxis=dict(title="g CO₂e per functional unit", rangemode="tozero"),
+        xaxis=dict(title="Alternative", type="category", tickangle=-20, automargin=True),
+        yaxis=dict(title="g/FU", rangemode="tozero"),
         showlegend=False,
     )
     figure.update_layout(**DENSE_LAYOUT)

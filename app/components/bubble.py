@@ -46,11 +46,14 @@ def _build_figure(
 
     for row in data:
         values = row.get("values", {})
-        mean = clamp_optional(values.get("mean"))
-        if mean is None or mean <= 0:
+        mean_g = clamp_optional(values.get("mean"))
+        if mean_g is None or mean_g <= 0:
             continue
-        high = clamp_optional(values.get("high"))
-        low = clamp_optional(values.get("low"))
+        high_g = clamp_optional(values.get("high"))
+        low_g = clamp_optional(values.get("low"))
+        mean = mean_g / 1000.0
+        high = (high_g / 1000.0) if high_g is not None else None
+        low = (low_g / 1000.0) if low_g is not None else None
 
         category_label = str(row.get("category", "uncategorized"))
         categories.append(truncate_label(category_label, limit=20))
@@ -59,9 +62,11 @@ def _build_figure(
         activities.append(truncate_label(activity_label, limit=22))
         full_activities.append(activity_label)
         means.append(mean)
-        errors_high.append(max((high or mean) - mean, 0.0))
-        errors_low.append(max(mean - (low or mean), 0.0))
-        formatted_values.append(format_emissions(mean))
+        upper = high if high is not None else mean
+        lower = low if low is not None else mean
+        errors_high.append(max(upper - mean, 0.0))
+        errors_low.append(max(mean - lower, 0.0))
+        formatted_values.append(format_emissions(mean_g))
         raw_activity_id = row.get("activity_id")
         if raw_activity_id in (None, ""):
             activity_ids.append(None)
@@ -80,13 +85,7 @@ def _build_figure(
                 "reference_indices": indices,
             }
         )
-        units_raw = row.get("units")
-        units = "g CO₂e"
-        if isinstance(units_raw, Mapping):
-            candidate = units_raw.get("mean") or units_raw.get("intensity") or units_raw.get("value")
-            if isinstance(candidate, str) and candidate.strip():
-                units = candidate.strip()
-        range_text = format_range(low, high, units)
+        range_text = format_range(low, high, "kg/yr")
         range_lines.append(range_text or "")
         reference_lines.append(format_reference_line(indices))
 
@@ -114,12 +113,14 @@ def _build_figure(
         else None
     )
 
+    custom_idx = ["[" + str(i) + "]" for i in range(6)]
+    idx0, idx1, idx2, idx3, idx4, _idx5 = custom_idx
     hover_template = (
-        "<b>%{customdata[0]}</b>"
-        "<br>Category: %{customdata[1]}"
-        "<br>Annual emissions: %{customdata[2]}"
-        "%{customdata[3]}"
-        "<br>%{customdata[4]}"
+        f"<b>%{{customdata{idx0}}}</b>"
+        f"<br>Category: %{{customdata{idx1}}}"
+        f"<br>Annual emissions: %{{customdata{idx2}}}"
+        f"%{{customdata{idx3}}}"
+        f"<br>%{{customdata{idx4}}}"
         "<extra></extra>"
     )
 
@@ -178,7 +179,7 @@ def _build_figure(
     figure.update_layout(
         template=get_plotly_template(dark=dark),
         xaxis=dict(title="Activity category", type="category"),
-        yaxis=dict(title="Annual emissions (g CO₂e)", rangemode="tozero"),
+        yaxis=dict(title="Annual emissions (kg/yr)", rangemode="tozero"),
         showlegend=False,
     )
     figure.update_layout(**DENSE_LAYOUT)

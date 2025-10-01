@@ -553,6 +553,12 @@ def create_app() -> Dash:
             html.Main(
                 className="app-main",
                 children=[
+                    html.Small(
+                        "Units: g/FU = grams CO₂e per functional unit; "
+                        "kg/yr = kilograms CO₂e per year; "
+                        "pkm = passenger-kilometres; h = hours.",
+                        className="unit-legend",
+                    ),
                     html.Div(
                         id="overview-view",
                         className="overview-view",
