@@ -5,11 +5,11 @@ exports[`ReferencesDrawer > renders references and closes on escape 1`] = `
   <aside
     aria-labelledby="references-heading"
     aria-live="polite"
-    class="flex h-full flex-col rounded-2xl border border-slate-800/70 bg-slate-900/60 p-2.5 shadow-lg shadow-slate-900/40 backdrop-blur"
+    class="acx-card flex h-full flex-col gap-[var(--gap-1)] bg-slate-950/60 shadow-lg shadow-slate-900/40"
     id="references"
   >
     <div
-      class="flex items-center justify-between gap-2"
+      class="flex items-center justify-between gap-[var(--gap-0)]"
     >
       <p
         class="text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-300"
@@ -20,7 +20,7 @@ exports[`ReferencesDrawer > renders references and closes on escape 1`] = `
       <button
         aria-controls="references-content"
         aria-expanded="true"
-        class="inline-flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-slate-600 text-slate-100 transition hover:border-slate-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
+        class="inline-flex h-9 w-9 min-h-[32px] min-w-[32px] items-center justify-center rounded-full border border-slate-600 text-slate-100 transition hover:border-slate-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
         type="button"
       >
         <span
@@ -41,7 +41,7 @@ exports[`ReferencesDrawer > renders references and closes on escape 1`] = `
       </button>
     </div>
     <p
-      class="mt-1.5 text-compact text-slate-400"
+      class="text-compact text-slate-400"
     >
       Primary sources supporting the figures. Press 
       <kbd
@@ -52,12 +52,12 @@ exports[`ReferencesDrawer > renders references and closes on escape 1`] = `
        to close.
     </p>
     <div
-      class="mt-2.5 flex-1 overflow-y-auto rounded-xl border border-slate-800/60 bg-slate-950/30 p-2.5 text-compact text-slate-300"
+      class="flex-1 overflow-y-auto rounded-xl border border-slate-800/60 bg-slate-950/30 p-[var(--gap-1)] text-compact text-slate-300"
       id="references-content"
     >
       <ol
         aria-label="Reference list"
-        class="space-y-2.5"
+        class="space-y-[var(--gap-1)]"
       >
         <li
           class="rounded-lg border border-slate-800/70 bg-slate-950/60 pad-compact text-left shadow-inner shadow-slate-900/30"
