@@ -655,6 +655,25 @@ def _operation_variable_map(
             variables["litres_delivered"] = litres
             notes.append(_CASE_TO_LITRE_NOTE)
 
+    throughput_value = getattr(operation, "throughput_value", None)
+    if throughput_value is not None:
+        try:
+            value = float(throughput_value)
+        except (TypeError, ValueError):  # pragma: no cover - defensive
+            value = None
+        if value is not None:
+            variables.setdefault("throughput_value", value)
+
+            unit = (operation.throughput_unit or "").strip().lower()
+            if unit in {"kg", "kilogram", "kilograms"}:
+                variables.setdefault("waste_mass_kg", value)
+                variables.setdefault("mass_kg", value)
+            elif unit in {"m3", "m^3", "cubic metre", "cubic meter"}:
+                variables.setdefault("volume_m3", value)
+                variables.setdefault("volume_cubic_metres", value)
+            elif unit in {"l", "litre", "liter", "litres", "liters"}:
+                variables.setdefault("volume_l", value)
+
     return variables, notes
 
 
