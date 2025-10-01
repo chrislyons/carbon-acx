@@ -1,7 +1,8 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ASSETS } from '../basePath';
 import { useLayerCatalog, LayerAuditActivity } from '../lib/useLayerCatalog';
+import { FetchJSONDiagnostics, FetchJSONError } from '../lib/fetchJSON';
 import { PRIMARY_LAYER_ID, useProfile } from '../state/profile';
 
 interface StatusMeta {
@@ -95,6 +96,8 @@ export function LayerBrowser(): JSX.Element {
   const { layers, audit, loading, error } = useLayerCatalog();
   const { availableLayers, activeLayers, setActiveLayers } = useProfile();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [showDiagnostics, setShowDiagnostics] = useState(false);
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'error'>('idle');
 
   const availableSet = useMemo(() => new Set(availableLayers), [availableLayers]);
   const activeSet = useMemo(() => new Set(activeLayers), [activeLayers]);
@@ -143,6 +146,64 @@ export function LayerBrowser(): JSX.Element {
     [activeSet, orderLayers, setActiveLayers]
   );
 
+  const errorDiag: FetchJSONDiagnostics | null = error instanceof FetchJSONError ? error.diag : null;
+  const diagnosticPayload = useMemo(
+    () => (errorDiag ? JSON.stringify(errorDiag, null, 2) : null),
+    [errorDiag]
+  );
+
+  useEffect(() => {
+    setShowDiagnostics(false);
+    setCopyStatus('idle');
+  }, [error]);
+
+  const handleCopyDiagnostics = useCallback(async () => {
+    if (!diagnosticPayload) {
+      return;
+    }
+    try {
+      if (
+        typeof navigator !== 'undefined' &&
+        navigator.clipboard &&
+        typeof navigator.clipboard.writeText === 'function'
+      ) {
+        await navigator.clipboard.writeText(diagnosticPayload);
+      } else if (typeof document !== 'undefined' && typeof document.execCommand === 'function') {
+        const textarea = document.createElement('textarea');
+        textarea.value = diagnosticPayload;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'absolute';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      } else {
+        throw new Error('Clipboard API unavailable');
+      }
+      setCopyStatus('copied');
+      if (typeof window !== 'undefined') {
+        window.setTimeout(() => setCopyStatus('idle'), 2000);
+      }
+    } catch (copyError) {
+      console.warn('Unable to copy diagnostics', copyError);
+      setCopyStatus('error');
+      if (typeof window !== 'undefined') {
+        window.setTimeout(() => setCopyStatus('idle'), 3000);
+      }
+    }
+  }, [diagnosticPayload]);
+
+  const renderCopyStatus = (variant: 'desktop' | 'mobile') => {
+    if (copyStatus === 'idle') {
+      return null;
+    }
+    const tone = copyStatus === 'copied' ? 'text-emerald-300' : 'text-rose-300';
+    const label = copyStatus === 'copied' ? 'Diagnostics copied' : 'Copy failed';
+    const spacing = variant === 'desktop' ? 'mt-1 text-xs' : 'mt-2 text-xs';
+    return <p className={`${spacing} ${tone}`}>{label}</p>;
+  };
+
   if (loading) {
     return (
       <section className="acx-card bg-slate-950/60">
@@ -164,14 +225,84 @@ export function LayerBrowser(): JSX.Element {
   }
 
   if (error) {
+    const isNotFound = errorDiag?.status === 404;
+    const message = isNotFound
+      ? 'Layer catalog not found. Confirm site/public/artifacts/layers.json is present.'
+      : 'Unable to load layer metadata.';
     return (
       <section className="acx-card bg-slate-950/60">
         <header className="flex items-center justify-between gap-[var(--gap-0)]">
           <h2 className="text-[13px] font-semibold">Layer Browser</h2>
         </header>
-        <p className="mt-[var(--gap-1)] text-sm text-rose-300">
-          Unable to load layer metadata. {error.message}
-        </p>
+        <div className="mt-[var(--gap-1)] space-y-[var(--gap-1)]">
+          <p className="text-sm text-rose-300">
+            {message} {error.message}
+          </p>
+          {errorDiag && diagnosticPayload ? (
+            <div className="space-y-[var(--gap-0)]">
+              <details className="hidden overflow-hidden rounded-xl border border-slate-800/80 bg-slate-950/80 md:block">
+                <summary className="cursor-pointer select-none bg-slate-900/60 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-300">
+                  Error diagnostics
+                </summary>
+                <div className="space-y-[var(--gap-0)] px-4 pb-4 pt-3">
+                  <button
+                    type="button"
+                    className="rounded-md border border-slate-700 bg-slate-800/60 px-3 py-1 text-xs font-semibold text-slate-200 transition hover:bg-slate-700/60"
+                    onClick={handleCopyDiagnostics}
+                  >
+                    Copy diagnostics
+                  </button>
+                  {renderCopyStatus('desktop')}
+                  <pre className="max-h-64 overflow-auto rounded-lg border border-slate-800/80 bg-slate-950/80 px-3 py-2 text-xs leading-5 text-slate-200">
+                    {diagnosticPayload}
+                  </pre>
+                </div>
+              </details>
+              <div className="space-y-[var(--gap-0)] md:hidden">
+                <button
+                  type="button"
+                  className="w-full rounded-md border border-slate-700 bg-slate-900/60 px-3 py-2 text-sm font-semibold text-slate-200 transition hover:bg-slate-800/60"
+                  onClick={() => setShowDiagnostics((value) => !value)}
+                >
+                  {showDiagnostics ? 'Hide error details' : 'Show error details'}
+                </button>
+                {showDiagnostics ? (
+                  <div className="space-y-[var(--gap-0)] rounded-xl border border-slate-800/80 bg-slate-950/80 p-3">
+                    <button
+                      type="button"
+                      className="w-full rounded-md border border-slate-700 bg-slate-900/60 px-3 py-2 text-sm font-semibold text-slate-200 transition hover:bg-slate-800/60"
+                      onClick={handleCopyDiagnostics}
+                    >
+                      Copy diagnostics
+                    </button>
+                    {renderCopyStatus('mobile')}
+                    <pre className="max-h-64 overflow-auto rounded-lg border border-slate-800/80 bg-slate-950/80 px-3 py-2 text-xs leading-5 text-slate-200">
+                      {diagnosticPayload}
+                    </pre>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </section>
+    );
+  }
+
+  if (layers.length === 0) {
+    return (
+      <section className="acx-card bg-slate-950/60">
+        <header className="flex items-center justify-between gap-[var(--gap-0)]">
+          <h2 className="text-[13px] font-semibold">Layer Browser</h2>
+        </header>
+        <div className="mt-[var(--gap-1)] space-y-[var(--gap-0)] text-sm text-slate-300">
+          <p>No layers are currently configured.</p>
+          <p>
+            Update <code className="rounded bg-slate-900/80 px-1 py-0.5 text-xs">data/layers.csv</code> and run
+            {' '}<code className="rounded bg-slate-900/80 px-1 py-0.5 text-xs">python scripts/audit_layers.py</code> to refresh
+            {' '}<code className="rounded bg-slate-900/80 px-1 py-0.5 text-xs">site/public/artifacts/layers.json</code>.
+          </p>
+        </div>
       </section>
     );
   }

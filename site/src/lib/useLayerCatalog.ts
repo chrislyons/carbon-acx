@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
-import { ARTIFACTS } from '../basePath';
+import { artifactUrl } from './paths';
+import { fetchJSON, FetchJSONError } from './fetchJSON';
 
 export interface LayerDescriptor {
   id: string;
@@ -94,36 +95,13 @@ function normaliseLayerDescriptor(entry: unknown): LayerDescriptor | null {
   return layer;
 }
 
-function normaliseSnippet(value: string, maxLength = 120) {
-  const snippet = value.replace(/\s+/g, ' ').trim();
-  return snippet.length > maxLength ? `${snippet.slice(0, maxLength)}…` : snippet;
-}
-
-async function parseJsonResponse(response: Response, resource: string) {
-  const body = await response.text();
-  try {
-    return JSON.parse(body);
-  } catch (error) {
-    const contentType = response.headers.get('content-type') ?? 'unknown content-type';
-    const snippet = normaliseSnippet(body);
-    const message = error instanceof Error ? error.message : String(error);
-    throw new Error(
-      `Unable to parse ${resource} as JSON (${message}). Content-Type: ${contentType}. Body: ${snippet}`
-    );
-  }
-}
-
 async function fetchCatalog(): Promise<LayerCatalogState> {
-  const basePath = ARTIFACTS();
-  const layersResponse = await fetch(`${basePath}/layers.json`, {
+  const layersUrl = artifactUrl('layers.json');
+  const rawLayers = await fetchJSON<unknown>(layersUrl, {
     method: 'GET',
     headers: { Accept: 'application/json' },
     cache: 'no-store'
   });
-  if (!layersResponse.ok) {
-    throw new Error(`Unable to load layers.json (status ${layersResponse.status})`);
-  }
-  const rawLayers = await parseJsonResponse(layersResponse, 'layers.json');
   if (!Array.isArray(rawLayers)) {
     throw new Error('layers.json must contain an array');
   }
@@ -133,19 +111,22 @@ async function fetchCatalog(): Promise<LayerCatalogState> {
 
   let audit: LayerAuditReport | null = null;
   try {
-    const auditResponse = await fetch(`${basePath}/audit_report.json`, {
+    const auditUrl = artifactUrl('audit_report.json');
+    const payload = await fetchJSON<unknown>(auditUrl, {
       method: 'GET',
       headers: { Accept: 'application/json' },
       cache: 'no-store'
     });
-    if (auditResponse.ok) {
-      const payload = await parseJsonResponse(auditResponse, 'audit_report.json');
-      if (payload && typeof payload === 'object') {
-        audit = payload as LayerAuditReport;
-      }
+    if (payload && typeof payload === 'object') {
+      audit = payload as LayerAuditReport;
     }
   } catch (error) {
-    console.warn('Layer audit report unavailable', error);
+    const message = error instanceof Error ? error.message : String(error);
+    if (error instanceof FetchJSONError) {
+      console.warn('Layer audit report unavailable', message, error.diag);
+    } else {
+      console.warn('Layer audit report unavailable', message);
+    }
   }
 
   return { layers, audit };

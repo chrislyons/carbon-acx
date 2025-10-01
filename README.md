@@ -265,6 +265,7 @@ Additional configuration:
 2. **Continuous integration** — The CI workflow (replicated by `make ci_build_pages`) runs install, lint, test, and packages the static site (`make package`), publishing two artefacts: `dist-artifacts` (data bundle) and `dist-site` (static client).
 3. **Release** — `make release` is a placeholder for future automated releases; production deploys currently upload `dist/site/` to Cloudflare Pages manually or via upstream automation described in `docs/deploy.md`.
 4. **Routing** — `functions/carbon-acx/[[path]].ts` sits alongside the static bundle to proxy or serve `/carbon-acx/*` traffic with opinionated caching headers (see `docs/routes.md`).
+5. **Base path overrides** — Set `PUBLIC_BASE_PATH` when building the site to align with the deployment prefix (defaults to `/carbon-acx/`). The same value flows through Vite’s `base` config and the runtime fetch helpers.
 
 For reproducible deployments, treat `dist/artifacts/latest-build.json` as the pointer to the most recent build hash and package that directory verbatim.
 
@@ -360,6 +361,9 @@ Legend: ✅ implemented · 🚧 in-progress or partially scaffolded · 🧭 plan
 
 **Where do deployment instructions live?**
 : See `docs/deploy.md` for Cloudflare Pages guidance and `docs/routes.md` for proxy behaviour.
+
+**Debugging data loads**
+: Use `scripts/dev_diag.sh` to compare artifact headers locally and in production. The script respects `PUBLIC_BASE_PATH` so you can verify both the static bundle (`http://127.0.0.1:4173`) and your Pages domain return JSON rather than the SPA fallback.
 
 ---
 

@@ -1,46 +1,46 @@
 [
   {
-    "id": "professional",
-    "title": "Professional services",
-    "summary": "Baseline knowledge worker footprint anchored to hybrid office routines.",
-    "icon": "professional.svg",
-    "optional": false,
-    "examples": [
-      "Coffee—12 oz hot",
-      "Toronto subway—per passenger-kilometre"
-    ]
-  },
-  {
-    "id": "online",
-    "title": "Online services",
-    "summary": "SaaS, meetings, and streaming workloads for remote-first teams.",
-    "icon": "online.svg",
+    "id": "industrial_heavy",
+    "title": "Industrial (Heavy)",
+    "summary": "Full-scale manufacturing and heavy industry references for R&D insight.",
     "optional": true,
+    "icon": "industrial_heavy.svg",
     "examples": [
-      "Video conferencing hour",
-      "SaaS productivity suite seat"
+      "Steel batch furnace",
+      "Heavy equipment runtime"
     ]
   },
   {
     "id": "industrial_light",
     "title": "Industrial (Light)",
     "summary": "Lab, prototyping, and light fabrication scenarios for innovation hubs.",
-    "icon": "industrial_light.svg",
     "optional": true,
+    "icon": "industrial_light.svg",
     "examples": [
       "Lab bench operation",
       "Prototyping print run"
     ]
   },
   {
-    "id": "industrial_heavy",
-    "title": "Industrial (Heavy)",
-    "summary": "Full-scale manufacturing and heavy industry references for R&D insight.",
-    "icon": "industrial_heavy.svg",
+    "id": "online",
+    "title": "Online services",
+    "summary": "SaaS, meetings, and streaming workloads for remote-first teams.",
     "optional": true,
+    "icon": "online.svg",
     "examples": [
-      "Steel batch furnace",
-      "Heavy equipment runtime"
+      "Video conferencing hour",
+      "SaaS productivity suite seat"
+    ]
+  },
+  {
+    "id": "professional",
+    "title": "Professional services",
+    "summary": "Baseline knowledge worker footprint anchored to hybrid office routines.",
+    "optional": false,
+    "icon": "professional.svg",
+    "examples": [
+      "Coffee\u201412 oz hot",
+      "Toronto subway\u2014per passenger-kilometre"
     ]
   }
 ]
