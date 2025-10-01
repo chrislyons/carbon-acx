@@ -12,3 +12,8 @@ SITE.NESTLE.NS.COFFEE,ENTITY.NESTLE.CA,Bridgewater Coffee Factory,CA-NS,44.378,-
 SITE.AMAZON.ON.YYZ1,ENTITY.AMAZON.CA,Amazon YYZ1 Fulfillment Centre,CA-ON,43.676,-79.615,"Greater Toronto Area fulfillment hub supporting last-mile delivery."
 SITE.FEDEX.ON.YYZHUB,ENTITY.FEDEX.CA,FedEx Express Toronto Hub,CA-ON,43.681,-79.611,"Pearson International express air cargo hub."
 SITE.CNRAIL.QC.INTERMODAL,ENTITY.CNRAIL.CA,CN Montreal Intermodal Terminal,CA-QC,45.653,-73.535,"Rail-to-road logistics hub supporting drayage trucking."
+SITE.GOOGLE.GLOBAL.PLATFORM,ENTITY.GOOGLE.US,Global Google/YouTube Platform,GLOBAL,,,"Aggregated Google hyperscale and network edge footprint for YouTube delivery."
+SITE.META.GLOBAL.PLATFORM,ENTITY.META.US,Global Meta Instagram Platform,GLOBAL,,,"Meta-operated datacentres and CDN edges supporting Instagram engagement."
+SITE.BYTEDANCE.GLOBAL.PLATFORM,ENTITY.BYTEDANCE.CN,Global ByteDance TikTok Platform,GLOBAL,,,"Distributed ByteDance infrastructure providing TikTok streaming."
+SITE.OPENAI.GLOBAL.SERVICE,ENTITY.OPENAI.US,OpenAI Global Inference Service,GLOBAL,,,"OpenAI-operated and partner cloud regions serving GPT inference."
+SITE.ANTHROPIC.GLOBAL.SERVICE,ENTITY.ANTHROPIC.US,Anthropic Claude Inference Service,GLOBAL,,,"Anthropic Claude inference footprint across partnered hyperscale regions."
