@@ -950,6 +950,24 @@ p {
   color: var(--color-text);
 }
 
+.references-panel__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.references-panel__section + .references-panel__section {
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--color-border);
+}
+
+.references-panel__section h3 {
+  margin: 0;
+  font-size: clamp(1rem, 1.8vw, 1.25rem);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
 .references-list {
   margin: 0;
   padding-left: clamp(1.5rem, 2.5vw, 2.5rem);
