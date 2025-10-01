@@ -3,6 +3,11 @@ ENTITY.COKE.CA,Coca-Cola Canada,corporate,,Demo rows for comparison
 ENTITY.HYDROONE.CA,Hydro One,corporate,,
 ENTITY.ENBRIDGE.CA,Enbridge,corporate,,
 ENTITY.SHELL.CA,Shell Canada,corporate,,
+ENTITY.GOOGLE.US,Google LLC,corporate,,Parent for YouTube platform and Gemini inference operations
+ENTITY.META.US,Meta Platforms Inc.,corporate,,Parent for Instagram platform operations
+ENTITY.BYTEDANCE.CN,ByteDance Ltd.,corporate,,Parent for TikTok platform operations
+ENTITY.OPENAI.US,OpenAI,corporate,,Provider of GPT inference services
+ENTITY.ANTHROPIC.US,Anthropic PBC,corporate,,Provider of Claude inference services
 ENTITY.LAFARGE.CA,Lafarge Canada,corporate,,Major Canadian cement producer with integrated clinker facilities.
 ENTITY.ARCELORMITTAL.CA,ArcelorMittal Dofasco,corporate,,Integrated steelmaker producing crude slabs in Ontario.
 ENTITY.NOVA.CHEM.CA,NOVA Chemicals,corporate,,Canadian petrochemicals producer with PET resin operations.
