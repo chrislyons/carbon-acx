@@ -162,6 +162,7 @@ export function Sankey({ title = 'Emission pathways', data, referenceLookup }: S
         aria-labelledby="sankey-heading"
         className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-5 shadow-inner shadow-slate-900/40"
         id="sankey"
+        role="region"
         tabIndex={-1}
       >
         <h3 id="sankey-heading" className="text-base font-semibold text-slate-100">
@@ -180,12 +181,18 @@ export function Sankey({ title = 'Emission pathways', data, referenceLookup }: S
       aria-labelledby="sankey-heading"
       className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-5 shadow-inner shadow-slate-900/40"
       id="sankey"
+      role="region"
       tabIndex={-1}
     >
       <h3 id="sankey-heading" className="text-base font-semibold text-slate-100">
         {title}
       </h3>
-      <svg role="img" viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`} className="mt-4 w-full text-slate-400">
+      <svg
+        data-testid="sankey-svg"
+        role="img"
+        viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
+        className="mt-4 w-full text-slate-400"
+      >
         <defs>
           {preparedLinks.map((link) => (
             <linearGradient

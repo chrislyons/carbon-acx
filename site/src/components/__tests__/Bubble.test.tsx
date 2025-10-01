@@ -1,3 +1,4 @@
+import '@testing-library/jest-dom';
 import { render } from '@testing-library/react';
 
 import { Bubble } from '../Bubble';
@@ -25,11 +26,16 @@ const sampleData = [
 
 describe('Bubble', () => {
   it('renders bubble chart with pulsing circles', () => {
-    const { asFragment, getByTestId } = render(
+    const { getByRole, getByTestId } = render(
       <Bubble data={sampleData} referenceLookup={referenceLookup} />
     );
 
-    expect(asFragment()).toMatchSnapshot();
+    // Section is a landmark with an accessible name and focus target.
+    const section = getByRole('region', { name: /bubble/i });
+    expect(section).toHaveAttribute('tabindex', '-1');
+
+    const svg = getByTestId('bubble-svg');
+    expect(svg).toMatchSnapshot();
     const bubble = getByTestId('bubble-point-0');
     const title = bubble.querySelector('title');
     expect(title?.textContent).toContain('[1]');

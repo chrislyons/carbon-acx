@@ -1,93 +1,66 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`Stacked > renders stacked bars with reference hints 1`] = `
-<DocumentFragment>
-  <section
-    aria-labelledby="stacked-heading"
-    class="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-5 shadow-inner shadow-slate-900/40"
-    id="stacked"
+<ol
+  class="mt-5 space-y-3"
+  data-testid="stacked-svg"
+  role="list"
+>
+  <li
+    class="space-y-1"
+    data-testid="stacked-item-0"
   >
     <div
-      class="flex items-baseline justify-between gap-4"
+      class="flex items-center justify-between text-sm text-slate-300"
     >
-      <h3
-        class="text-base font-semibold text-slate-100"
-        id="stacked-heading"
+      <span
+        class="font-medium text-slate-100"
       >
-        Annual emissions by category
-      </h3>
-      <p
-        class="text-xs uppercase tracking-[0.3em] text-slate-300"
-      >
-        Total 2.00 kg CO₂e
-      </p>
+        Cooling
+      </span>
+      <span>
+        1.20 kg CO₂e
+      </span>
     </div>
-    <ol
-      class="mt-5 space-y-3"
-      role="list"
+    <div
+      class="group relative h-3 overflow-hidden rounded-full bg-slate-800/80"
+      style="transition: all 0.5s ease; width: 100%;"
     >
-      <li
-        class="space-y-1"
-        data-testid="stacked-item-0"
-      >
-        <div
-          class="flex items-center justify-between text-sm text-slate-300"
-        >
-          <span
-            class="font-medium text-slate-100"
-          >
-            Cooling
-          </span>
-          <span>
-            1.20 kg CO₂e
-          </span>
-        </div>
-        <div
-          class="group relative h-3 overflow-hidden rounded-full bg-slate-800/80"
-          style="transition: all 0.5s ease; width: 100%;"
-        >
-          <div
-            class="h-full rounded-full bg-gradient-to-r from-sky-500/80 via-sky-400/70 to-cyan-300/80 transition-all duration-500 ease-out group-hover:from-sky-400 group-hover:to-cyan-200"
-            data-testid="stacked-bar-0"
-            style="width: 60%;"
-            title="1.20 kg CO₂e [1]"
-          />
-        </div>
-      </li>
-      <li
-        class="space-y-1"
-        data-testid="stacked-item-1"
-      >
-        <div
-          class="flex items-center justify-between text-sm text-slate-300"
-        >
-          <span
-            class="font-medium text-slate-100"
-          >
-            Heating
-          </span>
-          <span>
-            800 g CO₂e
-          </span>
-        </div>
-        <div
-          class="group relative h-3 overflow-hidden rounded-full bg-slate-800/80"
-          style="transition: all 0.5s ease; width: 100%;"
-        >
-          <div
-            class="h-full rounded-full bg-gradient-to-r from-sky-500/80 via-sky-400/70 to-cyan-300/80 transition-all duration-500 ease-out group-hover:from-sky-400 group-hover:to-cyan-200"
-            data-testid="stacked-bar-1"
-            style="width: 40%;"
-            title="800 g CO₂e [2]"
-          />
-        </div>
-      </li>
-    </ol>
-    <p
-      class="mt-6 text-xs uppercase tracking-[0.3em] text-slate-300"
+      <div
+        class="h-full rounded-full bg-gradient-to-r from-sky-500/80 via-sky-400/70 to-cyan-300/80 transition-all duration-500 ease-out group-hover:from-sky-400 group-hover:to-cyan-200"
+        data-testid="stacked-bar-0"
+        style="width: 60%;"
+        title="1.20 kg CO₂e [1]"
+      />
+    </div>
+  </li>
+  <li
+    class="space-y-1"
+    data-testid="stacked-item-1"
+  >
+    <div
+      class="flex items-center justify-between text-sm text-slate-300"
     >
-      Annual emissions (adaptive units)
-    </p>
-  </section>
-</DocumentFragment>
+      <span
+        class="font-medium text-slate-100"
+      >
+        Heating
+      </span>
+      <span>
+        800 g CO₂e
+      </span>
+    </div>
+    <div
+      class="group relative h-3 overflow-hidden rounded-full bg-slate-800/80"
+      style="transition: all 0.5s ease; width: 100%;"
+    >
+      <div
+        class="h-full rounded-full bg-gradient-to-r from-sky-500/80 via-sky-400/70 to-cyan-300/80 transition-all duration-500 ease-out group-hover:from-sky-400 group-hover:to-cyan-200"
+        data-testid="stacked-bar-1"
+        style="width: 40%;"
+        title="800 g CO₂e [2]"
+      />
+    </div>
+  </li>
+</ol>
 `;

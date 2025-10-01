@@ -1,3 +1,4 @@
+import '@testing-library/jest-dom';
 import { render } from '@testing-library/react';
 
 import { Stacked } from '../Stacked';
@@ -22,11 +23,16 @@ const sampleData = [
 
 describe('Stacked', () => {
   it('renders stacked bars with reference hints', () => {
-    const { asFragment, getByTestId } = render(
+    const { getByRole, getByTestId } = render(
       <Stacked data={sampleData} referenceLookup={referenceLookup} />
     );
 
-    expect(asFragment()).toMatchSnapshot();
+    // Section is a landmark with an accessible name and focus target.
+    const section = getByRole('region', { name: /annual emissions by category/i });
+    expect(section).toHaveAttribute('tabindex', '-1');
+
+    const chart = getByTestId('stacked-svg');
+    expect(chart).toMatchSnapshot();
     expect(getByTestId('stacked-bar-0')).toHaveAttribute('title', expect.stringContaining('[1]'));
   });
 });
