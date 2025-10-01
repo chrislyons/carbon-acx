@@ -474,6 +474,80 @@ def create_app() -> Dash:
 
         return best_layer, best_entries
 
+    def _activity_reference_keys(
+        activity_id: str | None,
+        figures_store_value,
+    ) -> tuple[list[str], str | None]:
+        if not activity_id or not isinstance(figures_store_value, Mapping):
+            return [], None
+
+        bubble_payload = figures_store_value.get("bubble")
+        if not isinstance(bubble_payload, Mapping):
+            return [], None
+
+        data = bubble_payload.get("data")
+        if not isinstance(data, list):
+            return [], None
+
+        for entry in data:
+            if not isinstance(entry, Mapping):
+                continue
+            raw_id = entry.get("activity_id")
+            if raw_id in (None, ""):
+                continue
+            if str(raw_id) != activity_id:
+                continue
+            raw_keys = entry.get("citation_keys")
+            keys = [str(key) for key in raw_keys if isinstance(key, str)] if isinstance(raw_keys, list) else []
+            ordered = _order_reference_keys(keys, reference_lookup)
+            layer_value = entry.get("layer_id")
+            layer_id = str(layer_value) if layer_value not in (None, "") else None
+            return ordered, layer_id
+
+        return [], None
+
+    def _resolve_upstream_reference_keys(
+        activity_id: str | None,
+        figures_store_value,
+        *,
+        layer_hint: str | None = None,
+    ) -> tuple[list[str], str | None]:
+        if not activity_id:
+            return [], layer_hint
+
+        layer_id, upstream_entries = _resolve_upstream_chain(
+            activity_id,
+            figures_store_value,
+            layer_hint=layer_hint,
+        )
+
+        effective_layer = layer_id or layer_hint
+        if effective_layer not in CIVILIAN_LAYERS:
+            return [], layer_id
+
+        upstream_keys: list[str] = []
+        for entry in upstream_entries:
+            if not isinstance(entry, Mapping):
+                continue
+            for field in ("citation_keys", "sources", "source_ids"):
+                raw_values = entry.get(field)
+                if isinstance(raw_values, list):
+                    extend_unique(
+                        [str(item) for item in raw_values if isinstance(item, str)],
+                        upstream_keys,
+                    )
+                elif isinstance(raw_values, str):
+                    extend_unique([raw_values], upstream_keys)
+
+            operation_activity_id = entry.get("operation_activity_id")
+            if operation_activity_id in (None, ""):
+                continue
+            op_keys, _ = _activity_reference_keys(str(operation_activity_id), figures_store_value)
+            extend_unique(op_keys, upstream_keys)
+
+        ordered = _order_reference_keys(upstream_keys, reference_lookup)
+        return ordered, layer_id
+
     def _summarise_layers(
         layers: list[str], metadata_store_value: Mapping | None
     ) -> dict[str, list[str]]:
@@ -1514,9 +1588,11 @@ def create_app() -> Dash:
     @app.callback(
         Output("references", "children"),
         Input("layer-selector", "value"),
+        Input("acx-active-activity", "data"),
         State("layer-citation-keys", "data"),
+        State("figures-store", "data"),
     )
-    def _update_references(selected_layers, layer_map):
+    def _update_references(selected_layers, active_activity, layer_map, figures_store_value):
         layers = selected_layers or []
         if isinstance(layers, str):
             layers = [layers]
@@ -1532,9 +1608,25 @@ def create_app() -> Dash:
             }
 
         reference_keys_for_layers = _resolve_reference_keys(ordered_layers, mapping)
+
+        upstream_keys: list[str] = []
+        if isinstance(active_activity, str) and active_activity:
+            activity_keys, activity_layer = _activity_reference_keys(
+                active_activity,
+                figures_store_value,
+            )
+            if activity_keys:
+                reference_keys_for_layers = activity_keys
+            upstream_keys, _ = _resolve_upstream_reference_keys(
+                active_activity,
+                figures_store_value,
+                layer_hint=activity_layer,
+            )
+
         return references.render_children(
             reference_keys_for_layers,
             include_heading=False,
+            upstream_keys=upstream_keys,
         )
 
     @app.callback(
