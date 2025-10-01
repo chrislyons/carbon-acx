@@ -87,6 +87,7 @@ export function Bubble({ title = 'Activity emissions bubble chart', data, refere
         aria-labelledby="bubble-heading"
         className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-5 shadow-inner shadow-slate-900/40"
         id="bubble"
+        role="region"
         tabIndex={-1}
       >
         <h3 id="bubble-heading" className="text-base font-semibold text-slate-100">
@@ -108,6 +109,7 @@ export function Bubble({ title = 'Activity emissions bubble chart', data, refere
       aria-labelledby="bubble-heading"
       className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-5 shadow-inner shadow-slate-900/40"
       id="bubble"
+      role="region"
       tabIndex={-1}
     >
       <h3 id="bubble-heading" className="text-base font-semibold text-slate-100">
@@ -115,6 +117,7 @@ export function Bubble({ title = 'Activity emissions bubble chart', data, refere
       </h3>
       <div className="mt-4 flex flex-col items-stretch">
         <svg
+          data-testid="bubble-svg"
           role="img"
           viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
           className="w-full text-slate-400"

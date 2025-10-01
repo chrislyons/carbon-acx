@@ -1,3 +1,4 @@
+import '@testing-library/jest-dom';
 import { render } from '@testing-library/react';
 
 import { Sankey } from '../Sankey';
@@ -24,11 +25,16 @@ const sampleData = {
 
 describe('Sankey', () => {
   it('renders gradient links with reference hints', () => {
-    const { asFragment, container } = render(
+    const { container, getByRole, getByTestId } = render(
       <Sankey data={sampleData} referenceLookup={referenceLookup} />
     );
 
-    expect(asFragment()).toMatchSnapshot();
+    // Section is a landmark with an accessible name and focus target.
+    const section = getByRole('region', { name: /emission pathways/i });
+    expect(section).toHaveAttribute('tabindex', '-1');
+
+    const svg = getByTestId('sankey-svg');
+    expect(svg).toMatchSnapshot();
     const link = container.querySelector('#sankey-link-0 title');
     expect(link?.textContent).toContain('[1]');
   });

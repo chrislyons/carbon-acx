@@ -1,189 +1,172 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`Bubble > renders bubble chart with pulsing circles 1`] = `
-<DocumentFragment>
-  <section
-    aria-labelledby="bubble-heading"
-    class="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-5 shadow-inner shadow-slate-900/40"
-    id="bubble"
+<svg
+  aria-describedby="bubble-axis-description"
+  class="w-full text-slate-400"
+  data-testid="bubble-svg"
+  role="img"
+  viewBox="0 0 640 360"
+>
+  <defs>
+    <radialgradient
+      cx="50%"
+      cy="50%"
+      id="bubble-fill"
+      r="75%"
+    >
+      <stop
+        offset="0%"
+        stop-color="#38bdf8"
+        stop-opacity="0.9"
+      />
+      <stop
+        offset="100%"
+        stop-color="#0f172a"
+        stop-opacity="0.2"
+      />
+    </radialgradient>
+  </defs>
+  <rect
+    fill="url(#bubble-fill)"
+    fill-opacity="0.08"
+    height="260"
+    rx="24"
+    stroke="rgba(148, 163, 184, 0.25)"
+    width="480"
+    x="80"
+    y="50"
+  />
+  <g
+    class="group"
+    data-testid="bubble-point-0"
+    transform="translate(200, 50)"
   >
-    <h3
-      class="text-base font-semibold text-slate-100"
-      id="bubble-heading"
+    <circle
+      class="fill-sky-400/80 transition-transform duration-300 ease-out group-hover:scale-110 group-focus-within:scale-110"
+      r="42"
+      stroke="rgba(56, 189, 248, 0.4)"
+      stroke-width="2"
     >
-      Activity emissions bubble chart
-    </h3>
-    <div
-      class="mt-4 flex flex-col items-stretch"
+      <title>
+        Cooling — 2.50 kg CO₂e [1]
+      </title>
+    </circle>
+    <text
+      class="fill-slate-300 text-xs font-medium"
+      text-anchor="middle"
+      y="58"
     >
-      <svg
-        aria-describedby="bubble-axis-description"
-        class="w-full text-slate-400"
-        role="img"
-        viewBox="0 0 640 360"
-      >
-        <defs>
-          <radialgradient
-            cx="50%"
-            cy="50%"
-            id="bubble-fill"
-            r="75%"
-          >
-            <stop
-              offset="0%"
-              stop-color="#38bdf8"
-              stop-opacity="0.9"
-            />
-            <stop
-              offset="100%"
-              stop-color="#0f172a"
-              stop-opacity="0.2"
-            />
-          </radialgradient>
-        </defs>
-        <rect
-          fill="url(#bubble-fill)"
-          fill-opacity="0.08"
-          height="260"
-          rx="24"
-          stroke="rgba(148, 163, 184, 0.25)"
-          width="480"
-          x="80"
-          y="50"
-        />
-        <g
-          class="group"
-          data-testid="bubble-point-0"
-          transform="translate(200, 50)"
-        >
-          <circle
-            class="fill-sky-400/80 transition-transform duration-300 ease-out group-hover:scale-110 group-focus-within:scale-110"
-            r="42"
-            stroke="rgba(56, 189, 248, 0.4)"
-            stroke-width="2"
-          >
-            <title>
-              Cooling — 2.50 kg CO₂e [1]
-            </title>
-          </circle>
-          <text
-            class="fill-slate-300 text-xs font-medium"
-            text-anchor="middle"
-            y="58"
-          >
-            Cooling
-          </text>
-        </g>
-        <g
-          class="group"
-          data-testid="bubble-point-1"
-          transform="translate(440, 185.2)"
-        >
-          <circle
-            class="fill-sky-400/80 transition-transform duration-300 ease-out group-hover:scale-110 group-focus-within:scale-110"
-            r="29.09845356715714"
-            stroke="rgba(56, 189, 248, 0.4)"
-            stroke-width="2"
-          >
-            <title>
-              Lighting — 1.20 kg CO₂e [2]
-            </title>
-          </circle>
-          <text
-            class="fill-slate-300 text-xs font-medium"
-            text-anchor="middle"
-            y="45.09845356715714"
-          >
-            Lighting
-          </text>
-        </g>
-        <text
-          class="fill-slate-400 text-xs"
-          text-anchor="middle"
-          x="200"
-          y="348"
-        >
-          HVAC
-        </text>
-        <text
-          class="fill-slate-400 text-xs"
-          text-anchor="middle"
-          x="440"
-          y="348"
-        >
-          Facilities
-        </text>
-        <g>
-          <line
-            stroke="rgba(148, 163, 184, 0.4)"
-            x1="72"
-            x2="80"
-            y1="310"
-            y2="310"
-          />
-          <text
-            class="fill-slate-400 text-xs"
-            text-anchor="end"
-            x="68"
-            y="314"
-          >
-            0.0 kg
-          </text>
-        </g>
-        <g>
-          <line
-            stroke="rgba(148, 163, 184, 0.4)"
-            x1="72"
-            x2="80"
-            y1="180"
-            y2="180"
-          />
-          <text
-            class="fill-slate-400 text-xs"
-            text-anchor="end"
-            x="68"
-            y="184"
-          >
-            1.3 kg
-          </text>
-        </g>
-        <g>
-          <line
-            stroke="rgba(148, 163, 184, 0.4)"
-            x1="72"
-            x2="80"
-            y1="50"
-            y2="50"
-          />
-          <text
-            class="fill-slate-400 text-xs"
-            text-anchor="end"
-            x="68"
-            y="54"
-          >
-            2.5 kg
-          </text>
-        </g>
-        <text
-          class="fill-slate-500 text-xs"
-          id="bubble-axis-description"
-          text-anchor="middle"
-          transform="rotate(-90 32 180)"
-          x="32"
-          y="180"
-        >
-          Annual emissions (kg CO₂e)
-        </text>
-        <text
-          class="fill-slate-500 text-xs"
-          text-anchor="middle"
-          x="320"
-          y="356"
-        >
-          Activity category
-        </text>
-      </svg>
-    </div>
-  </section>
-</DocumentFragment>
+      Cooling
+    </text>
+  </g>
+  <g
+    class="group"
+    data-testid="bubble-point-1"
+    transform="translate(440, 185.2)"
+  >
+    <circle
+      class="fill-sky-400/80 transition-transform duration-300 ease-out group-hover:scale-110 group-focus-within:scale-110"
+      r="29.09845356715714"
+      stroke="rgba(56, 189, 248, 0.4)"
+      stroke-width="2"
+    >
+      <title>
+        Lighting — 1.20 kg CO₂e [2]
+      </title>
+    </circle>
+    <text
+      class="fill-slate-300 text-xs font-medium"
+      text-anchor="middle"
+      y="45.09845356715714"
+    >
+      Lighting
+    </text>
+  </g>
+  <text
+    class="fill-slate-400 text-xs"
+    text-anchor="middle"
+    x="200"
+    y="348"
+  >
+    HVAC
+  </text>
+  <text
+    class="fill-slate-400 text-xs"
+    text-anchor="middle"
+    x="440"
+    y="348"
+  >
+    Facilities
+  </text>
+  <g>
+    <line
+      stroke="rgba(148, 163, 184, 0.4)"
+      x1="72"
+      x2="80"
+      y1="310"
+      y2="310"
+    />
+    <text
+      class="fill-slate-400 text-xs"
+      text-anchor="end"
+      x="68"
+      y="314"
+    >
+      0.0 kg
+    </text>
+  </g>
+  <g>
+    <line
+      stroke="rgba(148, 163, 184, 0.4)"
+      x1="72"
+      x2="80"
+      y1="180"
+      y2="180"
+    />
+    <text
+      class="fill-slate-400 text-xs"
+      text-anchor="end"
+      x="68"
+      y="184"
+    >
+      1.3 kg
+    </text>
+  </g>
+  <g>
+    <line
+      stroke="rgba(148, 163, 184, 0.4)"
+      x1="72"
+      x2="80"
+      y1="50"
+      y2="50"
+    />
+    <text
+      class="fill-slate-400 text-xs"
+      text-anchor="end"
+      x="68"
+      y="54"
+    >
+      2.5 kg
+    </text>
+  </g>
+  <text
+    class="fill-slate-500 text-xs"
+    id="bubble-axis-description"
+    text-anchor="middle"
+    transform="rotate(-90 32 180)"
+    x="32"
+    y="180"
+  >
+    Annual emissions (kg CO₂e)
+  </text>
+  <text
+    class="fill-slate-500 text-xs"
+    text-anchor="middle"
+    x="320"
+    y="356"
+  >
+    Activity category
+  </text>
+</svg>
 `;

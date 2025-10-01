@@ -72,6 +72,7 @@ export function Stacked({ title = 'Annual emissions by category', data, referenc
         aria-labelledby="stacked-heading"
         className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-5 shadow-inner shadow-slate-900/40"
         id="stacked"
+        role="region"
         tabIndex={-1}
       >
         <h3 id="stacked-heading" className="text-base font-semibold text-slate-100">
@@ -87,6 +88,7 @@ export function Stacked({ title = 'Annual emissions by category', data, referenc
       aria-labelledby="stacked-heading"
       className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-5 shadow-inner shadow-slate-900/40"
       id="stacked"
+      role="region"
       tabIndex={-1}
     >
       <div className="flex items-baseline justify-between gap-4">
@@ -95,7 +97,7 @@ export function Stacked({ title = 'Annual emissions by category', data, referenc
         </h3>
         <p className="text-xs uppercase tracking-[0.3em] text-slate-300">Total {formatEmission(total)}</p>
       </div>
-      <ol role="list" className="mt-5 space-y-3">
+      <ol role="list" className="mt-5 space-y-3" data-testid="stacked-svg">
         {prepared.map((row, index) => {
           const width = total > 0 ? Math.max((row.value / total) * 100, 2) : 0;
           return (
