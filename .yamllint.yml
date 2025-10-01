@@ -1,0 +1,8 @@
+extends: default
+
+rules:
+  truthy:
+    level: error
+  indentation:
+    spaces: 2
+    indent-sequences: true

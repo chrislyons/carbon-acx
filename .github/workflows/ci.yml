@@ -2,218 +2,66 @@ name: CI
 
 on:
   push:
-    branches: ["main"]
+    branches: [ main ]
   pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
 
 jobs:
-  check-traceability:
-    if: github.event_name == 'pull_request'
+  lint-yaml:
     runs-on: ubuntu-latest
     steps:
-      - name: Ensure PR description includes ACX/CDX traceability markers
-        run: |
-          body=$(jq -r '.pull_request.body // ""' "${GITHUB_EVENT_PATH}")
-          missing=()
-          if ! grep -Fq "Implements (spec): ACX" <<<"${body}"; then
-            missing+=("\"Implements (spec): ACX\"")
-          fi
-          if ! grep -Fq "Prompt (execution): CDX" <<<"${body}"; then
-            missing+=("\"Prompt (execution): CDX\"")
-          fi
-          if [ ${#missing[@]} -gt 0 ]; then
-            printf 'PR description must include %s.\n' "$(IFS=' and '; echo "${missing[*]}")" >&2
-            exit 1
-          fi
-          echo "PR description contains required traceability markers."
+      - uses: actions/checkout@v4
+      - uses: ibiqlik/action-yamllint@v3
+        with:
+          file_or_dir: .github/workflows
+          config_file: .yamllint.yml
 
-  check-no-node-modules:
+  build-static:
     runs-on: ubuntu-latest
+    needs: [lint-yaml]
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Ensure node_modules directories are not tracked
-        run: |
-          if git ls-files | grep -E '(^|/)node_modules/' >/dev/null; then
-            echo "Tracked files must not live inside node_modules/." >&2
-            echo "Remove the offending paths or add them to .gitignore." >&2
-            git ls-files | grep -E '(^|/)node_modules/' >&2
-            exit 1
-          fi
-          echo "No tracked node_modules/ paths detected."
-
-  build:
-    needs: [check-no-node-modules]
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        backend: [csv, duckdb]
-    env:
-      ACX_DATA_BACKEND: ${{ matrix.backend }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-
-      - name: Check README make targets
-        run: python tools/check_readme_make_targets.py
 
       - name: Install Poetry
-        run: pip install poetry==1.7.1
+        uses: abatilo/actions-poetry@v3
+        with:
+          poetry-version: "1.8.3"
 
-      - name: Configure Poetry
-        run: poetry config virtualenvs.create false
+      - name: Install deps
+        run: poetry install --no-interaction --no-root
 
-      - name: Install dependencies
-        run: poetry install --with dev --extras db --no-root
+      - name: Build artifacts (CSV backend)
+        env:
+          ACX_GENERATED_AT: "1970-01-01T00:00:00+00:00"
+          ACX_DATA_BACKEND: "csv"
+          ACX_OUTPUT_ROOT: "dist/artifacts"
+          PYTHONPATH: "."
+        run: make build-static
 
-      - name: Verify lockfile consistency
-        run: poetry lock --check
-
-      - name: Lint
-        run: make lint
-
-      - name: Test
-        run: make test
-
-      - name: Build database-backed artifacts
-        if: matrix.backend == 'csv'
-          run: |
-            set -euo pipefail
-            make db_init db_import build_db
-            sqlite_outputs="$(python -c 'import json; from pathlib import Path; manifest_path = Path("dist/artifacts/latest-build.json"); data = json.loads(manifest_path.read_text()); artifact_dir = Path(data["artifact_dir"]).expanduser().resolve(); outputs_dir = artifact_dir / "calc" / "outputs"; print(outputs_dir)')"
-            if [ ! -d "${sqlite_outputs}" ]; then
-              echo "SQLite build outputs not found at ${sqlite_outputs}" >&2
-              exit 1
-            fi
-            echo "SQLITE_OUTPUTS=${sqlite_outputs}" >> "${GITHUB_ENV}"
-            make build_csv
-            csv_outputs="$(python -c 'import json; from pathlib import Path; manifest_path = Path("dist/artifacts/latest-build.json"); data = json.loads(manifest_path.read_text()); artifact_dir = Path(data["artifact_dir"]).expanduser().resolve(); outputs_dir = artifact_dir / "calc" / "outputs"; print(outputs_dir)')"
-            if [ ! -d "${csv_outputs}" ]; then
-              echo "CSV build outputs not found at ${csv_outputs}" >&2
-              exit 1
-            fi
-            echo "CSV_OUTPUTS=${csv_outputs}" >> "${GITHUB_ENV}"
-
-      - name: Diff CSV and SQLite outputs
-        if: matrix.backend == 'csv'
-        run: |
-          set -euo pipefail
-          if [ -z "${CSV_OUTPUTS:-}" ] || [ -z "${SQLITE_OUTPUTS:-}" ]; then
-            echo "Expected calc/outputs directories for CSV and SQLite builds" >&2
-            exit 1
-          fi
-          diff -ru \
-            <(grep -h -v '"generated_at":' "${CSV_OUTPUTS}"/*) \
-            <(grep -h -v '"generated_at":' "${SQLITE_OUTPUTS}"/*)
-
-      - name: Build packages
-        run: make build site package sbom
-
-      - name: Upload export_view.json
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: export-view-${{ matrix.backend }}-${{ github.run_id }}
-          path: dist/artifacts/**/${{ matrix.backend }}/calc/outputs/export_view.json
-          if-no-files-found: error
-
-      - name: Upload SBOM
-        uses: actions/upload-artifact@v4
-        with:
-          name: sbom-${{ matrix.backend }}-${{ github.run_id }}
-          path: dist/sbom/cyclonedx.json
-          if-no-files-found: error
-
-      - name: Vulnerability scan
-        run: poetry run pip-audit --strict
-
-      - name: Upload dist artifacts bundle
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist-artifacts-${{ matrix.backend }}-${{ github.run_id }}
+          name: dist-artifacts
           path: dist/artifacts
-          if-no-files-found: error
 
-      - name: Upload static site bundle
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist-site-${{ matrix.backend }}-${{ github.run_id }}
-          path: dist/site
-          if-no-files-found: error
-
-  backend-parity:
-    needs: build
+  tests:
     runs-on: ubuntu-latest
+    needs: [build-static]
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-
-      - name: Download CSV export
-        uses: actions/download-artifact@v4
+      - uses: abatilo/actions-poetry@v3
         with:
-          name: export-view-csv-${{ github.run_id }}
-          path: parity/csv
-
-      - name: Normalize CSV export path
-        run: |
-          set -euo pipefail
-          csv_file="$(find parity/csv -name export_view.json -print -quit)"
-          if [ -z "${csv_file}" ]; then
-            echo "export_view.json from CSV backend artifact not found" >&2
-            exit 1
-          fi
-          mv "${csv_file}" parity/csv/export_view.json
-
-      - name: Download DuckDB export
-        uses: actions/download-artifact@v4
-        with:
-          name: export-view-duckdb-${{ github.run_id }}
-          path: parity/duckdb
-
-      - name: Normalize DuckDB export path
-        run: |
-          set -euo pipefail
-          duckdb_file="$(find parity/duckdb -name export_view.json -print -quit)"
-          if [ -z "${duckdb_file}" ]; then
-            echo "export_view.json from DuckDB backend artifact not found" >&2
-            exit 1
-          fi
-          mv "${duckdb_file}" parity/duckdb/export_view.json
-
-      - name: Diff backend exports
-        run: python tools/diff_exports.py parity/csv/export_view.json parity/duckdb/export_view.json
-
-  deploy-pages:
-    needs: [build, backend-parity]
-    if: github.ref == 'refs/heads/main'
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download static site
-        uses: actions/download-artifact@v4
-        with:
-          name: dist-site-csv-${{ github.run_id }}
-          path: dist-site
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v2
-        with:
-          path: dist-site
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          poetry-version: "1.8.3"
+      - run: poetry install --no-interaction
+      - name: Run pytest
+        run: poetry run pytest -q

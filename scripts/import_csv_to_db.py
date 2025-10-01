@@ -140,6 +140,11 @@ def _apply_conversions(table: str, rows: list[OrderedDict[str, Any]]) -> None:
                 value = row[column]
                 row[column] = _to_bool_flag(value)
 
+        if table == "emission_factors" and row.get("region") == "GLOBAL":
+            row["region"] = None
+        if table == "profiles" and row.get("region_code_default") == "GLOBAL":
+            row["region_code_default"] = None
+
 
 def _validate_rows(table: str, rows: list[OrderedDict[str, Any]]) -> None:
     validator = VALIDATORS.get(table)

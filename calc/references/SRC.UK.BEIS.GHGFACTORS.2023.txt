@@ -1,0 +1,1 @@
+Department for Energy Security and Net Zero, “UK Government greenhouse gas conversion factors for company reporting (2023),” 2023. Available: https://raw.githubusercontent.com/filcuk/ghg_conversion_factors/main/country/gbr/release/ghg-conversion-factors-2023-gbr-v1.1.csv.
