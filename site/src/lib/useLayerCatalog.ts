@@ -94,6 +94,25 @@ function normaliseLayerDescriptor(entry: unknown): LayerDescriptor | null {
   return layer;
 }
 
+function normaliseSnippet(value: string, maxLength = 120) {
+  const snippet = value.replace(/\s+/g, ' ').trim();
+  return snippet.length > maxLength ? `${snippet.slice(0, maxLength)}…` : snippet;
+}
+
+async function parseJsonResponse(response: Response, resource: string) {
+  const body = await response.text();
+  try {
+    return JSON.parse(body);
+  } catch (error) {
+    const contentType = response.headers.get('content-type') ?? 'unknown content-type';
+    const snippet = normaliseSnippet(body);
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Unable to parse ${resource} as JSON (${message}). Content-Type: ${contentType}. Body: ${snippet}`
+    );
+  }
+}
+
 async function fetchCatalog(): Promise<LayerCatalogState> {
   const basePath = ARTIFACTS();
   const layersResponse = await fetch(`${basePath}/layers.json`, {
@@ -104,7 +123,7 @@ async function fetchCatalog(): Promise<LayerCatalogState> {
   if (!layersResponse.ok) {
     throw new Error(`Unable to load layers.json (status ${layersResponse.status})`);
   }
-  const rawLayers = await layersResponse.json();
+  const rawLayers = await parseJsonResponse(layersResponse, 'layers.json');
   if (!Array.isArray(rawLayers)) {
     throw new Error('layers.json must contain an array');
   }
@@ -120,7 +139,7 @@ async function fetchCatalog(): Promise<LayerCatalogState> {
       cache: 'no-store'
     });
     if (auditResponse.ok) {
-      const payload = await auditResponse.json();
+      const payload = await parseJsonResponse(auditResponse, 'audit_report.json');
       if (payload && typeof payload === 'object') {
         audit = payload as LayerAuditReport;
       }
