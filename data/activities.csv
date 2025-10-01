@@ -8,6 +8,13 @@ FOOD.MEAL.BEEF.SERVING,professional,food,Meal with beef—per serving,serving,On
 FOOD.MEAL.CHICKEN.SERVING,professional,food,Meal with chicken—per serving,serving,One serving of a meal including 150 grams of cooked chicken.,,Includes cradle-to-grave emissions for a representative chicken meal portion.
 FOOD.MEAL.VEG.SERVING,professional,food,Vegetarian meal—per serving,serving,One serving of a vegetarian meal centered on legumes and vegetables.,,Includes cradle-to-grave emissions for a representative plant-based meal portion.
 MEDIA.STREAM.UHD.HOUR.TV,online,media,Ultra HD (4K) video streaming on TV—per hour,hour,One hour of ultra-high-definition (4K) streaming to a television.,,EF to be added after validating 4K bandwidth intensity.
+SOCIAL.YOUTUBE.HOUR,online,social,YouTube usage—per hour,hour,Streaming video on YouTube for 1 hour.,,
+SOCIAL.FACEBOOK.HOUR,online,social,Facebook usage—per hour,hour,Scrolling and watching media on Facebook for 1 hour.,,
+SOCIAL.INSTAGRAM.HOUR,online,social,Instagram usage—per hour,hour,Scrolling and watching media on Instagram for 1 hour.,,
+SOCIAL.TIKTOK.HOUR,online,social,TikTok usage—per hour,hour,Watching short-form video on TikTok for 1 hour.,,
+SOCIAL.TWITTER.HOUR,online,social,Twitter/X usage—per hour,hour,Browsing the Twitter/X feed for 1 hour.,,
+SOCIAL.SNAPCHAT.HOUR,online,social,Snapchat usage—per hour,hour,Sending snaps and viewing stories on Snapchat for 1 hour.,,
+SOCIAL.LINKEDIN.HOUR,online,social,LinkedIn usage—per hour,hour,Browsing LinkedIn for 1 hour.,,
 SOCIAL.SCROLL.HOUR.MOBILE,online,social,Mobile social media browsing—per hour,hour,Scrolling a social media feed on a smartphone over mobile or Wi-Fi data.,,Electricity covers handset use plus average data-transfer intensity per hour of social media use.
 CONF.HD.PARTICIPANT_HOUR,online,conferencing,HD video conference per participant-hour,hour,One participant attending a high-definition video conference for one hour.,,Electricity accounts for end-user device plus upstream/downstream data transfer to cloud meeting services.
 CONF.AUDIO.PER_PARTICIPANT_HOUR,online,conferencing,Audio-only conference per participant-hour,hour,One participant attending an audio-only conference for one hour.,,Pending bandwidth-only EF.
