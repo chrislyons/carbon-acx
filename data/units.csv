@@ -16,3 +16,5 @@ site_day,time,28800,"One active light-industrial construction site operating for
 ft2_month,area_time,240768.5376,"One square foot sustained for 30 days (~0.0929 m² × 30 days)."
 tonne,mass,1000,"One metric tonne equal to 1,000 kilograms."
 mmbtu,energy,1055055852,"One million British thermal units expressed in joules."
+garment,count,1,"One finished clothing item"
+wear,count,1,"One wear of a clothing item"
