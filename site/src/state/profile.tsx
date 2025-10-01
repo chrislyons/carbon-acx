@@ -86,6 +86,7 @@ interface ProfileContextValue {
   setDiet: (diet: DietOption) => void;
   setStreamingHours: (value: number) => void;
   setControlsState: (next: ProfileControlsState) => void;
+  setProfileId: (profileId: string) => void;
 }
 
 const STORAGE_KEY = 'acx:profile-controls';
@@ -357,10 +358,11 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
   const [status, setStatus] = useState<ProfileStatus>('idle');
   const [result, setResult] = useState<ComputeResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [profileId] = useState<string>(DEFAULT_PROFILE_ID);
+  const [profileIdState, setProfileIdState] = useState<string>(DEFAULT_PROFILE_ID);
   const [refreshToken, setRefreshToken] = useState(0);
   const [activeLayers, setActiveLayersState] = useState<string[]>([PRIMARY_LAYER_ID]);
 
+  const profileId = profileIdState;
   const overrides = useMemo(() => buildOverrides(controls), [controls]);
   const overridesKey = useMemo(() => JSON.stringify(overrides), [overrides]);
 
@@ -743,6 +745,15 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
     });
   }, []);
 
+  const setProfileId = useCallback((next: string) => {
+    setProfileIdState((previous) => {
+      if (previous === next) {
+        return previous;
+      }
+      return next;
+    });
+  }, []);
+
   const contextValue = useMemo<ProfileContextValue>(
     () => ({
       profileId,
@@ -762,7 +773,8 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
       setModeSplit,
       setDiet,
       setStreamingHours,
-      setControlsState
+      setControlsState,
+      setProfileId
     }),
     [
       profileId,
@@ -781,7 +793,8 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
       setModeSplit,
       setDiet,
       setStreamingHours,
-      setControlsState
+      setControlsState,
+      setProfileId
     ]
   );
 
