@@ -1,4 +1,5 @@
 profile_id,layer_id,name,region_code_default,grid_strategy,grid_mix_json,cohort_id,office_days_per_week,assumption_notes
+BASE.TO.PROF.HYBRID.2025,professional,Toronto professional baseline hybrid (2025),CA-ON,region_default,,,3,"Baseline scenario for mixed office/home routine with seeded activities."
 PRO.TO.24_39.HYBRID.2025,professional,Toronto Pros 24–39 — Hybrid (2025),CA-ON,region_default,,,3,
 PRO.TO.40_56.HYBRID.2025,professional,Toronto Pros 40–56 — Hybrid (2025),CA-ON,region_default,,,3,
 PRO.QC.24_39.HYBRID.2025,professional,Quebec Pros 24–39 — Hybrid (2025),CA-QC,region_default,,,3,

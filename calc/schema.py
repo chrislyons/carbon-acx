@@ -307,6 +307,7 @@ class ActivitySchedule(BaseModel):
     passengers: Optional[float] = None
     hours: Optional[float] = None
     viewers: Optional[float] = None
+    servings: Optional[float] = None
 
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
 

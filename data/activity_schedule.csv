@@ -1,5 +1,10 @@
-profile_id,activity_id,layer_id,freq_per_day,freq_per_week,office_days_only,region_override,schedule_notes
-PRO.TO.24_39.HYBRID.2025,FOOD.COFFEE.CUP.HOT,professional,,5,TRUE,,
-ONLINE.TO.CONSUMER.2025,MEDIA.STREAM.HD.HOUR.TV,online,,7,FALSE,,Weekly total assumes roughly one hour of HD TV streaming per day.
-ONLINE.TO.CONSUMER.2025,MUSIC.STREAM.STANDARD.HOUR,online,,14,FALSE,,Two hours of audio streaming per day across devices.
-ONLINE.TO.CONSUMER.2025,CONF.HD.PER_PARTICIPANT_HOUR,online,,2,FALSE,,Assumes two one-hour HD video calls per week for personal/social use.
+profile_id,activity_id,layer_id,freq_per_day,freq_per_week,office_days_only,region_override,schedule_notes,distance_km,passengers,hours,viewers,servings
+BASE.TO.PROF.HYBRID.2025,TRAN.SCHOOLRUN.CAR.KM,professional,,5,FALSE,,"5 school runs per week (4 km round trip assumed)",4,1,,,
+BASE.TO.PROF.HYBRID.2025,TRAN.SCHOOLRUN.BIKE.KM,professional,,0,FALSE,,"Cycling alternative available; zero frequency in baseline",4,,,,
+BASE.TO.PROF.HYBRID.2025,TRAN.TTC.SUBWAY.KM,professional,1,,TRUE,,"Commute on office days (10 km round trip assumed)",10,1,,,
+BASE.TO.PROF.HYBRID.2025,MEDIA.STREAM.HD.HOUR,professional,1.5,,FALSE,,"Daily leisure streaming",,,1,1,
+BASE.TO.PROF.HYBRID.2025,FOOD.MEAL.BEEF.SERVING,professional,,4,FALSE,,"Weekly meals (150 g cooked beef per serving)",,,,,1
+PRO.TO.24_39.HYBRID.2025,FOOD.COFFEE.CUP.HOT,professional,,5,TRUE,,,,,,,
+ONLINE.TO.CONSUMER.2025,MEDIA.STREAM.HD.HOUR.TV,online,,7,FALSE,,Weekly total assumes roughly one hour of HD TV streaming per day.,,,,,
+ONLINE.TO.CONSUMER.2025,MUSIC.STREAM.STANDARD.HOUR,online,,14,FALSE,,Two hours of audio streaming per day across devices.,,,,,
+ONLINE.TO.CONSUMER.2025,CONF.HD.PER_PARTICIPANT_HOUR,online,,2,FALSE,,Assumes two one-hour HD video calls per week for personal/social use.,,,,,
