@@ -1592,7 +1592,29 @@ def create_app() -> Dash:
         State("layer-citation-keys", "data"),
         State("figures-store", "data"),
     )
-    def _update_references(selected_layers, active_activity, layer_map, figures_store_value):
+    def _update_references(selected_layers, *callback_args):
+        active_activity = None
+        layer_map = None
+        figures_store_value = None
+
+        remaining_args = list(callback_args)
+        if remaining_args:
+            first_arg = remaining_args.pop(0)
+            if isinstance(first_arg, Mapping) and not isinstance(first_arg, str):
+                layer_map = first_arg
+            else:
+                active_activity = first_arg
+
+        if layer_map is None and remaining_args:
+            next_arg = remaining_args.pop(0)
+            if isinstance(next_arg, Mapping):
+                layer_map = next_arg
+            else:
+                figures_store_value = next_arg
+
+        if figures_store_value is None and remaining_args:
+            figures_store_value = remaining_args.pop(0) if remaining_args else None
+
         layers = selected_layers or []
         if isinstance(layers, str):
             layers = [layers]
@@ -1608,6 +1630,20 @@ def create_app() -> Dash:
             }
 
         reference_keys_for_layers = _resolve_reference_keys(ordered_layers, mapping)
+
+        if not isinstance(figures_store_value, Mapping):
+            fallback_items: list[html.Li] = []
+            has_indices = bool(reference_keys_for_layers)
+            references_iterable = citations.references_for(reference_keys_for_layers or [])
+            for idx, ref in enumerate(references_iterable, start=1):
+                text = citations.format_ieee(ref.numbered(idx))
+                attrs = {"children": text}
+                if has_indices:
+                    attrs["data-reference-index"] = str(idx)
+                fallback_items.append(html.Li(**attrs))
+            if not fallback_items:
+                fallback_items.append(html.Li("No references available."))
+            return [html.Ol(fallback_items, className="references-list")]
 
         upstream_keys: list[str] = []
         if isinstance(active_activity, str) and active_activity:
