@@ -283,6 +283,17 @@ function resolveStatusTone(status: string): string {
   }
 }
 
+function normaliseTimestamp(value: unknown): string | null {
+  if (typeof value !== 'string') {
+    return null;
+  }
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+  return parsed.toISOString();
+}
+
 const STATUS_LABEL: Record<string, string> = {
   idle: 'Idle',
   loading: 'Recomputing…',
@@ -314,8 +325,21 @@ export function VizCanvas(): JSX.Element {
       : typeof result?.manifest?.dataset_version === 'string' && result.manifest.dataset_version
         ? result.manifest.dataset_version
         : 'unknown';
-  const generatedAt =
-    typeof result?.manifest?.generated_at === 'string' ? result?.manifest?.generated_at : null;
+  const generatedAt = useMemo(() => {
+    if (!result) {
+      return null;
+    }
+    const manifest = result.manifest ?? {};
+    const fromSnake = normaliseTimestamp((manifest as { generated_at?: unknown }).generated_at);
+    if (fromSnake) {
+      return fromSnake;
+    }
+    const fromCamel = normaliseTimestamp((manifest as { generatedAt?: unknown }).generatedAt);
+    if (fromCamel) {
+      return fromCamel;
+    }
+    return new Date().toISOString();
+  }, [result]);
   const referenceCount = activeReferences.length;
 
   const rawStacked = (result?.figures?.stacked?.data as StackedDatum[]) ?? [];
