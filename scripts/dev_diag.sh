@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BASE="${PUBLIC_BASE_PATH:-/carbon-acx/}"
+BASE="${PUBLIC_BASE_PATH:-/}"
 if [[ "${BASE}" != */ ]]; then
   BASE="${BASE}/"
 fi
