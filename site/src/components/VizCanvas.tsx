@@ -1,4 +1,4 @@
-import { ReactNode, useCallback, useMemo, useRef, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { USE_COMPUTE_API } from '../lib/api';
 import { useLayerCatalog } from '../lib/useLayerCatalog';
@@ -197,6 +197,79 @@ function filterSankeyByLayers(data: SankeyData, activeLayers: ReadonlySet<string
   return { nodes, links };
 }
 
+function sumStackedEmissions(data: readonly StackedDatum[]): number | null {
+  if (!Array.isArray(data) || data.length === 0) {
+    return null;
+  }
+  let total = 0;
+  let hasValue = false;
+  data.forEach((row) => {
+    const mean = typeof row?.values?.mean === 'number' ? row.values.mean : null;
+    if (mean != null && Number.isFinite(mean)) {
+      total += mean;
+      hasValue = true;
+    }
+  });
+  return hasValue ? total : null;
+}
+
+function sumSankeyEmissions(data: SankeyData): number | null {
+  const links = Array.isArray(data?.links) ? data.links : [];
+  if (links.length === 0) {
+    return null;
+  }
+  let total = 0;
+  let hasValue = false;
+  links.forEach((link) => {
+    const mean = typeof link?.values?.mean === 'number' ? link.values.mean : null;
+    if (mean != null && Number.isFinite(mean)) {
+      total += mean;
+      hasValue = true;
+    }
+  });
+  return hasValue ? total : null;
+}
+
+interface TotalConsensus {
+  total: number | null;
+  consensus: boolean;
+  breakdown: Record<string, number>;
+}
+
+function reconcileTotals({
+  stacked,
+  bubble,
+  sankey
+}: {
+  stacked?: number | null;
+  bubble?: number | null;
+  sankey?: number | null;
+}): TotalConsensus {
+  const entries = (
+    Object.entries({ stacked, bubble, sankey }) as Array<[
+      string,
+      number | null | undefined
+    ]>
+  ).filter(([, value]) => typeof value === 'number' && Number.isFinite(value));
+  if (entries.length === 0) {
+    return { total: null, consensus: true, breakdown: {} };
+  }
+  const [, primaryValue] = entries[0] as [string, number];
+  const tolerance = Math.max(1, Math.abs(primaryValue) * 0.005);
+  const consensus = entries.every(([, value]) => {
+    const numeric = value as number;
+    return Math.abs(numeric - primaryValue) <= tolerance;
+  });
+  const bestValue = consensus
+    ? primaryValue
+    : Math.max(...entries.map(([, value]) => value as number));
+  const breakdown = entries.reduce<Record<string, number>>((acc, [key, value]) => {
+    acc[key] = value as number;
+    return acc;
+  }, {});
+  return { total: bestValue, consensus, breakdown };
+}
+
 function resolveStatusTone(status: string): string {
   switch (status) {
     case 'loading':
@@ -262,7 +335,30 @@ export function VizCanvas(): JSX.Element {
     [rawSankey, activeLayerSet]
   );
 
-  const { total, count, topActivities } = useMemo(() => resolveActivities(bubbleData), [bubbleData]);
+  const { total: bubbleTotal, count, topActivities } = useMemo(
+    () => resolveActivities(bubbleData),
+    [bubbleData]
+  );
+
+  const stackedTotal = useMemo(() => sumStackedEmissions(stackedData), [stackedData]);
+  const sankeyTotal = useMemo(() => sumSankeyEmissions(sankeyData), [sankeyData]);
+  const totals = useMemo(
+    () =>
+      reconcileTotals({
+        stacked: stackedTotal,
+        bubble: bubbleTotal,
+        sankey: sankeyTotal
+      }),
+    [stackedTotal, bubbleTotal, sankeyTotal]
+  );
+
+  useEffect(() => {
+    if (!totals.consensus && Object.keys(totals.breakdown).length > 0) {
+      console.warn('Visualizer totals out of sync', totals.breakdown);
+    }
+  }, [totals]);
+
+  const resolvedTotal = totals.total ?? stackedTotal ?? bubbleTotal ?? sankeyTotal ?? null;
 
   const stackedSummary = useMemo(() => {
     const rows = Array.isArray(stackedData)
@@ -278,8 +374,14 @@ export function VizCanvas(): JSX.Element {
           })
           .filter((entry): entry is { id: string; label: string; value: number } => entry !== null)
       : [];
-    const aggregate = rows.reduce((sum, row) => sum + row.value, 0);
-    const items = rows
+    const computedTotal = rows.reduce((sum, row) => sum + row.value, 0);
+    const aggregate =
+      typeof resolvedTotal === 'number' && resolvedTotal > 0
+        ? resolvedTotal
+        : typeof stackedTotal === 'number'
+          ? stackedTotal
+          : computedTotal;
+    const items = [...rows]
       .sort((a, b) => b.value - a.value)
       .slice(0, 3)
       .map((row) => ({
@@ -290,10 +392,15 @@ export function VizCanvas(): JSX.Element {
           aggregate > 0 ? `${Math.round((row.value / aggregate) * 100)}% of tracked categories` : undefined
       }));
     return { items, total: aggregate };
-  }, [stackedData]);
+  }, [stackedData, resolvedTotal, stackedTotal]);
 
   const bubbleSummary = useMemo(() => {
-    const aggregate = typeof total === 'number' ? total : 0;
+    const fallbackTotal =
+      typeof bubbleTotal === 'number'
+        ? bubbleTotal
+        : topActivities.reduce((sum, activity) => sum + activity.emissions, 0);
+    const aggregate =
+      typeof resolvedTotal === 'number' && resolvedTotal > 0 ? resolvedTotal : fallbackTotal;
     const items = topActivities.slice(0, 3).map((activity) => ({
       id: activity.id,
       label: activity.label,
@@ -302,7 +409,7 @@ export function VizCanvas(): JSX.Element {
         aggregate > 0 ? `${Math.round((activity.emissions / aggregate) * 100)}% of activity emissions` : undefined
     }));
     return { items, total: aggregate };
-  }, [topActivities, total]);
+  }, [topActivities, bubbleTotal, resolvedTotal]);
 
   const sankeySummary = useMemo(() => {
     const nodes = Array.isArray(sankeyData?.nodes) ? sankeyData.nodes ?? [] : [];
@@ -329,7 +436,13 @@ export function VizCanvas(): JSX.Element {
       })
       .filter((entry): entry is { id: string; label: string; value: number } => entry !== null)
       .sort((a, b) => b.value - a.value);
-    const aggregate = rows.reduce((sum, row) => sum + row.value, 0);
+    const computedTotal = rows.reduce((sum, row) => sum + row.value, 0);
+    const aggregate =
+      typeof resolvedTotal === 'number' && resolvedTotal > 0
+        ? resolvedTotal
+        : typeof sankeyTotal === 'number'
+          ? sankeyTotal
+          : computedTotal;
     const items = rows.slice(0, 3).map((row) => ({
       id: row.id,
       label: row.label,
@@ -337,7 +450,7 @@ export function VizCanvas(): JSX.Element {
       description: aggregate > 0 ? `${Math.round((row.value / aggregate) * 100)}% of mapped flow` : undefined
     }));
     return { items, total: aggregate };
-  }, [sankeyData]);
+  }, [sankeyData, resolvedTotal, sankeyTotal]);
 
   const referenceLookup = useMemo(
     () => buildReferenceLookup(activeReferenceKeys),
@@ -428,7 +541,7 @@ export function VizCanvas(): JSX.Element {
               <div className="grid gap-[var(--gap-1)] sm:grid-cols-3">
                 <div className="acx-card bg-slate-900/60">
                   <p className="text-[10px] uppercase tracking-[0.35em] text-slate-300">Total emissions</p>
-                  <p className="mt-[var(--gap-0)] text-lg font-semibold text-slate-50">{formatEmission(total)}</p>
+                  <p className="mt-[var(--gap-0)] text-lg font-semibold text-slate-50">{formatEmission(resolvedTotal)}</p>
                   <p className="mt-[var(--gap-0)] text-[10px] uppercase tracking-[0.35em] text-slate-300">
                     {generatedAt ? `run ${new Date(generatedAt).toLocaleString()}` : 'timestamp pending'}
                   </p>
@@ -470,7 +583,12 @@ export function VizCanvas(): JSX.Element {
                   expanded={expandedViz === 'stacked'}
                   onToggle={handleToggleVisualizer}
                 >
-                  <Stacked data={stackedData} referenceLookup={referenceLookup} variant="embedded" />
+                  <Stacked
+                    data={stackedData}
+                    referenceLookup={referenceLookup}
+                    variant="embedded"
+                    totalOverride={resolvedTotal}
+                  />
                 </VisualizerPanel>
                 <VisualizerPanel
                   id="bubble"

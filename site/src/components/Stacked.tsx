@@ -24,6 +24,7 @@ export interface StackedProps {
   data?: StackedDatum[] | null;
   referenceLookup: ReferenceLookup;
   variant?: 'card' | 'embedded';
+  totalOverride?: number | null;
 }
 
 interface PreparedDatum {
@@ -44,7 +45,8 @@ export function Stacked({
   title = 'Annual emissions by category',
   data,
   referenceLookup,
-  variant = 'card'
+  variant = 'card',
+  totalOverride
 }: StackedProps) {
   const prepared = useMemo<PreparedDatum[]>(() => {
     if (!Array.isArray(data)) {
@@ -70,7 +72,15 @@ export function Stacked({
       .sort((a, b) => b.value - a.value);
   }, [data, referenceLookup]);
 
-  const total = useMemo(() => prepared.reduce((sum, row) => sum + row.value, 0), [prepared]);
+  const computedTotal = useMemo(() => prepared.reduce((sum, row) => sum + row.value, 0), [prepared]);
+  const total =
+    typeof totalOverride === 'number' && Number.isFinite(totalOverride)
+      ? totalOverride
+      : computedTotal;
+  const percentDenominator =
+    typeof totalOverride === 'number' && Number.isFinite(totalOverride) && totalOverride > 0
+      ? totalOverride
+      : computedTotal;
 
   if (prepared.length === 0) {
     if (variant === 'card') {
@@ -108,7 +118,7 @@ export function Stacked({
       {header}
       <ol role="list" className="mt-5 space-y-3" data-testid="stacked-svg">
         {prepared.map((row, index) => {
-          const width = total > 0 ? Math.max((row.value / total) * 100, 2) : 0;
+          const width = percentDenominator > 0 ? Math.max((row.value / percentDenominator) * 100, 2) : 0;
           return (
             <li key={row.key} className="space-y-1" data-testid={`stacked-item-${index}`}>
               <div className="flex items-center justify-between text-sm text-slate-300">
