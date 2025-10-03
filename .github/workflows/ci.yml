@@ -46,11 +46,17 @@ jobs:
           PYTHONPATH: "."
         run: make build-static
 
-      - name: Upload artifacts
+      - name: Upload data artifacts
         uses: actions/upload-artifact@v4
         with:
           name: dist-artifacts
           path: dist/artifacts
+
+      - name: Upload static site bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-site
+          path: dist/site
 
   tests:
     runs-on: ubuntu-latest
