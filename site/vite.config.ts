@@ -1,7 +1,7 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react-swc';
 
-const rawBase = process.env.PUBLIC_BASE_PATH || '/carbon-acx/';
+const rawBase = process.env.PUBLIC_BASE_PATH || '/';
 const base = rawBase.startsWith('/') ? (rawBase.endsWith('/') ? rawBase : `${rawBase}/`) : `/${rawBase.replace(/^\/+/, '')}/`;
 
 export default defineConfig({

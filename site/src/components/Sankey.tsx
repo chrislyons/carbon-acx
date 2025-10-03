@@ -33,6 +33,7 @@ export interface SankeyProps {
   title?: string;
   data?: SankeyData | null;
   referenceLookup: ReferenceLookup;
+  variant?: 'card' | 'embedded';
 }
 
 interface PositionedNode extends SankeyNode {
@@ -69,7 +70,12 @@ const CATEGORY_COLORS = [
   '#f97316'
 ];
 
-export function Sankey({ title = 'Emission pathways', data, referenceLookup }: SankeyProps) {
+export function Sankey({
+  title = 'Emission pathways',
+  data,
+  referenceLookup,
+  variant = 'card'
+}: SankeyProps) {
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [hoveredLink, setHoveredLink] = useState<string | null>(null);
 
@@ -157,42 +163,35 @@ export function Sankey({ title = 'Emission pathways', data, referenceLookup }: S
   }, [preparedLinks]);
 
   if (nodeMap.size === 0 || preparedLinks.length === 0) {
-    return (
-      <section
-        aria-labelledby="sankey-heading"
-        className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-5 shadow-inner shadow-slate-900/40"
-        id="sankey"
-        role="region"
-        tabIndex={-1}
-      >
-        <h3 id="sankey-heading" className="text-base font-semibold text-slate-100">
-          {title}
-        </h3>
-        <p className="mt-4 text-sm text-slate-400">No sankey data available.</p>
-      </section>
-    );
+    if (variant === 'card') {
+      return (
+        <section
+          aria-labelledby="sankey-heading"
+          className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-5 shadow-inner shadow-slate-900/40"
+          id="sankey"
+          role="region"
+          tabIndex={-1}
+        >
+          <h3 id="sankey-heading" className="text-base font-semibold text-slate-100">
+            {title}
+          </h3>
+          <p className="mt-4 text-sm text-slate-400">No sankey data available.</p>
+        </section>
+      );
+    }
+    return <p className="text-sm text-slate-400">No sankey data available.</p>;
   }
 
   const activeLinkIndex = hoveredLink ? Number(hoveredLink.replace('sankey-link-', '')) : NaN;
   const activeLink = Number.isFinite(activeLinkIndex) ? preparedLinks[activeLinkIndex] ?? null : null;
 
-  return (
-    <section
-      aria-labelledby="sankey-heading"
-      className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-5 shadow-inner shadow-slate-900/40"
-      id="sankey"
-      role="region"
-      tabIndex={-1}
+  const chart = (
+    <svg
+      data-testid="sankey-svg"
+      role="img"
+      viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
+      className="mt-4 w-full text-slate-400"
     >
-      <h3 id="sankey-heading" className="text-base font-semibold text-slate-100">
-        {title}
-      </h3>
-      <svg
-        data-testid="sankey-svg"
-        role="img"
-        viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
-        className="mt-4 w-full text-slate-400"
-      >
         <defs>
           {preparedLinks.map((link) => (
             <linearGradient
@@ -300,7 +299,25 @@ export function Sankey({ title = 'Emission pathways', data, referenceLookup }: S
             </g>
           );
         })}
-      </svg>
-    </section>
+    </svg>
   );
+
+  if (variant === 'card') {
+    return (
+      <section
+        aria-labelledby="sankey-heading"
+        className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-5 shadow-inner shadow-slate-900/40"
+        id="sankey"
+        role="region"
+        tabIndex={-1}
+      >
+        <h3 id="sankey-heading" className="text-base font-semibold text-slate-100">
+          {title}
+        </h3>
+        {chart}
+      </section>
+    );
+  }
+
+  return chart;
 }

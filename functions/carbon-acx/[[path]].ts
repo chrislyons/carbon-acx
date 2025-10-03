@@ -20,7 +20,7 @@ interface BasePathInfo {
 }
 
 function normaliseBasePath(raw: string | undefined): BasePathInfo {
-  let base = (raw && raw.trim()) || "/carbon-acx/";
+  let base = (raw && raw.trim()) || "/";
   if (!base.startsWith("/")) {
     base = `/${base}`;
   }

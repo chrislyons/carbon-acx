@@ -103,16 +103,16 @@ export function LayerToggles({
         Toggle additional layers to compare with the baseline professional footprint. References update
         automatically.
       </p>
-      <div className="mt-3 flex flex-col gap-2.5 sm:flex-row">
+      <div className="mt-3 grid gap-2 sm:grid-cols-2">
         {options.map((option) => {
           const isActive = activeSet.has(option.id);
           return (
             <label
               key={option.id}
-              className={`flex min-h-[120px] cursor-pointer flex-1 items-start gap-3 rounded-lg border px-3 py-3 transition ${
+              className={`group relative flex cursor-pointer items-start gap-3 rounded-lg border px-3 py-3 transition ${
                 isActive
-                  ? 'border-sky-400/60 bg-sky-500/10 text-slate-100'
-                  : 'border-slate-800/70 bg-slate-950/40 text-slate-300 hover:border-slate-700'
+                  ? 'border-sky-400/60 bg-sky-500/10 text-slate-100 shadow-inner shadow-sky-500/10'
+                  : 'border-slate-800/70 bg-slate-950/40 text-slate-300 hover:border-slate-700 hover:bg-slate-900/60'
               }`}
             >
               <input
@@ -121,9 +121,11 @@ export function LayerToggles({
                 onChange={() => handleToggle(option.id)}
                 className="mt-1 h-4 w-4 rounded border-slate-600 bg-slate-900 text-sky-400 focus:ring-sky-400"
               />
-              <span className="space-y-1">
+              <span className="flex flex-col gap-1">
                 <span className="block text-sm font-semibold text-slate-100">{option.label}</span>
-                <span className="block text-xs text-slate-400">{option.description}</span>
+                <span className="block text-xs text-slate-400 group-hover:text-slate-300">
+                  {option.description}
+                </span>
               </span>
             </label>
           );
