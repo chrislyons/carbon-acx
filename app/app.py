@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 from functools import lru_cache
 from pathlib import Path
 from typing import Dict, Iterable, Mapping
@@ -12,10 +13,15 @@ import dash
 import copy
 from dash import ALL, Dash, Input, Output, State, dcc, html, no_update
 
+if __package__ in {None, ""}:
+    repo_root = Path(__file__).resolve().parents[1]
+    if str(repo_root) not in sys.path:
+        sys.path.insert(0, str(repo_root))
+
 from calc import citations
 from calc.schema import LayerId
 
-from .components import (
+from app.components import (
     bubble,
     disclosure,
     intensity,
@@ -24,8 +30,8 @@ from .components import (
     stacked,
     vintages,
 )
-from .lib import narratives
-from .components._helpers import extend_unique
+from app.lib import narratives
+from app.components._helpers import extend_unique
 
 ARTIFACT_ENV = "ACX_ARTIFACT_DIR"
 DEFAULT_ARTIFACT_DIR = Path(__file__).resolve().parent.parent / "calc" / "outputs"
