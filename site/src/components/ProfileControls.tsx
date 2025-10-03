@@ -49,6 +49,13 @@ function formatHoursPerDay(value: number): string {
 
 const INPUT_DEBOUNCE_MS = 250;
 
+function clampDays(value: number, max: number): number {
+  if (Number.isNaN(value)) {
+    return 0;
+  }
+  return Math.max(0, Math.min(max, Math.round(value)));
+}
+
 export function ProfileControls(): JSX.Element {
   const {
     profileId,
@@ -115,15 +122,6 @@ export function ProfileControls(): JSX.Element {
     [commitCommuteDays]
   );
 
-  const handleModeSplitChange = useCallback(
-    (mode: keyof ModeSplit, value: number) => {
-      const nextValue = Number.isNaN(value) ? 0 : value;
-      setModeSplitLocal((previous) => rebalanceSplit(previous, mode, nextValue));
-      commitModeSplit(mode, nextValue);
-    },
-    [commitModeSplit]
-  );
-
   const handleDietChange = useCallback(
     (nextDiet: DietOption) => {
       setDietLocal(nextDiet);
@@ -143,12 +141,38 @@ export function ProfileControls(): JSX.Element {
 
   const modeSegments = useMemo(() => {
     const entries = Object.entries(modeSplit) as [keyof ModeSplit, number][];
-    return entries.map(([key, value]) => ({
-      key,
-      value,
-      metadata: MODE_METADATA[key]
-    }));
-  }, [modeSplit.car, modeSplit.transit, modeSplit.bike]);
+    return entries.map(([key, value]) => {
+      const metadata = MODE_METADATA[key];
+      const days = Math.round(((commuteDays || 0) * value) / 100);
+      return { key, value, metadata, days };
+    });
+  }, [modeSplit.car, modeSplit.transit, modeSplit.bike, commuteDays]);
+
+  const allocatedDays = useMemo(
+    () => modeSegments.reduce((sum, segment) => sum + segment.days, 0),
+    [modeSegments]
+  );
+
+  const handleModeSplitDayChange = useCallback(
+    (mode: keyof ModeSplit, dayValue: number) => {
+      const total = Math.max(commuteDays, 0);
+      if (total === 0) {
+        setModeSplitLocal((previous) => {
+          if (previous.car === 0 && previous.transit === 0 && previous.bike === 0) {
+            return previous;
+          }
+          return { car: 0, transit: 0, bike: 0 };
+        });
+        commitModeSplit(mode, 0);
+        return;
+      }
+      const nextDays = clampDays(dayValue, total);
+      const targetPercent = Math.round((nextDays / total) * 100);
+      setModeSplitLocal((previous) => rebalanceSplit(previous, mode, targetPercent));
+      commitModeSplit(mode, targetPercent);
+    },
+    [commuteDays, commitModeSplit]
+  );
 
   return (
     <section
@@ -192,7 +216,11 @@ export function ProfileControls(): JSX.Element {
             <div className="space-y-[var(--gap-1)]">
               <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.3em] text-slate-400">
                 <span>Mode split</span>
-                <span>{modeSplit.car + modeSplit.transit + modeSplit.bike}%</span>
+                <span>
+                  {commuteDays === 0
+                    ? 'No commute days selected'
+                    : `${allocatedDays} / ${commuteDays} days`}
+                </span>
               </div>
               <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
                 {modeSegments.map(({ key, value, metadata }) => (
@@ -205,24 +233,34 @@ export function ProfileControls(): JSX.Element {
                 ))}
               </div>
               <div className="grid gap-[var(--gap-1)] sm:grid-cols-2">
-                {modeSegments.map(({ key, value, metadata }) => (
+                {modeSegments.map(({ key, value, metadata, days }) => (
                   <div key={key} className="space-y-[var(--gap-0)] rounded-lg border border-slate-800/70 bg-slate-900/60 pad-compact">
                     <div className="flex items-center justify-between gap-[var(--gap-0)]">
                       <div>
                         <p className="text-[13px] font-semibold text-slate-100">{metadata.label}</p>
                         <p className="text-compact text-slate-400">{metadata.description}</p>
                       </div>
-                      <span className="text-[13px] font-semibold text-slate-200">{value}%</span>
+                      <div className="text-right">
+                        <p className="text-[13px] font-semibold text-slate-200">{days} day{days === 1 ? '' : 's'}</p>
+                        <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">{value}%</p>
+                      </div>
                     </div>
                     <input
                       type="range"
                       min={0}
-                      max={100}
+                      max={Math.max(commuteDays, 0)}
                       step={1}
-                      value={value}
-                      onChange={(event) => handleModeSplitChange(key, Number(event.target.value))}
+                      value={commuteDays > 0 ? days : 0}
+                      onChange={(event) => handleModeSplitDayChange(key, Number(event.target.value))}
                       className="w-full accent-slate-200"
-                      aria-valuetext={`${metadata.label} ${value}% share`}
+                      disabled={commuteDays === 0}
+                      aria-valuemax={Math.max(commuteDays, 0)}
+                      aria-valuenow={commuteDays > 0 ? days : 0}
+                      aria-valuetext={
+                        commuteDays > 0
+                          ? `${metadata.label} ${days} day${days === 1 ? '' : 's'} per week`
+                          : `${metadata.label} inactive`
+                      }
                     />
                   </div>
                 ))}

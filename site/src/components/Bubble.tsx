@@ -23,6 +23,7 @@ export interface BubbleProps {
   title?: string;
   data?: BubbleDatum[] | null;
   referenceLookup: ReferenceLookup;
+  variant?: 'card' | 'embedded';
 }
 
 interface BubblePoint {
@@ -47,7 +48,12 @@ function toCategory(value: string | null | undefined): string {
   return value;
 }
 
-export function Bubble({ title = 'Activity emissions bubble chart', data, referenceLookup }: BubbleProps) {
+export function Bubble({
+  title = 'Activity emissions bubble chart',
+  data,
+  referenceLookup,
+  variant = 'card'
+}: BubbleProps) {
   const points = useMemo<BubblePoint[]>(() => {
     if (!Array.isArray(data)) {
       return [];
@@ -82,20 +88,23 @@ export function Bubble({ title = 'Activity emissions bubble chart', data, refere
   const maxKg = useMemo(() => points.reduce((max, point) => Math.max(max, point.kilograms), 0), [points]);
 
   if (points.length === 0 || maxKg <= 0) {
-    return (
-      <section
-        aria-labelledby="bubble-heading"
-        className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-5 shadow-inner shadow-slate-900/40"
-        id="bubble"
-        role="region"
-        tabIndex={-1}
-      >
-        <h3 id="bubble-heading" className="text-base font-semibold text-slate-100">
-          {title}
-        </h3>
-        <p className="mt-4 text-sm text-slate-400">No activity data available.</p>
-      </section>
-    );
+    if (variant === 'card') {
+      return (
+        <section
+          aria-labelledby="bubble-heading"
+          className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-5 shadow-inner shadow-slate-900/40"
+          id="bubble"
+          role="region"
+          tabIndex={-1}
+        >
+          <h3 id="bubble-heading" className="text-base font-semibold text-slate-100">
+            {title}
+          </h3>
+          <p className="mt-4 text-sm text-slate-400">No activity data available.</p>
+        </section>
+      );
+    }
+    return <p className="text-sm text-slate-400">No activity data available.</p>;
   }
 
   const chartWidth = SVG_WIDTH - PADDING_X * 2;
@@ -104,25 +113,15 @@ export function Bubble({ title = 'Activity emissions bubble chart', data, refere
 
   const ticks = [0, maxKg / 2, maxKg];
 
-  return (
-    <section
-      aria-labelledby="bubble-heading"
-      className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-5 shadow-inner shadow-slate-900/40"
-      id="bubble"
-      role="region"
-      tabIndex={-1}
-    >
-      <h3 id="bubble-heading" className="text-base font-semibold text-slate-100">
-        {title}
-      </h3>
-      <div className="mt-4 flex flex-col items-stretch">
-        <svg
-          data-testid="bubble-svg"
-          role="img"
-          viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
-          className="w-full text-slate-400"
-          aria-describedby="bubble-axis-description"
-        >
+  const chart = (
+    <div className="mt-4 flex flex-col items-stretch">
+      <svg
+        data-testid="bubble-svg"
+        role="img"
+        viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
+        className="w-full text-slate-400"
+        aria-describedby="bubble-axis-description"
+      >
           <defs>
             <radialGradient id="bubble-fill" cx="50%" cy="50%" r="75%">
               <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.9" />
@@ -209,8 +208,26 @@ export function Bubble({ title = 'Activity emissions bubble chart', data, refere
           <text x={SVG_WIDTH / 2} y={SVG_HEIGHT - 4} textAnchor="middle" className="fill-slate-500 text-xs">
             Activity category
           </text>
-        </svg>
-      </div>
-    </section>
+      </svg>
+    </div>
   );
+
+  if (variant === 'card') {
+    return (
+      <section
+        aria-labelledby="bubble-heading"
+        className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-5 shadow-inner shadow-slate-900/40"
+        id="bubble"
+        role="region"
+        tabIndex={-1}
+      >
+        <h3 id="bubble-heading" className="text-base font-semibold text-slate-100">
+          {title}
+        </h3>
+        {chart}
+      </section>
+    );
+  }
+
+  return chart;
 }

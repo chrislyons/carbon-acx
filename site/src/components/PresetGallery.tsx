@@ -1,57 +1,58 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
-import presetsData from '../data/presets.json';
+import { PRESET_GROUPS, type PresetGroup, type ProfilePreset } from '../data/profile-presets';
 import { useProfile } from '../state/profile';
 
-interface PresetDefinition {
-  preset_id: string;
-  industry_group: string;
-  display: string;
-  profile_ref: string;
+interface PreparedGroup extends PresetGroup {
+  presets: ProfilePresetWithGroup[];
 }
 
-interface IndustryGroup {
-  id: string;
-  presets: PresetDefinition[];
+interface ProfilePresetWithGroup extends ProfilePreset {
+  groupId: string;
 }
 
-const PRESETS: PresetDefinition[] = presetsData as PresetDefinition[];
+const GROUPS: PreparedGroup[] = PRESET_GROUPS.map((group) => ({
+  ...group,
+  presets: group.presets.map((preset) => ({ ...preset, groupId: group.id }))
+}));
 
-const PRESETS_BY_ID = new Map<string, PresetDefinition>();
-const PRESETS_BY_PROFILE_REF = new Map<string, PresetDefinition>();
-const INDUSTRY_GROUPS: IndustryGroup[] = (() => {
-  const groups = new Map<string, IndustryGroup>();
-  PRESETS.forEach((preset) => {
-    PRESETS_BY_ID.set(preset.preset_id, preset);
-    PRESETS_BY_PROFILE_REF.set(preset.profile_ref, preset);
-    if (!groups.has(preset.industry_group)) {
-      groups.set(preset.industry_group, {
-        id: preset.industry_group,
-        presets: []
-      });
-    }
-    groups.get(preset.industry_group)?.presets.push(preset);
+const PRESET_BY_ID = new Map<string, ProfilePresetWithGroup>();
+const PRESET_BY_PROFILE_ID = new Map<string, ProfilePresetWithGroup>();
+
+GROUPS.forEach((group) => {
+  group.presets.forEach((preset) => {
+    PRESET_BY_ID.set(preset.id, preset);
+    PRESET_BY_PROFILE_ID.set(preset.profileId, preset);
   });
-  return Array.from(groups.values());
-})();
+});
+
+function formatOfficeDays(days: number | undefined): string {
+  if (typeof days !== 'number' || Number.isNaN(days)) {
+    return '—';
+  }
+  if (days <= 0) {
+    return '0';
+  }
+  return days % 1 === 0 ? `${days}` : days.toFixed(1);
+}
 
 export function PresetGallery(): JSX.Element {
   const { profileId, setProfileId } = useProfile();
   const [hasInitialised, setHasInitialised] = useState(false);
+  const lastPresetId = useRef<string | null>(null);
 
-  const activePresetId = useMemo(() => {
-    const match = PRESETS_BY_PROFILE_REF.get(profileId);
-    return match?.preset_id ?? null;
+  const activePreset = useMemo(() => {
+    if (!profileId) {
+      return null;
+    }
+    return PRESET_BY_PROFILE_ID.get(profileId) ?? null;
   }, [profileId]);
 
-  const [activeGroupId, setActiveGroupId] = useState(() => {
-    if (activePresetId) {
-      const preset = PRESETS_BY_ID.get(activePresetId);
-      if (preset) {
-        return preset.industry_group;
-      }
+  const [activeGroupId, setActiveGroupId] = useState<string>(() => {
+    if (activePreset) {
+      return activePreset.groupId;
     }
-    return INDUSTRY_GROUPS[0]?.id ?? '';
+    return GROUPS[0]?.id ?? '';
   });
 
   useEffect(() => {
@@ -61,120 +62,133 @@ export function PresetGallery(): JSX.Element {
     const params = new URLSearchParams(window.location.search);
     const presetId = params.get('preset');
     if (presetId) {
-      const match = PRESETS_BY_ID.get(presetId);
+      const match = PRESET_BY_ID.get(presetId);
       if (match) {
-        setProfileId(match.profile_ref);
+        setProfileId(match.profileId);
       }
     }
     setHasInitialised(true);
   }, [hasInitialised, setProfileId]);
 
   useEffect(() => {
+    const nextPresetId = activePreset?.id ?? null;
+    if (nextPresetId && nextPresetId !== lastPresetId.current && activePreset) {
+      setActiveGroupId(activePreset.groupId);
+    }
+    lastPresetId.current = nextPresetId;
+  }, [activePreset]);
+
+  useEffect(() => {
     if (typeof window === 'undefined' || !hasInitialised) {
       return;
     }
     const url = new URL(window.location.href);
-    if (activePresetId) {
-      url.searchParams.set('preset', activePresetId);
+    if (activePreset) {
+      url.searchParams.set('preset', activePreset.id);
     } else {
       url.searchParams.delete('preset');
     }
     window.history.replaceState(null, '', url);
-  }, [activePresetId, hasInitialised]);
+  }, [activePreset, hasInitialised]);
 
-  useEffect(() => {
-    if (!activePresetId) {
-      if (!activeGroupId && INDUSTRY_GROUPS[0]) {
-        setActiveGroupId(INDUSTRY_GROUPS[0].id);
-      }
-      return;
-    }
-    const preset = PRESETS_BY_ID.get(activePresetId);
-    if (preset && preset.industry_group !== activeGroupId) {
-      setActiveGroupId(preset.industry_group);
-    }
-  }, [activePresetId, activeGroupId]);
+  const visibleGroup = useMemo(() => GROUPS.find((group) => group.id === activeGroupId) ?? null, [activeGroupId]);
 
-  const handleApply = (preset: PresetDefinition) => {
-    setProfileId(preset.profile_ref);
+  const handleApply = (preset: ProfilePresetWithGroup) => {
+    setProfileId(preset.profileId);
   };
-
-  const visiblePresets = useMemo(() => {
-    const group = INDUSTRY_GROUPS.find((entry) => entry.id === activeGroupId);
-    return group?.presets ?? [];
-  }, [activeGroupId]);
 
   return (
     <section aria-labelledby="preset-gallery-heading" className="space-y-[var(--gap-1)]">
-      <div>
+      <header className="space-y-[var(--gap-0)]">
         <p
           id="preset-gallery-heading"
           className="text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-400"
         >
           Preset gallery
         </p>
-        <p className="mt-[var(--gap-0)] text-compact text-slate-400">
-          Choose an industry group to explore ready-made civilian profiles.
+        <p className="text-compact text-slate-400">
+          Jump between curated baseline profiles. Switching presets updates the compute payload and refreshes the visualizer.
         </p>
-      </div>
-      <div className="flex flex-col gap-[var(--gap-1)] sm:flex-row">
-        <div className="flex shrink-0 gap-2 overflow-x-auto pb-1 sm:flex-col sm:overflow-visible sm:pb-0">
-          {INDUSTRY_GROUPS.map((group) => {
-            const isSelected = group.id === activeGroupId;
+      </header>
+      <div className="space-y-[var(--gap-1)]">
+        <nav className="flex flex-wrap gap-[var(--gap-0)]">
+          {GROUPS.map((group) => {
+            const isActive = group.id === activeGroupId;
             return (
               <button
                 key={group.id}
                 type="button"
                 onClick={() => setActiveGroupId(group.id)}
-                className={`rounded-full border px-[var(--gap-1)] py-1 text-[11px] font-semibold uppercase tracking-[0.3em] transition focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 ${
-                  isSelected
-                    ? 'border-sky-500 bg-sky-500/10 text-slate-100 shadow-sm shadow-sky-900/40'
-                    : 'border-slate-800 bg-slate-900/60 text-slate-300 hover:border-slate-600'
-                }`}
-                aria-pressed={isSelected}
-              >
-                {group.id}
-              </button>
-            );
-          })}
-        </div>
-        <div className="grid flex-1 gap-[var(--gap-1)] sm:grid-cols-2">
-          {visiblePresets.map((preset) => {
-            const isActive = preset.preset_id === activePresetId;
-            return (
-              <button
-                key={preset.preset_id}
-                type="button"
-                onClick={() => handleApply(preset)}
-                className={`group flex h-full min-h-[136px] flex-col justify-between rounded-lg border text-left shadow-sm transition focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 pad-compact ${
+                className={`inline-flex items-center rounded-full border px-[var(--gap-1)] py-[4px] text-[11px] font-semibold uppercase tracking-[0.25em] transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 ${
                   isActive
-                    ? 'border-sky-500 bg-sky-500/10 text-slate-100 shadow-sm shadow-sky-900/40'
-                    : 'border-slate-800 bg-slate-900/60 text-slate-300 hover:border-slate-600'
+                    ? 'border-sky-500 bg-sky-500/15 text-slate-100 shadow-sm shadow-sky-900/40'
+                    : 'border-slate-800 bg-slate-900/50 text-slate-300 hover:border-slate-600'
                 }`}
                 aria-pressed={isActive}
               >
-                <div className="flex items-center justify-between gap-[var(--gap-0)]">
-                  <span className="text-[13px] font-semibold text-slate-100">{preset.display}</span>
-                  {isActive && (
-                    <span className="inline-flex items-center rounded-full bg-sky-500/20 px-[var(--gap-1)] py-[2px] text-[9px] font-semibold uppercase tracking-[0.25em] text-sky-300">
-                      Active
-                    </span>
-                  )}
-                </div>
-                <p className="mt-[var(--gap-0)] text-compact text-slate-400">
-                  Loads profile <span className="font-mono text-[11px] text-slate-300">{preset.profile_ref}</span>
-                </p>
-                <span className="mt-[var(--gap-0)] inline-flex items-center gap-[var(--gap-0)] text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-400">
-                  <span className="h-1.5 w-1.5 rounded-full bg-slate-500 transition group-hover:bg-sky-400" aria-hidden="true" />
-                  Apply preset
-                </span>
+                {group.title}
               </button>
             );
           })}
-          {visiblePresets.length === 0 && (
-            <p className="rounded-lg border border-dashed border-slate-800 bg-slate-900/40 p-4 text-center text-compact text-slate-400">
-              No civilian presets available in this industry group yet.
-            </p>
+        </nav>
+        <div className="rounded-xl border border-slate-800/70 bg-slate-950/40">
+          {visibleGroup ? (
+            <div className="space-y-[var(--gap-1)] p-[var(--gap-1)] sm:p-[var(--gap-2)]">
+              <div>
+                <h3 className="text-[13px] font-semibold text-slate-100">{visibleGroup.title}</h3>
+                <p className="mt-[var(--gap-0)] text-compact text-slate-400">{visibleGroup.description}</p>
+              </div>
+              <div className="grid gap-[var(--gap-1)] md:grid-cols-2">
+                {visibleGroup.presets.map((preset) => {
+                  const isActive = activePreset?.id === preset.id;
+                  return (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      onClick={() => handleApply(preset)}
+                      className={`group flex h-full flex-col justify-between gap-[var(--gap-1)] rounded-lg border p-[var(--gap-1)] text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 ${
+                        isActive
+                          ? 'border-sky-500 bg-sky-500/10 text-slate-100 shadow-sm shadow-sky-900/40'
+                          : 'border-slate-800 bg-slate-900/60 text-slate-300 hover:border-slate-600'
+                      }`}
+                      aria-pressed={isActive}
+                    >
+                      <div className="space-y-[var(--gap-0)]">
+                        <div className="flex items-start justify-between gap-[var(--gap-0)]">
+                          <p className="text-[13px] font-semibold text-slate-100">{preset.title}</p>
+                          {isActive ? (
+                            <span className="inline-flex items-center rounded-full bg-sky-500/20 px-[var(--gap-1)] py-[2px] text-[9px] font-semibold uppercase tracking-[0.25em] text-sky-200">
+                              Active
+                            </span>
+                          ) : null}
+                        </div>
+                        <p className="text-compact text-slate-400">{preset.summary}</p>
+                      </div>
+                      <dl className="grid gap-[var(--gap-0)] text-[11px] uppercase tracking-[0.25em] text-slate-400 sm:grid-cols-2">
+                        <div>
+                          <dt className="sr-only">Region</dt>
+                          <dd className="font-semibold text-slate-200">{preset.region}</dd>
+                        </div>
+                        <div>
+                          <dt className="sr-only">Layer</dt>
+                          <dd className="font-semibold text-slate-200">{preset.layerLabel}</dd>
+                        </div>
+                        <div>
+                          <dt className="sr-only">Office days</dt>
+                          <dd className="text-slate-300">Office days: {formatOfficeDays(preset.officeDays)}</dd>
+                        </div>
+                      </dl>
+                      <span className="inline-flex items-center gap-[var(--gap-0)] text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-400 transition group-hover:text-sky-200">
+                        <span className="h-1.5 w-1.5 rounded-full bg-slate-500 transition group-hover:bg-sky-400" aria-hidden="true" />
+                        Switch to profile
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <div className="p-[var(--gap-1)] text-compact text-slate-400">No preset groups available.</div>
           )}
         </div>
       </div>

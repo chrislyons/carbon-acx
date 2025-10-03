@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { USE_COMPUTE_API } from '../lib/api';
 import { useLayerCatalog } from '../lib/useLayerCatalog';
@@ -197,6 +197,79 @@ function filterSankeyByLayers(data: SankeyData, activeLayers: ReadonlySet<string
   return { nodes, links };
 }
 
+function sumStackedEmissions(data: readonly StackedDatum[]): number | null {
+  if (!Array.isArray(data) || data.length === 0) {
+    return null;
+  }
+  let total = 0;
+  let hasValue = false;
+  data.forEach((row) => {
+    const mean = typeof row?.values?.mean === 'number' ? row.values.mean : null;
+    if (mean != null && Number.isFinite(mean)) {
+      total += mean;
+      hasValue = true;
+    }
+  });
+  return hasValue ? total : null;
+}
+
+function sumSankeyEmissions(data: SankeyData): number | null {
+  const links = Array.isArray(data?.links) ? data.links : [];
+  if (links.length === 0) {
+    return null;
+  }
+  let total = 0;
+  let hasValue = false;
+  links.forEach((link) => {
+    const mean = typeof link?.values?.mean === 'number' ? link.values.mean : null;
+    if (mean != null && Number.isFinite(mean)) {
+      total += mean;
+      hasValue = true;
+    }
+  });
+  return hasValue ? total : null;
+}
+
+interface TotalConsensus {
+  total: number | null;
+  consensus: boolean;
+  breakdown: Record<string, number>;
+}
+
+function reconcileTotals({
+  stacked,
+  bubble,
+  sankey
+}: {
+  stacked?: number | null;
+  bubble?: number | null;
+  sankey?: number | null;
+}): TotalConsensus {
+  const entries = (
+    Object.entries({ stacked, bubble, sankey }) as Array<[
+      string,
+      number | null | undefined
+    ]>
+  ).filter(([, value]) => typeof value === 'number' && Number.isFinite(value));
+  if (entries.length === 0) {
+    return { total: null, consensus: true, breakdown: {} };
+  }
+  const [, primaryValue] = entries[0] as [string, number];
+  const tolerance = Math.max(1, Math.abs(primaryValue) * 0.005);
+  const consensus = entries.every(([, value]) => {
+    const numeric = value as number;
+    return Math.abs(numeric - primaryValue) <= tolerance;
+  });
+  const bestValue = consensus
+    ? primaryValue
+    : Math.max(...entries.map(([, value]) => value as number));
+  const breakdown = entries.reduce<Record<string, number>>((acc, [key, value]) => {
+    acc[key] = value as number;
+    return acc;
+  }, {});
+  return { total: bestValue, consensus, breakdown };
+}
+
 function resolveStatusTone(status: string): string {
   switch (status) {
     case 'loading':
@@ -208,6 +281,17 @@ function resolveStatusTone(status: string): string {
     default:
       return 'text-slate-300';
   }
+}
+
+function normaliseTimestamp(value: unknown): string | null {
+  if (typeof value !== 'string') {
+    return null;
+  }
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+  return parsed.toISOString();
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -241,8 +325,21 @@ export function VizCanvas(): JSX.Element {
       : typeof result?.manifest?.dataset_version === 'string' && result.manifest.dataset_version
         ? result.manifest.dataset_version
         : 'unknown';
-  const generatedAt =
-    typeof result?.manifest?.generated_at === 'string' ? result?.manifest?.generated_at : null;
+  const generatedAt = useMemo(() => {
+    if (!result) {
+      return null;
+    }
+    const manifest = result.manifest ?? {};
+    const fromSnake = normaliseTimestamp((manifest as { generated_at?: unknown }).generated_at);
+    if (fromSnake) {
+      return fromSnake;
+    }
+    const fromCamel = normaliseTimestamp((manifest as { generatedAt?: unknown }).generatedAt);
+    if (fromCamel) {
+      return fromCamel;
+    }
+    return new Date().toISOString();
+  }, [result]);
   const referenceCount = activeReferences.length;
 
   const rawStacked = (result?.figures?.stacked?.data as StackedDatum[]) ?? [];
@@ -262,7 +359,122 @@ export function VizCanvas(): JSX.Element {
     [rawSankey, activeLayerSet]
   );
 
-  const { total, count } = useMemo(() => resolveActivities(bubbleData), [bubbleData]);
+  const { total: bubbleTotal, count, topActivities } = useMemo(
+    () => resolveActivities(bubbleData),
+    [bubbleData]
+  );
+
+  const stackedTotal = useMemo(() => sumStackedEmissions(stackedData), [stackedData]);
+  const sankeyTotal = useMemo(() => sumSankeyEmissions(sankeyData), [sankeyData]);
+  const totals = useMemo(
+    () =>
+      reconcileTotals({
+        stacked: stackedTotal,
+        bubble: bubbleTotal,
+        sankey: sankeyTotal
+      }),
+    [stackedTotal, bubbleTotal, sankeyTotal]
+  );
+
+  useEffect(() => {
+    if (!totals.consensus && Object.keys(totals.breakdown).length > 0) {
+      console.warn('Visualizer totals out of sync', totals.breakdown);
+    }
+  }, [totals]);
+
+  const resolvedTotal = totals.total ?? stackedTotal ?? bubbleTotal ?? sankeyTotal ?? null;
+
+  const stackedSummary = useMemo(() => {
+    const rows = Array.isArray(stackedData)
+      ? stackedData
+          .map((row, index) => {
+            const values = row?.values ?? undefined;
+            const mean = typeof values?.mean === 'number' ? values.mean : null;
+            if (mean == null || !Number.isFinite(mean) || mean <= 0) {
+              return null;
+            }
+            const category = typeof row?.category === 'string' && row.category ? row.category : 'Uncategorized';
+            return { id: `${category}-${index}`, label: category, value: mean };
+          })
+          .filter((entry): entry is { id: string; label: string; value: number } => entry !== null)
+      : [];
+    const computedTotal = rows.reduce((sum, row) => sum + row.value, 0);
+    const aggregate =
+      typeof resolvedTotal === 'number' && resolvedTotal > 0
+        ? resolvedTotal
+        : typeof stackedTotal === 'number'
+          ? stackedTotal
+          : computedTotal;
+    const items = [...rows]
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 3)
+      .map((row) => ({
+        id: row.id,
+        label: row.label,
+        value: formatEmission(row.value),
+        description:
+          aggregate > 0 ? `${Math.round((row.value / aggregate) * 100)}% of tracked categories` : undefined
+      }));
+    return { items, total: aggregate };
+  }, [stackedData, resolvedTotal, stackedTotal]);
+
+  const bubbleSummary = useMemo(() => {
+    const fallbackTotal =
+      typeof bubbleTotal === 'number'
+        ? bubbleTotal
+        : topActivities.reduce((sum, activity) => sum + activity.emissions, 0);
+    const aggregate =
+      typeof resolvedTotal === 'number' && resolvedTotal > 0 ? resolvedTotal : fallbackTotal;
+    const items = topActivities.slice(0, 3).map((activity) => ({
+      id: activity.id,
+      label: activity.label,
+      value: formatEmission(activity.emissions),
+      description:
+        aggregate > 0 ? `${Math.round((activity.emissions / aggregate) * 100)}% of activity emissions` : undefined
+    }));
+    return { items, total: aggregate };
+  }, [topActivities, bubbleTotal, resolvedTotal]);
+
+  const sankeySummary = useMemo(() => {
+    const nodes = Array.isArray(sankeyData?.nodes) ? sankeyData.nodes ?? [] : [];
+    const nodeLabels = new Map<string, string>();
+    nodes.forEach((node) => {
+      if (typeof node?.id === 'string') {
+        nodeLabels.set(node.id, typeof node?.label === 'string' && node.label ? node.label : node.id);
+      }
+    });
+    const links = Array.isArray(sankeyData?.links) ? sankeyData.links ?? [] : [];
+    const rows = links
+      .map((link, index) => {
+        const mean = typeof link?.values?.mean === 'number' ? link.values.mean : null;
+        if (mean == null || !Number.isFinite(mean) || mean <= 0) {
+          return null;
+        }
+        const sourceLabel = nodeLabels.get(link.source) ?? link.source;
+        const targetLabel = nodeLabels.get(link.target) ?? link.target;
+        return {
+          id: `${link.source}-${link.target}-${index}`,
+          label: `${sourceLabel} → ${targetLabel}`,
+          value: mean
+        };
+      })
+      .filter((entry): entry is { id: string; label: string; value: number } => entry !== null)
+      .sort((a, b) => b.value - a.value);
+    const computedTotal = rows.reduce((sum, row) => sum + row.value, 0);
+    const aggregate =
+      typeof resolvedTotal === 'number' && resolvedTotal > 0
+        ? resolvedTotal
+        : typeof sankeyTotal === 'number'
+          ? sankeyTotal
+          : computedTotal;
+    const items = rows.slice(0, 3).map((row) => ({
+      id: row.id,
+      label: row.label,
+      value: formatEmission(row.value),
+      description: aggregate > 0 ? `${Math.round((row.value / aggregate) * 100)}% of mapped flow` : undefined
+    }));
+    return { items, total: aggregate };
+  }, [sankeyData, resolvedTotal, sankeyTotal]);
 
   const referenceLookup = useMemo(
     () => buildReferenceLookup(activeReferenceKeys),
@@ -272,10 +484,18 @@ export function VizCanvas(): JSX.Element {
   const statusTone = resolveStatusTone(status);
   const statusLabel = STATUS_LABEL[status] ?? status;
   const canvasRef = useRef<HTMLElement | null>(null);
+  const [expandedViz, setExpandedViz] = useState<string | null>(null);
 
   const hasLayerToggles = useMemo(
     () => availableLayers.some((layer) => layer !== baseLayer),
     [availableLayers, baseLayer]
+  );
+
+  const handleToggleVisualizer = useCallback(
+    (id: string) => {
+      setExpandedViz((current) => (current === id ? null : id));
+    },
+    []
   );
 
   return (
@@ -345,7 +565,7 @@ export function VizCanvas(): JSX.Element {
               <div className="grid gap-[var(--gap-1)] sm:grid-cols-3">
                 <div className="acx-card bg-slate-900/60">
                   <p className="text-[10px] uppercase tracking-[0.35em] text-slate-300">Total emissions</p>
-                  <p className="mt-[var(--gap-0)] text-lg font-semibold text-slate-50">{formatEmission(total)}</p>
+                  <p className="mt-[var(--gap-0)] text-lg font-semibold text-slate-50">{formatEmission(resolvedTotal)}</p>
                   <p className="mt-[var(--gap-0)] text-[10px] uppercase tracking-[0.35em] text-slate-300">
                     {generatedAt ? `run ${new Date(generatedAt).toLocaleString()}` : 'timestamp pending'}
                   </p>
@@ -374,14 +594,135 @@ export function VizCanvas(): JSX.Element {
                   layerCatalog={layerCatalog}
                 />
               ) : null}
-              <div className="grid gap-[var(--gap-1)] lg:grid-cols-3">
-                <Stacked data={stackedData} referenceLookup={referenceLookup} />
-                <Bubble data={bubbleData} referenceLookup={referenceLookup} />
-                <Sankey data={sankeyData} referenceLookup={referenceLookup} />
+              <div className="flex flex-col gap-[var(--gap-1)]">
+                <VisualizerPanel
+                  id="stacked"
+                  title="Annual emissions by category"
+                  summary={
+                    <SummaryList
+                      items={stackedSummary.items}
+                      emptyMessage="No category data available."
+                    />
+                  }
+                  expanded={expandedViz === 'stacked'}
+                  onToggle={handleToggleVisualizer}
+                >
+                  <Stacked
+                    data={stackedData}
+                    referenceLookup={referenceLookup}
+                    variant="embedded"
+                    totalOverride={resolvedTotal}
+                  />
+                </VisualizerPanel>
+                <VisualizerPanel
+                  id="bubble"
+                  title="Activity emissions bubble chart"
+                  summary={
+                    <SummaryList
+                      items={bubbleSummary.items}
+                      emptyMessage="No activity data available."
+                    />
+                  }
+                  expanded={expandedViz === 'bubble'}
+                  onToggle={handleToggleVisualizer}
+                >
+                  <Bubble data={bubbleData} referenceLookup={referenceLookup} variant="embedded" />
+                </VisualizerPanel>
+                <VisualizerPanel
+                  id="sankey"
+                  title="Emission pathways"
+                  summary={
+                    <SummaryList
+                      items={sankeySummary.items}
+                      emptyMessage="No sankey data available."
+                    />
+                  }
+                  expanded={expandedViz === 'sankey'}
+                  onToggle={handleToggleVisualizer}
+                >
+                  <Sankey data={sankeyData} referenceLookup={referenceLookup} variant="embedded" />
+                </VisualizerPanel>
               </div>
             </div>
           ) : null}
         </div>
+      </div>
+    </section>
+  );
+}
+
+interface SummaryItem {
+  id: string;
+  label: string;
+  value: string;
+  description?: string;
+}
+
+interface SummaryListProps {
+  items: SummaryItem[];
+  emptyMessage: string;
+}
+
+function SummaryList({ items, emptyMessage }: SummaryListProps) {
+  if (!items || items.length === 0) {
+    return <p className="text-sm text-slate-400">{emptyMessage}</p>;
+  }
+  return (
+    <ul className="space-y-2" role="list">
+      {items.map((item) => (
+        <li
+          key={item.id}
+          className="flex flex-col gap-1 rounded-lg border border-slate-800/80 bg-slate-900/40 p-3"
+        >
+          <div className="flex items-baseline justify-between gap-3 text-sm">
+            <span className="font-medium text-slate-100">{item.label}</span>
+            <span className="text-xs uppercase tracking-[0.3em] text-slate-400">{item.value}</span>
+          </div>
+          {item.description ? (
+            <p className="text-[11px] text-slate-400">{item.description}</p>
+          ) : null}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+interface VisualizerPanelProps {
+  id: string;
+  title: string;
+  summary: ReactNode;
+  children: ReactNode;
+  expanded: boolean;
+  onToggle: (id: string) => void;
+}
+
+function VisualizerPanel({ id, title, summary, children, expanded, onToggle }: VisualizerPanelProps) {
+  return (
+    <section
+      aria-labelledby={`${id}-heading`}
+      className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-[var(--gap-1)] shadow-inner shadow-slate-900/40 sm:p-[var(--gap-2)]"
+    >
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h3 id={`${id}-heading`} className="text-base font-semibold text-slate-100">
+          {title}
+        </h3>
+        <button
+          type="button"
+          onClick={() => onToggle(id)}
+          className="inline-flex items-center justify-center rounded-md border border-slate-700 bg-slate-900/70 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.3em] text-slate-200 transition hover:border-slate-600 hover:bg-slate-900"
+          aria-expanded={expanded}
+          aria-controls={`${id}-content`}
+        >
+          {expanded ? 'Collapse' : 'Expand'}
+        </button>
+      </div>
+      <div className="mt-4 space-y-4">
+        {summary}
+        {expanded ? (
+          <div id={`${id}-content`} className="border-t border-slate-800/70 pt-4">
+            {children}
+          </div>
+        ) : null}
       </div>
     </section>
   );

@@ -23,6 +23,8 @@ export interface StackedProps {
   title?: string;
   data?: StackedDatum[] | null;
   referenceLookup: ReferenceLookup;
+  variant?: 'card' | 'embedded';
+  totalOverride?: number | null;
 }
 
 interface PreparedDatum {
@@ -39,7 +41,13 @@ function normaliseCategory(value: string | null | undefined): string {
   return value;
 }
 
-export function Stacked({ title = 'Annual emissions by category', data, referenceLookup }: StackedProps) {
+export function Stacked({
+  title = 'Annual emissions by category',
+  data,
+  referenceLookup,
+  variant = 'card',
+  totalOverride
+}: StackedProps) {
   const prepared = useMemo<PreparedDatum[]>(() => {
     if (!Array.isArray(data)) {
       return [];
@@ -64,42 +72,53 @@ export function Stacked({ title = 'Annual emissions by category', data, referenc
       .sort((a, b) => b.value - a.value);
   }, [data, referenceLookup]);
 
-  const total = useMemo(() => prepared.reduce((sum, row) => sum + row.value, 0), [prepared]);
+  const computedTotal = useMemo(() => prepared.reduce((sum, row) => sum + row.value, 0), [prepared]);
+  const total =
+    typeof totalOverride === 'number' && Number.isFinite(totalOverride)
+      ? totalOverride
+      : computedTotal;
+  const percentDenominator =
+    typeof totalOverride === 'number' && Number.isFinite(totalOverride) && totalOverride > 0
+      ? totalOverride
+      : computedTotal;
 
   if (prepared.length === 0) {
-    return (
-      <section
-        aria-labelledby="stacked-heading"
-        className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-5 shadow-inner shadow-slate-900/40"
-        id="stacked"
-        role="region"
-        tabIndex={-1}
-      >
-        <h3 id="stacked-heading" className="text-base font-semibold text-slate-100">
-          {title}
-        </h3>
-        <p className="mt-4 text-sm text-slate-400">No category data available.</p>
-      </section>
-    );
+    if (variant === 'card') {
+      return (
+        <section
+          aria-labelledby="stacked-heading"
+          className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-5 shadow-inner shadow-slate-900/40"
+          id="stacked"
+          role="region"
+          tabIndex={-1}
+        >
+          <h3 id="stacked-heading" className="text-base font-semibold text-slate-100">
+            {title}
+          </h3>
+          <p className="mt-4 text-sm text-slate-400">No category data available.</p>
+        </section>
+      );
+    }
+    return <p className="text-sm text-slate-400">No category data available.</p>;
   }
 
-  return (
-    <section
-      aria-labelledby="stacked-heading"
-      className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-5 shadow-inner shadow-slate-900/40"
-      id="stacked"
-      role="region"
-      tabIndex={-1}
-    >
-      <div className="flex items-baseline justify-between gap-4">
+  const header = (
+    <div className="flex items-baseline justify-between gap-4">
+      {variant === 'card' ? (
         <h3 id="stacked-heading" className="text-base font-semibold text-slate-100">
           {title}
         </h3>
-        <p className="text-xs uppercase tracking-[0.3em] text-slate-300">Total {formatEmission(total)}</p>
-      </div>
+      ) : null}
+      <p className="text-xs uppercase tracking-[0.3em] text-slate-300">Total {formatEmission(total)}</p>
+    </div>
+  );
+
+  const body = (
+    <>
+      {header}
       <ol role="list" className="mt-5 space-y-3" data-testid="stacked-svg">
         {prepared.map((row, index) => {
-          const width = total > 0 ? Math.max((row.value / total) * 100, 2) : 0;
+          const width = percentDenominator > 0 ? Math.max((row.value / percentDenominator) * 100, 2) : 0;
           return (
             <li key={row.key} className="space-y-1" data-testid={`stacked-item-${index}`}>
               <div className="flex items-center justify-between text-sm text-slate-300">
@@ -127,6 +146,22 @@ export function Stacked({ title = 'Annual emissions by category', data, referenc
         })}
       </ol>
       <p className="mt-6 text-xs uppercase tracking-[0.3em] text-slate-300">Annual emissions (adaptive units)</p>
-    </section>
+    </>
   );
+
+  if (variant === 'card') {
+    return (
+      <section
+        aria-labelledby="stacked-heading"
+        className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-5 shadow-inner shadow-slate-900/40"
+        id="stacked"
+        role="region"
+        tabIndex={-1}
+      >
+        {body}
+      </section>
+    );
+  }
+
+  return <div className="space-y-5">{body}</div>;
 }
