@@ -18,6 +18,12 @@ ENTITY.NOVA.CHEM.CA,NOVA Chemicals,corporate,,Canadian petrochemicals producer w
 ENTITY.MAPLELEAF.CA,Maple Leaf Foods,corporate,,Canadian meat and poultry processor operating national brands.
 ENTITY.CARGILL.CA,Cargill Meat Solutions (Canada),corporate,,Canadian beef processor operating High River plant.
 ENTITY.NESTLE.CA,Nestlé Canada,corporate,,Canadian packaged food company with coffee processing operations.
+ENTITY.WHIRLPOOL.US,Whirlpool Corporation,corporate,,North American appliance manufacturer with Canadian assembly operations.
+ENTITY.LG.KR,LG Electronics Inc.,corporate,,Global appliance manufacturer supplying Canadian households.
+ENTITY.CARRIER.US,Carrier Global Corporation,corporate,,HVAC manufacturing and service provider for North American markets.
+ENTITY.DAIKIN.JP,Daikin Industries Ltd.,corporate,,Global HVAC manufacturer and service operator across Canada.
+ENTITY.WALMART.US,Walmart Inc.,corporate,,Retailer operating Canadian supermarket cold-chain logistics.
+ENTITY.COSTCO.US,Costco Wholesale Corporation,corporate,,Warehouse retailer with extensive refrigerated storage networks.
 ENTITY.AMAZON.CA,Amazon Canada Fulfillment Services,corporate,,Canadian e-commerce logistics subsidiary handling national fulfillment and delivery.
 ENTITY.FEDEX.CA,FedEx Express Canada,corporate,,Express parcel and freight carrier serving Canadian markets.
 ENTITY.CNRAIL.CA,Canadian National Railway,corporate,,National freight railway with intermodal trucking and logistics services.
