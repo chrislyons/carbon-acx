@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
-from typing import Any, MutableMapping
+from typing import Any, Mapping, MutableMapping
 from dataclasses import dataclass
 import datetime as _datetime_module
 import os
@@ -293,6 +293,37 @@ def slice_bubble(
     return results
 
 
+def _operation_label(entry: Mapping[str, object], fallback: str) -> str:
+    if not isinstance(entry, Mapping):
+        return fallback
+
+    def _first_text(keys: tuple[str, ...]) -> str:
+        for key in keys:
+            value = entry.get(key)
+            if value in (None, ""):
+                continue
+            text = str(value).strip()
+            if text:
+                return text
+        return ""
+
+    activity_label = _first_text(
+        (
+            "operation_activity_label",
+            "operation_activity_name",
+            "operation_activity_id",
+        )
+    )
+    entity_label = _first_text(("operation_entity_name", "operation_asset_name"))
+    if activity_label and entity_label:
+        return f"{activity_label} ({entity_label})"
+    return activity_label or entity_label or fallback
+
+
+def _scale_values(values: Mapping[str, float], share: float) -> dict[str, float]:
+    return {key: value * share for key, value in values.items()}
+
+
 def slice_sankey(
     df: pd.DataFrame,
     reference_map: Mapping[tuple[str | None, str, str], tuple[list[str], list[int]]] | None = None,
@@ -338,12 +369,49 @@ def slice_sankey(
     )
 
     nodes: dict[tuple[str, str], dict] = {}
+    two_stage_nodes: dict[str, dict] = {}
+    two_stage_links: list[dict] = []
 
     def _ensure_node(kind: str, label: str) -> dict:
         key = (kind, label)
         if key not in nodes:
             nodes[key] = {"id": f"{kind}:{label}", "type": kind, "label": label}
         return nodes[key]
+
+    def _ensure_two_stage_node(node_id: str, kind: str, label: str) -> dict:
+        if node_id not in two_stage_nodes:
+            two_stage_nodes[node_id] = {"id": node_id, "type": kind, "label": label}
+        return two_stage_nodes[node_id]
+
+    upstream_map: dict[tuple[str | None, str], list[Mapping[str, object]]] = {}
+    if "upstream_chain" in df.columns:
+        for _, raw_row in df.iterrows():
+            layer = _normalise_layer(raw_row.get("layer_id"))
+            activity_key = raw_row.get("activity_id")
+            if activity_key in (None, ""):
+                continue
+            activity_id = str(activity_key)
+            chain = raw_row.get("upstream_chain")
+            if not isinstance(chain, list):
+                continue
+            entries: list[Mapping[str, object]] = []
+            for entry in chain:
+                if not isinstance(entry, Mapping):
+                    continue
+                share_value = entry.get("share")
+                try:
+                    share = float(share_value)
+                except (TypeError, ValueError):
+                    continue
+                if share <= 0:
+                    continue
+                entry_copy = dict(entry)
+                entry_copy["share"] = share
+                entries.append(entry_copy)
+            if entries:
+                upstream_map[(layer, activity_id)] = entries
+                if layer is not None:
+                    upstream_map.setdefault((None, activity_id), entries)
 
     links: list[dict] = []
     for _, row in aggregated.iterrows():
@@ -353,19 +421,20 @@ def slice_sankey(
         layer = _normalise_layer(row.get("layer_id"))
         category_label = str(row["activity_category"])
         activity_label = str(row["activity_name"])
+        activity_id = str(row["activity_id"])
         source = _ensure_node("category", category_label)
         target = _ensure_node("activity", activity_label)
         entry = {
             "source": source["id"],
             "target": target["id"],
-            "activity_id": str(row["activity_id"]),
+            "activity_id": activity_id,
             "category": category_label,
             "layer_id": layer,
             "values": values,
             "units": dict(ANNUAL_EMISSIONS_UNITS),
         }
         if reference_map is not None:
-            payload = reference_map.get((layer, category_label, str(row["activity_id"])))
+            payload = reference_map.get((layer, category_label, activity_id))
             if payload:
                 keys, indices = payload
                 if keys:
@@ -373,6 +442,56 @@ def slice_sankey(
                 if indices:
                     entry["hover_reference_indices"] = indices
         links.append(entry)
+
+        activity_node_id = target["id"]
+        _ensure_two_stage_node(activity_node_id, "activity", activity_label)
+
+        share_entries = upstream_map.get((layer, activity_id)) or upstream_map.get(
+            (None, activity_id)
+        )
+        entries_list = [dict(item) for item in share_entries] if share_entries else []
+        total_share = sum(float(item.get("share", 0.0)) for item in entries_list)
+        residual = max(0.0, 1.0 - total_share)
+        if residual > 1e-6:
+            entries_list.append(
+                {
+                    "operation_id": f"direct:{activity_id}",
+                    "operation_activity_label": "Direct emissions",
+                    "share": residual,
+                }
+            )
+
+        for operation_entry in entries_list:
+            share_value = float(operation_entry.get("share", 0.0))
+            if share_value <= 0:
+                continue
+            operation_key = str(
+                operation_entry.get("operation_id") or f"direct:{activity_id}"
+            )
+            operation_label = _operation_label(operation_entry, operation_key)
+            operation_node_id = f"operation:{operation_key}"
+            _ensure_two_stage_node(operation_node_id, "operation", operation_label)
+            link_values = _scale_values(values, share_value)
+            two_stage_entry = {
+                "source": operation_node_id,
+                "target": activity_node_id,
+                "activity_id": activity_id,
+                "category": category_label,
+                "layer_id": layer,
+                "values": link_values,
+                "units": dict(ANNUAL_EMISSIONS_UNITS),
+                "operation_id": operation_key,
+                "share": share_value,
+            }
+            if reference_map is not None:
+                payload = reference_map.get((layer, category_label, activity_id))
+                if payload:
+                    keys, indices = payload
+                    if keys:
+                        two_stage_entry["citation_keys"] = keys
+                    if indices:
+                        two_stage_entry["hover_reference_indices"] = indices
+            two_stage_links.append(two_stage_entry)
 
     ordered_nodes = [node for _, node in sorted(nodes.items(), key=lambda item: item[1]["id"])]
     links.sort(
@@ -382,7 +501,27 @@ def slice_sankey(
             item.get("activity_id") or "",
         )
     )
-    return {"nodes": ordered_nodes, "links": links}
+
+    two_stage_nodes_sorted = sorted(
+        two_stage_nodes.values(),
+        key=lambda item: (0 if item.get("type") == "operation" else 1, item.get("label", "")),
+    )
+    two_stage_links.sort(
+        key=lambda item: (
+            item.get("layer_id") or "",
+            item.get("category") or "",
+            item.get("activity_id") or "",
+            item.get("operation_id") or "",
+        )
+    )
+
+    payload = {"nodes": ordered_nodes, "links": links}
+    if two_stage_links:
+        payload["modes"] = {
+            "civilian": {"nodes": ordered_nodes, "links": links},
+            "two_stage": {"nodes": two_stage_nodes_sorted, "links": two_stage_links},
+        }
+    return payload
 
 
 def invalidate_cache() -> None:

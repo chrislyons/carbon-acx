@@ -11,7 +11,7 @@ from urllib.parse import parse_qs, urlencode, quote
 import dash
 
 import copy
-from dash import ALL, Dash, Input, Output, State, dcc, html, no_update
+from dash import ALL, MATCH, Dash, Input, Output, State, dcc, html, no_update
 
 if __package__ in {None, ""}:
     repo_root = Path(__file__).resolve().parents[1]
@@ -114,12 +114,24 @@ def _collect_layers(figures: Dict[str, dict | None]) -> list[str]:
                 if value:
                     layers.add(str(value))
         elif isinstance(data, dict):
-            for link in data.get("links", []):
+            links = data.get("links", [])
+            for link in links:
                 if not isinstance(link, dict):
                     continue
                 value = link.get("layer_id")
                 if value:
                     layers.add(str(value))
+            modes = data.get("modes")
+            if isinstance(modes, Mapping):
+                for mode_payload in modes.values():
+                    if not isinstance(mode_payload, Mapping):
+                        continue
+                    for link in mode_payload.get("links", []):
+                        if not isinstance(link, dict):
+                            continue
+                        value = link.get("layer_id")
+                        if value:
+                            layers.add(str(value))
     return sorted(layers, key=_layer_order_index)
 
 
@@ -248,7 +260,28 @@ def _filter_payload(payload: dict | None, layer_id: str | None) -> dict | None:
         links = [link for link in data.get("links", []) if _row_layer(link) == layer_id]
         node_ids = {link.get("source") for link in links} | {link.get("target") for link in links}
         nodes = [node for node in data.get("nodes", []) if node.get("id") in node_ids]
-        filtered["data"] = {"nodes": nodes, "links": links}
+        filtered_modes: dict[str, dict] = {}
+        modes = data.get("modes")
+        if isinstance(modes, Mapping):
+            for mode_name, mode_payload in modes.items():
+                if not isinstance(mode_payload, Mapping):
+                    continue
+                mode_links = [
+                    link for link in mode_payload.get("links", []) if _row_layer(link) == layer_id
+                ]
+                mode_node_ids = {
+                    link.get("source") for link in mode_links
+                } | {link.get("target") for link in mode_links}
+                mode_nodes = [
+                    node for node in mode_payload.get("nodes", []) if node.get("id") in mode_node_ids
+                ]
+                filtered_modes[str(mode_name)] = {"nodes": mode_nodes, "links": mode_links}
+        data_copy = dict(data)
+        data_copy["nodes"] = nodes
+        data_copy["links"] = links
+        if filtered_modes or "modes" in data_copy:
+            data_copy["modes"] = filtered_modes
+        filtered["data"] = data_copy
     filtered["layers"] = [layer_id]
 
     layer_key_map = filtered.get("layer_citation_keys")
@@ -1047,6 +1080,48 @@ def create_app() -> Dash:
             )
 
         return children, panels_class
+
+    @app.callback(
+        Output({"component": "sankey-chart", "layer": MATCH}, "figure"),
+        Input({"component": "sankey-mode", "layer": MATCH}, "value"),
+        Input("acx-active-activity", "data"),
+        Input("theme-mode", "data"),
+        State("figures-store", "data"),
+        State({"component": "sankey-mode", "layer": MATCH}, "id"),
+    )
+    def _update_sankey_mode(mode_value, active_activity, theme_mode_value, figures_store_state, mode_id):
+        layer_value = None
+        if isinstance(mode_id, Mapping):
+            raw_layer = mode_id.get("layer")
+            if raw_layer not in (None, ""):
+                layer_value = str(raw_layer)
+
+        sankey_payload = None
+        if isinstance(figures_store_state, Mapping):
+            sankey_payload = figures_store_state.get("sankey")
+
+        if layer_value:
+            sankey_payload = _filter_payload(sankey_payload, layer_value)
+        elif sankey_payload is not None:
+            sankey_payload = copy.deepcopy(sankey_payload)
+
+        if not sankey_payload:
+            return no_update
+
+        available_modes = sankey.available_modes(sankey_payload)
+        selected_mode = str(mode_value).strip() if isinstance(mode_value, str) else None
+        if not selected_mode or selected_mode not in available_modes:
+            selected_mode = available_modes[0] if available_modes else sankey.DEFAULT_MODE
+
+        dark_mode = isinstance(theme_mode_value, str) and theme_mode_value.lower() == "dark"
+
+        return sankey.build_figure(
+            sankey_payload,
+            reference_lookup,
+            dark=dark_mode,
+            selected_activity=active_activity,
+            mode=selected_mode,
+        )
 
     def _format_badge(label: str, value: str) -> html.Div:
         return html.Div(
