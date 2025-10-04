@@ -21,6 +21,7 @@ install:
 lint:
 	PYTHONPATH=. poetry run ruff check .
 	PYTHONPATH=. poetry run black --check .
+	PYTHONPATH=. poetry run python -m scripts.lint_docs README.md docs
 
 test:
 	PYTHONPATH=. poetry run pytest

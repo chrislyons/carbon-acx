@@ -55,8 +55,9 @@ The result is a transparent example of how to publish carbon disclosures without
 ### What you get
 
 - **Trustworthy data pipeline** – strict validation, reference tracking, and manifest metadata keep every build auditable.【F:calc/schema.py†L1-L167】【F:calc/derive.py†L1474-L1542】
-- **Interactive storytelling** – Plotly-based Dash components and a Tailwind-powered React site render the same charts, tables, and disclosure copy for presentations or public sites.【F:app/components/_plotly_settings.py†L1-L40】【F:site/src/components/VizCanvas.tsx†L1-L120】
+- **Interactive storytelling** – Plotly-based Dash components and a Tailwind-powered React site render the same charts, tables, and disclosure copy for presentations or public sites, now with focus-managed stage navigation, an agency contribution strip, and two-stage Sankey overlays for layered scenarios.【F:app/components/_plotly_settings.py†L1-L40】【F:app/components/agency_strip.py†L1-L52】【F:app/components/sankey.py†L17-L113】【F:site/src/components/LayerBrowser.tsx†L77-L145】【F:site/src/components/VizCanvas.tsx†L1-L160】
 - **Automation hooks** – CLI commands, Make targets, and a Cloudflare Worker make it easy to integrate the dataset into CI/CD or downstream services.【F:Makefile†L1-L80】【F:workers/compute/runtime.ts†L1-L120】
+- **Scenario depth** – Refrigerant operations, embodied defence manufacturing, private security overlays, and new civilian aviation pathways expand the dataset for stress-testing optional layer toggles and disclosures.【F:data/activities.csv†L44-L84】【F:data/layers.csv†L1-L16】
 
 ### Who uses Carbon ACX
 
