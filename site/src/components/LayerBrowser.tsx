@@ -208,7 +208,7 @@ export function LayerBrowser(): JSX.Element {
     return (
       <section className="acx-card bg-slate-950/60">
         <header className="flex items-center justify-between gap-[var(--gap-0)]">
-          <h2 className="text-[13px] font-semibold">Layer Browser</h2>
+          <h2 className="text-[13px] font-semibold">Segment Browser</h2>
           <span className="text-[10px] uppercase tracking-[0.3em] text-slate-400">Loading…</span>
         </header>
         <div className="mt-[var(--gap-1)] space-y-[var(--gap-0)]">
@@ -227,12 +227,12 @@ export function LayerBrowser(): JSX.Element {
   if (error) {
     const isNotFound = errorDiag?.status === 404;
     const message = isNotFound
-      ? 'Layer catalog not found. Confirm site/public/artifacts/layers.json is present.'
-      : 'Unable to load layer metadata.';
+      ? 'Segment catalog not found. Confirm site/public/artifacts/layers.json is present.'
+      : 'Unable to load segment metadata.';
     return (
       <section className="acx-card bg-slate-950/60">
         <header className="flex items-center justify-between gap-[var(--gap-0)]">
-          <h2 className="text-[13px] font-semibold">Layer Browser</h2>
+          <h2 className="text-[13px] font-semibold">Segment Browser</h2>
         </header>
         <div className="mt-[var(--gap-1)] space-y-[var(--gap-1)]">
           <p className="text-sm text-rose-300">
@@ -293,10 +293,10 @@ export function LayerBrowser(): JSX.Element {
     return (
       <section className="acx-card bg-slate-950/60">
         <header className="flex items-center justify-between gap-[var(--gap-0)]">
-          <h2 className="text-[13px] font-semibold">Layer Browser</h2>
+          <h2 className="text-[13px] font-semibold">Segment Browser</h2>
         </header>
         <div className="mt-[var(--gap-1)] space-y-[var(--gap-0)] text-sm text-slate-300">
-          <p>No layers are currently configured.</p>
+          <p>No segments are currently configured.</p>
           <p>
             Update <code className="rounded bg-slate-900/80 px-1 py-0.5 text-xs">data/layers.csv</code> and run
             {' '}<code className="rounded bg-slate-900/80 px-1 py-0.5 text-xs">python scripts/audit_layers.py</code> to refresh
@@ -309,16 +309,16 @@ export function LayerBrowser(): JSX.Element {
 
   const content = (
     <section
-      aria-labelledby="layer-browser-heading"
+      aria-labelledby="segment-browser-heading"
       className="acx-card flex flex-col gap-[var(--gap-1)] bg-slate-950/60"
     >
       <header className="flex items-center justify-between gap-[var(--gap-0)]">
         <div>
-          <h2 id="layer-browser-heading" className="text-[13px] font-semibold">
-            Layer Browser
+          <h2 id="segment-browser-heading" className="text-[13px] font-semibold">
+            Segment Browser
           </h2>
           <p className="mt-[2px] text-[11px] uppercase tracking-[0.3em] text-slate-400">
-            Browse seeded layers & activity coverage
+            Browse seeded segments & activity coverage
           </p>
         </div>
       </header>

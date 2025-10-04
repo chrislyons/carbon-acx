@@ -1,4 +1,15 @@
-import { KeyboardEvent, ReactNode, useId } from 'react';
+import { KeyboardEvent, ReactNode, useCallback, useId } from 'react';
+
+export type StageId = 'segment' | 'profile' | 'activity';
+
+export interface StageStateMeta {
+  unlocked: boolean;
+  ready: boolean;
+}
+
+export type StageStateMap = Record<StageId, StageStateMeta>;
+
+export type StageSummaries = Partial<Record<StageId, string>>;
 
 interface LayoutProps {
   layerBrowser: ReactNode;
@@ -7,34 +18,60 @@ interface LayoutProps {
   canvas: ReactNode;
   references: ReactNode;
   stage: StageId;
+  stageStates: StageStateMap;
+  stageSummaries?: StageSummaries;
   onStageChange: (stage: StageId) => void;
+  onStageAdvance: (stage: StageId) => void;
 }
-
-export type StageId = 'layer' | 'profile' | 'activity';
 
 interface StageMeta {
   id: StageId;
   label: string;
   summary: string;
+  lockedSummary?: string;
+  advanceLabel?: string;
+  advanceHelper?: string;
+  nextStage?: StageId;
 }
 
 const STAGES: StageMeta[] = [
   {
-    id: 'layer',
-    label: 'Layer',
-    summary: 'Choose the baseline layers that frame the story.'
+    id: 'segment',
+    label: 'Segments',
+    summary: 'Anchor the analysis to the segments you want to compare.',
+    advanceLabel: 'Continue to profiles',
+    advanceHelper: 'Lock in the segments that matter, then deepen the persona.',
+    nextStage: 'profile'
   },
   {
     id: 'profile',
-    label: 'Profile',
-    summary: 'Dial in who we are modelling and their habits.'
+    label: 'Profiles',
+    summary: 'Shape the representative lifestyle for the active segments.',
+    lockedSummary: 'Choose your segments above to unlock profile refinement.',
+    advanceLabel: 'Drill into activities',
+    advanceHelper: 'Dial commute, diet, and media habits to expose activities.',
+    nextStage: 'activity'
   },
   {
     id: 'activity',
-    label: 'Activity',
-    summary: 'Pinpoint the specific actions to interrogate next.'
+    label: 'Activities',
+    summary: 'Trace the flows and activities surfaced by your context.',
+    lockedSummary: 'Tune the profile above to unlock the activity planner.'
   }
 ];
+
+function renderStagePanel(stage: StageId, slots: Pick<LayoutProps, 'layerBrowser' | 'controls' | 'activity'>) {
+  switch (stage) {
+    case 'segment':
+      return slots.layerBrowser;
+    case 'profile':
+      return slots.controls;
+    case 'activity':
+      return slots.activity;
+    default:
+      return null;
+  }
+}
 
 export function Layout({
   layerBrowser,
@@ -43,146 +80,206 @@ export function Layout({
   canvas,
   references,
   stage,
-  onStageChange
+  stageStates,
+  stageSummaries,
+  onStageChange,
+  onStageAdvance
 }: LayoutProps): JSX.Element {
   const workflowLabelId = useId();
   const workflowId = useId();
-  const activeStage = stage;
+  const stageIds = STAGES.map((meta) => meta.id);
+  const activeIndex = stageIds.indexOf(stage);
 
-  const resolveStageClassName = (stage: StageMeta, activeIndex: number) => {
-    const stageIndex = STAGES.findIndex((candidate) => candidate.id === stage.id);
-    const isActive = activeStage === stage.id;
-    const isComplete = stageIndex < activeIndex;
-    const baseClassName =
-      'group relative flex w-full items-start gap-[var(--gap-0)] rounded-2xl border px-[calc(var(--gap-0)*0.95)] py-[calc(var(--gap-0)*0.85)] text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500';
-    const stateClassName = isActive
-      ? 'border-sky-500/60 bg-slate-900/80 shadow-[0_0_0_1px_rgba(125,211,252,0.35)]'
-      : isComplete
-      ? 'border-emerald-500/40 bg-emerald-500/5 text-emerald-100/90 hover:bg-emerald-500/10'
-      : 'border-slate-800/80 bg-slate-900/60 text-slate-300 hover:border-slate-600/70 hover:text-slate-100';
-    return `${baseClassName} ${stateClassName}`;
-  };
+  const isStageUnlocked = useCallback(
+    (stageId: StageId) => stageId === 'segment' || Boolean(stageStates[stageId]?.unlocked),
+    [stageStates]
+  );
 
-  const handleStageKeyDown = (stage: StageMeta) => (event: KeyboardEvent<HTMLButtonElement>) => {
+  const selectStage = useCallback(
+    (stageId: StageId) => {
+      if (!isStageUnlocked(stageId)) {
+        return;
+      }
+      onStageChange(stageId);
+    },
+    [isStageUnlocked, onStageChange]
+  );
+
+  const findNextUnlockedIndex = useCallback(
+    (startIndex: number, direction: 1 | -1) => {
+      let index = startIndex + direction;
+      while (index >= 0 && index < stageIds.length) {
+        const candidate = stageIds[index];
+        if (isStageUnlocked(candidate)) {
+          return index;
+        }
+        index += direction;
+      }
+      return startIndex;
+    },
+    [isStageUnlocked, stageIds]
+  );
+
+  const handleStageKeyDown = (meta: StageMeta) => (event: KeyboardEvent<HTMLButtonElement>) => {
     const key = event.key.toLowerCase();
-    const currentIndex = STAGES.findIndex((candidate) => candidate.id === activeStage);
+    const currentIndex = stageIds.indexOf(stage);
     if (key === 'arrowright' || key === 'arrowdown') {
       event.preventDefault();
-      const nextIndex = Math.min(STAGES.length - 1, currentIndex + 1);
-      onStageChange(STAGES[nextIndex].id);
+      const nextIndex = findNextUnlockedIndex(currentIndex, 1);
+      onStageChange(stageIds[nextIndex] ?? meta.id);
       return;
     }
     if (key === 'arrowleft' || key === 'arrowup') {
       event.preventDefault();
-      const nextIndex = Math.max(0, currentIndex - 1);
-      onStageChange(STAGES[nextIndex].id);
+      const nextIndex = findNextUnlockedIndex(currentIndex, -1);
+      onStageChange(stageIds[nextIndex] ?? meta.id);
       return;
     }
     if (key === 'home') {
       event.preventDefault();
-      onStageChange(STAGES[0].id);
+      const firstUnlocked = stageIds.find((candidate) => isStageUnlocked(candidate));
+      if (firstUnlocked) {
+        onStageChange(firstUnlocked);
+      }
       return;
     }
     if (key === 'end') {
       event.preventDefault();
-      onStageChange(STAGES[STAGES.length - 1].id);
+      for (let index = stageIds.length - 1; index >= 0; index -= 1) {
+        const candidate = stageIds[index];
+        if (isStageUnlocked(candidate)) {
+          onStageChange(candidate);
+          break;
+        }
+      }
       return;
     }
     if (key === 'enter' || key === ' ') {
       event.preventDefault();
-      onStageChange(stage.id);
+      selectStage(meta.id);
     }
   };
-
-  const renderStagePanel = (stage: StageId) => {
-    switch (stage) {
-      case 'layer':
-        return layerBrowser;
-      case 'profile':
-        return controls;
-      case 'activity':
-        return activity;
-      default:
-        return null;
-    }
-  };
-
-  const activeIndex = STAGES.findIndex((stage) => stage.id === activeStage);
 
   return (
     <div className="grid min-h-0 flex-1 grid-cols-1 gap-[var(--gap-1)] lg:grid-cols-[minmax(0,0.34fr)_minmax(0,0.66fr)]">
       <div className="order-2 flex min-h-0 flex-col lg:order-1 lg:max-h-[calc(100vh-128px)] lg:pr-[calc(var(--gap-0)*0.75)]">
         <div className="sticky top-0 z-20 bg-slate-950/85 pb-[calc(var(--gap-0)*0.5)] pt-[var(--gap-0)] backdrop-blur">
           <p id={workflowLabelId} className="text-[11px] font-semibold uppercase tracking-[0.32em] text-slate-500">
-            Workflow
+            Context depth
           </p>
+          <p className="mt-[6px] text-[12px] text-slate-400">
+            Feed the console more context to unlock deeper, segment-aware visualizations.
+          </p>
+        </div>
+        <div className="min-h-0 flex-1 overflow-y-auto pt-[calc(var(--gap-0)*0.9)]">
           <ol
             role="list"
             aria-labelledby={workflowLabelId}
-            className="mt-[calc(var(--gap-0)*0.6)] flex flex-col gap-[calc(var(--gap-0)*0.55)]"
+            className="flex flex-col gap-[calc(var(--gap-0)*0.75)]"
           >
-            {STAGES.map((stage) => {
-              const panelId = `${workflowId}-${stage.id}-panel`;
-              const controlId = `${workflowId}-${stage.id}-control`;
-              const isActive = activeStage === stage.id;
-              const stageIndex = STAGES.findIndex((candidate) => candidate.id === stage.id);
-              const isComplete = stageIndex < activeIndex;
+            {STAGES.map((meta) => {
+              const state = stageStates[meta.id] ?? { unlocked: meta.id === 'segment', ready: false };
+              const unlocked = isStageUnlocked(meta.id);
+              const isActive = unlocked && stage === meta.id;
+              const stageIndex = stageIds.indexOf(meta.id);
+              const isComplete = unlocked && stageIndex < activeIndex;
+              const statusLabel = !unlocked
+                ? 'Locked'
+                : isActive
+                ? 'Active'
+                : isComplete
+                ? 'Complete'
+                : state.ready
+                ? 'Ready'
+                : 'Pending';
+              const statusTone = !unlocked
+                ? 'text-slate-500'
+                : isActive
+                ? 'text-sky-300'
+                : isComplete
+                ? 'text-emerald-300'
+                : state.ready
+                ? 'text-slate-200'
+                : 'text-slate-500';
+              const summary = stageSummaries?.[meta.id] ?? meta.summary;
+              const panelId = `${workflowId}-${meta.id}-panel`;
+              const controlId = `${workflowId}-${meta.id}-control`;
               return (
-                <li key={stage.id} className="list-none">
-                  <button
-                    type="button"
-                    id={controlId}
-                    aria-controls={panelId}
-                    aria-expanded={isActive}
+                <li key={meta.id} className="list-none">
+                  <section
+                    aria-labelledby={controlId}
                     aria-current={isActive ? 'step' : undefined}
-                    className={resolveStageClassName(stage, activeIndex)}
-                    onClick={() => onStageChange(stage.id)}
-                    onKeyDown={handleStageKeyDown(stage)}
+                    className={`acx-card flex flex-col gap-[calc(var(--gap-0)*0.75)] border border-slate-800/70 bg-slate-950/60 p-[calc(var(--gap-1)*0.85)] transition ${
+                      isActive
+                        ? 'border-sky-500/60 bg-slate-900/80 shadow-[0_0_0_1px_rgba(56,189,248,0.35)]'
+                        : unlocked
+                        ? 'hover:border-slate-700/70'
+                        : 'opacity-60'
+                    }`}
                   >
-                    <span
-                      aria-hidden="true"
-                      className={`flex h-8 w-8 items-center justify-center rounded-full border text-[12px] font-semibold transition ${
-                        isActive
-                          ? 'border-sky-300/80 bg-sky-400/20 text-sky-200'
-                          : isComplete
-                          ? 'border-emerald-400/70 bg-emerald-500/10 text-emerald-200'
-                          : 'border-slate-700 bg-slate-800/70 text-slate-400'
-                      }`}
-                    >
-                      {stageIndex + 1}
-                    </span>
-                    <span className="flex flex-col gap-[2px]">
-                      <span className="text-[12px] font-semibold uppercase tracking-[0.24em] text-slate-200">
-                        {stage.label}
+                    <header className="flex items-start justify-between gap-[var(--gap-0)]">
+                      <button
+                        type="button"
+                        id={controlId}
+                        aria-controls={panelId}
+                        aria-expanded={isActive}
+                        aria-disabled={!unlocked}
+                        className={`flex flex-1 flex-col items-start text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 ${
+                          unlocked ? '' : 'cursor-not-allowed'
+                        }`}
+                        onClick={() => selectStage(meta.id)}
+                        onKeyDown={handleStageKeyDown(meta)}
+                      >
+                        <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-200">
+                          {meta.label}
+                        </span>
+                        <span className="mt-[6px] text-[12px] text-slate-400">
+                          {isActive ? meta.summary : summary}
+                        </span>
+                      </button>
+                      <span className={`text-[10px] font-semibold uppercase tracking-[0.3em] ${statusTone}`}>
+                        {statusLabel}
                       </span>
-                      <span className="text-[11px] text-slate-400">{stage.summary}</span>
-                    </span>
-                  </button>
+                    </header>
+                    {unlocked ? (
+                      isActive ? (
+                        <div className="space-y-[calc(var(--gap-1)*0.85)]">
+                          <div
+                            id={panelId}
+                            role="region"
+                            aria-labelledby={controlId}
+                            className="space-y-[calc(var(--gap-1)*0.85)]"
+                          >
+                            {renderStagePanel(meta.id, { layerBrowser, controls, activity })}
+                          </div>
+                          {meta.nextStage && meta.advanceLabel ? (
+                            <div className="flex flex-col gap-[var(--gap-0)] border-t border-slate-800/60 pt-[calc(var(--gap-0)*0.85)]">
+                              <button
+                                type="button"
+                                className="inline-flex items-center justify-center gap-2 rounded-lg border border-sky-500/50 bg-sky-500/10 px-[var(--gap-1)] py-[calc(var(--gap-0)*0.85)] text-[11px] font-semibold uppercase tracking-[0.22em] text-sky-100 transition hover:bg-sky-500/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 disabled:cursor-not-allowed disabled:border-slate-700 disabled:bg-slate-900/40 disabled:text-slate-500"
+                                onClick={() => onStageAdvance(meta.id)}
+                                disabled={!state.ready}
+                              >
+                                {meta.advanceLabel}
+                                <span aria-hidden="true">→</span>
+                              </button>
+                              {meta.advanceHelper ? (
+                                <p className="text-[11px] text-slate-400">{meta.advanceHelper}</p>
+                              ) : null}
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : (
+                        <p className="text-[11px] text-slate-400">{summary}</p>
+                      )
+                    ) : (
+                      <p className="text-[11px] text-slate-500">{meta.lockedSummary ?? meta.summary}</p>
+                    )}
+                  </section>
                 </li>
               );
             })}
           </ol>
-        </div>
-        <div className="min-h-0 flex-1 overflow-y-auto pt-[calc(var(--gap-0)*0.9)]">
-          {STAGES.map((stage) => {
-            const panelId = `${workflowId}-${stage.id}-panel`;
-            const controlId = `${workflowId}-${stage.id}-control`;
-            const isActive = activeStage === stage.id;
-            return (
-              <section
-                key={stage.id}
-                role="region"
-                id={panelId}
-                aria-labelledby={controlId}
-                hidden={!isActive}
-                className={`${isActive ? 'block' : 'hidden'} min-h-0`}
-              >
-                {isActive ? (
-                  <div className="space-y-[calc(var(--gap-1)*0.85)]">{renderStagePanel(stage.id)}</div>
-                ) : null}
-              </section>
-            );
-          })}
         </div>
       </div>
       <div className="order-1 flex min-h-0 flex-col gap-[var(--gap-1)] lg:order-2 lg:min-h-[calc(100vh-128px)]">

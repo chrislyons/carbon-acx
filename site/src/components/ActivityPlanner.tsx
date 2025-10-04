@@ -30,7 +30,7 @@ function formatStreaming(hours: number): string {
 export function ActivityPlanner(): JSX.Element {
   const { controls, activeLayers, primaryLayer } = useProfile();
 
-  const workingLayers = useMemo(() => {
+  const workingSegments = useMemo(() => {
     if (activeLayers.length > 0) {
       return activeLayers;
     }
@@ -52,18 +52,18 @@ export function ActivityPlanner(): JSX.Element {
   return (
     <div className="space-y-[calc(var(--gap-1)*0.9)]">
       <div className="rounded-2xl border border-slate-800/70 bg-slate-950/70 p-[calc(var(--gap-1)*0.85)] shadow-inner shadow-slate-950/60">
-        <h3 className="text-[12px] font-semibold uppercase tracking-[0.3em] text-slate-300">Active layers</h3>
+        <h3 className="text-[12px] font-semibold uppercase tracking-[0.3em] text-slate-300">Active segments</h3>
         <p className="mt-[8px] text-[12px] text-slate-400">
-          Start with the layers below, then layer in additional detail as questions surface.
+          Start with the segments below, then layer in additional detail as questions surface.
         </p>
         <ul className="mt-[calc(var(--gap-0)*0.9)] flex flex-wrap gap-[calc(var(--gap-0)*0.75)]">
-          {workingLayers.map((layer) => (
+          {workingSegments.map((segment) => (
             <li
-              key={layer}
+              key={segment}
               className="inline-flex items-center gap-[6px] rounded-full border border-sky-500/40 bg-sky-500/10 px-[var(--gap-0)] py-[4px] text-[11px] font-medium uppercase tracking-[0.18em] text-sky-100"
             >
               <span className="h-[6px] w-[6px] rounded-full bg-sky-400" aria-hidden="true" />
-              {layer}
+              {segment}
             </li>
           ))}
         </ul>
