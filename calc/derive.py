@@ -1747,6 +1747,12 @@ _LAYER_PREFIXES: list[tuple[str, LayerId]] = [
     ("ONLINE.", LayerId.ONLINE),
     ("IND.TO.LIGHT.", LayerId.INDUSTRIAL_LIGHT),
     ("IND.TO.HEAVY.", LayerId.INDUSTRIAL_HEAVY),
+    ("IND.MIL.", LayerId.INDUSTRIAL_HEAVY_MILITARY),
+    ("IND.EMB.", LayerId.INDUSTRIAL_HEAVY_EMBODIED),
+    ("DEF.BASE.", LayerId.BUILDINGS_DEFENSE),
+    ("MODEL.CONFLICT.", LayerId.MODELED_EVENTS),
+    ("CHEM.DEF.", LayerId.MATERIALS_CHEMICALS),
+    ("SEC.PRIV.", LayerId.PERSONAL_SECURITY_LAYER),
 ]
 
 _LAYER_NAME_HINTS: dict[str, LayerId] = {
@@ -1756,4 +1762,14 @@ _LAYER_NAME_HINTS: dict[str, LayerId] = {
     "light_industrial": LayerId.INDUSTRIAL_LIGHT,
     "industrial_heavy": LayerId.INDUSTRIAL_HEAVY,
     "heavy_industrial": LayerId.INDUSTRIAL_HEAVY,
+    "military_ops": LayerId.INDUSTRIAL_HEAVY_MILITARY,
+    "military_operations": LayerId.INDUSTRIAL_HEAVY_MILITARY,
+    "weapons_production": LayerId.INDUSTRIAL_HEAVY_EMBODIED,
+    "bases_infrastructure": LayerId.BUILDINGS_DEFENSE,
+    "conflict_scenarios": LayerId.MODELED_EVENTS,
+    "modeled_events": LayerId.MODELED_EVENTS,
+    "defense_supply_chain": LayerId.MATERIALS_CHEMICALS,
+    "materials_chemicals": LayerId.MATERIALS_CHEMICALS,
+    "private_security": LayerId.PERSONAL_SECURITY_LAYER,
+    "personal_security_layer": LayerId.PERSONAL_SECURITY_LAYER,
 }

@@ -77,6 +77,12 @@ class LayerId(str, Enum):
     ONLINE = "online"
     INDUSTRIAL_LIGHT = "industrial_light"
     INDUSTRIAL_HEAVY = "industrial_heavy"
+    INDUSTRIAL_HEAVY_MILITARY = "industrial_heavy_military"
+    INDUSTRIAL_HEAVY_EMBODIED = "industrial_heavy_embodied"
+    BUILDINGS_DEFENSE = "buildings_defense"
+    MODELED_EVENTS = "modeled_events"
+    MATERIALS_CHEMICALS = "materials_chemicals"
+    PERSONAL_SECURITY_LAYER = "personal_security_layer"
 
     @property
     def label(self) -> str:
@@ -88,6 +94,18 @@ class LayerId(str, Enum):
             return "Industrial (Light)"
         if self is LayerId.INDUSTRIAL_HEAVY:
             return "Industrial (Heavy)"
+        if self is LayerId.INDUSTRIAL_HEAVY_MILITARY:
+            return "Military operations"
+        if self is LayerId.INDUSTRIAL_HEAVY_EMBODIED:
+            return "Weapons manufacturing"
+        if self is LayerId.BUILDINGS_DEFENSE:
+            return "Defence installations"
+        if self is LayerId.MODELED_EVENTS:
+            return "Conflict simulations"
+        if self is LayerId.MATERIALS_CHEMICALS:
+            return "Defence supply chain"
+        if self is LayerId.PERSONAL_SECURITY_LAYER:
+            return "Private security"
         return self.value.title()
 
 
@@ -96,6 +114,10 @@ class EntityType(str, Enum):
     MUNICIPAL = "municipal"
     NGO = "ngo"
     SOVEREIGN = "sovereign"
+    GOVERNMENT = "government"
+    INTERGOVERNMENTAL = "intergovernmental"
+    INSTALLATION = "installation"
+    PERSONA = "persona"
 
 
 class UtilizationBasis(str, Enum):
@@ -111,6 +133,8 @@ ScopeBoundary = Literal[
     "Electricity LCA",
     "gate-to-gate",
     "Operational electricity",
+    "Operational energy",
+    "Modeled operations",
 ]
 
 
@@ -146,6 +170,8 @@ class FunctionalUnitDomain(str, Enum):
     CARE = "care"
     ENERGY = "energy"
     CONSUMPTION = "consumption"
+    MODELED = "modeled"
+    SERVICES = "services"
 
 
 class FunctionalUnit(BaseModel):

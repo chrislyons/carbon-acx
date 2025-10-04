@@ -1,6 +1,7 @@
 unit_code,unit_type,si_conversion_factor,notes
 cup,volume,0.000236588,
 hour,time,3600,
+month,time,2628000,"One calendar month (average 30.44 days)"
 km,length,1000,
 pkm,person_distance,1000,"One passenger transported one kilometre (1,000 person-metre)."
 kWh,energy,3600000,
