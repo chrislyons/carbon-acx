@@ -34,3 +34,13 @@ ENTITY.COSTCO.US,Costco Wholesale Corporation,corporate,,Warehouse retailer with
 ENTITY.AMAZON.CA,Amazon Canada Fulfillment Services,corporate,,Canadian e-commerce logistics subsidiary handling national fulfillment and delivery.
 ENTITY.FEDEX.CA,FedEx Express Canada,corporate,,Express parcel and freight carrier serving Canadian markets.
 ENTITY.CNRAIL.CA,Canadian National Railway,corporate,,National freight railway with intermodal trucking and logistics services.
+ENTITY.DND.CA,Canadian Department of National Defence,government,,Federal ministry overseeing the Canadian Armed Forces and defence infrastructure.
+ENTITY.DOW.US,United States Department of War (Department of Defense),government,,U.S. defence department covering global operations and installations.
+ENTITY.LOCKHEEDMARTIN.US,Lockheed Martin Corporation,corporate,,Aerospace and defence prime contractor producing fighter aircraft and missiles.
+ENTITY.RHEINMETALL.DE,Rheinmetall AG,corporate,,German defence and automotive company manufacturing armoured vehicles and munitions.
+ENTITY.BAE.UK,BAE Systems plc,corporate,,"UK-based defence prime delivering combat aircraft, naval platforms, and ordnance."
+ENTITY.NATO.INT,North Atlantic Treaty Organization,intergovernmental,,Collective defence alliance coordinating multinational operations and logistics.
+ENTITY.CFB.TRENTON,Canadian Forces Base Trenton,installation,ENTITY.DND.CA,Primary Royal Canadian Air Force air mobility hub in Ontario.
+ENTITY.BLACKWATER.US,Blackwater (archetype PMC),corporate,,Representative private military contractor archetype for expeditionary security services.
+ENTITY.GARDA.CA,GardaWorld Security Corporation,corporate,,Canadian-headquartered private security and armoured transport services provider.
+ENTITY.PRIVSEC.ELITE,Elite private security cohort,persona,,"High-net-worth protective services archetype covering convoy, guard, and aerial patrol operations."

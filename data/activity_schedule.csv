@@ -24,3 +24,7 @@ PROFILE.SENIOR.CLOTHING.2025,CLOTHING.TSHIRT.COTTON,professional,,0.057692307692
 PROFILE.SENIOR.CLOTHING.2025,CLOTHING.JEANS.DENIM,professional,,0.019230769230769232,FALSE,,Senior buys 1 jeans/year,,,,,1
 PROFILE.SENIOR.CLOTHING.2025,CLOTHING.JACKET.SYNTH,professional,,0.009615384615384616,FALSE,,Senior buys 1 jacket every 2 years,,,,,1
 PROFILE.SENIOR.CLOTHING.2025,CLOTHING.SHOES.SNEAKERS,professional,,0.019230769230769232,FALSE,,Senior buys 1 sneakers/year,,,,,1
+PROFILE.WAR.UKRAINE.2022,MIL.CONFLICT.MONTH,modeled_events,,0.23076923076923078,FALSE,,"Full-scale conflict maintained throughout 2022 (≈12 months).",,,,,
+PROFILE.ELITE.SECURITY.2025,SEC.CONVOY.KM,personal_security_layer,1,,FALSE,,"Daily 50 km protective convoy loop",50,,,,
+PROFILE.ELITE.SECURITY.2025,SEC.GUARD.HOUR,personal_security_layer,1,,FALSE,,"24/7 guard coverage per estate",,,24,,
+PROFILE.ELITE.SECURITY.2025,SEC.HELI.HOUR,personal_security_layer,,1,FALSE,,"Weekly perimeter sweep via light helicopter",,,2,,

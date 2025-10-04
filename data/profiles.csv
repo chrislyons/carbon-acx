@@ -16,3 +16,5 @@ IND_LIGHT.ON.CONSTRUCTION.2025,industrial_light,Ontario light-industrial constru
 PROFILE.CHILD.CLOTHING.2025,professional,Child clothing consumption (2025),,region_default,,,0,"Annualized clothing purchases for a representative child cohort."
 PROFILE.ADULT.CLOTHING.2025,professional,Adult clothing consumption (2025),,region_default,,,0,"Annualized clothing purchases for a representative adult cohort."
 PROFILE.SENIOR.CLOTHING.2025,professional,Senior clothing consumption (2025),,region_default,,,0,"Annualized clothing purchases for a representative senior cohort."
+PROFILE.WAR.UKRAINE.2022,modeled_events,Ukraine conflict operations (2022),,region_default,,,0,"Modeled monthly high-intensity conflict footprint across 2022 hostilities."
+PROFILE.ELITE.SECURITY.2025,personal_security_layer,Elite private security program (2025),CA-ON,region_default,,,0,"High-net-worth security envelope covering convoy, guard, and aerial patrol services."
