@@ -10,7 +10,6 @@ import { useProfile } from '../state/profile';
 
 import { Bubble, BubbleDatum } from './Bubble';
 import { ExportMenu } from './ExportMenu';
-import { LayerToggles } from './LayerToggles';
 import { Sankey, SankeyData, SankeyLink } from './Sankey';
 import { Stacked, StackedDatum } from './Stacked';
 
@@ -675,8 +674,7 @@ export function VizCanvas({ stage }: VizCanvasProps): JSX.Element {
     availableLayers,
     activeLayers,
     activeReferenceKeys,
-    activeReferences,
-    setActiveLayers
+    activeReferences
   } = useProfile();
   const { layers: layerCatalog } = useLayerCatalog();
 
@@ -921,11 +919,6 @@ export function VizCanvas({ stage }: VizCanvasProps): JSX.Element {
     () => new Set(['stacked', 'bubble', 'sankey'])
   );
 
-  const hasLayerToggles = useMemo(
-    () => availableLayers.some((layer) => layer !== baseLayer),
-    [availableLayers, baseLayer]
-  );
-
   const handleToggleVisualizer = useCallback((id: string) => {
     setExpandedViz((current) => {
       const next = new Set(current);
@@ -1025,15 +1018,7 @@ export function VizCanvas({ stage }: VizCanvasProps): JSX.Element {
                   <p className="mt-[var(--gap-0)] text-[10px] uppercase tracking-[0.35em] text-slate-300">source citations</p>
                 </div>
               </div>
-              {hasLayerToggles ? (
-                <LayerToggles
-                  baseLayer={baseLayer}
-                  availableLayers={availableLayers}
-                  activeLayers={activeLayers}
-                  onChange={setActiveLayers}
-                  layerCatalog={layerCatalog}
-                />
-              ) : null}
+              {/* Optional layer toggles hidden temporarily to keep the canvas focused. */}
               <div className="flex flex-col gap-[var(--gap-1)]">
                 <VisualizerPanel
                   id="stacked"
