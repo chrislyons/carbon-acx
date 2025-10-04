@@ -10,7 +10,7 @@ import { useProfile } from '../state/profile';
 
 import { Bubble, BubbleDatum } from './Bubble';
 import { ExportMenu } from './ExportMenu';
-import { Sankey, SankeyData, SankeyLink } from './Sankey';
+import { Sankey, SankeyData, SankeyLink, SankeyNode } from './Sankey';
 import { Stacked, StackedDatum } from './Stacked';
 
 interface ActivityRow {
