@@ -71,6 +71,11 @@ def dependency_metadata(
     entity_id = _coerce_text(getattr(entity, "entity_id", None))
     if entity_id:
         metadata["operation_entity_id"] = entity_id
+    entity_type = getattr(entity, "type", None)
+    if entity_type:
+        metadata["operation_entity_type"] = (
+            entity_type.value if hasattr(entity_type, "value") else str(entity_type)
+        )
 
     if operation.functional_unit_id and functional_units:
         functional_unit = functional_units.get(operation.functional_unit_id)
