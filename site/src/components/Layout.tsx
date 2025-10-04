@@ -124,25 +124,29 @@ export function Layout({
 
   const handleStageKeyDown = (meta: StageMeta) => (event: KeyboardEvent<HTMLButtonElement>) => {
     const key = event.key.toLowerCase();
-    const currentIndex = stageIds.indexOf(stage);
+    const currentIndex = stageIds.indexOf(meta.id);
+    const changeStage = (nextStageId: StageId | undefined) => {
+      if (!nextStageId || nextStageId === stage || !isStageUnlocked(nextStageId)) {
+        return;
+      }
+      onStageChange(nextStageId);
+    };
     if (key === 'arrowright' || key === 'arrowdown') {
       event.preventDefault();
       const nextIndex = findNextUnlockedIndex(currentIndex, 1);
-      onStageChange(stageIds[nextIndex] ?? meta.id);
+      changeStage(stageIds[nextIndex] ?? meta.id);
       return;
     }
     if (key === 'arrowleft' || key === 'arrowup') {
       event.preventDefault();
       const nextIndex = findNextUnlockedIndex(currentIndex, -1);
-      onStageChange(stageIds[nextIndex] ?? meta.id);
+      changeStage(stageIds[nextIndex] ?? meta.id);
       return;
     }
     if (key === 'home') {
       event.preventDefault();
       const firstUnlocked = stageIds.find((candidate) => isStageUnlocked(candidate));
-      if (firstUnlocked) {
-        onStageChange(firstUnlocked);
-      }
+      changeStage(firstUnlocked);
       return;
     }
     if (key === 'end') {
@@ -150,7 +154,7 @@ export function Layout({
       for (let index = stageIds.length - 1; index >= 0; index -= 1) {
         const candidate = stageIds[index];
         if (isStageUnlocked(candidate)) {
-          onStageChange(candidate);
+          changeStage(candidate);
           break;
         }
       }

@@ -1122,7 +1122,9 @@ interface VisualizerPanelProps {
 function VisualizerPanel({ id, title, summary, children, expanded, onToggle }: VisualizerPanelProps) {
   return (
     <section
+      id={id}
       aria-labelledby={`${id}-heading`}
+      tabIndex={-1}
       className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-[var(--gap-1)] shadow-inner shadow-slate-900/40 sm:p-[var(--gap-2)]"
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
