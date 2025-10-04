@@ -462,8 +462,7 @@ def load_activity_dependencies(
     )
     if missing_children:
         raise ValueError(
-            "Unknown child_activity_id referenced by dependencies: "
-            + ", ".join(missing_children)
+            "Unknown child_activity_id referenced by dependencies: " + ", ".join(missing_children)
         )
 
     operation_ids = {operation.operation_id for operation in operation_records}
@@ -476,8 +475,7 @@ def load_activity_dependencies(
     )
     if missing_parents:
         raise ValueError(
-            "Unknown parent_operation_id referenced by dependencies: "
-            + ", ".join(missing_parents)
+            "Unknown parent_operation_id referenced by dependencies: " + ", ".join(missing_parents)
         )
 
     grouped: dict[str, float] = {}

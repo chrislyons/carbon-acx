@@ -504,7 +504,11 @@ def create_app() -> Dash:
             if str(raw_id) != activity_id:
                 continue
             raw_keys = entry.get("citation_keys")
-            keys = [str(key) for key in raw_keys if isinstance(key, str)] if isinstance(raw_keys, list) else []
+            keys = (
+                [str(key) for key in raw_keys if isinstance(key, str)]
+                if isinstance(raw_keys, list)
+                else []
+            )
             ordered = _order_reference_keys(keys, reference_lookup)
             layer_value = entry.get("layer_id")
             layer_id = str(layer_value) if layer_value not in (None, "") else None
@@ -703,7 +707,9 @@ def create_app() -> Dash:
                                                 [
                                                     html.Div(
                                                         [
-                                                            html.H1("Carbon ACX emissions overview"),
+                                                            html.H1(
+                                                                "Carbon ACX emissions overview"
+                                                            ),
                                                             html.Button(
                                                                 [
                                                                     html.Span(
@@ -719,7 +725,9 @@ def create_app() -> Dash:
                                                                 id="theme-toggle",
                                                                 className="theme-toggle",
                                                                 title="Cycle theme (system preference: Light)",
-                                                                **{"aria-label": "Cycle theme (system preference: Light)"},
+                                                                **{
+                                                                    "aria-label": "Cycle theme (system preference: Light)"
+                                                                },
                                                                 **{"data-mode": "system"},
                                                             ),
                                                         ],

@@ -14,14 +14,12 @@ def _reference_entries(reference_keys: Sequence[str] | None) -> list[tuple[str, 
     return entries
 
 
-def _combine_keys(
-    primary: Sequence[str] | None, secondary: Sequence[str] | None
-) -> list[str]:
+def _combine_keys(primary: Sequence[str] | None, secondary: Sequence[str] | None) -> list[str]:
     keys: list[str] = []
-    for value in (primary or []):
+    for value in primary or []:
         if value not in keys:
             keys.append(value)
-    for value in (secondary or []):
+    for value in secondary or []:
         if value not in keys:
             keys.append(value)
     return keys

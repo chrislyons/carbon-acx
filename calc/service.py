@@ -18,13 +18,9 @@ from .dal import DataStore, SqlStore
 from .schema import (
     Activity,
     ActivitySchedule,
-    Asset,
-    Entity,
     EmissionFactor,
-    FunctionalUnit,
     GridIntensity,
     LayerId,
-    Operation,
     Profile,
     RegionCode,
     load_activities as schema_load_activities,
@@ -324,7 +320,9 @@ def compute_profile(
         activities = {activity.activity_id: activity for activity in store.load_activities()}
         if not activities:
             try:
-                activities = {activity.activity_id: activity for activity in schema_load_activities()}
+                activities = {
+                    activity.activity_id: activity for activity in schema_load_activities()
+                }
             except Exception:  # pragma: no cover - defensive fallback
                 activities = {}
         load_operations_fn = getattr(store, "load_operations", None)
@@ -372,9 +370,7 @@ def compute_profile(
                 fu_iter = list(schema_load_functional_units())
             except Exception:  # pragma: no cover - defensive fallback
                 fu_iter = []
-        functional_units = {
-            fu.functional_unit_id: fu for fu in fu_iter if fu.functional_unit_id
-        }
+        functional_units = {fu.functional_unit_id: fu for fu in fu_iter if fu.functional_unit_id}
 
         emission_factors = {ef.activity_id: ef for ef in store.load_emission_factors()}
         profiles = {item.profile_id: item for item in store.load_profiles()}
@@ -600,7 +596,9 @@ def compute_profile(
         manifest["dataset_version"] = dataset_version
 
         stacked_result = figures.slice_stacked(df, reference_map=stacked_map)
-        bubble_points = [asdict(point) for point in figures.slice_bubble(df, reference_map=bubble_map)]
+        bubble_points = [
+            asdict(point) for point in figures.slice_bubble(df, reference_map=bubble_map)
+        ]
         for point in bubble_points:
             layer_value = point.get("layer_id")
             activity_value = point.get("activity_id")

@@ -63,9 +63,7 @@ def _load_intensity_rows() -> tuple[_IntensityRow, ...]:
                 activity_id = raw.get("activity_id") or raw.get("activity")
                 activity_name = raw.get("activity_name") or raw.get("alternative")
                 alt_id = raw.get("alt_id") or raw.get("profile_id")
-                intensity = _coerce_float(
-                    raw.get("intensity_g_per_fu") or raw.get("intensity")
-                )
+                intensity = _coerce_float(raw.get("intensity_g_per_fu") or raw.get("intensity"))
                 low = _coerce_float(
                     raw.get("intensity_low_g_per_fu")
                     or raw.get("low_g_per_fu")
@@ -112,9 +110,7 @@ def _normalise_identifiers(values: Sequence[object] | None) -> list[str]:
     return identifiers
 
 
-def _match_record(
-    records: Iterable[_IntensityRow], identifier: str | None
-) -> _IntensityRow | None:
+def _match_record(records: Iterable[_IntensityRow], identifier: str | None) -> _IntensityRow | None:
     if not identifier:
         return None
     for record in records:
@@ -244,7 +240,9 @@ def pairwise_blurb(
     alt_text = _format_value(alternative_record)
     delta_text = _format_delta(primary_record.intensity, alternative_record.intensity)
 
-    comparison = f"{_label(primary_record)} = {primary_text} vs {_label(alternative_record)} = {alt_text}"
+    comparison = (
+        f"{_label(primary_record)} = {primary_text} vs {_label(alternative_record)} = {alt_text}"
+    )
     if delta_text:
         comparison = f"{comparison} {delta_text}"
     return comparison

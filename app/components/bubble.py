@@ -106,13 +106,14 @@ def _build_figure(
         layer_value = row.get("layer_id")
         layer_id = str(layer_value) if layer_value not in (None, "") else None
         raw_chain = row.get("upstream_chain")
-        chain_entries = [
-            entry for entry in raw_chain if isinstance(entry, Mapping)
-        ] if isinstance(raw_chain, list) else []
+        chain_entries = (
+            [entry for entry in raw_chain if isinstance(entry, Mapping)]
+            if isinstance(raw_chain, list)
+            else []
+        )
         chain_copies = [dict(entry) for entry in chain_entries]
         upstream_labels = [
-            label for label in (_compose_upstream_label(entry) for entry in chain_entries)
-            if label
+            label for label in (_compose_upstream_label(entry) for entry in chain_entries) if label
         ]
         upstream_hover_lines.append(
             f"<br>Upstream: {' · '.join(upstream_labels)}" if upstream_labels else ""

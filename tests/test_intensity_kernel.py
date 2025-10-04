@@ -137,7 +137,9 @@ def test_intensity_matrix_person_km_rows(tmp_path, person_km_dataset):
 
     expected_fu = 4.0 * 1.2 * 365
     assert math.isclose(car_row["annual_fu"], expected_fu, rel_tol=1e-6)
-    assert math.isclose(car_row["annual_kg"], expected_fu * car_row["intensity_g_per_fu"] / 1000, rel_tol=1e-6)
+    assert math.isclose(
+        car_row["annual_kg"], expected_fu * car_row["intensity_g_per_fu"] / 1000, rel_tol=1e-6
+    )
     assert car_row["source_ids_csv"] == "SRC.DEMO"
 
     csv_path = tmp_path / "intensity_matrix.csv"

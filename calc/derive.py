@@ -22,19 +22,15 @@ from .api import collect_activity_source_keys
 from .dal import DataStore, choose_backend
 from .schema import (
     Activity,
-    ActivityDependency,
     ActivityFunctionalUnitMap,
     ActivitySchedule,
-    Asset,
     EmissionFactor,
-    Entity,
     FunctionalUnit,
     GridIntensity,
     LayerId,
     Operation,
     Profile,
     RegionCode,
-    Site,
     load_activities as schema_load_activities,
     load_activity_dependencies,
     load_activity_fu_map,
@@ -1217,7 +1213,9 @@ def export_view(
         functional_units = []
         activity_fu_mappings = []
     functional_units_by_id = {
-        fu.functional_unit_id: fu for fu in functional_units if getattr(fu, "functional_unit_id", None)
+        fu.functional_unit_id: fu
+        for fu in functional_units
+        if getattr(fu, "functional_unit_id", None)
     }
     grid_lookup: Dict[str | RegionCode, Optional[float]] = {}
     grid_by_region: Dict[str | RegionCode, GridIntensity] = {}
@@ -1242,9 +1240,7 @@ def export_view(
     for dependency in dependency_records:
         child_id = dependency.child_activity_id
         if child_id not in activities:
-            raise ValueError(
-                f"Unknown child_activity_id referenced by dependencies: {child_id}"
-            )
+            raise ValueError(f"Unknown child_activity_id referenced by dependencies: {child_id}")
         parent = operations.get(dependency.parent_operation_id)
         if parent is None:
             raise ValueError(
