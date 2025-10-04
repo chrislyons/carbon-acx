@@ -16,6 +16,7 @@ interface LayoutProps {
   controls: ReactNode;
   activity: ReactNode;
   canvas: ReactNode;
+  scopeIndicator?: ReactNode;
   references: ReactNode;
   stage: StageId;
   stageStates: StageStateMap;
@@ -78,6 +79,7 @@ export function Layout({
   controls,
   activity,
   canvas,
+  scopeIndicator,
   references,
   stage,
   stageStates,
@@ -283,6 +285,9 @@ export function Layout({
         </div>
       </div>
       <div className="order-1 flex min-h-0 flex-col gap-[var(--gap-1)] lg:order-2 lg:min-h-[calc(100vh-128px)]">
+        {scopeIndicator ? (
+          <div className="lg:flex-none">{scopeIndicator}</div>
+        ) : null}
         <div className="min-h-0 lg:flex-1">{canvas}</div>
         <div className="min-h-0 lg:flex-none">{references}</div>
       </div>

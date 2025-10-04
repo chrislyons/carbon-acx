@@ -7,6 +7,8 @@ import { ReferencesDrawer } from './components/ReferencesDrawer';
 import { VizCanvas } from './components/VizCanvas';
 import { ProfileProvider, useProfile } from './state/profile';
 import { ActivityPlanner } from './components/ActivityPlanner';
+import { ScopeBar, type ScopePin, type ScopeSegmentDescriptor } from './components/ScopeBar';
+import { useLayerCatalog } from './lib/useLayerCatalog';
 
 export default function App(): JSX.Element {
   return (
@@ -20,6 +22,7 @@ const STAGE_SEQUENCE: StageId[] = ['segment', 'profile', 'activity'];
 
 function AppShell(): JSX.Element {
   const { activeLayers, primaryLayer, hasLifestyleOverrides } = useProfile();
+  const { layers: layerCatalog } = useLayerCatalog();
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(() => {
     if (typeof window === 'undefined') {
       return true;
@@ -34,6 +37,25 @@ function AppShell(): JSX.Element {
   const optionalSegments = useMemo(
     () => activeLayers.filter((layer) => layer !== primaryLayer),
     [activeLayers, primaryLayer]
+  );
+
+  const layerTitleLookup = useMemo(() => {
+    const lookup = new Map<string, string>();
+    layerCatalog.forEach((layer) => {
+      if (layer?.id) {
+        lookup.set(layer.id, layer.title ?? layer.id);
+      }
+    });
+    return lookup;
+  }, [layerCatalog]);
+
+  const activeSegmentDescriptors = useMemo<ScopeSegmentDescriptor[]>(
+    () =>
+      activeLayers.map((id) => ({
+        id,
+        label: layerTitleLookup.get(id) ?? id
+      })),
+    [activeLayers, layerTitleLookup]
   );
   const segmentContextReady = activeLayers.length > 0;
   const profileUnlocked = unlockedStages.has('profile');
@@ -66,6 +88,62 @@ function AppShell(): JSX.Element {
         : 'Add lifestyle detail to unlock activities'
     };
   }, [activeLayers, primaryLayer, optionalSegments.length, hasLifestyleOverrides, activityUnlocked]);
+
+  const profileDetail = stageSummaries.profile;
+  const activityDetail = stageSummaries.activity;
+
+  interface StoredScopePin extends ScopePin {
+    fingerprint: string;
+  }
+
+  const [pinnedScopes, setPinnedScopes] = useState<StoredScopePin[]>([]);
+
+  const handlePinScope = useCallback(() => {
+    const fingerprint = JSON.stringify({
+      stage,
+      segments: activeSegmentDescriptors.map((segment) => segment.id),
+      profile: profileDetail,
+      activity: activityDetail
+    });
+    setPinnedScopes((previous) => {
+      if (previous.some((pin) => pin.fingerprint === fingerprint)) {
+        return previous;
+      }
+      const stageLabel =
+        stage === 'segment' ? 'Segment scope' : stage === 'profile' ? 'Profile scope' : 'Activity scope';
+      const title =
+        activeSegmentDescriptors.length > 0
+          ? activeSegmentDescriptors.map((segment) => segment.label).join(' · ')
+          : 'No segments selected';
+      const subtitleParts = [stageLabel];
+      if (profileDetail) {
+        subtitleParts.push(profileDetail);
+      }
+      if (activityDetail) {
+        subtitleParts.push(activityDetail);
+      }
+      const subtitle = subtitleParts.join(' • ');
+      const id = `scope-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+      const nextPin: StoredScopePin = {
+        id,
+        stage,
+        title,
+        subtitle,
+        stageSummary: stageSummaries[stage],
+        fingerprint
+      };
+      return [...previous, nextPin];
+    });
+  }, [stage, activeSegmentDescriptors, profileDetail, activityDetail, stageSummaries]);
+
+  const handleRemovePinnedScope = useCallback((id: string) => {
+    setPinnedScopes((previous) => previous.filter((pin) => pin.id !== id));
+  }, []);
+
+  const visiblePinnedScopes = useMemo<ScopePin[]>(
+    () => pinnedScopes.map(({ fingerprint, ...pin }) => pin),
+    [pinnedScopes]
+  );
 
   const isStageUnlocked = useCallback(
     (stageId: StageId) => stageId === 'segment' || unlockedStages.has(stageId),
@@ -152,6 +230,18 @@ function AppShell(): JSX.Element {
           controls={<ProfileControls />}
           activity={<ActivityPlanner />}
           canvas={<VizCanvas stage={stage} />}
+          scopeIndicator={
+            <ScopeBar
+              stage={stage}
+              stageSummaries={stageSummaries}
+              segments={activeSegmentDescriptors}
+              profileDetail={profileDetail}
+              activityDetail={activityDetail}
+              pinnedScopes={visiblePinnedScopes}
+              onPinScope={handlePinScope}
+              onRemovePinnedScope={handleRemovePinnedScope}
+            />
+          }
           references={
             <ReferencesDrawer
               id="references-panel"
