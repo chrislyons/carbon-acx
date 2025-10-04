@@ -20,17 +20,79 @@ from ._helpers import (
 )
 from ._plotly_settings import apply_figure_layout_defaults
 
+MODE_LABELS = {
+    "civilian": "Civilian activity flow",
+    "two_stage": "Industry → civilian flow",
+}
+DEFAULT_MODE = "civilian"
 
-def _build_figure(
+
+def _mode_payload(data: object, mode: str) -> tuple[list[dict], list[dict]]:
+    if not isinstance(data, Mapping):
+        return [], []
+
+    def _coerce_sequence(candidate: object) -> list[dict]:
+        if isinstance(candidate, list):
+            return [entry for entry in candidate if isinstance(entry, Mapping)]
+        return []
+
+    nodes = _coerce_sequence(data.get("nodes"))
+    links = _coerce_sequence(data.get("links"))
+
+    modes = data.get("modes")
+    if isinstance(modes, Mapping):
+        payload = modes.get(mode)
+        if not isinstance(payload, Mapping) and mode != DEFAULT_MODE:
+            payload = modes.get(DEFAULT_MODE)
+        if isinstance(payload, Mapping):
+            mode_nodes = _coerce_sequence(payload.get("nodes"))
+            mode_links = _coerce_sequence(payload.get("links"))
+            if mode_nodes:
+                nodes = mode_nodes
+            if mode_links:
+                links = mode_links
+    return nodes, links
+
+
+def available_modes(figure_payload: Optional[dict]) -> list[str]:
+    if not isinstance(figure_payload, Mapping):
+        return [DEFAULT_MODE]
+    data = figure_payload.get("data")
+    modes: list[str] = []
+    if isinstance(data, Mapping):
+        raw_modes = data.get("modes")
+        if isinstance(raw_modes, Mapping):
+            for key, value in raw_modes.items():
+                if not isinstance(value, Mapping):
+                    continue
+                text = str(key).strip()
+                if text:
+                    modes.append(text)
+    unique: list[str] = []
+    seen: set[str] = set()
+    for mode in modes:
+        if mode not in seen:
+            seen.add(mode)
+            unique.append(mode)
+    if DEFAULT_MODE not in seen:
+        unique.insert(0, DEFAULT_MODE)
+    else:
+        unique = [DEFAULT_MODE] + [mode for mode in unique if mode != DEFAULT_MODE]
+    return unique or [DEFAULT_MODE]
+
+
+def build_figure(
     payload: dict,
     reference_lookup: Mapping[str, int],
     *,
     dark: bool = False,
     selected_activity: str | None = None,
+    mode: str = DEFAULT_MODE,
 ) -> go.Figure:
     data = payload.get("data", {}) if payload else {}
-    nodes = data.get("nodes", [])
-    links = data.get("links", [])
+    nodes_raw, links_raw = _mode_payload(data, mode)
+    nodes = [node for node in nodes_raw if isinstance(node, Mapping)]
+    links = [link for link in links_raw if isinstance(link, Mapping)]
 
     palette = get_palette(dark=dark)
 
@@ -48,6 +110,8 @@ def _build_figure(
         node_type = str(node.get("type") or "node")
         if node_type == "category":
             colors.append(palette["accent_subtle"])
+        elif node_type == "operation":
+            colors.append(palette["accent_strong"])
         else:
             colors.append(palette["accent"])
 
@@ -59,16 +123,17 @@ def _build_figure(
     meta_entries: list[dict[str, object]] = []
     range_lines: list[str] = []
     reference_lines: list[str] = []
+    share_lines: list[str] = []
 
     for link in links:
-        mean_g = clamp_optional(link.get("values", {}).get("mean"))
+        mean_g = clamp_optional((link.get("values") or {}).get("mean"))
         if mean_g is None or mean_g <= 0:
             continue
-        mean = mean_g / 1000.0
         source_id = id_to_index.get(str(link.get("source")))
         target_id = id_to_index.get(str(link.get("target")))
         if source_id is None or target_id is None:
             continue
+        mean = mean_g / 1000.0
         sources.append(source_id)
         targets.append(target_id)
         values.append(mean)
@@ -78,6 +143,7 @@ def _build_figure(
             activity_ids.append(None)
         else:
             activity_ids.append(str(raw_activity_id))
+
         indices = list(link.get("hover_reference_indices") or [])
         if not indices:
             indices = reference_numbers(link.get("citation_keys"), reference_lookup)
@@ -96,9 +162,18 @@ def _build_figure(
         high = clamp_optional(values_map.get("high")) if isinstance(values_map, Mapping) else None
         low_kg = (low / 1000.0) if low is not None else None
         high_kg = (high / 1000.0) if high is not None else None
-        range_text = format_range(low_kg, high_kg, "kg/yr")
-        range_lines.append(range_text or "")
+        range_lines.append(format_range(low_kg, high_kg, "kg/yr") or "")
         reference_lines.append(format_reference_line(indices))
+
+        share_line = ""
+        share_value = link.get("share")
+        try:
+            share_float = float(share_value)
+        except (TypeError, ValueError):
+            share_float = None
+        if share_float is not None and share_float > 0:
+            share_line = f"<br>Share of activity: {share_float * 100:.1f}%"
+        share_lines.append(share_line)
 
     figure = apply_figure_layout_defaults(go.Figure())
     if not values:
@@ -124,19 +199,21 @@ def _build_figure(
             formatted_value,
             f"<br>{range_line}" if range_line else "",
             reference_line,
+            share_line,
             activity_id,
         ]
-        for formatted_value, range_line, reference_line, activity_id in zip(
-            formatted_values, range_lines, reference_lines, activity_ids
+        for formatted_value, range_line, reference_line, share_line, activity_id in zip(
+            formatted_values, range_lines, reference_lines, share_lines, activity_ids
         )
     ]
-    custom_idx = ["[" + str(i) + "]" for i in range(4)]
-    idx0, idx1, idx2, _idx3 = custom_idx
+    custom_idx = ["[" + str(i) + "]" for i in range(5)]
+    idx0, idx1, idx2, idx3, _idx4 = custom_idx
     hover_template = (
         "<b>%{source.label} → %{target.label}</b>"
         f"<br>Annual emissions: %{{customdata{idx0}}}"
         f"%{{customdata{idx1}}}"
         f"<br>%{{customdata{idx2}}}"
+        f"%{{customdata{idx3}}}"
         "<extra></extra>"
     )
     figure.add_trace(
@@ -181,11 +258,15 @@ def render(
     title = "Activity flow"
     if title_suffix:
         title = f"{title} — {title_suffix}"
-    figure = _build_figure(
+
+    modes = available_modes(figure_payload or {})
+    initial_mode = next(iter(modes), DEFAULT_MODE)
+    figure = build_figure(
         figure_payload or {},
         reference_lookup,
         dark=dark,
         selected_activity=active_activity,
+        mode=initial_mode,
     )
 
     if not figure.data:
@@ -193,6 +274,7 @@ def render(
         if title_suffix:
             message = f"No flow data available for {title_suffix}."
         content = html.P(message)
+        controls_section = None
     else:
         graph_id: str | dict = "sankey-chart"
         if layer_id:
@@ -205,8 +287,44 @@ def render(
             style={"height": "420px"},
             className="chart-figure",
         )
+        controls_section = None
+        if len(modes) > 1:
+            mode_id: str | dict = "sankey-mode"
+            if layer_id:
+                mode_id = {"component": "sankey-mode", "layer": layer_id}
+            options = [
+                {
+                    "label": MODE_LABELS.get(mode, mode.replace("_", " ").title()),
+                    "value": mode,
+                }
+                for mode in modes
+            ]
+            controls_section = html.Div(
+                className="chart-controls",
+                children=[
+                    html.Div(
+                        className="chart-controls__group",
+                        children=[
+                            html.Span("View", className="chart-controls__label"),
+                            dcc.RadioItems(
+                                id=mode_id,
+                                options=options,
+                                value=initial_mode,
+                                className="chart-controls__radios chart-toggle",
+                                inputStyle={"marginRight": "0.5rem"},
+                                labelStyle={"display": "inline-flex", "alignItems": "center"},
+                                persistence=True,
+                                persistence_type="session",
+                            ),
+                        ],
+                    )
+                ],
+            )
 
-    children: list = [html.H2(title), content]
+    children: list = [html.H2(title)]
+    if controls_section is not None:
+        children.append(controls_section)
+    children.append(content)
 
     if has_na_segments(figure_payload):
         children.append(na_notice.render())
@@ -216,3 +334,7 @@ def render(
         className="chart-section chart-section--sankey",
         id="sankey",
     )
+
+
+# Backwards compatibility for modules importing the previous helper name.
+_build_figure = build_figure
