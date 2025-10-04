@@ -8,6 +8,7 @@ SITE.ARCELORMITTAL.ON.STEEL,ENTITY.ARCELORMITTAL.CA,Hamilton Steelworks,CA-ON,,,
 SITE.NOVA.ON.PET,ENTITY.NOVA.CHEM.CA,Sarnia Chemical Complex,CA-ON,,,"PET polymerisation and packaging resins facility"
 SITE.CARGILL.AB.BEEF,ENTITY.CARGILL.CA,High River Beef Plant,CA-AB,50.572,-113.872,"Major federally inspected beef slaughter and fabrication site."
 SITE.MAPLELEAF.ON.POULTRY,ENTITY.MAPLELEAF.CA,London Poultry Complex,CA-ON,42.931,-81.147,"New Maple Leaf Foods value-added poultry processing plant."
+SITE.AIRCANADA.PEARSON,ENTITY.AIRCANADA.CA,Toronto hub,CA-ON,,,
 SITE.TORONTO.GREENLANE.LANDFILL,ENTITY.TORONTO.WASTE,Green Lane Landfill,CA-ON,42.834,-81.274,"Residual waste landfill owned by the City of Toronto near Southwold Township."
 SITE.TORONTO.DURHAMYORK.EFW,ENTITY.TORONTO.WASTE,Durham York Energy Centre,CA-ON,43.868,-78.986,"Regional waste-to-energy plant receiving Toronto transfer loads."
 SITE.TORONTO.WATER.SYSTEM,ENTITY.TORONTO.WATER,Toronto Water Supply System,CA-ON,43.675,-79.272,"Aggregated representation of Toronto’s four drinking water plants and distribution network."

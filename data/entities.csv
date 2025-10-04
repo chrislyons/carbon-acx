@@ -8,6 +8,8 @@ ENTITY.META.US,Meta Platforms Inc.,corporate,,Parent for Instagram platform oper
 ENTITY.BYTEDANCE.CN,ByteDance Ltd.,corporate,,Parent for TikTok platform operations
 ENTITY.OPENAI.US,OpenAI,corporate,,Provider of GPT inference services
 ENTITY.ANTHROPIC.US,Anthropic PBC,corporate,,Provider of Claude inference services
+ENTITY.AIRCANADA.CA,Air Canada,corporate,,Flag carrier and largest airline in Canada
+ENTITY.WESTJET.CA,WestJet,corporate,,Major Canadian airline focused on domestic and transborder routes
 ENTITY.TORONTO.WASTE,City of Toronto Solid Waste Management Services,municipal,,Municipal residual waste and recycling utility for Toronto households and businesses
 ENTITY.TORONTO.WATER,Toronto Water,municipal,,City-owned water treatment and distribution utility for Toronto
 ENTITY.LAFARGE.CA,Lafarge Canada,corporate,,Major Canadian cement producer with integrated clinker facilities.
