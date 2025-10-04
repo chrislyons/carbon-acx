@@ -1,24 +1,23 @@
 # Carbon ACX
 
-Carbon ACX is a reference implementation for building reproducible carbon accounting datasets and experiences. It demonstrates how to ingest heterogeneous activity data, normalise it into shared emissions models, derive decision-ready artefacts, and deliver those artefacts across interactive and static channels.
+Carbon ACX is an open reference stack for building trustworthy carbon accounting datasets and presenting them as polished digital experiences. It shows how to move from raw activity records to public-ready disclosures without losing transparency along the way.
 
 ---
 
 ## Table of contents
 
-1. [Project overview](#project-overview)
-   - [Mission & scope](#mission--scope)
-   - [Architecture & problem domain](#architecture--problem-domain)
-   - [Positioning](#positioning)
-   - [Layer catalogue at-a-glance](#layer-catalogue-at-a-glance)
-2. [Features](#features)
-3. [Repository structure](#repository-structure)
-4. [Installation & setup](#installation--setup)
-   - [Local development](#local-development)
+1. [Overview](#overview)
+   - [In plain language](#in-plain-language)
+   - [What you get](#what-you-get)
+   - [Who uses Carbon ACX](#who-uses-carbon-acx)
+2. [How it works](#how-it-works)
+3. [Repository tour](#repository-tour)
+4. [Getting started](#getting-started)
+   - [Quick demo without coding](#quick-demo-without-coding)
+   - [Developer setup](#developer-setup)
    - [Database-backed workflows](#database-backed-workflows)
    - [Front-end toolchain](#front-end-toolchain)
-   - [Production preparation](#production-preparation)
-5. [Usage](#usage)
+5. [Working with the toolkit](#working-with-the-toolkit)
    - [Derivation CLI](#derivation-cli)
    - [Intensity matrix CLI](#intensity-matrix-cli)
    - [Dash exploration client](#dash-exploration-client)
@@ -37,158 +36,133 @@ Carbon ACX is a reference implementation for building reproducible carbon accoun
 11. [Roadmap](#roadmap)
 12. [FAQ & troubleshooting](#faq--troubleshooting)
 13. [References](#references)
+14. [Serials & traceability](#serials--traceability)
 
 ---
 
-## Project overview
+## Overview
 
-### Mission & scope
+### In plain language
 
-Carbon ACX exists to make carbon accounting datasets portable. The project:
+Carbon ACX bundles three things:
 
-- Converts raw activity records into well-defined emissions models using Pydantic validation in [`calc/schema.py`](./calc/schema.py), ensuring unit registries, layer enumerations, and grid strategies remain consistent.【F:calc/schema.py†L1-L101】
-- Computes annualised emissions, intensity matrices, uncertainty bounds, and manifest metadata to create a portable bundle of JSON, CSV, and reference text files via [`calc/derive.py`](./calc/derive.py).【F:calc/derive.py†L1-L114】
-- Ships both a Dash-based exploration environment and a static React/Vite experience that render directly from the derived bundle, proving that the data products are channel-agnostic.【F:app/app.py†L1-L132】【F:site/src/App.tsx†L1-L58】
-- Provides an API-friendly surface (`calc.api`/`calc.service`) plus a Cloudflare Worker runtime so downstream services can request fresh figures without duplicating the derivation logic.【F:calc/service.py†L1-L123】【F:workers/compute/index.ts†L1-L86】
+1. **A curated demo dataset** that reflects common professional-service, digital, and light-industrial activities. It includes emission factors, grid intensities, schedules, and preset profiles that can be rebuilt on demand from the CSV files in `data/`.
+2. **A reproducible calculation engine** that converts those inputs into emissions results. The `calc` Python package validates every record, joins the right factors, computes totals, and writes the outputs into versioned folders so you always know exactly what changed between runs.【F:calc/schema.py†L1-L167】【F:calc/derive.py†L1089-L1473】
+3. **Two ready-to-ship experiences**—a Dash web app and a static React site—plus a Cloudflare Worker API. All of them read the same derived artefacts so audiences get identical numbers regardless of the channel.【F:app/app.py†L1-L132】【F:site/src/App.tsx†L1-L58】【F:workers/compute/index.ts†L1-L104】
 
-### Architecture & problem domain
+The result is a transparent example of how to publish carbon disclosures without spreadsheets, with a workflow business stakeholders and engineers can both follow.
 
-The repository is organised around a **derive-once, serve-anywhere** architecture:
+### What you get
 
-1. **Domain modelling (`calc/schema.py`)** — Canonical CSV inputs are typed with Pydantic models enforcing unit registries (`units.csv`), scope boundaries, grid intensity schemas, and functional unit conversion formula parsing. A read-through cache keeps repeated loads deterministic.【F:calc/schema.py†L1-L87】【F:calc/derive.py†L160-L240】
-2. **Data access (`calc/dal/`)** — A pluggable `DataStore` abstraction supports CSV (`CsvStore`), DuckDB (`DuckDbStore`), and SQLite/DuckDB SQL stores (`SqlStore`) so derivations can run against files, in-memory databases, or production-ready connections.【F:calc/dal/__init__.py†L1-L66】【F:calc/dal_sql.py†L25-L115】
-3. **Computation (`calc/derive.py`)** — Activity schedules, emission factors, and grid intensities are combined into annualised emissions with guardrails for layer attribution, reference tracking, hashing, manifest metadata, and safe output directory handling.【F:calc/derive.py†L292-L382】【F:calc/derive.py†L1500-L1599】
-4. **Presentation (`calc/figures.py`, `app/components`, `site/`)** — Plotly figure slices, disclosure copy, IEEE references, and UI theming are produced once and consumed by both Dash components and the static React client so user experiences stay consistent across channels.【F:calc/figures.py†L1-L120】【F:app/components/_plotly_settings.py†L1-L40】【F:site/src/components/VizCanvas.tsx†L1-L120】
-5. **Delivery (`scripts/*.py`, `functions/carbon-acx`, `workers/compute`)** — Automation packages the derived bundle, renders the static client, publishes Cloudflare Pages metadata, and proxies production traffic while enforcing caching, routing, and optional upstream fallbacks.【F:scripts/prepare_pages_bundle.py†L1-L82】【F:functions/carbon-acx/[[path]].ts†L1-L200】
+- **Trustworthy data pipeline** – strict validation, reference tracking, and manifest metadata keep every build auditable.【F:calc/schema.py†L1-L167】【F:calc/derive.py†L1474-L1542】
+- **Interactive storytelling** – Plotly-based Dash components and a Tailwind-powered React site render the same charts, tables, and disclosure copy for presentations or public sites.【F:app/components/_plotly_settings.py†L1-L40】【F:site/src/components/VizCanvas.tsx†L1-L120】
+- **Automation hooks** – CLI commands, Make targets, and a Cloudflare Worker make it easy to integrate the dataset into CI/CD or downstream services.【F:Makefile†L1-L80】【F:workers/compute/runtime.ts†L1-L120】
 
-This architecture targets carbon accounting teams that need a transparent pipeline from data ingestion through public presentation.
+### Who uses Carbon ACX
 
-### Positioning
-
-Compared to ad-hoc spreadsheets or monolithic BI stacks, Carbon ACX emphasises:
-
-- **Deterministic builds** — Artefacts are versioned by content hash and generated through a single CLI entry point that only clears whitelisted directories (`calc/derive.is_safe_output_dir`).【F:calc/derive.py†L252-L336】
-- **Reference integrity** — Every derived figure carries IEEE-formatted citations sourced from curated reference files (`calc/references/*.txt`) via the `calc.citations` resolver.【F:calc/citations.py†L1-L74】【F:calc/derive.py†L1474-L1526】
-- **Channel parity** — The same derived payload drives Dash, the static React/Vite site, and the Cloudflare Worker API, simplifying validation and deployment while keeping disclosure copy and NA notices aligned.【F:app/app.py†L70-L129】【F:site/src/routes/Story.tsx†L1-L160】
-- **Backend agility** — `ACX_DATA_BACKEND` toggles between CSV, DuckDB, and SQLite stores; `scripts/import_csv_to_db.py` and `scripts/export_db_to_csv.py` keep SQL backends in sync with the canonical CSVs.【F:calc/dal/__init__.py†L35-L78】【F:scripts/import_csv_to_db.py†L1-L120】
-- **Test-first data hygiene** — A broad pytest suite covers schema constraints, backend parity, manifest metadata, API responses, and UI snapshots; the static front-end ships with Vitest checks for React behaviour.【F:tests/test_schema.py†L1-L200】【F:tests/test_backend_parity.py†L1-L47】【F:site/package.json†L1-L34】
-
-### Layer catalogue at-a-glance
-
-| Layer | Summary | Example activities |
-| --- | --- | --- |
-| Professional services | Baseline knowledge worker footprint anchored to hybrid office routines. | Coffee—12 oz hot · Toronto subway—per passenger-kilometre |
-| Online services | SaaS, meetings, and streaming workloads for remote-first teams. | Video conferencing hour · SaaS productivity suite seat |
-| Industrial (Light) | Lab, prototyping, and light fabrication scenarios for innovation hubs. | Lab bench operation · Prototyping print run |
-| Industrial (Heavy) | Full-scale manufacturing and heavy industry references for R&D insight. | Steel batch furnace · Heavy equipment runtime |
-
-The layer catalogue is sourced from [`data/layers.csv`](./data/layers.csv) and mirrored for the site bundle in [`site/public/artifacts/layers.json`](./site/public/artifacts/layers.json). Run `python scripts/audit_layers.py` to regenerate the discovery report (`artifacts/audit_report.json`), which lists every seeded activity, operation coverage, icon status, and UI wiring health for quick QA.【F:data/layers.csv†L1-L40】【F:scripts/audit_layers.py†L1-L120】
+- **Sustainability leads** exploring how structured carbon reporting can be shared across teams and clients.
+- **Data practitioners** who want a reproducible reference for schema design, derivations, and manifest-driven releases.
+- **Front-of-house teams** (communications, design, investor relations) looking for a polished, jargon-light experience they can embed in sites or decks.
 
 ---
 
-## Features
+## How it works
 
-- **Typed data ingestion** — `calc/schema` loads CSV inputs with unit registry validation, functional unit formula evaluation, and cached reads for repeat derivations.【F:calc/schema.py†L1-L167】【F:calc/derive.py†L140-L212】
-- **Backend-agnostic datastore** — `calc.dal.choose_backend` selects CSV, DuckDB, or SQLite implementations; `ACX_DB_PATH` allows pointing SQL stores at alternate paths.【F:calc/dal/__init__.py†L55-L90】
-- **Emission computation engine** — `calc.derive.export_view` applies profile schedules, grid intensities, uncertainty bounds, upstream dependency chains, and citation lookups while writing hashed artefact directories (`dist/artifacts/<hash>`).【F:calc/derive.py†L1089-L1473】
-- **Functional unit intensity builder** — `calc.derive` ships an `intensity` subcommand and `build_intensity_matrix` helper for generating cross-profile functional unit comparisons consumed by narrative helpers and the UI.【F:calc/derive.py†L1330-L1496】【F:app/lib/narratives.py†L1-L88】
-- **Figure slicing utilities** — `calc.figures` constructs stacked, bubble, and Sankey payloads with consistent metadata, layer ordering, and reference bindings for both UI surfaces.【F:calc/figures.py†L1-L210】
-- **Citation management** — `calc.citations` resolves IEEE-formatted references, deduplicates keys, and injects numbered lists into outputs and UI panels.【F:calc/citations.py†L1-L72】
-- **Dash exploration UI** — [`app/app.py`](./app/app.py) renders Plotly charts, disclosure copy, NA notices, and references straight from derived artefacts; reduced-motion preferences honour `ACX_REDUCED_MOTION`.【F:app/app.py†L1-L132】【F:app/components/_plotly_settings.py†L1-L34】
-- **Static React/Vite site** — [`site/`](./site) packages a Tailwind-styled React client that consumes the same artefacts, supports preset profiles, and builds with Vite/TypeScript for Cloudflare Pages deployment.【F:site/package.json†L1-L34】【F:site/src/state/profile/index.tsx†L1-L200】
-- **Cloudflare Pages function** — [`functions/carbon-acx/[[path]].ts`](./functions/carbon-acx/[[path]].ts) proxies `/carbon-acx/*` requests, enforces immutable caching for artefacts, and optionally fetches from an upstream origin when `CARBON_ACX_ORIGIN` is set.【F:functions/carbon-acx/[[path]].ts†L1-L200】
-- **On-demand compute worker** — [`workers/compute`](./workers/compute) exposes `/api/compute` and `/api/health` endpoints that call `calc.service.compute_profile`, normalise overrides, and return fresh figure payloads with dataset version reporting.【F:workers/compute/index.ts†L1-L104】【F:calc/service.py†L296-L414】
-- **Artifact packaging workflow** — `scripts/package_artifacts.py` and `scripts.prepare_pages_bundle.py` copy whitelisted JSON/CSV/TXT outputs, emit a file index, and write Cloudflare `_headers`/`_redirects` metadata; `tools/sbom.py` produces a CycloneDX SBOM for releases.【F:scripts/package_artifacts.py†L1-L160】【F:scripts/prepare_pages_bundle.py†L1-L82】【F:tools/sbom.py†L1-L120】
-- **Data import/export tooling** — `scripts/import_csv_to_db.py`, `scripts/export_db_to_csv.py`, and `db/schema.sql` keep SQL backends aligned with canonical CSVs while preserving schema constraints and placeholder guardrails.【F:scripts/import_csv_to_db.py†L1-L160】【F:db/schema.sql†L1-L80】
+Carbon ACX follows a “derive once, serve anywhere” flow:
+
+1. **Collect & validate** – CSV inputs are described with Pydantic models that enforce units, scopes, and functional-unit formulas.【F:calc/schema.py†L1-L167】
+2. **Derive & package** – `python -m calc.derive` computes annual emissions, intensity matrices, references, and manifest metadata, then writes a content-hashed bundle under `dist/artifacts/<hash>`.【F:calc/derive.py†L1089-L1526】
+3. **Publish & reuse** – Dash (`app/`), the static site (`site/`), the Cloudflare Pages Function, and the compute Worker all read from the same bundle so numbers stay in sync across every surface.【F:app/app.py†L1-L132】【F:site/vite.config.ts†L1-L80】【F:functions/carbon-acx/[[path]].ts†L1-L200】【F:workers/compute/index.ts†L1-L104】
 
 ---
 
-## Repository structure
+## Repository tour
 
 | Path | Purpose |
 | --- | --- |
-| `calc/` | Core calculation package: schema definitions, datastore interfaces, emission derivation, figure slicing, citation handling, UI theming, API helpers, and upstream metadata utilities.【F:calc/schema.py†L1-L101】【F:calc/service.py†L1-L120】 |
-| `app/` | Dash development client with Plotly component builders, disclosure panels, intensity narratives, and reference rendering helpers.【F:app/app.py†L1-L132】【F:app/components†L1-L120】 |
-| `site/` | Static site sources (React/TypeScript, Tailwind CSS, Vite config, assets) used by `npm run build` and Cloudflare Pages deployment.【F:site/package.json†L1-L34】【F:site/vite.config.ts†L1-L80】 |
-| `data/` | Canonical CSV datasets (activities, schedules, emission factors, grid intensity, profiles, units, and sources). `_staged/` holds raw extracts pending ingestion.【F:data/activities.csv†L1-L40】【F:data/_staged†L1-L10】 |
-| `scripts/` | Build orchestration scripts for rendering the static site, packaging artefacts, syncing layer catalogues, auditing coverage, and diagnosing deployments.【F:scripts/build_site.py†L1-L120】【F:scripts/dev_diag.sh†L1-L16】 |
-| `functions/` | Cloudflare Pages function for proxying `/carbon-acx` traffic and serving artefacts with strict caching semantics.【F:functions/carbon-acx/[[path]].ts†L1-L200】 |
-| `workers/` | Cloudflare Worker runtime for on-demand compute endpoints backed by the `calc.service` module.【F:workers/compute/index.ts†L1-L104】 |
-| `db/` | SQLite schema for durable backends and parity testing.【F:db/schema.sql†L1-L80】 |
-| `docs/` | Operational guides covering methodology, maintenance cadence, deployment runbooks, routing, testing notes, and contribution traceability.【F:docs/MAINTENANCE_CALENDAR.md†L1-L80】【F:docs/routes.md†L1-L120】 |
-| `tests/` | Pytest suite including integration tests, backend parity checks, figure regression tests, UI snapshot expectations, and worker/API tests.【F:tests/test_backend_parity.py†L1-L47】【F:tests/ui/test_theme_smoke.py†L1-L80】 |
+| `calc/` | Core Python package: schema validation, datastore abstraction, derivation logic, Plotly figure builders, citation helpers, and API utilities.【F:calc/schema.py†L1-L101】【F:calc/service.py†L1-L120】 |
+| `app/` | Dash development client with reusable components, disclosure panels, and reduced-motion aware Plotly templates.【F:app/app.py†L1-L132】【F:app/components/_plotly_settings.py†L1-L40】 |
+| `site/` | Static React/Vite site styled with Tailwind that consumes derived artefacts and mirrors the Dash experience.【F:site/package.json†L1-L34】【F:site/src/routes/Story.tsx†L1-L160】 |
+| `data/` | Canonical CSV datasets for activities, schedules, emission factors, grid intensities, profiles, units, and sources; `_staged/` stores raw extracts awaiting ingestion.【F:data/activities.csv†L1-L40】 |
+| `scripts/` | Build, packaging, audit, and diagnostic helpers for artefacts, layer catalogues, and deployment automation.【F:scripts/prepare_pages_bundle.py†L1-L82】【F:scripts/audit_layers.py†L1-L160】 |
+| `functions/` | Cloudflare Pages Function that serves the static bundle, proxies artefact requests, and applies immutable caching headers.【F:functions/carbon-acx/[[path]].ts†L1-L200】 |
+| `workers/` | Cloudflare Worker exposing a JSON API that calls `calc.service.compute_profile` for live figure generation.【F:workers/compute/index.ts†L1-L104】 |
+| `db/` | SQLite schema used for parity tests and optional persistent backends.【F:db/schema.sql†L1-L80】 |
+| `docs/` | Operational guides, deployment notes, testing references, and maintenance calendars.【F:docs/routes.md†L1-L120】 |
+| `tests/` | Pytest suite plus UI snapshot checks covering schema guardrails, backend parity, and packaging workflows.【F:tests/test_backend_parity.py†L1-L47】【F:tests/ui/test_theme_smoke.py†L1-L80】 |
 | `tools/` | Developer utilities such as CycloneDX SBOM generation.【F:tools/sbom.py†L1-L120】 |
-| `Makefile` | Primary task runner encapsulating install, lint, test, build, packaging, SBOM, DB import/export, and release placeholders.【F:Makefile†L1-L80】 |
-| `pyproject.toml` | Poetry configuration specifying runtime dependencies, extras, linting settings, and build metadata.【F:pyproject.toml†L1-L45】 |
-
-Each module is documented with inline comments and docstrings; start with `calc/derive.py` to understand the data flow, then explore `app/components` and `site/src` to see how artefacts are consumed.
+| `Makefile` | Main entry points for install, lint, test, build, packaging, and SBOM tasks.【F:Makefile†L1-L80】 |
+| `pyproject.toml` | Poetry configuration with runtime dependencies and optional extras (e.g. DuckDB support).【F:pyproject.toml†L1-L45】 |
 
 ---
 
-## Installation & setup
+## Getting started
 
-### Local development
+### Quick demo without coding
+
+1. Clone the repository and ensure Python 3.11+ and Node.js 18+ are available.
+2. Install the Python dependencies and build the artefacts:
+   ```bash
+   make install
+   make build
+   ```
+3. Package the static site and preview it in your browser:
+   ```bash
+   make package
+   python -m http.server --directory dist/site 8001
+   ```
+   Visit `http://localhost:8001` to click through the experience produced from the latest data bundle. The Dash app can be started with `make app` if you prefer an interactive notebook-style exploration.【F:Makefile†L1-L80】【F:app/app.py†L65-L132】
+
+### Developer setup
 
 1. **Install prerequisites**
    - Python 3.11+
-   - [Poetry 1.8](https://python-poetry.org/) (CI installs automatically; local developers should install manually)
+   - [Poetry 1.8](https://python-poetry.org/)
    - GNU `make`
-   - Node.js 18+ (for the `site/` Vite build)
+   - Node.js 18+ (for the Vite build in `site/`)
 2. **Bootstrap the Python environment**
    ```bash
    make install
    ```
-   This installs runtime and development dependencies (ruff, black, pytest, pip-audit, kaleido, Pillow).
+   This installs runtime and development dependencies including ruff, black, pytest, kaleido, Pillow, and pip-audit.【F:Makefile†L1-L40】
 3. **Regenerate derived artefacts**
    ```bash
    make build
    ```
-   The command runs `python -m calc.derive export` and `python -m calc.derive intensity`, producing hashed builds under `dist/artifacts/<hash>` and updating `dist/artifacts/latest-build.json`.
-4. **Sync the layer catalogue for the site**
+   The command runs `python -m calc.derive export` and `python -m calc.derive intensity`, writes hashed outputs to `dist/artifacts/<hash>`, and updates `dist/artifacts/latest-build.json`.【F:calc/derive.py†L1474-L1542】
+4. **Sync the front-end assets**
    ```bash
    make site_install
    make site_build
    ```
-   The `site_build` target compiles the React client and copies assets into `dist/site/`.
+   These targets install Node dependencies, compile the React client, and copy artefacts into `dist/site/` for local preview.【F:Makefile†L41-L80】
 
 ### Database-backed workflows
 
-- Initialise a SQLite database for parity testing or production experiments:
+- Initialise a SQLite database for parity testing or experiments:
   ```bash
   make db_init
-  make db_import  # loads CSV data into acx.db using schema constraints
+  make db_import
   ```
-- Run derivations against SQLite or DuckDB by overriding the backend:
+- Build using a specific backend:
   ```bash
   make build-backend B=sqlite
   make build-backend B=duckdb  # requires poetry install --extras db
   ```
-  `ACX_DB_PATH` controls the database path when using the SQL-backed store.【F:calc/dal/__init__.py†L67-L90】
+  Set `ACX_DB_PATH` to control the path when using SQL-backed stores.【F:calc/dal/__init__.py†L67-L90】
 
 ### Front-end toolchain
 
-- Install Node dependencies once (`make site_install`).
-- Start a hot-reload development server:
+- Install Node dependencies once: `make site_install`.
+- Start the hot-reload dev server:
   ```bash
   make site_dev
   ```
-  The Vite dev server honours `PUBLIC_BASE_PATH` for nested deployments and serves from `http://localhost:5173` (or the port printed in the console).【F:site/vite.config.ts†L1-L80】
-
-### Production preparation
-
-To mirror the CI/CD pipeline locally:
-
-```bash
-make build site package
-```
-
-- `make site` renders the static bundle into `dist/site/`.
-- `make package` copies distributable artefacts into `dist/packaged-artifacts/`, writes a file index, and prepares Cloudflare metadata.
-- `make sbom` emits a CycloneDX SBOM at `dist/sbom/cyclonedx.json` for release automation.
+  Vite honours `PUBLIC_BASE_PATH` for nested deployments and serves from `http://localhost:5173` by default.【F:site/vite.config.ts†L1-L80】
 
 ---
 
-## Usage
+## Working with the toolkit
 
 ### Derivation CLI
 
@@ -200,18 +174,18 @@ PYTHONPATH=. poetry run python -m calc.derive export \
   --backend csv  # optional: csv (default), sqlite, or duckdb
 ```
 
-Key outputs within the selected root (`dist/artifacts/<hash>/calc/outputs`):
+Key outputs inside `dist/artifacts/<hash>/calc/outputs` include:
 
-- `export_view.csv` / `export_view.json` — tabular emissions dataset with metadata header comments.
-- `figures/{stacked,bubble,sankey}.json` — Plotly payloads trimmed for client use.
-- `references/*_refs.txt` — IEEE-formatted reference lists for each figure.
-- `manifest.json` — Snapshot metadata (build hash, generated timestamp, layer coverage, regional vintages, citation keys, dependency chain hashes).
+- `export_view.{csv,json}` – tabular emissions dataset with metadata headers.
+- `figures/{stacked,bubble,sankey}.json` – Plotly payloads consumed by Dash and the static site.
+- `references/*_refs.txt` – IEEE-formatted reference lists.
+- `manifest.json` – Build hash, generated timestamp, layer coverage, regional vintages, citation keys, and dependency hashes.
 
-`ACX_DATA_BACKEND` controls the datastore backend (`csv` by default; `duckdb` requires the optional dependency). `ACX_OUTPUT_ROOT` and the `--output-root` flag determine where hashed artefacts are written; `ACX_ALLOW_OUTPUT_RM=1` bypasses path safety checks when directing outputs outside `dist/artifacts`.【F:calc/derive.py†L292-L382】【F:calc/derive.py†L1600-L1658】
+Use `ACX_DATA_BACKEND`, `ACX_OUTPUT_ROOT`, and `ACX_ALLOW_OUTPUT_RM` to control where artefacts are written and which datastore backs the run.【F:calc/derive.py†L292-L382】【F:calc/derive.py†L1600-L1664】
 
 ### Intensity matrix CLI
 
-Generate functional-unit intensity slices that power narrative comparisons and downloadable CSVs:
+Generate functional-unit comparisons for narratives and downloads:
 
 ```bash
 PYTHONPATH=. poetry run python -m calc.derive intensity \
@@ -220,7 +194,7 @@ PYTHONPATH=. poetry run python -m calc.derive intensity \
   --output-dir dist/artifacts
 ```
 
-Outputs include `intensity_matrix.csv` and `intensity_matrix.json`, which `app/lib/narratives.py` reads to produce comparison blurbs and which the static site surfaces for download.【F:calc/derive.py†L1330-L1496】【F:app/lib/narratives.py†L1-L120】
+Outputs include `intensity_matrix.{csv,json}`, which power the narrative helpers in the Dash app and the static site downloads.【F:calc/derive.py†L1330-L1496】【F:app/lib/narratives.py†L1-L120】
 
 ### Dash exploration client
 
@@ -231,34 +205,22 @@ make build
 make app  # serves http://localhost:8050
 ```
 
-The Dash app reads from `calc/outputs` (or a custom `ACX_ARTIFACT_DIR`) and renders:
-
-- Stacked category chart, bubble chart, Sankey flow, and intensity tables using shared Plotly templates and reduced-motion settings.【F:app/app.py†L65-L132】【F:app/components/_plotly_settings.py†L1-L34】
-- Layer toggles, manifest summaries, and NA notices derived from the export view metadata and `calc.copy_blocks` helpers.【F:app/components/disclosure.py†L1-L160】【F:calc/copy_blocks.py†L1-L120】
-- Reference sidebar populated via `calc.citations` to guarantee citation parity with the static site.【F:app/components/references.py†L1-L160】
+The app loads data from `calc/outputs` (or `ACX_ARTIFACT_DIR`) and renders Plotly charts, manifest summaries, disclosure copy, and reference sidebars with consistent styling and reduced-motion support.【F:app/app.py†L65-L132】【F:app/components/disclosure.py†L1-L160】
 
 ### Static site bundle
 
-Render and preview the static React site without a live server:
+Render and preview the static React site without a live backend:
 
 ```bash
 make package
 python -m http.server --directory dist/site 8001
 ```
 
-The packaged bundle embeds:
-
-- Pre-rendered Plotly HTML snippets for each figure produced by `scripts.build_site`.
-- Disclosure panel, manifest summary, and grid vintage table composed from `calc.copy_blocks` and `calc.derive` metadata.【F:scripts/build_site.py†L1-L160】
-- Download links pointing to the packaged artefacts under `dist/site/artifacts/`.
-- IEEE reference list identical to the Dash experience.
-- Cloudflare Pages metadata (`_headers`, `_redirects`) to configure caching and trailing-slash redirects for `/carbon-acx`.
-
-Deploy the contents of `dist/site/` to Cloudflare Pages; the companion Pages Function under `functions/carbon-acx/[[path]].ts` can proxy `/carbon-acx/*` routes to the hosted bundle or an upstream origin when `CARBON_ACX_ORIGIN` is set.【F:functions/carbon-acx/[[path]].ts†L131-L200】
+The packaged bundle embeds pre-rendered Plotly HTML, disclosure panels, manifest summaries, and download links pointing to the bundled artefacts. `_headers` and `_redirects` files configure caching and canonical routing for Cloudflare Pages deployments.【F:scripts/build_site.py†L1-L160】【F:functions/carbon-acx/[[path]].ts†L1-L200】
 
 ### Programmatic aggregates
 
-Use the lightweight API to fetch aggregates inside notebooks or downstream services:
+Fetch high-level totals inside notebooks or downstream services:
 
 ```python
 from pathlib import Path
@@ -271,25 +233,25 @@ print(aggregates.total_annual_emissions_g)
 print(reference_keys)
 ```
 
-`get_aggregates` resolves the active profile, sums annual emissions by activity, and returns the citation keys necessary to build a reference list. `collect_activity_source_keys` is available when you already have derived rows and only need source tracking.【F:calc/api.py†L1-L140】
+`get_aggregates` resolves the active profile, sums annual emissions by activity, and returns the citation keys needed for disclosure copy. `collect_activity_source_keys` helps when you already have derived rows and only need source tracking.【F:calc/api.py†L1-L140】
 
 ### On-demand compute service
 
-`calc.service.compute_profile` mirrors the batch derivation logic for live API contexts: it loads activities, operations, assets, and profiles from any `DataStore`, applies overrides, gathers upstream dependency metadata, and returns trimmed figure payloads with per-layer citations.【F:calc/service.py†L296-L414】
+`calc.service.compute_profile` mirrors the batch derivation logic for live API contexts: it loads data through any `DataStore`, applies overrides, gathers upstream metadata, and returns trimmed figure payloads with per-layer references.【F:calc/service.py†L296-L414】
 
-The Cloudflare Worker in [`workers/compute`](./workers/compute) exposes:
+The Cloudflare Worker in `workers/compute` exposes:
 
-- `GET /api/health` — Returns `{ ok: true, dataset: <hash> }` using `ACX_DATASET_VERSION` or SQL row digests.【F:workers/compute/index.ts†L70-L104】【F:calc/service.py†L45-L102】
-- `POST /api/compute` — Accepts `{ "profile_id": "...", "overrides": {"ACTIVITY": 1.5} }`, normalises overrides, and returns stacked/bubble/sankey payloads plus manifest metadata and numbered references.【F:workers/compute/index.ts†L1-L86】【F:workers/compute/runtime.ts†L1-L120】
+- `GET /api/health` – Returns `{ ok: true, dataset: <hash> }` based on the dataset version fingerprint.【F:workers/compute/index.ts†L70-L104】【F:calc/service.py†L45-L102】
+- `POST /api/compute` – Accepts profile selections and overrides, then responds with stacked/bubble/sankey payloads, manifest metadata, and numbered references.【F:workers/compute/index.ts†L1-L86】【F:workers/compute/runtime.ts†L1-L120】
 
-Deploy with Wrangler (`wrangler publish`) after building Python artefacts, or run locally with `wrangler dev` to proxy compute requests against the checked-in demo runtime (`workers/compute/runtime.ts`). Wrangler configuration lives in [`wrangler.toml`](./wrangler.toml).【F:wrangler.toml†L1-L12】
+Deploy with Wrangler (`wrangler publish`) or run locally with `wrangler dev`. Configuration lives in `wrangler.toml`.【F:wrangler.toml†L1-L12】
 
 ### Diagnostics & utilities
 
-- `python scripts/audit_layers.py` — Generates `artifacts/audit_report.json` summarising layer coverage, missing emission factors, and icon wiring.【F:scripts/audit_layers.py†L1-L160】
-- `python -m scripts.sync_layers_json` — Mirrors `data/layers.csv` into `site/public/artifacts/layers.json` for the static client.
-- `bash scripts/dev_diag.sh` — Fetches layer JSON from local and production endpoints, honouring `PUBLIC_BASE_PATH` and `PAGES_DOMAIN` for quick HTTP debugging.【F:scripts/dev_diag.sh†L1-L16】
-- `make sbom` — Generates `dist/sbom/cyclonedx.json` using `tools/sbom.py` for dependency audits.【F:tools/sbom.py†L1-L120】
+- `python scripts/audit_layers.py` – Generates `artifacts/audit_report.json` summarising layer coverage, missing emission factors, and icon wiring.【F:scripts/audit_layers.py†L1-L160】
+- `python -m scripts.sync_layers_json` – Mirrors `data/layers.csv` into `site/public/artifacts/layers.json` for the static client.
+- `bash scripts/dev_diag.sh` – Compares artefact headers locally and remotely, respecting `PUBLIC_BASE_PATH` and `PAGES_DOMAIN` for quick HTTP debugging.【F:scripts/dev_diag.sh†L1-L16】
+- `make sbom` – Produces `dist/sbom/cyclonedx.json` using `tools/sbom.py` for release compliance.【F:tools/sbom.py†L1-L120】
 
 ---
 
@@ -299,63 +261,59 @@ Deploy with Wrangler (`wrangler publish`) after building Python artefacts, or ru
 
 | Variable | Description | Default |
 | --- | --- | --- |
-| `ACX_DATA_BACKEND` | Selects datastore implementation (`csv`, `duckdb`, or `sqlite`). | `csv` |
-| `ACX_DB_PATH` | Overrides the SQLite/DuckDB database path when using SQL backends. | `acx.db` |
+| `ACX_DATA_BACKEND` | Select datastore implementation (`csv`, `duckdb`, or `sqlite`). | `csv` |
+| `ACX_DB_PATH` | Override the SQLite/DuckDB database path when using SQL backends. | `acx.db` |
 | `ACX_OUTPUT_ROOT` | Base directory for hashed artefact builds. | `dist/artifacts` |
 | `ACX_ALLOW_OUTPUT_RM` | Set to `1` to allow cleaning arbitrary output directories (bypasses safety checks). | unset |
-| `ACX_GENERATED_AT` | Forces the timestamp embedded in figure metadata and manifests. | Current UTC time |
-| `ACX_ARTIFACT_DIR` | Points the Dash client at a non-default artefact directory. | `calc/outputs` |
-| `ACX_DATASET_VERSION` | Overrides dataset fingerprint exposed by `compute_profile` and the worker health check. | Derived from SQL stats or `dev` in Wrangler config【F:calc/service.py†L45-L102】【F:wrangler.toml†L1-L12】 |
-| `ACX_REDUCED_MOTION` | When truthy, disables Plotly transitions in the Dash client. | unset (motion enabled) |
-| `CARBON_ACX_ORIGIN` | Cloudflare Pages function upstream origin for proxying `/carbon-acx/*` requests. | unset (serve local bundle) |
-| `PUBLIC_BASE_PATH` | Adjusts static site asset fetch paths and Cloudflare routing helpers. | `/` |
+| `ACX_GENERATED_AT` | Force the timestamp embedded in figure metadata and manifests. | Current UTC time |
+| `ACX_ARTIFACT_DIR` | Point the Dash client at a non-default artefact directory. | `calc/outputs` |
+| `ACX_DATASET_VERSION` | Override the dataset fingerprint exposed by `compute_profile` and worker health checks. | Derived from SQL stats or `dev` in Wrangler config【F:calc/service.py†L45-L102】【F:wrangler.toml†L1-L12】 |
+| `ACX_REDUCED_MOTION` | When truthy, disables Plotly transitions in the Dash client. | unset |
+| `CARBON_ACX_ORIGIN` | Cloudflare Pages Function upstream origin for proxying `/carbon-acx/*` routes. | unset |
+| `PUBLIC_BASE_PATH` | Adjust static site asset fetch paths and Cloudflare routing helpers. | `/` |
 | `PAGES_DOMAIN` | Used by `scripts/dev_diag.sh` to query production bundles. | unset |
 
 ### Configuration files & flags
 
-- [`calc/config.yaml`](./calc/config.yaml) — Declares the default profile used in figures and manifest summaries.【F:calc/config.yaml†L1-L1】
-- [`wrangler.toml`](./wrangler.toml) — Configures the compute worker entry point, dataset version default, and Pages output directory.【F:wrangler.toml†L1-L12】
-- CLI flags for `calc.derive export`/`intensity` allow overriding `--backend`, `--db`, `--output-root`, `--functional_unit`, and `--profile` without touching environment variables.【F:calc/derive.py†L1604-L1664】
-- Make targets accept `ACX_DATA_BACKEND` and `OUTPUT_BASE` overrides (`make build ACX_DATA_BACKEND=duckdb`).【F:Makefile†L1-L40】
+- `calc/config.yaml` – Declares the default profile used in figures and manifest summaries.【F:calc/config.yaml†L1-L1】
+- `wrangler.toml` – Configures the compute worker entry point, dataset version default, and Pages output directory.【F:wrangler.toml†L1-L12】
+- CLI flags for `calc.derive export` and `calc.derive intensity` allow overriding the backend, database, output root, functional unit, and profile without touching environment variables.【F:calc/derive.py†L1600-L1664】
+- Make targets accept `ACX_DATA_BACKEND` and `OUTPUT_BASE` overrides (e.g. `make build ACX_DATA_BACKEND=duckdb`).【F:Makefile†L1-L40】
 
 ### Preset data
 
-- `site/public/artifacts` holds development artefacts (layers catalog, demo manifest) used by the Vite dev server; keep this folder in sync with the latest build via `scripts/sync_layers_json.py`.
-- `site/src/data/presets.json` defines preset cards displayed in the React client with serialized profile controls and activity overrides. Editing this JSON updates the UI without backend changes.
-- `calc/references/*.txt` contains IEEE-formatted citations keyed by `source_id`. Add new references here and reference their keys in CSV data before rebuilding.【F:calc/citations.py†L1-L48】
+- `site/public/artifacts` holds development artefacts (layers catalogue, demo manifest) used by the Vite dev server. Regenerate via `scripts/sync_layers_json.py` after updating CSVs.
+- `site/src/data/presets.json` defines preset cards displayed in the React client with serialised profile controls and overrides.
+- `calc/references/*.txt` stores IEEE-formatted citations keyed by `source_id`. Reference these keys in CSV data before rebuilding.【F:calc/citations.py†L1-L48】
 
 ---
 
 ## Build & deployment
 
-1. **Local build** — `make build` → `dist/artifacts/<hash>` → `make site` → `dist/site` → `make package` → `dist/packaged-artifacts` + `_headers/_redirects` ready for Cloudflare Pages.【F:Makefile†L1-L80】【F:scripts/prepare_pages_bundle.py†L1-L82】
-2. **Continuous integration** — `.github/workflows/ci.yml` runs YAML linting, Poetry installs, deterministic builds (`make build-static`), uploads artefacts, and executes pytest on Python 3.11.【F:.github/workflows/ci.yml†L1-L67】
-3. **Release automation** — `.github/workflows/release.yml` generates SBOMs, installs extras (including DuckDB), and publishes GitHub releases when tags prefixed with `v` are pushed.【F:.github/workflows/release.yml†L1-L41】
-4. **Cloudflare Pages** — Deploy `dist/site/` to Pages. The bundled `_headers` enforce immutable caching for `/artifacts/*`; `_redirects` handles `/carbon-acx` canonicalisation. The Pages Function proxies artefact requests, applies CORS headers, and forwards to an upstream origin when configured.【F:functions/carbon-acx/[[path]].ts†L1-L200】
-5. **Cloudflare Worker (compute)** — Publish `workers/compute` with Wrangler. The Worker is stateless and reads derived artefacts embedded in `workers/compute/runtime.ts` by default; integrate with a persistent SQL backend by bundling `calc.service` into the Worker or exposing the API from a Python runtime behind the function.
-6. **Artefact provenance** — `dist/artifacts/latest-build.json` points to the most recent build hash. Package the referenced directory verbatim for downstream consumers or audits.【F:calc/derive.py†L1500-L1542】
+1. **Local build** – `make build` → `dist/artifacts/<hash>` → `make site` → `dist/site` → `make package` → `dist/packaged-artifacts` plus `_headers/_redirects` ready for Cloudflare Pages.【F:Makefile†L1-L80】【F:scripts/prepare_pages_bundle.py†L1-L82】
+2. **Continuous integration** – `.github/workflows/ci.yml` installs Poetry, runs deterministic builds (`make build-static`), uploads artefacts, and executes pytest and lint checks.【F:.github/workflows/ci.yml†L1-L67】
+3. **Release automation** – `.github/workflows/release.yml` generates SBOMs, installs extras (including DuckDB), and publishes GitHub releases for `v*` tags.【F:.github/workflows/release.yml†L1-L41】
+4. **Cloudflare Pages** – Deploy `dist/site/` to Pages. `_headers` enforce immutable caching for `/artifacts/*`, `_redirects` handles canonical routing, and the Pages Function proxies `/carbon-acx/*` traffic when `CARBON_ACX_ORIGIN` is configured.【F:functions/carbon-acx/[[path]].ts†L1-L200】
+5. **Cloudflare Worker (compute)** – Publish `workers/compute` with Wrangler. The Worker ships with an embedded demo dataset and can call `calc.service` when bundled with Python artefacts or exposed via an upstream API.
+6. **Artefact provenance** – `dist/artifacts/latest-build.json` points to the most recent build hash; package that directory verbatim for downstream consumers or audits.【F:calc/derive.py†L1474-L1542】
 
 ---
 
 ## Testing & QA
 
-Quality gates are enforced through pytest, ruff, black, SBOM generation, and front-end checks:
+Carbon ACX enforces quality through automated testing and reproducible builds:
 
 - **Python unit & integration tests (`tests/`)**
-  - Schema validations, NA segment handling, functional unit formulas, and grid scaling (`tests/test_schema.py`, `tests/test_grid_index.py`).
-  - Backend parity ensures CSV, SQLite, and DuckDB exports match byte-for-byte (`tests/test_backend_parity.py`, `tests/test_dal_sql.py`).
-  - Static site smoke tests confirm Plotly HTML, asset packaging, and layer syncing succeed (`tests/test_static_site_build.py`, `tests/test_prepare_pages_bundle.py`).
-  - Worker/API tests validate `compute_profile` payloads and override handling (`tests/test_api_compute.py`, `tests/test_service.py`).
-  - UI theming and visual fixtures assert Plotly traces and intensity narratives remain stable (`tests/ui/test_theme_smoke.py`, `tests/visual/test_visual_smoke.py`).
-- **Static analysis**
-  - `make lint` runs ruff and black (100-character line length) across Python modules.【F:Makefile†L1-L40】
-  - `.yamllint` ensures workflow YAML hygiene via the CI `lint-yaml` job.【F:.github/workflows/ci.yml†L1-L26】
-- **Front-end tests**
-  - `npm run test` in `site/` executes Vitest suites defined alongside React components (`site/src/routes/__tests__`).
-- **Dependency governance**
-  - `make sbom` generates a CycloneDX SBOM (`dist/sbom/cyclonedx.json`) for dependency auditing; `pip-audit` is available via Poetry dev dependencies.【F:tools/sbom.py†L1-L120】
+  - Schema validations, NA segment handling, and grid scaling checks (`tests/test_schema.py`, `tests/test_grid_index.py`).
+  - Backend parity for CSV, SQLite, and DuckDB exports (`tests/test_backend_parity.py`, `tests/test_dal_sql.py`).
+  - Static site smoke tests for Plotly HTML, asset packaging, and layer syncing (`tests/test_static_site_build.py`, `tests/test_prepare_pages_bundle.py`).
+  - Worker/API tests for `compute_profile` payloads and override handling (`tests/test_api_compute.py`, `tests/test_service.py`).
+  - UI theming and visual fixtures for Plotly traces and intensity narratives (`tests/ui/test_theme_smoke.py`, `tests/visual/test_visual_smoke.py`).
+- **Static analysis** – `make lint` runs ruff and black (100-character line length). `.yamllint` keeps workflow YAML clean.【F:Makefile†L1-L40】【F:.github/workflows/ci.yml†L1-L26】
+- **Front-end tests** – `npm run test` in `site/` executes Vitest suites co-located with React components.
+- **Dependency governance** – `make sbom` generates a CycloneDX SBOM (`dist/sbom/cyclonedx.json`) and pip-audit ships with the Poetry dev dependencies.【F:tools/sbom.py†L1-L120】
 
-Before submitting a change, run:
+Before opening a pull request, run:
 
 ```bash
 make format lint test build package
@@ -366,36 +324,31 @@ make format lint test build package
 
 ## Contributing guide
 
-Carbon ACX follows a conventional GitHub workflow (see [`CONTRIBUTING.md`](./CONTRIBUTING.md)):
+Carbon ACX uses a conventional GitHub workflow (see `CONTRIBUTING.md` for full details):
 
-1. Fork or branch from `main`.
-2. Use descriptive branch names (e.g. `feature/derived-metrics`).
-3. Keep commits focused; include context in commit messages about data updates and methodology changes. Commit messages should describe the dataset slice touched, references added, and any schema adjustments.
-4. Run `make validate` (lint + tests), `make build`, and relevant packaging steps locally; run `npm run build` in `site/` when touching front-end code.
-5. Open a pull request with:
-   - Summary of changes and impacted artefacts (hash directories, CSV deltas, figure updates).
-   - Confirmation that linting, tests, and builds passed (Python + Node where applicable).
-   - Notes about new data sources or reference files (include provenance in the PR description as outlined in `docs/CONTRIBUTING_SERIES.md`).【F:docs/CONTRIBUTING_SERIES.md†L1-L120】
-6. Expect code review on data hygiene, reproducibility, accessibility, and reference integrity. Changes touching `data/` or `calc/references/` must document provenance and update audit scripts if necessary.
+1. Branch from `main` with a descriptive name (e.g. `feature/derived-metrics`).
+2. Keep commits focused and document dataset slices, references, and schema adjustments in messages.
+3. Run `make validate` (lint + tests), `make build`, and relevant packaging steps locally; run `npm run build` inside `site/` when touching front-end code.【F:Makefile†L1-L80】
+4. Open a pull request summarising changes, impacted artefacts, lint/test status, and provenance for new data or references. Follow the lineage guidance in `docs/CONTRIBUTING_SERIES.md` when citing ACX specifications.【F:docs/CONTRIBUTING_SERIES.md†L1-L120】
+5. Expect review on data hygiene, reproducibility, accessibility, and reference integrity. Updates to `data/` or `calc/references/` must include provenance and audit script updates when relevant.
 
 Coding standards:
 
-- Prefer Pydantic models for new datasets and extend `calc/schema.py` rather than bypassing validation.
-- Avoid catching broad exceptions; propagate validation errors so the derivation pipeline fails fast.
+- Extend `calc/schema.py` with new Pydantic models instead of bypassing validation.
+- Avoid broad exception catches; allow validation to fail fast.
 - Keep Plotly figure builders deterministic (sorted keys, explicit colour ordering, shared templates via `calc.ui.theme`).【F:calc/ui/theme.py†L1-L120】
-- Never commit generated artefacts (`build/`, `dist/`, `calc/outputs/`, `site/dist`).
-- Follow the serial/traceability guidance in `docs/CONTRIBUTING_SERIES.md` when referencing ACX specifications.
+- Do not commit generated artefacts (`build/`, `dist/`, `calc/outputs/`, `site/dist`).
+- Honour the serial/traceability process outlined in `docs/CONTRIBUTING_SERIES.md`.
 
 ---
 
 ## Security & compliance
 
-- **Data isolation** — Derived outputs are written to hashed directories and cleared only within guardrails to avoid deleting arbitrary paths (`calc.derive.is_safe_output_dir`).【F:calc/derive.py†L292-L336】
-- **Dependency governance** — Dependencies are pinned via Poetry and npm lockfiles; `tools/sbom.py` emits CycloneDX SBOMs and `pip-audit` is available for vulnerability scanning.【F:tools/sbom.py†L1-L120】【F:site/package-lock.json†L1-L40】
-- **Runtime posture** — Dash, the static site, and the Cloudflare Worker read precomputed bundles only; no live data collection occurs at runtime. The Cloudflare Pages Function proxies traffic without persisting secrets server-side and enforces immutable caching headers for artefacts.【F:functions/carbon-acx/[[path]].ts†L1-L200】
-- **Access control** — The compute Worker accepts only JSON POST payloads, normalises overrides, and rejects invalid types before invoking `calc.service.compute_profile`, limiting injection risks.【F:workers/compute/index.ts†L1-L86】
-- **Licensing** — The project is released under the MIT License (`LICENSE`). Include source acknowledgements when adding new references or datasets.
-- **Compliance placeholders** — SBOM generation and release workflows lay groundwork for future compliance processes; integration with vulnerability management tools can consume `dist/sbom/cyclonedx.json`.
+- **Data isolation** – Derived outputs live in hashed directories and are cleaned only through guarded paths (`calc.derive.is_safe_output_dir`).【F:calc/derive.py†L292-L336】
+- **Dependency governance** – Poetry and npm lockfiles pin versions; `tools/sbom.py` emits CycloneDX SBOMs and pip-audit is available for vulnerability scanning.【F:tools/sbom.py†L1-L120】【F:site/package-lock.json†L1-L40】
+- **Runtime posture** – Dash, the static site, and the Cloudflare Worker all read precomputed bundles; no live data collection occurs at runtime. The Pages Function proxies traffic without persisting secrets and applies immutable caching headers.【F:functions/carbon-acx/[[path]].ts†L1-L200】
+- **Access control** – The compute Worker normalises input, rejects invalid types, and delegates to `calc.service.compute_profile`, limiting injection risks.【F:workers/compute/index.ts†L1-L86】
+- **Licensing** – Released under the MIT License (`LICENSE`). Attribute new data sources when expanding the dataset.
 
 ---
 
@@ -404,15 +357,15 @@ Coding standards:
 | Status | Milestone | Description |
 | --- | --- | --- |
 | ✅ | Immutable data builds | Content-hashed artefact directories with manifest pointers, dependency chains, and reference parity across clients.【F:calc/derive.py†L1474-L1534】 |
-| ✅ | Multi-channel delivery | Dash exploration client, static React/Vite bundle, Pages Function, and Worker API share derived Plotly payloads and disclosure copy.【F:app/app.py†L65-L132】【F:site/src/components/VizCanvas.tsx†L1-L160】 |
-| ✅ | Backend parity | CSV, DuckDB, and SQLite datastores validated via automated parity tests to ensure consistent exports.【F:tests/test_backend_parity.py†L1-L47】【F:tests/test_dal_sql.py†L1-L120】 |
+| ✅ | Multi-channel delivery | Dash client, static React/Vite bundle, Pages Function, and Worker API share derived Plotly payloads and disclosure copy.【F:app/app.py†L65-L132】【F:site/src/components/VizCanvas.tsx†L1-L160】 |
+| ✅ | Backend parity | CSV, DuckDB, and SQLite datastores validated through automated parity tests for consistent exports.【F:tests/test_backend_parity.py†L1-L47】【F:tests/test_dal_sql.py†L1-L120】 |
 | ✅ | Intensity narratives | Functional-unit intensity builder feeds UI narratives and CSV downloads, keeping comparisons aligned across channels.【F:calc/derive.py†L1330-L1496】【F:app/lib/narratives.py†L1-L160】 |
-| 🚧 | Release automation | `make release` placeholder to be replaced with scripted tagging, changelog updates (`docs/CHANGELOG.md`), asset uploads, and Pages deployments. |
-| 🚧 | Dataset refresh tooling | Extend `docs/MAINTENANCE_CALENDAR.md` with automation for pulling `_staged/` data into `data/` while preserving provenance metadata.【F:docs/MAINTENANCE_CALENDAR.md†L1-L80】 |
+| 🚧 | Release automation | Fill in the `make release` placeholder with scripted tagging, changelog updates, and Pages deployments. |
+| 🚧 | Dataset refresh tooling | Extend maintenance calendar automation for moving `_staged/` data into `data/` with provenance metadata.【F:docs/MAINTENANCE_CALENDAR.md†L1-L80】 |
 | 🚧 | Worker dataset integration | Replace the demo dataset in `workers/compute/runtime.ts` with generated artefacts or live `calc.service` bindings and document deployment playbooks. |
-| 🧭 | Additional datastore backends | Explore further `DataStore` implementations (e.g. Postgres) leveraging the existing abstraction in `calc.dal` and `calc.dal_sql`. |
-| 🧭 | Expanded visualisations | Prototype intensity waterfalls, cohort comparisons, or sensitivity analyses using the figure slicing framework in `calc.figures`. |
-| 🧭 | Live API surface | Wrap `calc.api` aggregates and `compute_profile` in an authenticated HTTP service for downstream integrations once security requirements are defined. |
+| 🧭 | Additional datastore backends | Explore new `DataStore` implementations (e.g. Postgres) via the existing abstraction in `calc.dal` and `calc.dal_sql`. |
+| 🧭 | Expanded visualisations | Prototype intensity waterfalls, cohort comparisons, or sensitivity analyses using `calc.figures`. |
+| 🧭 | Live API surface | Wrap `calc.api` aggregates and `compute_profile` in an authenticated HTTP service once security requirements are defined. |
 
 Legend: ✅ implemented · 🚧 in-progress or partially scaffolded · 🧭 planned/under evaluation.
 
@@ -420,42 +373,36 @@ Legend: ✅ implemented · 🚧 in-progress or partially scaffolded · 🧭 plan
 
 ## FAQ & troubleshooting
 
-**Why does `calc/outputs` stay empty?**  Artefacts are written to hashed directories under `dist/artifacts/<hash>`. Use `scripts/_artifact_paths.resolve_artifact_outputs` or inspect `dist/artifacts/latest-build.json` to locate the latest build.【F:calc/derive.py†L1500-L1542】
-
-**`python -m calc.derive export` refuses to clear my output directory.**  The pipeline protects against deleting unintended paths. Either point `--output-root` inside `dist/artifacts` or set `ACX_ALLOW_OUTPUT_RM=1` when you are sure the target is safe.【F:calc/derive.py†L292-L336】
-
-**The Dash app cannot find figures.**  Ensure `make build` ran successfully and `ACX_ARTIFACT_DIR` (if set) points to the directory containing `figures/*.json` and `manifest.json`. Remember that Dash defaults to `calc/outputs`, while `make build` writes hashed outputs into `dist/artifacts/<hash>/calc/outputs`.
-
-**How do I add a new reference?**  Drop an IEEE-formatted text file in `calc/references/` and reference its stem in emission factors or grid intensity rows. Run `make build` to propagate the citation into artefacts and UI reference panels.【F:calc/citations.py†L1-L72】
-
-**Plotly figures look different locally vs CI.**  Confirm `kaleido` is installed (via `make install`) and avoid locale-dependent formatting. Re-run `make build` to regenerate Plotly JSON with consistent ordering.
-
-**Node build fails with an engine warning.**  Vite 5 requires Node.js ≥ 18. Upgrade Node locally or use the version pinned in `.nvmrc` if present.
-
-**Cloudflare Pages serves HTML for JSON routes.**  Ensure the Pages Function is deployed alongside the static site and that `_headers`/`_redirects` shipped with the bundle remain intact (`make package` handles this automatically). `CARBON_ACX_ORIGIN` should include an absolute origin without trailing slash.
-
-**Worker API returns demo data only.**  The checked-in Worker runtime includes a small demo dataset. Replace `workers/compute/runtime.ts` with generated artefacts or adapt the Worker to call a hosted `compute_profile` endpoint for production use.
-
-**Debugging data loads.**  Use `scripts/dev_diag.sh` to compare artefact headers locally and in production. The script respects `PUBLIC_BASE_PATH` so you can verify both the static bundle (`http://127.0.0.1:4173`) and your Pages domain return JSON rather than the SPA fallback.【F:scripts/dev_diag.sh†L1-L16】
+- **Why does `calc/outputs` stay empty?** Artefacts are written to hashed directories under `dist/artifacts/<hash>`. Check `dist/artifacts/latest-build.json` or use helper scripts to locate the latest build.【F:calc/derive.py†L1474-L1542】
+- **`python -m calc.derive export` refuses to clear my output directory.** The pipeline protects against deleting unintended paths. Point `--output-root` inside `dist/artifacts` or set `ACX_ALLOW_OUTPUT_RM=1` when the target is safe.【F:calc/derive.py†L292-L336】
+- **The Dash app cannot find figures.** Ensure `make build` ran successfully and `ACX_ARTIFACT_DIR` (if set) points to a directory containing `figures/*.json` and `manifest.json`.
+- **How do I add a new reference?** Add an IEEE-formatted text file in `calc/references/` and reference its stem in CSV data before rebuilding. The citation resolver keeps numbering consistent across outputs.【F:calc/citations.py†L1-L72】
+- **Plotly figures look different locally vs CI.** Confirm `kaleido` is installed (via `make install`) and avoid locale-dependent formatting. Re-run `make build` to regenerate consistent Plotly JSON.
+- **Node build fails with an engine warning.** Vite 5 requires Node.js ≥ 18. Upgrade Node locally or use the version pinned in `.nvmrc` if present.
+- **Cloudflare Pages serves HTML for JSON routes.** Deploy the Pages Function alongside the static site and keep `_headers`/`_redirects` intact; `make package` prepares them automatically. `CARBON_ACX_ORIGIN` should be an absolute origin without a trailing slash.【F:functions/carbon-acx/[[path]].ts†L131-L200】
+- **Worker API returns demo data only.** Replace `workers/compute/runtime.ts` with generated artefacts or adapt the Worker to call a hosted `compute_profile` endpoint for production use.
+- **Debugging data loads.** Use `scripts/dev_diag.sh` to compare artefact headers locally and in production. The script respects `PUBLIC_BASE_PATH` so you can validate both local static bundles and Pages domains.【F:scripts/dev_diag.sh†L1-L16】
 
 ---
 
 ## References
 
-- [`CONTRIBUTING.md`](./CONTRIBUTING.md)
-- [`docs/CHANGELOG.md`](./docs/CHANGELOG.md)
-- [`docs/MAINTENANCE_CALENDAR.md`](./docs/MAINTENANCE_CALENDAR.md)
-- [`docs/ONLINE_METHOD_NOTES.md`](./docs/ONLINE_METHOD_NOTES.md)
-- [`docs/WHAT_RUNS_WHERE.md`](./docs/WHAT_RUNS_WHERE.md)
-- [`docs/TESTING_NOTES.md`](./docs/TESTING_NOTES.md)
-- [`docs/deploy.md`](./docs/deploy.md)
-- [`docs/routes.md`](./docs/routes.md)
-- [`LICENSE`](./LICENSE)
+- `CONTRIBUTING.md`
+- `docs/CHANGELOG.md`
+- `docs/MAINTENANCE_CALENDAR.md`
+- `docs/ONLINE_METHOD_NOTES.md`
+- `docs/WHAT_RUNS_WHERE.md`
+- `docs/TESTING_NOTES.md`
+- `docs/deploy.md`
+- `docs/routes.md`
+- `LICENSE`
 
 ---
 
 _Note: To satisfy repo hygiene tests, avoid using the contiguous token spelled “F a s t A P I” in docs._
 
-### Serials & Traceability
+---
 
-Refer to [`docs/CONTRIBUTING_SERIES.md`](./docs/CONTRIBUTING_SERIES.md) for guidance on citing ACX specifications, CDX prompts, and the PR lineage required for every contribution.
+## Serials & traceability
+
+Refer to `docs/CONTRIBUTING_SERIES.md` for guidance on citing ACX specifications, CDX prompts, and the PR lineage required for every contribution.【F:docs/CONTRIBUTING_SERIES.md†L1-L120】
