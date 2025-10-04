@@ -1,6 +1,6 @@
-from __future__ import annotations
-
 """Helper utilities for enriching upstream dependency metadata."""
+
+from __future__ import annotations
 
 from typing import Mapping
 
@@ -80,4 +80,3 @@ def dependency_metadata(
                 metadata["operation_functional_unit_name"] = fu_name
 
     return metadata
-

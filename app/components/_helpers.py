@@ -159,9 +159,7 @@ def format_reference_line(indices: Sequence[int]) -> str:
     return f"Sources: [{body}]"
 
 
-def format_source_summary(
-    identifiers: Sequence[str] | None, indices: Sequence[int] | None
-) -> str:
+def format_source_summary(identifiers: Sequence[str] | None, indices: Sequence[int] | None) -> str:
     """Return a combined identifier and citation summary."""
 
     ids = [item.strip() for item in identifiers or [] if str(item).strip()]

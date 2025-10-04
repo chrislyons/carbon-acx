@@ -60,7 +60,8 @@ def _load_layer_catalog() -> list[dict[str, object]]:
                 "id": layer_id,
                 "title": row.get("title", layer_id.replace("_", " ")).strip(),
                 "summary": (row.get("summary") or "").strip(),
-                "optional": (row.get("ui_optional") or "false").strip().lower() in {"true", "1", "yes"},
+                "optional": (row.get("ui_optional") or "false").strip().lower()
+                in {"true", "1", "yes"},
                 "icon": (row.get("icon_slug") or "").strip() or None,
                 "examples": _extract_examples(row.get("example_activities")),
             }
@@ -208,7 +209,9 @@ def main() -> int:
     activity_lookup = _build_activity_lookup(activities)
     activities_by_layer = _map_activities_by_layer(activities)
     ops_by_layer = _map_operations_by_layer(operations, activity_lookup)
-    ef_coverage = _map_emission_factor_coverage(emission_factors, activity_lookup, activities_by_layer)
+    ef_coverage = _map_emission_factor_coverage(
+        emission_factors, activity_lookup, activities_by_layer
+    )
     layer_references = _load_manifest_layer_references()
     ui_layers = _load_ui_layers()
 
@@ -221,7 +224,9 @@ def main() -> int:
         icon_slug = entry.get("icon")
         icon_path = SITE_PUBLIC_ARTIFACT_DIR.parent / "assets" / "layers" / str(icon_slug)
         if icon_slug and not icon_path.exists():
-            missing_icons.append({"layer": layer_id, "expected_path": str(icon_path.relative_to(ROOT))})
+            missing_icons.append(
+                {"layer": layer_id, "expected_path": str(icon_path.relative_to(ROOT))}
+            )
         elif not icon_slug:
             missing_icons.append({"layer": layer_id, "expected_path": "(icon slug missing)"})
 
@@ -269,7 +274,9 @@ def main() -> int:
             json.dump(report, handle, indent=2, sort_keys=True)
             handle.write("\n")
 
-    print(f"Wrote audit report to: {', '.join(str(path.relative_to(ROOT)) for path in output_paths)}")
+    print(
+        f"Wrote audit report to: {', '.join(str(path.relative_to(ROOT)) for path in output_paths)}"
+    )
     return 0
 
 
