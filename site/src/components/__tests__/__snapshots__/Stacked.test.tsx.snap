@@ -2,7 +2,7 @@
 
 exports[`Stacked > renders stacked bars with reference hints 1`] = `
 <ol
-  class="mt-5 space-y-3"
+  class="mt-4 space-y-2.5"
   data-testid="stacked-svg"
   role="list"
 >
@@ -11,7 +11,7 @@ exports[`Stacked > renders stacked bars with reference hints 1`] = `
     data-testid="stacked-item-0"
   >
     <div
-      class="flex items-center justify-between text-sm text-slate-300"
+      class="flex items-center justify-between text-[13px] leading-snug text-slate-200"
     >
       <span
         class="font-medium text-slate-100"
@@ -39,7 +39,7 @@ exports[`Stacked > renders stacked bars with reference hints 1`] = `
     data-testid="stacked-item-1"
   >
     <div
-      class="flex items-center justify-between text-sm text-slate-300"
+      class="flex items-center justify-between text-[13px] leading-snug text-slate-200"
     >
       <span
         class="font-medium text-slate-100"

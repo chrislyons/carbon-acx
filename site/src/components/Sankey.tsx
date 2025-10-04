@@ -60,6 +60,9 @@ const NODE_HEIGHT = 36;
 const PADDING_X = 90;
 const PADDING_Y = 40;
 const MAX_LINK_WIDTH = 26;
+const NODE_LABEL_MIN_FONT = 11;
+const NODE_LABEL_MAX_FONT = 16;
+const NODE_VALUE_FONT = 10;
 
 const CATEGORY_COLORS = [
   '#38bdf8',
@@ -69,6 +72,15 @@ const CATEGORY_COLORS = [
   '#facc15',
   '#f97316'
 ];
+
+function computeNodeLabelFont(label: string): number {
+  const trimmed = label?.trim() ?? '';
+  const length = Math.max(trimmed.length, 6);
+  const available = NODE_WIDTH - 24;
+  const approximate = available / (length * 0.5);
+  const bounded = Math.max(NODE_LABEL_MIN_FONT, Math.min(NODE_LABEL_MAX_FONT, approximate));
+  return Math.round(bounded);
+}
 
 export function Sankey({
   title = 'Emission pathways',
@@ -254,6 +266,8 @@ export function Sankey({
           const active =
             hoveredNode === node.id ||
             (!!activeLink && (activeLink.source.id === node.id || activeLink.target.id === node.id));
+          const labelFontSize = computeNodeLabelFont(node.label);
+          const valueFontSize = Math.max(NODE_VALUE_FONT, Math.round(labelFontSize - 2));
           return (
             <g
               key={node.id}
@@ -284,7 +298,8 @@ export function Sankey({
                 y={NODE_HEIGHT / 2}
                 textAnchor="middle"
                 alignmentBaseline="middle"
-                className="fill-slate-950 text-sm font-semibold"
+                className="fill-slate-950 font-semibold"
+                style={{ fontSize: `${labelFontSize}px` }}
               >
                 {node.label}
               </text>
@@ -292,7 +307,8 @@ export function Sankey({
                 x={NODE_WIDTH / 2}
                 y={NODE_HEIGHT + 14}
                 textAnchor="middle"
-                className="fill-slate-400 text-xs"
+                className="fill-slate-400"
+                style={{ fontSize: `${valueFontSize}px` }}
               >
                 {aggregate > 0 ? formatEmission(aggregate) : '—'}
               </text>

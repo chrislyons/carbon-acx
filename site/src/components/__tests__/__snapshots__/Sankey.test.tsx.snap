@@ -65,7 +65,8 @@ exports[`Sankey > renders gradient links with reference hints 1`] = `
     </rect>
     <text
       alignment-baseline="middle"
-      class="fill-slate-950 text-sm font-semibold"
+      class="fill-slate-950 font-semibold"
+      style="font-size: 16px;"
       text-anchor="middle"
       x="70"
       y="18"
@@ -73,7 +74,8 @@ exports[`Sankey > renders gradient links with reference hints 1`] = `
       Cooling
     </text>
     <text
-      class="fill-slate-400 text-xs"
+      class="fill-slate-400"
+      style="font-size: 14px;"
       text-anchor="middle"
       x="70"
       y="50"
@@ -102,7 +104,8 @@ exports[`Sankey > renders gradient links with reference hints 1`] = `
     </rect>
     <text
       alignment-baseline="middle"
-      class="fill-slate-950 text-sm font-semibold"
+      class="fill-slate-950 font-semibold"
+      style="font-size: 16px;"
       text-anchor="middle"
       x="70"
       y="18"
@@ -110,7 +113,8 @@ exports[`Sankey > renders gradient links with reference hints 1`] = `
       Chiller
     </text>
     <text
-      class="fill-slate-400 text-xs"
+      class="fill-slate-400"
+      style="font-size: 14px;"
       text-anchor="middle"
       x="70"
       y="50"

@@ -71,6 +71,7 @@ interface ProfileContextValue {
   profileId: string;
   controls: ProfileControlsState;
   overrides: Record<string, number>;
+  hasLifestyleOverrides: boolean;
   status: ProfileStatus;
   result: ComputeResult | null;
   error: string | null;
@@ -365,6 +366,10 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
   const profileId = profileIdState;
   const overrides = useMemo(() => buildOverrides(controls), [controls]);
   const overridesKey = useMemo(() => JSON.stringify(overrides), [overrides]);
+  const hasLifestyleOverrides = useMemo(
+    () => !controlsAreEqual(controls, DEFAULT_CONTROLS),
+    [controls]
+  );
 
   const availableLayers = useMemo(() => {
     const unique = new Set<string>();
@@ -759,6 +764,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
       profileId,
       controls,
       overrides,
+      hasLifestyleOverrides,
       status,
       result,
       error,
@@ -780,6 +786,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
       profileId,
       controls,
       overrides,
+      hasLifestyleOverrides,
       status,
       result,
       error,

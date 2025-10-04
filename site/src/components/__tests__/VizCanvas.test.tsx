@@ -127,7 +127,7 @@ describe('VizCanvas', () => {
   it('keeps total emissions aligned across summaries', () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-    render(<VizCanvas />);
+    render(<VizCanvas stage="activity" />);
 
     expect(screen.getByText('Total emissions')).toBeInTheDocument();
     expect(screen.getAllByText('1.50 kg CO₂e').length).toBeGreaterThan(0);

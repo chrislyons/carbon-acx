@@ -1,5 +1,7 @@
 import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import type { StageId } from './Layout';
+
 import { USE_COMPUTE_API } from '../lib/api';
 import { useLayerCatalog } from '../lib/useLayerCatalog';
 import { formatEmission } from '../lib/format';
@@ -8,8 +10,7 @@ import { useProfile } from '../state/profile';
 
 import { Bubble, BubbleDatum } from './Bubble';
 import { ExportMenu } from './ExportMenu';
-import { LayerToggles } from './LayerToggles';
-import { Sankey, SankeyData, SankeyLink } from './Sankey';
+import { Sankey, SankeyData, SankeyLink, SankeyNode } from './Sankey';
 import { Stacked, StackedDatum } from './Stacked';
 
 interface ActivityRow {
@@ -197,6 +198,364 @@ function filterSankeyByLayers(data: SankeyData, activeLayers: ReadonlySet<string
   return { nodes, links };
 }
 
+const UNASSIGNED_LAYER_KEY = '__unassigned__';
+const UNASSIGNED_LAYER_LABEL = 'Cross-layer total';
+
+function resolveLayerTitle(layerId: string | null, lookup: ReadonlyMap<string, string>): string {
+  if (!layerId) {
+    return UNASSIGNED_LAYER_LABEL;
+  }
+  const title = lookup.get(layerId);
+  if (title && title.trim()) {
+    return title;
+  }
+  return layerId;
+}
+
+function aggregateStackedByLayer(
+  data: readonly StackedDatum[],
+  activeLayers: ReadonlySet<string>,
+  layerTitles: ReadonlyMap<string, string>
+): StackedDatum[] {
+  if (!Array.isArray(data) || data.length === 0) {
+    return [];
+  }
+  const includeAll = activeLayers.size === 0;
+  const buckets = new Map<
+    string,
+    {
+      layerId: string | null;
+      label: string;
+      mean: number;
+      low: number;
+      hasLow: boolean;
+      high: number;
+      hasHigh: boolean;
+      units: Record<string, string | null> | null;
+      citationKeys: Set<string>;
+      hoverIndices: Set<number>;
+    }
+  >();
+  data.forEach((row) => {
+    const values = row?.values ?? undefined;
+    const mean = typeof values?.mean === 'number' ? values.mean : null;
+    if (mean == null || !Number.isFinite(mean) || mean <= 0) {
+      return;
+    }
+    const layerId = toLayerId(row?.layer_id);
+    if (!includeAll && layerId && !activeLayers.has(layerId)) {
+      return;
+    }
+    const key = layerId ?? UNASSIGNED_LAYER_KEY;
+    let bucket = buckets.get(key);
+    if (!bucket) {
+      bucket = {
+        layerId,
+        label: resolveLayerTitle(layerId, layerTitles),
+        mean: 0,
+        low: 0,
+        hasLow: false,
+        high: 0,
+        hasHigh: false,
+        units: row?.units ?? null,
+        citationKeys: new Set<string>(),
+        hoverIndices: new Set<number>()
+      };
+      buckets.set(key, bucket);
+    }
+    bucket.mean += mean;
+    const low = typeof values?.low === 'number' ? values.low : null;
+    if (low != null && Number.isFinite(low)) {
+      bucket.low += low;
+      bucket.hasLow = true;
+    }
+    const high = typeof values?.high === 'number' ? values.high : null;
+    if (high != null && Number.isFinite(high)) {
+      bucket.high += high;
+      bucket.hasHigh = true;
+    }
+    if (!bucket.units && row?.units) {
+      bucket.units = row.units;
+    }
+    const keys = Array.isArray(row?.citation_keys) ? row.citation_keys : [];
+    keys.forEach((value) => {
+      if (typeof value === 'string' && value.trim()) {
+        bucket?.citationKeys.add(value);
+      }
+    });
+    const indices = Array.isArray(row?.hover_reference_indices) ? row.hover_reference_indices : [];
+    indices.forEach((value) => {
+      if (typeof value === 'number' && Number.isFinite(value)) {
+        bucket?.hoverIndices.add(Math.trunc(value));
+      }
+    });
+  });
+  const entries = Array.from(buckets.values()).filter((bucket) => bucket.mean > 0);
+  entries.sort((a, b) => b.mean - a.mean);
+  return entries.map((bucket) => {
+    const values: StackedDatum['values'] = { mean: bucket.mean };
+    if (bucket.hasLow) {
+      values.low = bucket.low;
+    }
+    if (bucket.hasHigh) {
+      values.high = bucket.high;
+    }
+    const citation_keys =
+      bucket.citationKeys.size > 0 ? Array.from(bucket.citationKeys) : undefined;
+    const hover_reference_indices =
+      bucket.hoverIndices.size > 0
+        ? Array.from(bucket.hoverIndices).sort((a, b) => a - b)
+        : undefined;
+    return {
+      layer_id: bucket.layerId,
+      category: bucket.label,
+      values,
+      units: bucket.units ?? undefined,
+      citation_keys,
+      hover_reference_indices
+    } satisfies StackedDatum;
+  });
+}
+
+function aggregateBubbleByCategory(data: readonly BubbleDatum[]): BubbleDatum[] {
+  if (!Array.isArray(data) || data.length === 0) {
+    return [];
+  }
+  const buckets = new Map<
+    string,
+    {
+      total: number;
+      citationKeys: Set<string>;
+      hoverIndices: Set<number>;
+      units: Record<string, string | null> | null;
+    }
+  >();
+  data.forEach((row) => {
+    const mean = typeof row?.values?.mean === 'number' ? row.values.mean : null;
+    if (mean == null || !Number.isFinite(mean) || mean <= 0) {
+      return;
+    }
+    const category =
+      typeof row?.category === 'string' && row.category ? row.category : 'Other';
+    let bucket = buckets.get(category);
+    if (!bucket) {
+      bucket = {
+        total: 0,
+        citationKeys: new Set<string>(),
+        hoverIndices: new Set<number>(),
+        units: row?.units ?? null
+      };
+      buckets.set(category, bucket);
+    }
+    bucket.total += mean;
+    if (!bucket.units && row?.units) {
+      bucket.units = row.units;
+    }
+    const keys = Array.isArray(row?.citation_keys) ? row.citation_keys : [];
+    keys.forEach((value) => {
+      if (typeof value === 'string' && value.trim()) {
+        bucket?.citationKeys.add(value);
+      }
+    });
+    const indices = Array.isArray(row?.hover_reference_indices) ? row.hover_reference_indices : [];
+    indices.forEach((value) => {
+      if (typeof value === 'number' && Number.isFinite(value)) {
+        bucket?.hoverIndices.add(Math.trunc(value));
+      }
+    });
+  });
+  const entries = Array.from(buckets.entries());
+  entries.sort((a, b) => b[1].total - a[1].total);
+  return entries.map(([category, bucket], index) => {
+    const citation_keys =
+      bucket.citationKeys.size > 0 ? Array.from(bucket.citationKeys) : undefined;
+    const hover_reference_indices =
+      bucket.hoverIndices.size > 0
+        ? Array.from(bucket.hoverIndices).sort((a, b) => a - b)
+        : undefined;
+    return {
+      layer_id: null,
+      activity_id: `category:${category}:${index}`,
+      activity_name: category,
+      category,
+      values: { mean: bucket.total },
+      units: bucket.units ?? undefined,
+      citation_keys,
+      hover_reference_indices
+    } satisfies BubbleDatum;
+  });
+}
+
+function aggregateBubbleByLayer(
+  data: readonly BubbleDatum[],
+  activeLayers: ReadonlySet<string>,
+  layerTitles: ReadonlyMap<string, string>
+): BubbleDatum[] {
+  if (!Array.isArray(data) || data.length === 0) {
+    return [];
+  }
+  const includeAll = activeLayers.size === 0;
+  const buckets = new Map<
+    string,
+    {
+      layerId: string | null;
+      label: string;
+      total: number;
+      citationKeys: Set<string>;
+      hoverIndices: Set<number>;
+      units: Record<string, string | null> | null;
+    }
+  >();
+  data.forEach((row) => {
+    const mean = typeof row?.values?.mean === 'number' ? row.values.mean : null;
+    if (mean == null || !Number.isFinite(mean) || mean <= 0) {
+      return;
+    }
+    const layerId = toLayerId(row?.layer_id);
+    if (!includeAll && layerId && !activeLayers.has(layerId)) {
+      return;
+    }
+    const key = layerId ?? UNASSIGNED_LAYER_KEY;
+    let bucket = buckets.get(key);
+    if (!bucket) {
+      bucket = {
+        layerId,
+        label: resolveLayerTitle(layerId, layerTitles),
+        total: 0,
+        citationKeys: new Set<string>(),
+        hoverIndices: new Set<number>(),
+        units: row?.units ?? null
+      };
+      buckets.set(key, bucket);
+    }
+    bucket.total += mean;
+    if (!bucket.units && row?.units) {
+      bucket.units = row.units;
+    }
+    const keys = Array.isArray(row?.citation_keys) ? row.citation_keys : [];
+    keys.forEach((value) => {
+      if (typeof value === 'string' && value.trim()) {
+        bucket?.citationKeys.add(value);
+      }
+    });
+    const indices = Array.isArray(row?.hover_reference_indices) ? row.hover_reference_indices : [];
+    indices.forEach((value) => {
+      if (typeof value === 'number' && Number.isFinite(value)) {
+        bucket?.hoverIndices.add(Math.trunc(value));
+      }
+    });
+  });
+  const entries = Array.from(buckets.values()).filter((bucket) => bucket.total > 0);
+  entries.sort((a, b) => b.total - a.total);
+  return entries.map((bucket, index) => {
+    const citation_keys =
+      bucket.citationKeys.size > 0 ? Array.from(bucket.citationKeys) : undefined;
+    const hover_reference_indices =
+      bucket.hoverIndices.size > 0
+        ? Array.from(bucket.hoverIndices).sort((a, b) => a - b)
+        : undefined;
+    return {
+      layer_id: bucket.layerId,
+      activity_id: bucket.layerId ?? `layer:${index}`,
+      activity_name: bucket.label,
+      category: bucket.label,
+      values: { mean: bucket.total },
+      units: bucket.units ?? undefined,
+      citation_keys,
+      hover_reference_indices
+    } satisfies BubbleDatum;
+  });
+}
+
+function buildLayerSankey(
+  data: SankeyData,
+  activeLayers: ReadonlySet<string>,
+  layerTitles: ReadonlyMap<string, string>
+): SankeyData {
+  const links = Array.isArray(data?.links) ? (data.links as SankeyLink[]) : [];
+  if (links.length === 0) {
+    return { nodes: [], links: [] };
+  }
+  const includeAll = activeLayers.size === 0;
+  const buckets = new Map<
+    string,
+    {
+      layerId: string | null;
+      label: string;
+      total: number;
+      citationKeys: Set<string>;
+      hoverIndices: Set<number>;
+    }
+  >();
+  links.forEach((link) => {
+    const mean = typeof link?.values?.mean === 'number' ? link.values.mean : null;
+    if (mean == null || !Number.isFinite(mean) || mean <= 0) {
+      return;
+    }
+    const layerId = toLayerId(link?.layer_id);
+    if (!includeAll && layerId && !activeLayers.has(layerId)) {
+      return;
+    }
+    const key = layerId ?? UNASSIGNED_LAYER_KEY;
+    let bucket = buckets.get(key);
+    if (!bucket) {
+      bucket = {
+        layerId,
+        label: resolveLayerTitle(layerId, layerTitles),
+        total: 0,
+        citationKeys: new Set<string>(),
+        hoverIndices: new Set<number>()
+      };
+      buckets.set(key, bucket);
+    }
+    bucket.total += mean;
+    const keys = Array.isArray(link?.citation_keys) ? link.citation_keys : [];
+    keys.forEach((value) => {
+      if (typeof value === 'string' && value.trim()) {
+        bucket?.citationKeys.add(value);
+      }
+    });
+    const indices = Array.isArray(link?.hover_reference_indices)
+      ? link.hover_reference_indices
+      : [];
+    indices.forEach((value) => {
+      if (typeof value === 'number' && Number.isFinite(value)) {
+        bucket?.hoverIndices.add(Math.trunc(value));
+      }
+    });
+  });
+  const entries = Array.from(buckets.values()).filter((bucket) => bucket.total > 0);
+  if (entries.length === 0) {
+    return { nodes: [], links: [] };
+  }
+  entries.sort((a, b) => b.total - a.total);
+  const sinkId = 'layer:total';
+  const nodes: SankeyNode[] = entries.map((bucket, index) => ({
+    id: bucket.layerId ? `layer:${bucket.layerId}` : `layer:unassigned:${index}`,
+    label: bucket.label,
+    type: 'category'
+  }));
+  nodes.push({ id: sinkId, label: 'Total footprint', type: 'activity' });
+  const aggregatedLinks: SankeyLink[] = entries.map((bucket, index) => {
+    const sourceId = bucket.layerId ? `layer:${bucket.layerId}` : `layer:unassigned:${index}`;
+    const citation_keys =
+      bucket.citationKeys.size > 0 ? Array.from(bucket.citationKeys) : undefined;
+    const hover_reference_indices =
+      bucket.hoverIndices.size > 0
+        ? Array.from(bucket.hoverIndices).sort((a, b) => a - b)
+        : undefined;
+    return {
+      source: sourceId,
+      target: sinkId,
+      layer_id: bucket.layerId,
+      values: { mean: bucket.total },
+      citation_keys,
+      hover_reference_indices
+    } satisfies SankeyLink;
+  });
+  return { nodes, links: aggregatedLinks };
+}
+
 function sumStackedEmissions(data: readonly StackedDatum[]): number | null {
   if (!Array.isArray(data) || data.length === 0) {
     return null;
@@ -301,7 +660,11 @@ const STATUS_LABEL: Record<string, string> = {
   error: 'Error'
 };
 
-export function VizCanvas(): JSX.Element {
+interface VizCanvasProps {
+  stage: StageId;
+}
+
+export function VizCanvas({ stage }: VizCanvasProps): JSX.Element {
   const {
     status,
     result,
@@ -311,10 +674,19 @@ export function VizCanvas(): JSX.Element {
     availableLayers,
     activeLayers,
     activeReferenceKeys,
-    activeReferences,
-    setActiveLayers
+    activeReferences
   } = useProfile();
   const { layers: layerCatalog } = useLayerCatalog();
+
+  const layerTitleLookup = useMemo(() => {
+    const lookup = new Map<string, string>();
+    layerCatalog.forEach((layer) => {
+      if (layer?.id) {
+        lookup.set(layer.id, layer.title ?? layer.id);
+      }
+    });
+    return lookup;
+  }, [layerCatalog]);
 
   const activeLayerSet = useMemo(() => new Set(activeLayers), [activeLayers]);
   const baseLayer = primaryLayer;
@@ -359,13 +731,42 @@ export function VizCanvas(): JSX.Element {
     [rawSankey, activeLayerSet]
   );
 
-  const { total: bubbleTotal, count, topActivities } = useMemo(
-    () => resolveActivities(bubbleData),
-    [bubbleData]
+  const stageStackedData = useMemo(
+    () =>
+      stage === 'segment'
+        ? aggregateStackedByLayer(rawStacked, activeLayerSet, layerTitleLookup)
+        : stackedData,
+    [stage, rawStacked, activeLayerSet, layerTitleLookup, stackedData]
   );
 
-  const stackedTotal = useMemo(() => sumStackedEmissions(stackedData), [stackedData]);
-  const sankeyTotal = useMemo(() => sumSankeyEmissions(sankeyData), [sankeyData]);
+  const stageBubbleData = useMemo(
+    () => {
+      if (stage === 'activity') {
+        return bubbleData;
+      }
+      if (stage === 'profile') {
+        return aggregateBubbleByCategory(bubbleData);
+      }
+      return aggregateBubbleByLayer(rawBubble, activeLayerSet, layerTitleLookup);
+    },
+    [stage, bubbleData, rawBubble, activeLayerSet, layerTitleLookup]
+  );
+
+  const stageSankeyData = useMemo(
+    () =>
+      stage === 'segment'
+        ? buildLayerSankey(rawSankey, activeLayerSet, layerTitleLookup)
+        : sankeyData,
+    [stage, rawSankey, activeLayerSet, layerTitleLookup, sankeyData]
+  );
+
+  const { total: bubbleTotal, count: focusCount, topActivities } = useMemo(
+    () => resolveActivities(stageBubbleData),
+    [stageBubbleData]
+  );
+
+  const stackedTotal = useMemo(() => sumStackedEmissions(stageStackedData), [stageStackedData]);
+  const sankeyTotal = useMemo(() => sumSankeyEmissions(stageSankeyData), [stageSankeyData]);
   const totals = useMemo(
     () =>
       reconcileTotals({
@@ -384,9 +785,32 @@ export function VizCanvas(): JSX.Element {
 
   const resolvedTotal = totals.total ?? stackedTotal ?? bubbleTotal ?? sankeyTotal ?? null;
 
+  const focusLabel =
+    stage === 'segment' ? 'Segments tracked' : stage === 'profile' ? 'Categories tracked' : 'Activities tracked';
+  const stackedShareLabel = stage === 'segment' ? 'segment portfolio' : 'tracked categories';
+  const bubbleShareLabel =
+    stage === 'segment' ? 'segment emissions' : stage === 'profile' ? 'category emissions' : 'activity emissions';
+  const sankeyShareLabel = stage === 'segment' ? 'segment flow' : 'mapped flow';
+  const stackedPanelTitle = stage === 'segment' ? 'Annual emissions by segment' : 'Annual emissions by category';
+  const bubblePanelTitle =
+    stage === 'segment'
+      ? 'Segment emissions bubble chart'
+      : stage === 'profile'
+        ? 'Category emissions bubble chart'
+        : 'Activity emissions bubble chart';
+  const sankeyPanelTitle = stage === 'segment' ? 'Segment emission pathways' : 'Emission pathways';
+  const stackedEmptyMessage = stage === 'segment' ? 'No segment data available.' : 'No category data available.';
+  const bubbleEmptyMessage =
+    stage === 'segment'
+      ? 'No segment data available.'
+      : stage === 'profile'
+        ? 'No category data available.'
+        : 'No activity data available.';
+  const sankeyEmptyMessage = stage === 'segment' ? 'No segment flow data available.' : 'No sankey data available.';
+
   const stackedSummary = useMemo(() => {
-    const rows = Array.isArray(stackedData)
-      ? stackedData
+    const rows = Array.isArray(stageStackedData)
+      ? stageStackedData
           .map((row, index) => {
             const values = row?.values ?? undefined;
             const mean = typeof values?.mean === 'number' ? values.mean : null;
@@ -413,10 +837,12 @@ export function VizCanvas(): JSX.Element {
         label: row.label,
         value: formatEmission(row.value),
         description:
-          aggregate > 0 ? `${Math.round((row.value / aggregate) * 100)}% of tracked categories` : undefined
+          aggregate > 0
+            ? `${Math.round((row.value / aggregate) * 100)}% of ${stackedShareLabel}`
+            : undefined
       }));
     return { items, total: aggregate };
-  }, [stackedData, resolvedTotal, stackedTotal]);
+  }, [stageStackedData, resolvedTotal, stackedTotal, stackedShareLabel]);
 
   const bubbleSummary = useMemo(() => {
     const fallbackTotal =
@@ -430,20 +856,22 @@ export function VizCanvas(): JSX.Element {
       label: activity.label,
       value: formatEmission(activity.emissions),
       description:
-        aggregate > 0 ? `${Math.round((activity.emissions / aggregate) * 100)}% of activity emissions` : undefined
+        aggregate > 0
+          ? `${Math.round((activity.emissions / aggregate) * 100)}% of ${bubbleShareLabel}`
+          : undefined
     }));
     return { items, total: aggregate };
-  }, [topActivities, bubbleTotal, resolvedTotal]);
+  }, [topActivities, bubbleTotal, resolvedTotal, bubbleShareLabel]);
 
   const sankeySummary = useMemo(() => {
-    const nodes = Array.isArray(sankeyData?.nodes) ? sankeyData.nodes ?? [] : [];
+    const nodes = Array.isArray(stageSankeyData?.nodes) ? stageSankeyData.nodes ?? [] : [];
     const nodeLabels = new Map<string, string>();
     nodes.forEach((node) => {
       if (typeof node?.id === 'string') {
         nodeLabels.set(node.id, typeof node?.label === 'string' && node.label ? node.label : node.id);
       }
     });
-    const links = Array.isArray(sankeyData?.links) ? sankeyData.links ?? [] : [];
+    const links = Array.isArray(stageSankeyData?.links) ? stageSankeyData.links ?? [] : [];
     const rows = links
       .map((link, index) => {
         const mean = typeof link?.values?.mean === 'number' ? link.values.mean : null;
@@ -471,10 +899,13 @@ export function VizCanvas(): JSX.Element {
       id: row.id,
       label: row.label,
       value: formatEmission(row.value),
-      description: aggregate > 0 ? `${Math.round((row.value / aggregate) * 100)}% of mapped flow` : undefined
+      description:
+        aggregate > 0
+          ? `${Math.round((row.value / aggregate) * 100)}% of ${sankeyShareLabel}`
+          : undefined
     }));
     return { items, total: aggregate };
-  }, [sankeyData, resolvedTotal, sankeyTotal]);
+  }, [stageSankeyData, resolvedTotal, sankeyTotal, sankeyShareLabel]);
 
   const referenceLookup = useMemo(
     () => buildReferenceLookup(activeReferenceKeys),
@@ -484,19 +915,21 @@ export function VizCanvas(): JSX.Element {
   const statusTone = resolveStatusTone(status);
   const statusLabel = STATUS_LABEL[status] ?? status;
   const canvasRef = useRef<HTMLElement | null>(null);
-  const [expandedViz, setExpandedViz] = useState<string | null>(null);
-
-  const hasLayerToggles = useMemo(
-    () => availableLayers.some((layer) => layer !== baseLayer),
-    [availableLayers, baseLayer]
+  const [expandedViz, setExpandedViz] = useState<Set<string>>(
+    () => new Set(['stacked', 'bubble', 'sankey'])
   );
 
-  const handleToggleVisualizer = useCallback(
-    (id: string) => {
-      setExpandedViz((current) => (current === id ? null : id));
-    },
-    []
-  );
+  const handleToggleVisualizer = useCallback((id: string) => {
+    setExpandedViz((current) => {
+      const next = new Set(current);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }, []);
 
   return (
     <section
@@ -571,8 +1004,8 @@ export function VizCanvas(): JSX.Element {
                   </p>
                 </div>
                 <div className="acx-card bg-slate-900/60">
-                  <p className="text-[10px] uppercase tracking-[0.35em] text-slate-300">Activities tracked</p>
-                  <p className="mt-[var(--gap-0)] text-lg font-semibold text-slate-50">{count}</p>
+                  <p className="text-[10px] uppercase tracking-[0.35em] text-slate-300">{focusLabel}</p>
+                  <p className="mt-[var(--gap-0)] text-lg font-semibold text-slate-50">{focusCount}</p>
                   <p className="mt-[var(--gap-0)] text-[10px] uppercase tracking-[0.35em] text-slate-300">
                     showing top contributors
                   </p>
@@ -585,30 +1018,19 @@ export function VizCanvas(): JSX.Element {
                   <p className="mt-[var(--gap-0)] text-[10px] uppercase tracking-[0.35em] text-slate-300">source citations</p>
                 </div>
               </div>
-              {hasLayerToggles ? (
-                <LayerToggles
-                  baseLayer={baseLayer}
-                  availableLayers={availableLayers}
-                  activeLayers={activeLayers}
-                  onChange={setActiveLayers}
-                  layerCatalog={layerCatalog}
-                />
-              ) : null}
+              {/* Optional layer toggles hidden temporarily to keep the canvas focused. */}
               <div className="flex flex-col gap-[var(--gap-1)]">
                 <VisualizerPanel
                   id="stacked"
-                  title="Annual emissions by category"
+                  title={stackedPanelTitle}
                   summary={
-                    <SummaryList
-                      items={stackedSummary.items}
-                      emptyMessage="No category data available."
-                    />
+                    <SummaryList items={stackedSummary.items} emptyMessage={stackedEmptyMessage} />
                   }
-                  expanded={expandedViz === 'stacked'}
+                  expanded={expandedViz.has('stacked')}
                   onToggle={handleToggleVisualizer}
                 >
                   <Stacked
-                    data={stackedData}
+                    data={stageStackedData}
                     referenceLookup={referenceLookup}
                     variant="embedded"
                     totalOverride={resolvedTotal}
@@ -616,31 +1038,25 @@ export function VizCanvas(): JSX.Element {
                 </VisualizerPanel>
                 <VisualizerPanel
                   id="bubble"
-                  title="Activity emissions bubble chart"
+                  title={bubblePanelTitle}
                   summary={
-                    <SummaryList
-                      items={bubbleSummary.items}
-                      emptyMessage="No activity data available."
-                    />
+                    <SummaryList items={bubbleSummary.items} emptyMessage={bubbleEmptyMessage} />
                   }
-                  expanded={expandedViz === 'bubble'}
+                  expanded={expandedViz.has('bubble')}
                   onToggle={handleToggleVisualizer}
                 >
-                  <Bubble data={bubbleData} referenceLookup={referenceLookup} variant="embedded" />
+                  <Bubble data={stageBubbleData} referenceLookup={referenceLookup} variant="embedded" />
                 </VisualizerPanel>
                 <VisualizerPanel
                   id="sankey"
-                  title="Emission pathways"
+                  title={sankeyPanelTitle}
                   summary={
-                    <SummaryList
-                      items={sankeySummary.items}
-                      emptyMessage="No sankey data available."
-                    />
+                    <SummaryList items={sankeySummary.items} emptyMessage={sankeyEmptyMessage} />
                   }
-                  expanded={expandedViz === 'sankey'}
+                  expanded={expandedViz.has('sankey')}
                   onToggle={handleToggleVisualizer}
                 >
-                  <Sankey data={sankeyData} referenceLookup={referenceLookup} variant="embedded" />
+                  <Sankey data={stageSankeyData} referenceLookup={referenceLookup} variant="embedded" />
                 </VisualizerPanel>
               </div>
             </div>
@@ -668,19 +1084,26 @@ function SummaryList({ items, emptyMessage }: SummaryListProps) {
     return <p className="text-sm text-slate-400">{emptyMessage}</p>;
   }
   return (
-    <ul className="space-y-2" role="list">
-      {items.map((item) => (
+    <ul
+      className="overflow-hidden rounded-lg border border-slate-800/70 bg-slate-950/40 text-[13px] leading-tight text-slate-200"
+      role="list"
+    >
+      {items.map((item, index) => (
         <li
           key={item.id}
-          className="flex flex-col gap-1 rounded-lg border border-slate-800/80 bg-slate-900/40 p-3"
+          className={`grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-3 px-3 py-2 ${
+            index > 0 ? 'border-t border-slate-800/60' : ''
+          }`}
         >
-          <div className="flex items-baseline justify-between gap-3 text-sm">
-            <span className="font-medium text-slate-100">{item.label}</span>
-            <span className="text-xs uppercase tracking-[0.3em] text-slate-400">{item.value}</span>
+          <div className="min-w-0">
+            <p className="truncate font-medium text-slate-100">{item.label}</p>
+            {item.description ? (
+              <p className="mt-1 text-[11px] leading-snug text-slate-400">{item.description}</p>
+            ) : null}
           </div>
-          {item.description ? (
-            <p className="text-[11px] text-slate-400">{item.description}</p>
-          ) : null}
+          <span className="text-right text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-400">
+            {item.value}
+          </span>
         </li>
       ))}
     </ul>
