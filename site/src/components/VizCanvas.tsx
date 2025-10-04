@@ -668,19 +668,26 @@ function SummaryList({ items, emptyMessage }: SummaryListProps) {
     return <p className="text-sm text-slate-400">{emptyMessage}</p>;
   }
   return (
-    <ul className="space-y-2" role="list">
-      {items.map((item) => (
+    <ul
+      className="overflow-hidden rounded-lg border border-slate-800/70 bg-slate-950/40 text-[13px] leading-tight text-slate-200"
+      role="list"
+    >
+      {items.map((item, index) => (
         <li
           key={item.id}
-          className="flex flex-col gap-1 rounded-lg border border-slate-800/80 bg-slate-900/40 p-3"
+          className={`grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-3 px-3 py-2 ${
+            index > 0 ? 'border-t border-slate-800/60' : ''
+          }`}
         >
-          <div className="flex items-baseline justify-between gap-3 text-sm">
-            <span className="font-medium text-slate-100">{item.label}</span>
-            <span className="text-xs uppercase tracking-[0.3em] text-slate-400">{item.value}</span>
+          <div className="min-w-0">
+            <p className="truncate font-medium text-slate-100">{item.label}</p>
+            {item.description ? (
+              <p className="mt-1 text-[11px] leading-snug text-slate-400">{item.description}</p>
+            ) : null}
           </div>
-          {item.description ? (
-            <p className="text-[11px] text-slate-400">{item.description}</p>
-          ) : null}
+          <span className="text-right text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-400">
+            {item.value}
+          </span>
         </li>
       ))}
     </ul>

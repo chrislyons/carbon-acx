@@ -40,6 +40,19 @@ const SVG_HEIGHT = 360;
 const PADDING_X = 80;
 const PADDING_Y = 50;
 const MAX_RADIUS = 42;
+const AXIS_FONT_SIZE = 11;
+const AXIS_TICK_FONT_SIZE = 10;
+const MIN_LABEL_FONT_SIZE = 10;
+const MAX_LABEL_FONT_SIZE = 16;
+
+function resolveLabelFontSize(radius: number): number {
+  if (!Number.isFinite(radius) || radius <= 0) {
+    return MIN_LABEL_FONT_SIZE;
+  }
+  const computed = radius * 0.45;
+  const bounded = Math.max(MIN_LABEL_FONT_SIZE, Math.min(MAX_LABEL_FONT_SIZE, computed));
+  return Math.round(bounded);
+}
 
 function toCategory(value: string | null | undefined): string {
   if (!value) {
@@ -144,6 +157,8 @@ export function Bubble({
             const relative = point.kilograms / maxKg;
             const cy = PADDING_Y + chartHeight - relative * chartHeight;
             const radius = Math.max(8, Math.sqrt(relative) * MAX_RADIUS);
+            const labelFontSize = resolveLabelFontSize(radius);
+            const labelOffset = radius + labelFontSize + 4;
             return (
               <g
                 key={point.key}
@@ -160,9 +175,10 @@ export function Bubble({
                   <title>{point.hint}</title>
                 </circle>
                 <text
-                  y={radius + 16}
+                  y={labelOffset}
                   textAnchor="middle"
-                  className="fill-slate-300 text-xs font-medium"
+                  className="fill-slate-200 font-medium"
+                  style={{ fontSize: `${labelFontSize}px` }}
                 >
                   {point.label}
                 </text>
@@ -172,7 +188,14 @@ export function Bubble({
           {categories.map((category, index) => {
             const cx = PADDING_X + xStep * (index + 0.5);
             return (
-              <text key={category} x={cx} y={SVG_HEIGHT - 12} textAnchor="middle" className="fill-slate-400 text-xs">
+              <text
+                key={category}
+                x={cx}
+                y={SVG_HEIGHT - 12}
+                textAnchor="middle"
+                className="fill-slate-400"
+                style={{ fontSize: `${AXIS_TICK_FONT_SIZE}px` }}
+              >
                 {category}
               </text>
             );
@@ -189,7 +212,13 @@ export function Bubble({
                   y2={y}
                   stroke="rgba(148, 163, 184, 0.4)"
                 />
-                <text x={PADDING_X - 12} y={y + 4} textAnchor="end" className="fill-slate-400 text-xs">
+                <text
+                  x={PADDING_X - 12}
+                  y={y + 4}
+                  textAnchor="end"
+                  className="fill-slate-400"
+                  style={{ fontSize: `${AXIS_TICK_FONT_SIZE}px` }}
+                >
                   {formatKilograms(tick)}
                 </text>
               </g>
@@ -200,12 +229,19 @@ export function Bubble({
             x={PADDING_X - 48}
             y={SVG_HEIGHT / 2}
             textAnchor="middle"
-            className="fill-slate-500 text-xs"
+            className="fill-slate-500"
+            style={{ fontSize: `${AXIS_FONT_SIZE}px` }}
             transform={`rotate(-90 ${PADDING_X - 48} ${SVG_HEIGHT / 2})`}
           >
             Annual emissions (kg CO₂e)
           </text>
-          <text x={SVG_WIDTH / 2} y={SVG_HEIGHT - 4} textAnchor="middle" className="fill-slate-500 text-xs">
+          <text
+            x={SVG_WIDTH / 2}
+            y={SVG_HEIGHT - 4}
+            textAnchor="middle"
+            className="fill-slate-500"
+            style={{ fontSize: `${AXIS_FONT_SIZE}px` }}
+          >
             Activity category
           </text>
       </svg>

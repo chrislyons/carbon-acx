@@ -109,19 +109,19 @@ export function Stacked({
           {title}
         </h3>
       ) : null}
-      <p className="text-xs uppercase tracking-[0.3em] text-slate-300">Total {formatEmission(total)}</p>
+      <p className="text-[11px] uppercase tracking-[0.28em] text-slate-400">Total {formatEmission(total)}</p>
     </div>
   );
 
   const body = (
     <>
       {header}
-      <ol role="list" className="mt-5 space-y-3" data-testid="stacked-svg">
+      <ol role="list" className="mt-4 space-y-2.5" data-testid="stacked-svg">
         {prepared.map((row, index) => {
           const width = percentDenominator > 0 ? Math.max((row.value / percentDenominator) * 100, 2) : 0;
           return (
             <li key={row.key} className="space-y-1" data-testid={`stacked-item-${index}`}>
-              <div className="flex items-center justify-between text-sm text-slate-300">
+              <div className="flex items-center justify-between text-[13px] leading-snug text-slate-200">
                 <span className="font-medium text-slate-100">{row.label}</span>
                 <span>{formatEmission(row.value)}</span>
               </div>
@@ -145,7 +145,9 @@ export function Stacked({
           );
         })}
       </ol>
-      <p className="mt-6 text-xs uppercase tracking-[0.3em] text-slate-300">Annual emissions (adaptive units)</p>
+      <p className="mt-5 text-[11px] uppercase tracking-[0.28em] text-slate-400">
+        Annual emissions (adaptive units)
+      </p>
     </>
   );
 
