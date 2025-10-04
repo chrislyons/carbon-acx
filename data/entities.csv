@@ -8,6 +8,13 @@ ENTITY.META.US,Meta Platforms Inc.,corporate,,Parent for Instagram platform oper
 ENTITY.BYTEDANCE.CN,ByteDance Ltd.,corporate,,Parent for TikTok platform operations
 ENTITY.OPENAI.US,OpenAI,corporate,,Provider of GPT inference services
 ENTITY.ANTHROPIC.US,Anthropic PBC,corporate,,Provider of Claude inference services
+ENTITY.APPLE.US,Apple Inc.,corporate,,"Global electronics and services company producing iPhone, Mac, and other devices"
+ENTITY.SAMSUNG.KR,"Samsung Electronics Co., Ltd.",corporate,,"Multinational electronics manufacturer headquartered in Suwon, South Korea"
+ENTITY.DELL.US,Dell Technologies Inc.,corporate,,"Producer of laptops, desktops, and enterprise hardware"
+ENTITY.MAERSK.DK,A.P. Moller-Maersk A/S,corporate,,"Global integrated container logistics company"
+ENTITY.HAPAGLLOYD.DE,Hapag-Lloyd AG,corporate,,"German international shipping and container transport company"
+ENTITY.TGH.CA,Toronto General Hospital,corporate,,"Flagship acute-care hospital within the University Health Network"
+ENTITY.OXFORD.CA,Oxford Properties Group,corporate,,"Canadian real estate owner, developer, and manager"
 ENTITY.AIRCANADA.CA,Air Canada,corporate,,Flag carrier and largest airline in Canada
 ENTITY.WESTJET.CA,WestJet,corporate,,Major Canadian airline focused on domestic and transborder routes
 ENTITY.TORONTO.WASTE,City of Toronto Solid Waste Management Services,municipal,,Municipal residual waste and recycling utility for Toronto households and businesses
