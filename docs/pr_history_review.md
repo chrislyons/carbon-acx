@@ -36,3 +36,6 @@
 3. **Codify documentation rules** with lint scripts (regex guards for banned tokens) and include README snapshots in CI to avoid repeated compliance PRs.
 4. **Institutionalise accessibility testing** by running automated a11y audits on key pages/components and enforcing ARIA review in PR templates.
 5. **Align data updates with documentation** via changelog automation or dataset coverage dashboards so large seed expansions automatically trigger doc updates.
+
+## Follow-up actions on this branch
+- Added `scripts.lint_docs` and wired it into `make lint` so README and docs fail CI when banned terminology like "FastAPI" appears.
