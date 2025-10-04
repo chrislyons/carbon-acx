@@ -1,4 +1,4 @@
-import { KeyboardEvent, ReactNode, useId, useState } from 'react';
+import { KeyboardEvent, ReactNode, useId } from 'react';
 
 interface LayoutProps {
   layerBrowser: ReactNode;
@@ -6,9 +6,11 @@ interface LayoutProps {
   activity: ReactNode;
   canvas: ReactNode;
   references: ReactNode;
+  stage: StageId;
+  onStageChange: (stage: StageId) => void;
 }
 
-type StageId = 'layer' | 'profile' | 'activity';
+export type StageId = 'layer' | 'profile' | 'activity';
 
 interface StageMeta {
   id: StageId;
@@ -39,11 +41,13 @@ export function Layout({
   controls,
   activity,
   canvas,
-  references
+  references,
+  stage,
+  onStageChange
 }: LayoutProps): JSX.Element {
   const workflowLabelId = useId();
   const workflowId = useId();
-  const [activeStage, setActiveStage] = useState<StageId>('layer');
+  const activeStage = stage;
 
   const resolveStageClassName = (stage: StageMeta, activeIndex: number) => {
     const stageIndex = STAGES.findIndex((candidate) => candidate.id === stage.id);
@@ -65,28 +69,28 @@ export function Layout({
     if (key === 'arrowright' || key === 'arrowdown') {
       event.preventDefault();
       const nextIndex = Math.min(STAGES.length - 1, currentIndex + 1);
-      setActiveStage(STAGES[nextIndex].id);
+      onStageChange(STAGES[nextIndex].id);
       return;
     }
     if (key === 'arrowleft' || key === 'arrowup') {
       event.preventDefault();
       const nextIndex = Math.max(0, currentIndex - 1);
-      setActiveStage(STAGES[nextIndex].id);
+      onStageChange(STAGES[nextIndex].id);
       return;
     }
     if (key === 'home') {
       event.preventDefault();
-      setActiveStage(STAGES[0].id);
+      onStageChange(STAGES[0].id);
       return;
     }
     if (key === 'end') {
       event.preventDefault();
-      setActiveStage(STAGES[STAGES.length - 1].id);
+      onStageChange(STAGES[STAGES.length - 1].id);
       return;
     }
     if (key === 'enter' || key === ' ') {
       event.preventDefault();
-      setActiveStage(stage.id);
+      onStageChange(stage.id);
     }
   };
 
@@ -132,7 +136,7 @@ export function Layout({
                     aria-expanded={isActive}
                     aria-current={isActive ? 'step' : undefined}
                     className={resolveStageClassName(stage, activeIndex)}
-                    onClick={() => setActiveStage(stage.id)}
+                    onClick={() => onStageChange(stage.id)}
                     onKeyDown={handleStageKeyDown(stage)}
                   >
                     <span

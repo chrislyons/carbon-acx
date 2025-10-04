@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { Layout } from './components/Layout';
+import { Layout, type StageId } from './components/Layout';
 import { LayerBrowser } from './components/LayerBrowser';
 import { ProfileControls } from './components/ProfileControls';
 import { ReferencesDrawer } from './components/ReferencesDrawer';
@@ -15,6 +15,7 @@ export default function App(): JSX.Element {
     }
     return window.matchMedia('(min-width: 1280px)').matches;
   });
+  const [stage, setStage] = useState<StageId>('layer');
 
   return (
     <ProfileProvider>
@@ -57,7 +58,7 @@ export default function App(): JSX.Element {
             layerBrowser={<LayerBrowser />}
             controls={<ProfileControls />}
             activity={<ActivityPlanner />}
-            canvas={<VizCanvas />}
+            canvas={<VizCanvas stage={stage} />}
             references={
               <ReferencesDrawer
                 id="references-panel"
@@ -65,6 +66,8 @@ export default function App(): JSX.Element {
                 onToggle={() => setIsDrawerOpen((open) => !open)}
               />
             }
+            stage={stage}
+            onStageChange={setStage}
           />
         </main>
       </div>
