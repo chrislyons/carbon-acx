@@ -815,6 +815,49 @@ p {
   gap: clamp(1.5rem, 3vw, 2.5rem);
 }
 
+.agency-strip-container {
+  margin-top: clamp(0.25rem, 1.5vw, 0.75rem);
+}
+
+.agency-strip {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs);
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+}
+
+.agency-strip--empty {
+  color: var(--color-text-muted);
+}
+
+.agency-strip__segment {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-xxs);
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.agency-strip__segment-label {
+  color: var(--color-text-muted);
+}
+
+.agency-strip__segment-value {
+  font-weight: 600;
+}
+
+.agency-strip__separator {
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.agency-strip__separator + .agency-strip__segment,
+.agency-strip__segment + .agency-strip__separator {
+  margin-left: 0;
+}
+
 .chart-narrative {
   margin-top: clamp(1rem, 2.5vw, 1.75rem);
   color: var(--color-text-muted);

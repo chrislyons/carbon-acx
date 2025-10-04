@@ -22,6 +22,7 @@ from calc import citations
 from calc.schema import LayerId
 
 from app.components import (
+    agency_strip,
     bubble,
     disclosure,
     intensity,
@@ -31,11 +32,13 @@ from app.components import (
     vintages,
 )
 from app.lib import narratives
+from app.lib.agency import breakdown_for_activity
 from app.components._helpers import extend_unique
 
 ARTIFACT_ENV = "ACX_ARTIFACT_DIR"
 DEFAULT_ARTIFACT_DIR = Path(__file__).resolve().parent.parent / "calc" / "outputs"
 FIGURE_NAMES = ("stacked", "bubble", "sankey")
+DEPENDENCY_MAP_NAME = "dependency_map.json"
 
 LAYER_ORDER = [layer.value for layer in LayerId]
 CIVILIAN_LAYERS = {LayerId.PROFESSIONAL.value, LayerId.ONLINE.value}
@@ -71,6 +74,11 @@ def _load_export_payload(base_dir: Path) -> dict | None:
 
 def _load_manifest_payload(base_dir: Path) -> dict | None:
     path = base_dir / "manifest.json"
+    return _cached_json_payload(str(path))
+
+
+def _load_dependency_map(base_dir: Path) -> dict | None:
+    path = base_dir / DEPENDENCY_MAP_NAME
     return _cached_json_payload(str(path))
 
 
@@ -370,6 +378,7 @@ def _extract_activity_id(click_data) -> str | None:
 def create_app() -> Dash:
     artifact_dir = _artifact_dir()
     figures = {name: _load_figure_payload(artifact_dir, name) for name in FIGURE_NAMES}
+    dependency_map = _load_dependency_map(artifact_dir)
     export_payload = _load_export_payload(artifact_dir)
     reference_keys = _reference_keys(figures)
     reference_lookup = _reference_lookup(reference_keys)
@@ -707,6 +716,7 @@ def create_app() -> Dash:
             dcc.Store(id="theme-mode"),
             dcc.Store(id="figures-store", data=figures),
             dcc.Store(id="available-layers", data=available_layers),
+            dcc.Store(id="dependency-map", data=dependency_map),
             dcc.Store(id="layer-citation-keys", data=layer_citation_keys),
             dcc.Store(id="metadata-store", data=metadata_store),
             dcc.Store(id="default-layers", data=default_layers),
@@ -892,6 +902,10 @@ def create_app() -> Dash:
                                         className="overview-visualization",
                                         children=[
                                             html.Div(id="layer-panels", className="layer-panels"),
+                                            html.Div(
+                                                id="agency-strip-container",
+                                                className="agency-strip-container",
+                                            ),
                                             html.Div(
                                                 id="upstream-chips",
                                                 className="upstream-chips",
@@ -1276,6 +1290,24 @@ def create_app() -> Dash:
             html.Span("Upstream:", className="upstream-chips__label"),
             html.Div(chips, className="upstream-chips__list"),
         ]
+
+    @app.callback(
+        Output("agency-strip-container", "children"),
+        Input("acx-active-activity", "data"),
+        State("dependency-map", "data"),
+    )
+    def _render_agency_strip(active_activity, dependency_map_value):
+        if not active_activity:
+            return agency_strip.render(None)
+
+        segments = breakdown_for_activity(active_activity, dependency_map_value)
+        if not segments:
+            return agency_strip.render(
+                None,
+                empty_message="No upstream agency data available for this activity.",
+            )
+
+        return agency_strip.render(segments)
 
     @app.callback(
         Output("chart-badges", "children"),
