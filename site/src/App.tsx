@@ -6,6 +6,7 @@ import { ProfileControls } from './components/ProfileControls';
 import { ReferencesDrawer } from './components/ReferencesDrawer';
 import { VizCanvas } from './components/VizCanvas';
 import { ProfileProvider } from './state/profile';
+import { ActivityPlanner } from './components/ActivityPlanner';
 
 export default function App(): JSX.Element {
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(() => {
@@ -55,6 +56,7 @@ export default function App(): JSX.Element {
           <Layout
             layerBrowser={<LayerBrowser />}
             controls={<ProfileControls />}
+            activity={<ActivityPlanner />}
             canvas={<VizCanvas />}
             references={
               <ReferencesDrawer
