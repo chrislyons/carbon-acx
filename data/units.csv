@@ -26,3 +26,4 @@ tonne_km,mass_distance,1000000,"One metric tonne transported one kilometre (1,00
 unit,count,1,"Generic count of manufactured equipment"
 year,time,31536000,"One calendar year expressed in seconds"
 kg_foodyear,mass_time,31536000,"One kilogram of food refrigerated for one year (kg·year)"
+m2_year,area_time,31536000,"One square metre of floor area sustained for one year (m²·year)"
