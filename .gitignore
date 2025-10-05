@@ -10,3 +10,4 @@ calc/outputs/
 .pytest_cache/
 node_modules/
 *.csv~
+refs/.domains_allowlist

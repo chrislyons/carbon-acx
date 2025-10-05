@@ -1,0 +1,68 @@
+name: Fetch References (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      only_ids:
+        description: "Comma-separated source IDs to fetch"
+        required: false
+        type: string
+      domains_allowlist:
+        description: "Optional newline-delimited domain allowlist"
+        required: false
+        type: string
+      normalize:
+        description: "Run Markdown normalization after fetching"
+        required: true
+        default: true
+        type: boolean
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install Poetry
+        run: pip install poetry
+      - name: Install dependencies
+        run: poetry install --with dev --no-root
+      - name: Enable Git LFS
+        run: git lfs install
+      - name: refs-check
+        run: make refs-check
+      - name: Fetch references
+        env:
+          ONLY_IDS: ${{ inputs.only_ids }}
+          DOMAINS: ${{ inputs.domains_allowlist }}
+        run: |
+          ARGS="--mode fetch"
+          if [ -n "${ONLY_IDS}" ]; then
+            ARGS="$ARGS --only ${ONLY_IDS}"
+          fi
+          if [ -n "${DOMAINS}" ]; then
+            printf "%s\n" "${DOMAINS}" > refs/.domains_allowlist
+            ARGS="$ARGS --domains refs/.domains_allowlist"
+          fi
+          poetry run python -m calc.refs_fetch ${ARGS}
+      - name: Normalize references
+        if: inputs.normalize == true
+        run: make refs-normalize
+      - name: refs-audit
+        run: make refs-audit
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: automation/update-references
+          commit-message: "chore: update reference manifest"
+          title: "chore: update reference manifest"
+          body: |
+            Automated reference ingestion run.
+          delete-branch: true
