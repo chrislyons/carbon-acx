@@ -1,1 +1,5 @@
 dist/** export-ignore
+refs/raw/*.pdf  filter=lfs diff=lfs merge=lfs -text
+refs/raw/*.html filter=lfs diff=lfs merge=lfs -text
+refs/raw/*.docx filter=lfs diff=lfs merge=lfs -text
+refs/raw/*.xlsx filter=lfs diff=lfs merge=lfs -text

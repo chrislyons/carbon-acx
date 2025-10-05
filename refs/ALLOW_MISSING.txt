@@ -1,0 +1,2 @@
+# List source_ids that are temporarily allowed to be missing from the manifest.
+# One source_id per line. Lines starting with # are ignored.

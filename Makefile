@@ -13,7 +13,7 @@ PACKAGED_MANIFEST := $(PACKAGED_ARTIFACTS_DIR)/manifest.json
 DEFAULT_GENERATED_AT ?= 1970-01-01T00:00:00+00:00
 
 .PHONY: install lint test ci_build_pages app format validate release build-backend build site package sbom build-static \
-	db_init db_import db_export build_csv build_db
+        db_init db_import db_export build_csv build_db refs-check refs-fetch refs-normalize refs-audit
 
 install:
 	poetry install --with dev --no-root
@@ -106,4 +106,16 @@ build_csv:
 	ACX_OUTPUT_ROOT=dist/artifacts/csv ACX_DATA_BACKEND=csv PYTHONPATH=. poetry run python -m calc.derive
 
 build_db:
-	ACX_OUTPUT_ROOT=dist/artifacts/sqlite ACX_DATA_BACKEND=sqlite PYTHONPATH=. poetry run python -m calc.derive --db acx.db
+        ACX_OUTPUT_ROOT=dist/artifacts/sqlite ACX_DATA_BACKEND=sqlite PYTHONPATH=. poetry run python -m calc.derive --db acx.db
+
+refs-check:
+        poetry run python -m calc.refs_fetch --mode check $(ARGS)
+
+refs-fetch:
+        poetry run python -m calc.refs_fetch --mode fetch $(ARGS)
+
+refs-normalize:
+        poetry run python -m calc.refs_normalize $(ARGS)
+
+refs-audit:
+        poetry run python -m calc.refs_audit

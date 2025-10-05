@@ -1,0 +1,80 @@
+name: Fetch references
+
+on:
+  workflow_dispatch:
+    inputs:
+      only_ids:
+        description: 'Comma separated list of source_ids to fetch'
+        required: false
+        type: string
+      domains_allowlist:
+        description: 'Optional newline separated domain patterns (e.g. *.gov)'
+        required: false
+        type: string
+      normalize:
+        description: 'Run normalization after fetching'
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: '1.7.1'
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Install dependencies
+        run: poetry install --with dev --no-root
+
+      - name: Configure Git LFS
+        run: git lfs install
+
+      - name: Prepare fetch arguments
+        id: args
+        run: |
+          args=""
+          if [ "${{ inputs.only_ids }}" != "" ]; then
+            args="$args --only ${{ inputs.only_ids }}"
+          fi
+          if [ "${{ inputs.domains_allowlist }}" != "" ]; then
+            printf '%s\n' "${{ inputs.domains_allowlist }}" > refs/domains_allowlist.txt
+            args="$args --domains refs/domains_allowlist.txt"
+          fi
+          echo "fetch_args=$args" >> "$GITHUB_OUTPUT"
+
+      - name: Check references
+        run: make refs-check ARGS="${{ steps.args.outputs.fetch_args }}"
+
+      - name: Fetch references
+        run: make refs-fetch ARGS="${{ steps.args.outputs.fetch_args }}"
+
+      - name: Normalize references
+        if: inputs.normalize == true
+        run: make refs-normalize ARGS="${{ steps.args.outputs.fetch_args }}"
+
+      - name: Audit references
+        run: make refs-audit
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: 'chore: update reference manifest'
+          title: 'chore: update reference manifest'
+          body: |
+            Automated reference fetch run.
+          branch: chore/update-reference-manifest
