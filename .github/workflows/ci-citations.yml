@@ -1,0 +1,43 @@
+---
+name: CI (Citations)
+
+'on':
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  citations:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - uses: abatilo/actions-poetry@v3
+        with:
+          poetry-version: '1.8.3'
+
+      - name: Install dependencies
+        run: poetry install --no-interaction --with dev
+
+      - name: Run make validate
+        run: make validate
+
+      - name: Run pytest
+        run: poetry run pytest -q
+
+      - name: Scan claims for citations
+        run: poetry run python tools/citations/scan_claims.py
+
+      - name: Build artifact references
+        run: poetry run python tools/citations/references_builder.py --all
+
+      - name: Verify harvested references
+        run: poetry run python tools/citations/harvest.py --check
