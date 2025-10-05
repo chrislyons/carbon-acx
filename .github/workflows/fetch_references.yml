@@ -1,5 +1,6 @@
+---
 name: Fetch References (manual)
-on:
+'on':
   workflow_dispatch:
     inputs:
       only_ids:
@@ -9,7 +10,6 @@ on:
         description: 'Multiline allowlist of host patterns'
         required: false
       normalize:
-        type: boolean
         default: true
         description: 'Run normalization after fetch'
 
@@ -35,7 +35,8 @@ jobs:
       - name: Prepare allowlist (optional)
         if: ${{ inputs.domains_allowlist != '' }}
         run: |
-          printf "%s\n" "${{ inputs.domains_allowlist }}" > domains_allowlist.txt
+          printf "%s\n" "${{ inputs.domains_allowlist }}" \
+            > domains_allowlist.txt
 
       - name: Fetch
         run: |
@@ -44,12 +45,14 @@ jobs:
             ${HAS_ALLOW:+--domains domains_allowlist.txt}
         env:
           INPUT_ONLY: ${{ inputs.only_ids }}
-          HAS_ALLOW: ${{ inputs.domains_allowlist != '' && '1' || '' }}
+          HAS_ALLOW: >-
+            ${{ inputs.domains_allowlist != '' && '1' || '' }}
 
       - name: Normalize
         if: ${{ inputs.normalize }}
         run: |
-          poetry run python -m calc.refs_normalize ${INPUT_ONLY:+--only "$INPUT_ONLY"}
+          poetry run python -m calc.refs_normalize \
+            ${INPUT_ONLY:+--only "$INPUT_ONLY"}
         env:
           INPUT_ONLY: ${{ inputs.only_ids }}
 
@@ -79,11 +82,14 @@ jobs:
       - name: Commit manifest/code changes
         uses: peter-evans/create-pull-request@v6
         with:
-          commit-message: "refs: update sources_manifest and retrieval scripts (no binaries)"
-          title: "refs: update manifest & scripts (artifact-only)"
+          commit-message: >-
+            refs: update sources_manifest and retrieval scripts (no binaries)
+          title: >-
+            refs: update manifest & scripts (artifact-only)
           body: |
             This PR updates retrieval scripts and `refs/sources_manifest.csv`.
-            **No binaries are included**; all downloads were uploaded as Actions artifacts:
+            **No binaries are included**; all downloads were uploaded as Actions
+            artifacts:
             - `refs-raw-${{ github.run_id }}`
             - `refs-normalized-${{ github.run_id }}`
           add-paths: |
