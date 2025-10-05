@@ -13,6 +13,13 @@ import { ExportMenu } from './ExportMenu';
 import { Sankey, SankeyData, SankeyLink, SankeyNode } from './Sankey';
 import { Stacked, StackedDatum } from './Stacked';
 
+interface FeedbackRow {
+  id: string;
+  label: string;
+  value: number;
+  description?: string;
+}
+
 interface ActivityRow {
   id: string;
   label: string;
@@ -947,14 +954,17 @@ export function VizCanvas({ stage }: VizCanvasProps): JSX.Element {
           segments.push(`lag ${link.metadata.lag_years}`);
         }
         const description = segments.length > 0 ? segments.join(' · ') : undefined;
-        return {
+        const row: FeedbackRow = {
           id: `${link.source}-${link.target}-${index}`,
           label: `${sourceLabel} → ${targetLabel}`,
-          value: mean,
-          description
+          value: mean
         };
+        if (description) {
+          row.description = description;
+        }
+        return row;
       })
-      .filter((entry): entry is { id: string; label: string; value: number; description?: string } => entry !== null)
+      .filter((entry): entry is FeedbackRow => entry !== null)
       .sort((a, b) => b.value - a.value);
     const computedTotal = rows.reduce((sum, row) => sum + row.value, 0);
     const aggregate = typeof feedbackTotal === 'number' && feedbackTotal > 0 ? feedbackTotal : computedTotal;
