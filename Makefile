@@ -13,7 +13,7 @@ PACKAGED_MANIFEST := $(PACKAGED_ARTIFACTS_DIR)/manifest.json
 DEFAULT_GENERATED_AT ?= 1970-01-01T00:00:00+00:00
 
 .PHONY: install lint test ci_build_pages app format validate release build-backend build site package sbom build-static \
-        db_init db_import db_export build_csv build_db citations-scan
+        db_init db_import db_export build_csv build_db citations-scan refs-check refs-fetch refs-normalize refs-audit
 
 install:
 	poetry install --with dev --no-root
@@ -101,13 +101,25 @@ db_import:
 	PYTHONPATH=. poetry run python scripts/import_csv_to_db.py --db acx.db --data ./data
 
 db_export:
-        PYTHONPATH=. poetry run python scripts/export_db_to_csv.py --db acx.db --out ./data
+	PYTHONPATH=. poetry run python scripts/export_db_to_csv.py --db acx.db --out ./data
 
 build_csv:
-        ACX_OUTPUT_ROOT=dist/artifacts/csv ACX_DATA_BACKEND=csv PYTHONPATH=. poetry run python -m calc.derive
+	ACX_OUTPUT_ROOT=dist/artifacts/csv ACX_DATA_BACKEND=csv PYTHONPATH=. poetry run python -m calc.derive
 
 build_db:
-        ACX_OUTPUT_ROOT=dist/artifacts/sqlite ACX_DATA_BACKEND=sqlite PYTHONPATH=. poetry run python -m calc.derive --db acx.db
+	ACX_OUTPUT_ROOT=dist/artifacts/sqlite ACX_DATA_BACKEND=sqlite PYTHONPATH=. poetry run python -m calc.derive --db acx.db
 
 citations-scan:
 	PYTHONPATH=. poetry run python tools/citations/scan_claims.py
+
+refs-check:
+	poetry run python -m calc.refs_fetch --mode check
+
+refs-fetch:
+	poetry run python -m calc.refs_fetch --mode fetch
+
+refs-normalize:
+	poetry run python -m calc.refs_normalize
+
+refs-audit:
+	poetry run python -m calc.refs_audit

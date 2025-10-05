@@ -10,3 +10,7 @@ calc/outputs/
 .pytest_cache/
 node_modules/
 *.csv~
+
+# Reference retrieval outputs (never commit)
+refs/raw/
+refs/normalized/

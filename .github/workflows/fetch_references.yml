@@ -1,0 +1,102 @@
+---
+name: Fetch References (manual)
+'on':
+  workflow_dispatch:
+    inputs:
+      only_ids:
+        description: 'Comma-separated source_ids to fetch'
+        required: false
+      domains_allowlist:
+        description: 'Multiline allowlist of host patterns'
+        required: false
+      normalize:
+        default: true
+        description: 'Run normalization after fetch'
+
+jobs:
+  fetch-normalize:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Poetry
+        run: pipx install poetry
+
+      - name: Install deps
+        run: poetry install --no-interaction
+
+      - name: Prepare allowlist (optional)
+        if: ${{ inputs.domains_allowlist != '' }}
+        run: |
+          printf "%s\n" "${{ inputs.domains_allowlist }}" \
+            > domains_allowlist.txt
+
+      - name: Fetch
+        run: |
+          poetry run python -m calc.refs_fetch --mode fetch \
+            ${INPUT_ONLY:+--only "$INPUT_ONLY"} \
+            ${HAS_ALLOW:+--domains domains_allowlist.txt}
+        env:
+          INPUT_ONLY: ${{ inputs.only_ids }}
+          HAS_ALLOW: >-
+            ${{ inputs.domains_allowlist != '' && '1' || '' }}
+
+      - name: Normalize
+        if: ${{ inputs.normalize }}
+        run: |
+          poetry run python -m calc.refs_normalize \
+            ${INPUT_ONLY:+--only "$INPUT_ONLY"}
+        env:
+          INPUT_ONLY: ${{ inputs.only_ids }}
+
+      - name: Upload raw refs as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: refs-raw-${{ github.run_id }}
+          path: refs/raw
+          if-no-files-found: ignore
+          retention-days: 30
+
+      - name: Upload normalized refs as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: refs-normalized-${{ github.run_id }}
+          path: refs/normalized
+          if-no-files-found: ignore
+          retention-days: 30
+
+      - name: Remove binaries before commit
+        if: always()
+        run: |
+          rm -rf refs/raw refs/normalized
+
+      - name: Commit manifest/code changes
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: >-
+            refs: update sources_manifest and retrieval scripts (no binaries)
+          title: >-
+            refs: update manifest & scripts (artifact-only)
+          body: |
+            This PR updates retrieval scripts and `refs/sources_manifest.csv`.
+            **No binaries are included**; all downloads were uploaded as Actions
+            artifacts:
+            - `refs-raw-${{ github.run_id }}`
+            - `refs-normalized-${{ github.run_id }}`
+          add-paths: |
+            refs/sources_manifest.csv
+            refs/ALLOW_MISSING.txt
+            refs/README.md
+            refs/source_id_overrides.json
+            calc/refs_*.py
+            calc/refs_util.py
+          branch: refs/update-${{ github.run_id }}
