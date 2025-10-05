@@ -22,6 +22,13 @@ export interface SankeyLink extends ReferenceCarrier {
   values?: {
     mean?: number | null;
   } | null;
+  metadata?: {
+    loop_id?: string | null;
+    sign?: string | null;
+    lag_years?: string | null;
+    strength?: number | null;
+    notes?: string | null;
+  } | null;
 }
 
 export interface SankeyData {
@@ -51,6 +58,7 @@ interface PreparedLink {
   gradientId: string;
   color: string;
   indices: number[];
+  metadata?: SankeyLink['metadata'];
 }
 
 const SVG_WIDTH = 640;
@@ -152,14 +160,41 @@ export function Sankey({
       sourceNode.total += mean;
       targetNode.total += mean;
       const indices = resolveReferenceIndices(link, referenceLookup);
+      const metadata = link?.metadata ?? null;
+      const emissionLabel = formatEmission(mean);
+      const referenceHint = formatReferenceHint(indices);
+      const strengthValue = metadata?.strength;
+      const strengthLabel =
+        typeof strengthValue === 'number' && Number.isFinite(strengthValue)
+          ? `${Math.round(Math.abs(strengthValue) * 100)}% link`
+          : null;
+      let signLabel: string | null = null;
+      if (metadata?.sign === '+') {
+        signLabel = 'amplifying';
+      } else if (metadata?.sign === '-') {
+        signLabel = 'damping';
+      }
+      const lagLabel = metadata?.lag_years ? `lag ${metadata.lag_years}` : null;
+      const note = typeof metadata?.notes === 'string' && metadata.notes.trim().length > 0 ? metadata.notes.trim() : null;
+      const detailSegments = [signLabel, strengthLabel, lagLabel].filter((segment): segment is string => Boolean(segment));
+      const detailLabel = detailSegments.length > 0 ? detailSegments.join(' · ') : null;
+      let hint = `${sourceNode.label} → ${targetNode.label} — ${emissionLabel}`;
+      if (detailLabel) {
+        hint += ` · ${detailLabel}`;
+      }
+      hint += ` ${referenceHint}`;
+      if (note) {
+        hint += `\n${note}`;
+      }
       positionedLinks.push({
         source: sourceNode,
         target: targetNode,
         mean,
         color: sourceNode.color,
         gradientId: `sankey-gradient-${index}`,
-        hint: `${sourceNode.label} → ${targetNode.label} — ${formatEmission(mean)} ${formatReferenceHint(indices)}`,
-        indices
+        hint,
+        indices,
+        metadata
       });
     });
 

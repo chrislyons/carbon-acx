@@ -11,9 +11,9 @@ ENTITY.ANTHROPIC.US,Anthropic PBC,corporate,,Provider of Claude inference servic
 ENTITY.APPLE.US,Apple Inc.,corporate,,"Global electronics and services company producing iPhone, Mac, and other devices"
 ENTITY.SAMSUNG.KR,"Samsung Electronics Co., Ltd.",corporate,,"Multinational electronics manufacturer headquartered in Suwon, South Korea"
 ENTITY.DELL.US,Dell Technologies Inc.,corporate,,"Producer of laptops, desktops, and enterprise hardware"
-ENTITY.MAERSK.DK,A.P. Moller-Maersk A/S,corporate,,"Global integrated container logistics company"
-ENTITY.HAPAGLLOYD.DE,Hapag-Lloyd AG,corporate,,"German international shipping and container transport company"
-ENTITY.TGH.CA,Toronto General Hospital,corporate,,"Flagship acute-care hospital within the University Health Network"
+ENTITY.MAERSK.DK,A.P. Moller-Maersk A/S,corporate,,Global integrated container logistics company
+ENTITY.HAPAGLLOYD.DE,Hapag-Lloyd AG,corporate,,German international shipping and container transport company
+ENTITY.TGH.CA,Toronto General Hospital,corporate,,Flagship acute-care hospital within the University Health Network
 ENTITY.OXFORD.CA,Oxford Properties Group,corporate,,"Canadian real estate owner, developer, and manager"
 ENTITY.AIRCANADA.CA,Air Canada,corporate,,Flag carrier and largest airline in Canada
 ENTITY.WESTJET.CA,WestJet,corporate,,Major Canadian airline focused on domestic and transborder routes
@@ -44,3 +44,11 @@ ENTITY.CFB.TRENTON,Canadian Forces Base Trenton,installation,ENTITY.DND.CA,Prima
 ENTITY.BLACKWATER.US,Blackwater (archetype PMC),corporate,,Representative private military contractor archetype for expeditionary security services.
 ENTITY.GARDA.CA,GardaWorld Security Corporation,corporate,,Canadian-headquartered private security and armoured transport services provider.
 ENTITY.PRIVSEC.ELITE,Elite private security cohort,persona,,"High-net-worth protective services archetype covering convoy, guard, and aerial patrol operations."
+NOAA.OCEAN,NOAA Global Ocean Monitoring and Observing,government,,NOAA program monitoring global ocean carbonate chemistry and heat content.
+IPCC.AR6,Intergovernmental Panel on Climate Change AR6 WGI,intergovernmental,,Working Group I assessment synthesizing physical climate science findings.
+ECCC.ARCTIC,Environment and Climate Change Canada Arctic Network,government,,Canadian federal monitoring for permafrost and northern terrestrial feedbacks.
+NASA.CRYO,NASA Cryosphere Observing System,government,,NASA-led cryosphere and albedo change observation missions.
+GFED.FIRE,Global Fire Emissions Database,intergovernmental,,Consortium tracking biomass burning and fire emissions for earth system context.
+PROV.ALTA.TAILINGS,Alberta Tailings Management Registry,government,,Provincial registry capturing oil sands tailings pond inventory and incidents.
+INTL.MINING.AGENCY,International Council on Mining Tailings and AMD,intergovernmental,,"International agency guidance for tailings, acid mine drainage, and remediation."
+RIVER.BASIN.MONITOR,Global River-Basin Hypoxia Observatory,intergovernmental,,Consortium tracking coastal and riverine hypoxia and nutrient run-off effects.

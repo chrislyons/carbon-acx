@@ -1,75 +1,83 @@
 activity_id,functional_unit_id,conversion_formula,assumption_notes
-TRAN.SCHOOLRUN.CAR.KM,FU.PERSON_KM,"fu = distance_km * passengers","Passengers defaults to 1 if not provided"
-TRAN.SCHOOLRUN.BIKE.KM,FU.PERSON_KM,"fu = distance_km * 1",""
-MEDIA.STREAM.HD.HOUR,FU.VIEW_HOUR,"fu = hours * viewers","viewers defaults to 1"
-MEDIA.STREAM.UHD.HOUR,FU.VIEW_HOUR,"fu = hours * viewers","viewers defaults to 1"
-SOCIAL.YOUTUBE.HOUR,FU.VIEW_HOUR,"fu = hours * viewers","default viewers=1"
-SOCIAL.FACEBOOK.HOUR,FU.VIEW_HOUR,"fu = hours * viewers",""
-SOCIAL.INSTAGRAM.HOUR,FU.VIEW_HOUR,"fu = hours * viewers",""
-SOCIAL.TIKTOK.HOUR,FU.VIEW_HOUR,"fu = hours * viewers",""
-SOCIAL.TWITTER.HOUR,FU.VIEW_HOUR,"fu = hours * viewers",""
-SOCIAL.SNAPCHAT.HOUR,FU.VIEW_HOUR,"fu = hours * viewers",""
-SOCIAL.LINKEDIN.HOUR,FU.VIEW_HOUR,"fu = hours * viewers",""
-DEVICE.SMARTPHONE.UNIT,FU.UNIT,"fu = units","units defaults to 1 if not provided"
-DEVICE.LAPTOP.UNIT,FU.UNIT,"fu = units",""
-DEVICE.TV.UNIT,FU.UNIT,"fu = units",""
-LOGI.SHIPPING.CONTAINER.TONNEKM,FU.TONNEKM,"fu = tonne_kilometres","tonne_kilometres defaults to 1 if not provided"
-LOGI.SHIPPING.BULK.TONNEKM,FU.TONNEKM,"fu = tonne_kilometres",""
-BUILDING.OFFICE.M2.YEAR,FU.M2YEAR,"fu = floor_area_m2 * years","floor_area_m2 defaults to 1 and years defaults to 1 if not provided"
-BUILDING.HOSPITAL.M2.YEAR,FU.M2YEAR,"fu = floor_area_m2 * years",""
-BUILDING.RESIDENTIAL.M2.YEAR,FU.M2YEAR,"fu = floor_area_m2 * years",""
-MUNI.WASTE.LANDFILL.KG,FU.KG_WASTE,"fu = waste_mass_kg","waste_mass_kg defaults to reported residual tonnage"
-MUNI.WASTE.INCINERATION.KG,FU.KG_WASTE,"fu = waste_mass_kg","waste_mass_kg defaults to reported transfer mass"
-MUNI.WATER.POTABLE.M3,FU.M3_WATER,"fu = volume_cubic_metres","volume_cubic_metres defaults to treated water delivered"
-TRAN.DELIVERY.TRUCK.CLASS6.KM,FU.LITRE_DELIVERED,"fu = litres_delivered","Compute litres from cases if provided"
-LOGI.PARCEL.URBAN,FU.PARCEL,"fu = parcels",""
-LOGI.TRUCK.TONNEKM,FU.TONNEKM,"fu = tonne_kilometres",""
-LOGI.AIR.TONNEKM,FU.TONNEKM,"fu = tonne_kilometres",""
-TRAN.TTC.SUBWAY.KM,FU.PERSON_KM,"fu = distance_km * passengers","Passengers defaults to 1 if not provided"
-TRAN.FLIGHT.SHORTHAUL.PKM,FU.PERSON_KM,"fu = passenger_km","passenger_km defaults to reported passenger-kilometres"
-TRAN.FLIGHT.LONGHAUL.PKM,FU.PERSON_KM,"fu = passenger_km","passenger_km defaults to reported passenger-kilometres"
-TRAN.FLIGHT.PRIVATE.PKM,FU.PERSON_KM,"fu = passenger_km","passenger_km defaults to reported passenger-kilometres"
-TRAN.TTC.BUS.KM,FU.PERSON_KM,"fu = distance_km * passengers","Passengers defaults to 1 if not provided"
-ENERGY.CA-ON.GRID.KWH,FU.KWH,"fu = kwh",""
-ENERGY.KWH.DELIVERED,FU.KWH,"fu = kwh",""
-ENERGY.NATGAS.M3,FU.M3_GAS,"fu = volume_cubic_metres","volume_cubic_metres defaults to reported pipeline throughput when unspecified"
-ENERGY.GASOLINE.LITRE,FU.L_GASOLINE,"fu = litres",""
-FOOD.MEAL.BEEF.SERVING,FU.NUTRITIONAL_SERVING,"fu = servings",""
-MATERIAL.CEMENT.CLINKER.TONNE,FU.TONNE,"fu = tonnes",""
-MATERIAL.STEEL.CRUDESLAB.TONNE,FU.TONNE,"fu = tonnes",""
-MATERIAL.PET.VIRGIN.TONNE,FU.TONNE,"fu = tonnes",""
-MIL.FLIGHT.PKM,FU.PERSON_KM,"fu = pkm","pkm defaults to distance flown per passenger equivalent"
-MIL.NAVAL.TONNEKM,FU.TONNEKM,"fu = tonne_km","tonne_km defaults to mass moved times distance steamed"
-MIL.VEHICLE.KM,FU.KM,"fu = km","km defaults to tactical distance travelled"
-MIL.MUNITIONS.TONNE,FU.TONNE,"fu = tonnes",""
-MIL.AIRCRAFT.UNIT,FU.UNIT,"fu = units","units defaults to 1 aircraft"
-MIL.TANK.UNIT,FU.UNIT,"fu = units","units defaults to 1 vehicle"
-MIL.BASE.M2.YEAR,FU.M2YEAR,"fu = m2_year","m2_year defaults to facility floor area sustained for one year"
-MIL.DEPOT.M2.YEAR,FU.M2YEAR,"fu = m2_year",""
-MIL.CONFLICT.MONTH,FU.MONTH,"fu = months","months defaults to modeled months of sustained conflict"
-CHEM.TNT.TONNE,FU.TONNE,"fu = tonnes",""
-CHEM.RDX.TONNE,FU.TONNE,"fu = tonnes",""
-SEC.CONVOY.KM,FU.KM,"fu = km","km defaults to convoy distance per patrol"
-SEC.GUARD.HOUR,FU.HOUR,"fu = hours","hours defaults to staffed guard hours"
-SEC.HELI.HOUR,FU.HOUR,"fu = hours","hours defaults to helicopter flight hours"
-FOOD.MEAL.CHICKEN.SERVING,FU.NUTRITIONAL_SERVING,"fu = servings",""
-FOOD.MEAL.VEG.SERVING,FU.NUTRITIONAL_SERVING,"fu = servings",""
-AGRI.BEEF.CARCASS.KG,FU.KG,"fu = mass_kg",""
-AGRI.POULTRY.READY.KG,FU.KG,"fu = mass_kg",""
-FOOD.COFFEE.ROASTED.KG,FU.KG,"fu = mass_kg",""
-AI.USAGE.GPT.QUERY,FU.TOKEN_K,"fu = tokens/1000","default tokens=1000 if not provided"
-AI.USAGE.ANTHROPIC.QUERY,FU.TOKEN_K,"fu = tokens/1000","default tokens=1000"
-AI.USAGE.GOOGLE.QUERY,FU.TOKEN_K,"fu = tokens/1000","default tokens=1000"
-CLOTHING.TSHIRT.COTTON,FU.GARMENT,"fu = servings","one garment purchased per event (servings = 1)"
-CLOTHING.JEANS.DENIM,FU.GARMENT,"fu = servings","one garment purchased per event (servings = 1)"
-CLOTHING.JACKET.SYNTH,FU.GARMENT,"fu = servings","one garment purchased per event (servings = 1)"
-CLOTHING.SHOES.SNEAKERS,FU.GARMENT,"fu = servings","one garment purchased per event (servings = 1)"
-CLOTHING.TSHIRT.COTTON,FU.WEAR,"fu = servings * 50","allocate 50 wears per T-shirt"
-CLOTHING.JEANS.DENIM,FU.WEAR,"fu = servings * 100","allocate 100 wears per jeans"
-CLOTHING.JACKET.SYNTH,FU.WEAR,"fu = servings * 150","allocate 150 wears per jacket"
-CLOTHING.SHOES.SNEAKERS,FU.WEAR,"fu = servings * 200","allocate 200 wears per sneakers"
-REFR.APPL.FRIDGE.UNIT,FU.UNIT,"fu = units","units defaults to number of appliances produced"
-REFR.APPL.FRIDGE.OP.YEAR,FU.YEAR,"fu = years","years defaults to one year of refrigerator operation"
-REFR.HVAC.AC.UNIT,FU.UNIT,"fu = units","units defaults to number of AC systems produced"
-REFR.HVAC.AC.OP.YEAR,FU.YEAR,"fu = years","years defaults to one year of AC service"
-REFR.COLDCHAIN.SUPERMARKET.KG,FU.KG_FOODYEAR,"fu = kg_foodyear","kg_foodyear defaults to kilograms of food kept cold for a year"
+TRAN.SCHOOLRUN.CAR.KM,FU.PERSON_KM,fu = distance_km * passengers,Passengers defaults to 1 if not provided
+TRAN.SCHOOLRUN.BIKE.KM,FU.PERSON_KM,fu = distance_km * 1,
+MEDIA.STREAM.HD.HOUR,FU.VIEW_HOUR,fu = hours * viewers,viewers defaults to 1
+MEDIA.STREAM.UHD.HOUR,FU.VIEW_HOUR,fu = hours * viewers,viewers defaults to 1
+SOCIAL.YOUTUBE.HOUR,FU.VIEW_HOUR,fu = hours * viewers,default viewers=1
+SOCIAL.FACEBOOK.HOUR,FU.VIEW_HOUR,fu = hours * viewers,
+SOCIAL.INSTAGRAM.HOUR,FU.VIEW_HOUR,fu = hours * viewers,
+SOCIAL.TIKTOK.HOUR,FU.VIEW_HOUR,fu = hours * viewers,
+SOCIAL.TWITTER.HOUR,FU.VIEW_HOUR,fu = hours * viewers,
+SOCIAL.SNAPCHAT.HOUR,FU.VIEW_HOUR,fu = hours * viewers,
+SOCIAL.LINKEDIN.HOUR,FU.VIEW_HOUR,fu = hours * viewers,
+DEVICE.SMARTPHONE.UNIT,FU.UNIT,fu = units,units defaults to 1 if not provided
+DEVICE.LAPTOP.UNIT,FU.UNIT,fu = units,
+DEVICE.TV.UNIT,FU.UNIT,fu = units,
+LOGI.SHIPPING.CONTAINER.TONNEKM,FU.TONNEKM,fu = tonne_kilometres,tonne_kilometres defaults to 1 if not provided
+LOGI.SHIPPING.BULK.TONNEKM,FU.TONNEKM,fu = tonne_kilometres,
+BUILDING.OFFICE.M2.YEAR,FU.M2YEAR,fu = floor_area_square_metres * years,floor_area_square_metres defaults to 1 and years defaults to 1 if not provided
+BUILDING.HOSPITAL.M2.YEAR,FU.M2YEAR,fu = floor_area_square_metres * years,
+BUILDING.RESIDENTIAL.M2.YEAR,FU.M2YEAR,fu = floor_area_square_metres * years,
+MUNI.WASTE.LANDFILL.KG,FU.KG_WASTE,fu = waste_mass_kg,waste_mass_kg defaults to reported residual tonnage
+MUNI.WASTE.INCINERATION.KG,FU.KG_WASTE,fu = waste_mass_kg,waste_mass_kg defaults to reported transfer mass
+MUNI.WATER.POTABLE.M3,FU.M3_WATER,fu = volume_cubic_metres,volume_cubic_metres defaults to treated water delivered
+TRAN.DELIVERY.TRUCK.CLASS6.KM,FU.LITRE_DELIVERED,fu = litres_delivered,Compute litres from cases if provided
+LOGI.PARCEL.URBAN,FU.PARCEL,fu = parcels,
+LOGI.TRUCK.TONNEKM,FU.TONNEKM,fu = tonne_kilometres,
+LOGI.AIR.TONNEKM,FU.TONNEKM,fu = tonne_kilometres,
+TRAN.TTC.SUBWAY.KM,FU.PERSON_KM,fu = distance_km * passengers,Passengers defaults to 1 if not provided
+TRAN.FLIGHT.SHORTHAUL.PKM,FU.PERSON_KM,fu = passenger_km,passenger_km defaults to reported passenger-kilometres
+TRAN.FLIGHT.LONGHAUL.PKM,FU.PERSON_KM,fu = passenger_km,passenger_km defaults to reported passenger-kilometres
+TRAN.FLIGHT.PRIVATE.PKM,FU.PERSON_KM,fu = passenger_km,passenger_km defaults to reported passenger-kilometres
+TRAN.TTC.BUS.KM,FU.PERSON_KM,fu = distance_km * passengers,Passengers defaults to 1 if not provided
+ENERGY.CA-ON.GRID.KWH,FU.KWH,fu = kwh,
+ENERGY.KWH.DELIVERED,FU.KWH,fu = kwh,
+ENERGY.NATGAS.M3,FU.M3_GAS,fu = volume_cubic_metres,volume_cubic_metres defaults to reported pipeline throughput when unspecified
+ENERGY.GASOLINE.LITRE,FU.L_GASOLINE,fu = litres,
+FOOD.MEAL.BEEF.SERVING,FU.NUTRITIONAL_SERVING,fu = servings,
+MATERIAL.CEMENT.CLINKER.TONNE,FU.TONNE,fu = tonnes,
+MATERIAL.STEEL.CRUDESLAB.TONNE,FU.TONNE,fu = tonnes,
+MATERIAL.PET.VIRGIN.TONNE,FU.TONNE,fu = tonnes,
+MIL.FLIGHT.PKM,FU.PERSON_KM,fu = pkm,pkm defaults to distance flown per passenger equivalent
+MIL.NAVAL.TONNEKM,FU.TONNEKM,fu = tonne_km,tonne_km defaults to mass moved times distance steamed
+MIL.VEHICLE.KM,FU.KM,fu = km,km defaults to tactical distance travelled
+MIL.MUNITIONS.TONNE,FU.TONNE,fu = tonnes,
+MIL.AIRCRAFT.UNIT,FU.UNIT,fu = units,units defaults to 1 aircraft
+MIL.TANK.UNIT,FU.UNIT,fu = units,units defaults to 1 vehicle
+MIL.BASE.M2.YEAR,FU.M2YEAR,fu = square_metre_year,square_metre_year defaults to facility floor area sustained for one year
+MIL.DEPOT.M2.YEAR,FU.M2YEAR,fu = square_metre_year,
+MIL.CONFLICT.MONTH,FU.MONTH,fu = months,months defaults to modeled months of sustained conflict
+CHEM.TNT.TONNE,FU.TONNE,fu = tonnes,
+CHEM.RDX.TONNE,FU.TONNE,fu = tonnes,
+SEC.CONVOY.KM,FU.KM,fu = km,km defaults to convoy distance per patrol
+SEC.GUARD.HOUR,FU.HOUR,fu = hours,hours defaults to staffed guard hours
+SEC.HELI.HOUR,FU.HOUR,fu = hours,hours defaults to helicopter flight hours
+FOOD.MEAL.CHICKEN.SERVING,FU.NUTRITIONAL_SERVING,fu = servings,
+FOOD.MEAL.VEG.SERVING,FU.NUTRITIONAL_SERVING,fu = servings,
+AGRI.BEEF.CARCASS.KG,FU.KG,fu = mass_kg,
+AGRI.POULTRY.READY.KG,FU.KG,fu = mass_kg,
+FOOD.COFFEE.ROASTED.KG,FU.KG,fu = mass_kg,
+AI.USAGE.GPT.QUERY,FU.TOKEN_K,fu = tokens/1000,default tokens=1000 if not provided
+AI.USAGE.ANTHROPIC.QUERY,FU.TOKEN_K,fu = tokens/1000,default tokens=1000
+AI.USAGE.GOOGLE.QUERY,FU.TOKEN_K,fu = tokens/1000,default tokens=1000
+CLOTHING.TSHIRT.COTTON,FU.GARMENT,fu = servings,one garment purchased per event (servings = 1)
+CLOTHING.JEANS.DENIM,FU.GARMENT,fu = servings,one garment purchased per event (servings = 1)
+CLOTHING.JACKET.SYNTH,FU.GARMENT,fu = servings,one garment purchased per event (servings = 1)
+CLOTHING.SHOES.SNEAKERS,FU.GARMENT,fu = servings,one garment purchased per event (servings = 1)
+CLOTHING.TSHIRT.COTTON,FU.WEAR,fu = servings * 50,allocate 50 wears per T-shirt
+CLOTHING.JEANS.DENIM,FU.WEAR,fu = servings * 100,allocate 100 wears per jeans
+CLOTHING.JACKET.SYNTH,FU.WEAR,fu = servings * 150,allocate 150 wears per jacket
+CLOTHING.SHOES.SNEAKERS,FU.WEAR,fu = servings * 200,allocate 200 wears per sneakers
+REFR.APPL.FRIDGE.UNIT,FU.UNIT,fu = units,units defaults to number of appliances produced
+REFR.APPL.FRIDGE.OP.YEAR,FU.YEAR,fu = years,years defaults to one year of refrigerator operation
+REFR.HVAC.AC.UNIT,FU.UNIT,fu = units,units defaults to number of AC systems produced
+REFR.HVAC.AC.OP.YEAR,FU.YEAR,fu = years,years defaults to one year of AC service
+REFR.COLDCHAIN.SUPERMARKET.KG,FU.KG_FOODYEAR,fu = kg_foodyear,kg_foodyear defaults to kilograms of food kept cold for a year
+OCEAN.CO2.UPTAKE.PGCO2,FU.PGCO2YEAR,fu = carbon_dioxide_pg_per_year,carbon_dioxide_pg_per_year defaults to reported annual sink magnitude
+OCEAN.ACIDIFICATION.PH.DEC,FU.PH.DECADE,fu = ph_decade,ph_decade defaults to global mean decadal shift
+CRYO.ALBEDO.LOSS.WM2,FU.WM2,fu = watt_per_square_metre,watt_per_square_metre defaults to additional radiative forcing intensity
+PERMAFROST.EMISSIONS.PGCO2E,FU.PGCO2EYEAR,fu = carbon_dioxide_equivalent_pg_per_year,carbon_dioxide_equivalent_pg_per_year defaults to annual thaw-driven emissions
+TAILINGS.POND.M2.YEAR,FU.M2YEAR,fu = square_metre_year,square_metre_year defaults to surface exposure sustained for one year
+TAILINGS.DEGASS.EVENT,FU.EVENT,fu = events,events defaults to discrete upset count
+AMD.ACID.DRAINAGE.M3.YEAR,FU.M3YEAR,fu = cubic_metre_year,cubic_metre_year defaults to acidic effluent discharge
+RIVER.HYPOXIA.KM2.YEAR,FU.KM2YEAR,fu = square_kilometre_year,square_kilometre_year defaults to hypoxic area extent over a year

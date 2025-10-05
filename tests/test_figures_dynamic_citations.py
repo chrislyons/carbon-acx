@@ -57,10 +57,19 @@ def test_figures_use_dynamic_citations(derived_output_dir, derived_output_root):
     derive_mod.export_view(DynamicStore(), output_root=derived_output_root)
 
     export_payload = json.loads((out_dir / "export_view.json").read_text())
-    expected_keys = ["SRC.DIMPACT.2021", "SRC.IESO.2024"]
+    expected_keys = [
+        "SRC.DIMPACT.2021",
+        "SRC.IESO.2024",
+        "SRC.AB.TAILINGS.2023",
+        "SRC.INTL.MINING.2022",
+        "SRC.IPCC.AR6.2021",
+        "SRC.NOAA.OCEAN.2023",
+        "SRC.RIVER.HYPOXIA.2020",
+    ]
     assert export_payload["citation_keys"] == expected_keys
     assert export_payload["layers"] == ["professional"]
     assert all(row["layer_id"] == "professional" for row in export_payload["data"])
+    expected_layer_keys = ["SRC.DIMPACT.2021", "SRC.IESO.2024"]
 
     expected_refs = [
         citations.format_ieee(ref.numbered(idx))
@@ -72,7 +81,7 @@ def test_figures_use_dynamic_citations(derived_output_dir, derived_output_root):
 
     fig_payload = json.loads((out_dir / "figures" / "stacked.json").read_text())
     assert fig_payload["citation_keys"] == expected_keys
-    assert fig_payload.get("layer_citation_keys") == {"professional": expected_keys}
+    assert fig_payload.get("layer_citation_keys") == {"professional": expected_layer_keys}
     assert "references" not in fig_payload
     assert "layer_references" not in fig_payload
     assert all(row.get("layer_id") == "professional" for row in fig_payload["data"])

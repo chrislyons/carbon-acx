@@ -15,6 +15,7 @@ from .schema import (
     ActivityDependency,
     ActivitySchedule,
     Asset,
+    FeedbackLoop,
     EmissionFactor,
     Entity,
     GridIntensity,
@@ -166,6 +167,9 @@ class SqlStore:
         return []
 
     def load_activity_dependencies(self) -> Sequence[ActivityDependency]:
+        return []
+
+    def load_feedback_loops(self) -> Sequence[FeedbackLoop]:
         return []
 
     def __enter__(self) -> "SqlStore":
