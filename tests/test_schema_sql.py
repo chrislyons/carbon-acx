@@ -137,20 +137,66 @@ def test_schema_constraints(connection: sqlite3.Connection) -> None:
 
     # Valid grid intensity row
     connection.execute(
-        "INSERT INTO grid_intensity (region_code, vintage_year, g_per_kwh, source_id) VALUES (?, ?, ?, ?)",
-        ("CA-ON", current_year, 10.0, "SRC.TEST"),
+        """
+        INSERT INTO grid_intensity (
+            region_code,
+            region,
+            scope_boundary,
+            gwp_horizon,
+            vintage_year,
+            g_per_kwh,
+            source_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            "CA-ON",
+            "CA-ON",
+            "Operational electricity",
+            "GWP100 (AR6)",
+            current_year,
+            10.0,
+            "SRC.TEST",
+        ),
     )
 
     # Invalid grid intensity region code
     with pytest.raises(sqlite3.IntegrityError):
         connection.execute(
-            "INSERT INTO grid_intensity (region_code, vintage_year) VALUES (?, ?)",
-            ("US-CA", current_year),
+            """
+            INSERT INTO grid_intensity (
+                region_code,
+                region,
+                scope_boundary,
+                gwp_horizon,
+                vintage_year
+            ) VALUES (?, ?, ?, ?, ?)
+            """,
+            (
+                "US-CA",
+                "US-CA",
+                "Operational electricity",
+                "GWP100 (AR6)",
+                current_year,
+            ),
         )
 
     # Invalid grid intensity vintage year
     with pytest.raises(sqlite3.IntegrityError):
         connection.execute(
-            "INSERT INTO grid_intensity (region_code, vintage_year) VALUES (?, ?)",
-            ("CA-ON", current_year + 1),
+            """
+            INSERT INTO grid_intensity (
+                region_code,
+                region,
+                scope_boundary,
+                gwp_horizon,
+                vintage_year
+            ) VALUES (?, ?, ?, ?, ?)
+            """,
+            (
+                "CA-ON",
+                "CA-ON",
+                "Operational electricity",
+                "GWP100 (AR6)",
+                current_year + 1,
+            ),
         )
