@@ -1,3 +1,4 @@
+---
 name: Fetch references
 
 on:
@@ -52,7 +53,8 @@ jobs:
             args="$args --only ${{ inputs.only_ids }}"
           fi
           if [ "${{ inputs.domains_allowlist }}" != "" ]; then
-            printf '%s\n' "${{ inputs.domains_allowlist }}" > refs/domains_allowlist.txt
+            printf '%s\n' "${{ inputs.domains_allowlist }}" \
+              > refs/domains_allowlist.txt
             args="$args --domains refs/domains_allowlist.txt"
           fi
           echo "fetch_args=$args" >> "$GITHUB_OUTPUT"
