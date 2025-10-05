@@ -1,14 +1,5 @@
 profile_id,layer_id,name,region_code_default,grid_strategy,grid_mix_json,cohort_id,office_days_per_week,assumption_notes
 BASE.TO.PROF.HYBRID.2025,professional,Toronto professional baseline hybrid (2025),CA-ON,region_default,,,3,Baseline scenario for mixed office/home routine with seeded activities.
-EARTH.CA.BIOSPHERE.2025,biosphere_feedbacks,Canadian earth system baseline (2025),CA,region_default,,,0,[OFFLINE_SEED] Offline surrogate baseline seeded from ACX011 heuristics for biosphere reporting.
-IND.TO.HEAVY.2025,industrial_heavy,Ontario heavy-industrial baseline (2025),CA-ON,region_default,,,,"Publishes clinker, steel, refining, and mining haul activity coverage for the Toronto heavy-industrial baseline."
-IND_EXT.CA.BASELINE.2025,industrial_externalities,Canadian industrial externalities baseline (2025),CA,region_default,,,0,[OFFLINE_SEED] Offline surrogate baseline seeded from ACX011 heuristics for externalities.
-IND_LIGHT.ON.CONSTRUCTION.2025,industrial_light,Ontario light-industrial construction (2025),CA-ON,region_default,,,,Activates construction trade mix schedules aligned to 2025 Toronto project benchmarks.
-IND_LIGHT.ON.LOGISTICS.2025,industrial_light,Ontario light-industrial logistics & warehousing (2025),CA-ON,region_default,,,,Includes regional load profiles and shift schedules for representative 2025 logistics operations.
-ONLINE.AB.CONSUMER.2025,online,Online Services — Alberta consumer (2025),CA-AB,region_default,,,,
-ONLINE.BC.CONSUMER.2025,online,Online Services — British Columbia consumer (2025),CA-BC,region_default,,,,
-ONLINE.QC.CONSUMER.2025,online,Online Services — Quebec consumer (2025),CA-QC,region_default,,,,
-ONLINE.TO.CONSUMER.2025,online,Online Services — Toronto consumer (2025),CA-ON,region_default,,,,
 PRO.AB.24_39.HYBRID.2025,professional,Alberta Pros 24–39 — Hybrid (2025),CA-AB,region_default,,,3,
 PRO.AB.40_56.HYBRID.2025,professional,Alberta Pros 40–56 — Hybrid (2025),CA-AB,region_default,,,3,
 PRO.BC.24_39.HYBRID.2025,professional,British Columbia Pros 24–39 — Hybrid (2025),CA-BC,region_default,,,3,
@@ -22,15 +13,3 @@ PROFILE.CHILD.CLOTHING.2025,professional,Child clothing consumption (2025),,regi
 PROFILE.ELITE.SECURITY.2025,personal_security_layer,Elite private security program (2025),CA-ON,region_default,,,0,"High-net-worth security envelope covering convoy, guard, and aerial patrol services."
 PROFILE.SENIOR.CLOTHING.2025,professional,Senior clothing consumption (2025),,region_default,,,0,Annualized clothing purchases for a representative senior cohort.
 PROFILE.WAR.UKRAINE.2022,modeled_events,Ukraine conflict operations (2022),,region_default,,,0,Modeled monthly high-intensity conflict footprint across 2022 hostilities.
-LIGHTIND.ON.CONSTRUCTION.2025,industrial_light,Ontario light-industrial construction (2025),CA-ON,region_default,,,,Imported from ACX012 construction stack with 2025 Ontario crew and generator mix.
-LIGHTIND.ON.LOGISTICS.2025,industrial_light,Ontario light-industrial logistics & warehousing (2025),CA-ON,region_default,,,,ACX012 logistics bay utilisation translated to Ontario warehousing schedules.
-LIGHTIND.ON.LASTMILE.2025,industrial_light,Ontario last-mile delivery depots (2025),CA-ON,region_default,,,,ACX012 last-mile route archetypes for diesel vans operating in the GTHA.
-LIGHTIND.ON.SERVICES.2025,industrial_light,Ontario facility services crews (2025),CA-ON,region_default,,,,ACX012 services cohort capturing maintenance technician dispatch profiles.
-LIGHTIND.ON.WASTE.2025,industrial_light,Ontario light-industrial waste handling (2025),CA-ON,region_default,,,,ACX012 waste stream management cycle for roll-off compactors and loaders.
-HEAVYIND.ON.CLINKER.2025,industrial_heavy,Ontario cement clinker line (2025),CA-ON,region_default,,,,ACX013 clinker kiln stub awaiting throughput calibration; freq_per_day intentionally null.
-HEAVYIND.ON.EAF.2025,industrial_heavy,Ontario EAF steel mini-mill (2025),CA-ON,region_default,,,,ACX013 EAF cycle stub seeded without daily throughput; freq_per_day left null in schedules.
-HEAVYIND.ON.REFINERY.2025,industrial_heavy,Ontario refinery fired equipment (2025),CA-ON,region_default,,,,ACX013 refinery fired duty stub awaiting heater throughput validation; schedule frequency left null.
-HEAVYIND.ON.MINING.2025,industrial_heavy,Ontario mining haulage fleet (2025),CA-ON,region_default,,,,ACX013 mining haul truck stub awaiting pit duty cycle metering; schedule frequency left null.
-ONLINE.CA.STREAMING.2025,online,Canada consumer streaming mix (2025),CA-ON,region_default,,,,"ACX014 streaming cohort referencing 2023–2025 DIMPACT, IEA digital, and Masanet et al. findings."
-ONLINE.CA.LLM.2025,online,Canada cloud LLM usage (2025),CA-ON,region_default,,,,"ACX014 LLM demand mix cross-checked with 2023–2025 AI energy studies (Luccioni, Patterson, Google)."
-ONLINE.CA.STORAGE.2025,online,Canada cloud storage workloads (2025),CA-ON,region_default,,,,ACX014 object storage workloads reconciled against 2023–2025 hyperscale sustainability reports.

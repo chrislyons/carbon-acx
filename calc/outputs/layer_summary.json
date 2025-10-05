@@ -6,21 +6,21 @@
     "emission_factor_activity_coverage": 1.0
   },
   "online": {
-    "activity_count": 30,
-    "profile_count": 7,
-    "emission_factor_count": 30,
+    "activity_count": 27,
+    "profile_count": 0,
+    "emission_factor_count": 27,
     "emission_factor_activity_coverage": 1.0
   },
   "industrial_light": {
-    "activity_count": 24,
-    "profile_count": 7,
-    "emission_factor_count": 25,
+    "activity_count": 19,
+    "profile_count": 0,
+    "emission_factor_count": 20,
     "emission_factor_activity_coverage": 1.0
   },
   "industrial_heavy": {
-    "activity_count": 19,
-    "profile_count": 5,
-    "emission_factor_count": 19,
+    "activity_count": 15,
+    "profile_count": 0,
+    "emission_factor_count": 15,
     "emission_factor_activity_coverage": 1.0
   }
 }
