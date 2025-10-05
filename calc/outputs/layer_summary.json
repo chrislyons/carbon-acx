@@ -1,26 +1,74 @@
 {
-  "professional": {
-    "activity_count": 19,
-    "profile_count": 12,
-    "emission_factor_count": 23,
+  "biosphere_feedbacks": {
+    "activity_count": 5,
+    "profile_count": 0,
+    "emission_factor_count": 5,
     "emission_factor_activity_coverage": 1.0
   },
-  "online": {
-    "activity_count": 27,
+  "buildings_defense": {
+    "activity_count": 2,
     "profile_count": 0,
-    "emission_factor_count": 27,
+    "emission_factor_count": 2,
     "emission_factor_activity_coverage": 1.0
   },
-  "industrial_light": {
-    "activity_count": 19,
+  "industrial_externalities": {
+    "activity_count": 3,
     "profile_count": 0,
-    "emission_factor_count": 20,
+    "emission_factor_count": 3,
     "emission_factor_activity_coverage": 1.0
   },
   "industrial_heavy": {
     "activity_count": 15,
     "profile_count": 0,
-    "emission_factor_count": 15,
+    "emission_factor_count": 11,
+    "emission_factor_activity_coverage": 0.733
+  },
+  "industrial_heavy_embodied": {
+    "activity_count": 3,
+    "profile_count": 0,
+    "emission_factor_count": 3,
+    "emission_factor_activity_coverage": 1.0
+  },
+  "industrial_heavy_military": {
+    "activity_count": 4,
+    "profile_count": 0,
+    "emission_factor_count": 3,
+    "emission_factor_activity_coverage": 0.75
+  },
+  "industrial_light": {
+    "activity_count": 19,
+    "profile_count": 0,
+    "emission_factor_count": 17,
+    "emission_factor_activity_coverage": 0.842
+  },
+  "materials_chemicals": {
+    "activity_count": 2,
+    "profile_count": 0,
+    "emission_factor_count": 2,
+    "emission_factor_activity_coverage": 1.0
+  },
+  "modeled_events": {
+    "activity_count": 4,
+    "profile_count": 1,
+    "emission_factor_count": 1,
+    "emission_factor_activity_coverage": 0.25
+  },
+  "online": {
+    "activity_count": 27,
+    "profile_count": 0,
+    "emission_factor_count": 17,
+    "emission_factor_activity_coverage": 0.63
+  },
+  "personal_security_layer": {
+    "activity_count": 3,
+    "profile_count": 1,
+    "emission_factor_count": 3,
+    "emission_factor_activity_coverage": 1.0
+  },
+  "professional": {
+    "activity_count": 19,
+    "profile_count": 12,
+    "emission_factor_count": 23,
     "emission_factor_activity_coverage": 1.0
   }
 }
