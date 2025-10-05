@@ -95,7 +95,7 @@ class SqlStore:
     def load_emission_factors(self) -> Sequence[EmissionFactor]:
         rows = self._fetch_all(
             """
-            SELECT ef_id, activity_id, unit, value_g_per_unit, is_grid_indexed,
+            SELECT ef_id, activity_id, layer_id, unit, value_g_per_unit, is_grid_indexed,
                    electricity_kwh_per_unit, electricity_kwh_per_unit_low,
                    electricity_kwh_per_unit_high, region, scope_boundary,
                    gwp_horizon, vintage_year, source_id, method_notes,

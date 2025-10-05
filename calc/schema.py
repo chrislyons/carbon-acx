@@ -204,6 +204,7 @@ class ActivityFunctionalUnitMap(BaseModel):
 
 class EmissionFactor(BaseModel):
     activity_id: str
+    layer_id: Optional[LayerId] = None
     unit: Optional[str] = None
     value_g_per_unit: Optional[float] = None
     is_grid_indexed: Optional[bool] = None

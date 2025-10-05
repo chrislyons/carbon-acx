@@ -1,8 +1,8 @@
 profile_id,layer_id,name,region_code_default,grid_strategy,grid_mix_json,cohort_id,office_days_per_week,assumption_notes
 BASE.TO.PROF.HYBRID.2025,professional,Toronto professional baseline hybrid (2025),CA-ON,region_default,,,3,Baseline scenario for mixed office/home routine with seeded activities.
-EARTH.CA.BIOSPHERE.2025,biosphere_feedbacks,Canadian earth system baseline (2025),CA,region_default,,,0,[OFFLINE_SEED] Offline surrogate baseline seeded from ACX011 heuristics for biosphere reporting.
+EARTH.CA.BIOSPHERE.2025,biosphere_feedbacks,Canadian earth system baseline (2025),CA,region_default,,,0,
 IND.TO.HEAVY.2025,industrial_heavy,Ontario heavy-industrial baseline (2025),CA-ON,region_default,,,,"Publishes clinker, steel, refining, and mining haul activity coverage for the Toronto heavy-industrial baseline."
-IND_EXT.CA.BASELINE.2025,industrial_externalities,Canadian industrial externalities baseline (2025),CA,region_default,,,0,[OFFLINE_SEED] Offline surrogate baseline seeded from ACX011 heuristics for externalities.
+IND_EXT.CA.BASELINE.2025,industrial_externalities,Canadian industrial externalities baseline (2025),CA,region_default,,,0,
 IND_LIGHT.ON.CONSTRUCTION.2025,industrial_light,Ontario light-industrial construction (2025),CA-ON,region_default,,,,Activates construction trade mix schedules aligned to 2025 Toronto project benchmarks.
 IND_LIGHT.ON.LOGISTICS.2025,industrial_light,Ontario light-industrial logistics & warehousing (2025),CA-ON,region_default,,,,Includes regional load profiles and shift schedules for representative 2025 logistics operations.
 ONLINE.AB.CONSUMER.2025,online,Online Services — Alberta consumer (2025),CA-AB,region_default,,,,
