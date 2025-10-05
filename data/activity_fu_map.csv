@@ -3,6 +3,7 @@ TRAN.SCHOOLRUN.CAR.KM,FU.PERSON_KM,fu = distance_km * passengers,Passengers defa
 TRAN.SCHOOLRUN.BIKE.KM,FU.PERSON_KM,fu = distance_km * 1,
 MEDIA.STREAM.HD.HOUR,FU.VIEW_HOUR,fu = hours * viewers,viewers defaults to 1
 MEDIA.STREAM.UHD.HOUR,FU.VIEW_HOUR,fu = hours * viewers,viewers defaults to 1
+MEDIA.STREAM.SD.HOUR.MOBILE,FU.VIEW_HOUR,fu = hours * viewers,viewers defaults to 1
 SOCIAL.YOUTUBE.HOUR,FU.VIEW_HOUR,fu = hours * viewers,default viewers=1
 SOCIAL.FACEBOOK.HOUR,FU.VIEW_HOUR,fu = hours * viewers,
 SOCIAL.INSTAGRAM.HOUR,FU.VIEW_HOUR,fu = hours * viewers,
@@ -10,6 +11,7 @@ SOCIAL.TIKTOK.HOUR,FU.VIEW_HOUR,fu = hours * viewers,
 SOCIAL.TWITTER.HOUR,FU.VIEW_HOUR,fu = hours * viewers,
 SOCIAL.SNAPCHAT.HOUR,FU.VIEW_HOUR,fu = hours * viewers,
 SOCIAL.LINKEDIN.HOUR,FU.VIEW_HOUR,fu = hours * viewers,
+MUSIC.STREAM.STANDARD.HOUR,FU.VIEW_HOUR,fu = hours * viewers,viewers defaults to 1
 DEVICE.SMARTPHONE.UNIT,FU.UNIT,fu = units,units defaults to 1 if not provided
 DEVICE.LAPTOP.UNIT,FU.UNIT,fu = units,
 DEVICE.TV.UNIT,FU.UNIT,fu = units,
@@ -38,6 +40,10 @@ FOOD.MEAL.BEEF.SERVING,FU.NUTRITIONAL_SERVING,fu = servings,
 MATERIAL.CEMENT.CLINKER.TONNE,FU.TONNE,fu = tonnes,
 MATERIAL.STEEL.CRUDESLAB.TONNE,FU.TONNE,fu = tonnes,
 MATERIAL.PET.VIRGIN.TONNE,FU.TONNE,fu = tonnes,
+IND_HEAVY.CEMENT.CLINKER.TONNE,FU.TONNE,fu = tonnes,
+IND_HEAVY.STEEL.EAF.TONNE,FU.TONNE,fu = tonnes,
+IND_HEAVY.REFINING.FIRED_UNIT.MMBTU,FU.MMBTU_FIRED,fu = mmbtu,mmbtu defaults to fired duty in million Btu
+IND_HEAVY.MINING.HAUL.TRUCK.HOUR,FU.HOUR,fu = hours,hours defaults to one truck-hour of operation
 MIL.FLIGHT.PKM,FU.PERSON_KM,fu = pkm,pkm defaults to distance flown per passenger equivalent
 MIL.NAVAL.TONNEKM,FU.TONNEKM,fu = tonne_km,tonne_km defaults to mass moved times distance steamed
 MIL.VEHICLE.KM,FU.KM,fu = km,km defaults to tactical distance travelled
@@ -57,9 +63,11 @@ FOOD.MEAL.VEG.SERVING,FU.NUTRITIONAL_SERVING,fu = servings,
 AGRI.BEEF.CARCASS.KG,FU.KG,fu = mass_kg,
 AGRI.POULTRY.READY.KG,FU.KG,fu = mass_kg,
 FOOD.COFFEE.ROASTED.KG,FU.KG,fu = mass_kg,
+IND_LIGHT.CONSTRUCTION.SITE_DAY,FU.SITE_DAY,fu = site_days,site_days defaults to one active site-day
 AI.USAGE.GPT.QUERY,FU.TOKEN_K,fu = tokens/1000,default tokens=1000 if not provided
 AI.USAGE.ANTHROPIC.QUERY,FU.TOKEN_K,fu = tokens/1000,default tokens=1000
 AI.USAGE.GOOGLE.QUERY,FU.TOKEN_K,fu = tokens/1000,default tokens=1000
+AI.IMAGE.GENERATION.PROMPT,FU.PROMPT,fu = prompts,prompts defaults to 1 if not provided
 CLOTHING.TSHIRT.COTTON,FU.GARMENT,fu = servings,one garment purchased per event (servings = 1)
 CLOTHING.JEANS.DENIM,FU.GARMENT,fu = servings,one garment purchased per event (servings = 1)
 CLOTHING.JACKET.SYNTH,FU.GARMENT,fu = servings,one garment purchased per event (servings = 1)

@@ -99,6 +99,11 @@ _UNIT_VARIABLE_HINTS: dict[str, tuple[str, ...]] = {
     "servings": ("servings",),
     "garment": ("servings",),
     "wear": ("servings",),
+    "prompt": ("prompts",),
+    "site_day": ("site_days",),
+    "mmbtu": ("mmbtu", "energy_mmbtu"),
+    "tonne": ("tonnes", "mass_tonnes"),
+    "1k_tokens": ("tokens", "token_k"),
 }
 
 _CASE_TO_LITRE_MULTIPLIER = 24.0 * 0.355

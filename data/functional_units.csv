@@ -2,6 +2,7 @@ functional_unit_id,name,domain,si_equiv,notes
 FU.PERSON_KM,person-kilometre,mobility,person*km,Person travel distance
 FU.LITRE_DELIVERED,litre delivered,logistics,L,Beverage or liquid delivered
 FU.VIEW_HOUR,viewing-hour,information,hour,One hour of content viewed
+FU.PROMPT,prompt,information,prompt,One generative AI prompt processed by an inference service
 FU.TOKEN_K,token-thousand,information,1000 tokens,One thousand model tokens processed
 FU.NUTRITIONAL_SERVING,nutritional serving,nutrition,serving,One standard meal serving
 FU.KWH,kilowatt-hour,energy,kWh,Electrical energy delivered
@@ -11,6 +12,7 @@ FU.WEAR,wear,consumption,wear,One wear of a clothing item
 FU.KG_WASTE,kilogram waste handled,materials,kg,One kilogram of municipal solid waste processed
 FU.M3_WATER,cubic metre potable water,hydration,m3,One cubic metre of potable water supplied
 FU.M3_GAS,cubic meter gas,energy,m3,Natural gas delivered
+FU.MMBTU_FIRED,million Btu fired,energy,mmbtu,One million British thermal units of fired duty supplied by refinery heaters
 FU.L_GASOLINE,litre gasoline,energy,L,Refined motor gasoline delivered
 FU.TONNE,tonne,materials,tonne,One metric tonne of material throughput
 FU.KM,vehicle-kilometre,mobility,km,One kilometre of vehicle travel
@@ -22,6 +24,7 @@ FU.KG_FOODYEAR,kg food-year,nutrition,kg_foodyear,Kilograms of food maintained u
 FU.M2YEAR,floor-area-year,shelter,square_metre_year,One square metre of floor area operated for one year
 FU.MONTH,month,modeled,month,One month of sustained activity
 FU.HOUR,service-hour,services,hour,One hour of operational service delivery
+FU.SITE_DAY,site-day of operation,services,site_day,One active construction site operating for a standard workday
 FU.PGCO2YEAR,petagram CO₂ per year,climate,carbon_dioxide_pg_per_year,Annualised ocean-atmosphere CO₂ exchange expressed in petagrams CO₂ per year.
 FU.PH.DECADE,pH shift per decade,climate,ph_decade,Mean surface-ocean pH change measured over a decade.
 FU.WM2,watt per square metre,climate,watt_per_square_metre,Radiative forcing intensity referenced to Earth system albedo shifts.
