@@ -15,7 +15,7 @@ on:
       normalize:
         description: "Run normalization after fetching"
         required: false
-        default: true
+        default: "true"
         type: boolean
 
 jobs:
@@ -72,7 +72,7 @@ jobs:
         run: make refs-fetch
 
       - name: refs-normalize
-        if: ${{ inputs.normalize == true }}
+        if: ${{ inputs.normalize == 'true' }}
         run: make refs-normalize
 
       - name: refs-audit
