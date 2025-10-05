@@ -1,11 +1,11 @@
 activity_id,layer_id,category,name,default_unit,description,unit_definition,notes
 FOOD.COFFEE.CUP.HOT,professional,food,Coffee—12 oz hot,cup,Cup of coffee,,
 stream,professional,,stream,,HD streaming on TV,,
-MEDIA.STREAM.HD.HOUR,online,media,HD video streaming—per hour,hour,One hour of high-definition video streaming on any device.,,Aggregates playback plus network electricity for representative HD streaming.
-MEDIA.STREAM.UHD.HOUR,online,media,UHD video streaming—per hour,hour,One hour of ultra-high-definition (4K) streaming on any device.,,Aggregates playback plus network electricity for representative UHD streaming.
-MEDIA.STREAM.HD.HOUR.TV,online,media,HD video streaming on TV—per hour,hour,One hour of high-definition video streaming delivered to a television via broadband.,,Electricity use covers device playback plus network and data-centre demand per hour of 1080p streaming.
+MEDIA.STREAM.HD.HOUR,online,media,HD video streaming—per hour,hour,One hour of high-definition video streaming on any device.,,"Aggregates playback plus network electricity for representative HD streaming."
+MEDIA.STREAM.UHD.HOUR,online,media,UHD video streaming—per hour,hour,One hour of ultra-high-definition (4K) streaming on any device.,,"Aggregates playback plus network electricity for representative UHD streaming."
+MEDIA.STREAM.HD.HOUR.TV,online,media,HD video streaming on TV—per hour,hour,One hour of high-definition video streaming delivered to a television via broadband.,,"Electricity use covers device playback plus network and data-centre demand per hour of 1080p streaming."
 MEDIA.STREAM.SD.HOUR.MOBILE,online,media,SD video streaming on mobile—per hour,hour,One hour of standard-definition streaming to a smartphone or tablet on Wi-Fi.,,Includes measured Wi-Fi and mobile network energy intensity per streaming hour.
-ONLINE.CDN.EDGE.GB,online,online_services,CDN edge delivery—per GB,gb,Delivering one gigabyte of content from an edge cache within a content delivery network.,gb equals one gigabyte transferred from edge infrastructure to end users.,Captures cache hit distribution, backbone transport, and edge facility electricity per gigabyte delivered.
+ONLINE.CDN.EDGE.GB,online,online_services,CDN edge delivery—per GB,gb,Delivering one gigabyte of content from an edge cache within a content delivery network.,gb equals one gigabyte transferred from edge infrastructure to end users.,"Captures cache hit distribution, backbone transport, and edge facility electricity per gigabyte delivered."
 FOOD.MEAL.BEEF.SERVING,professional,food,Meal with beef—per serving,serving,One serving of a meal including 150 grams of cooked beef.,,Includes cradle-to-grave emissions for a representative beef meal portion.
 FOOD.MEAL.CHICKEN.SERVING,professional,food,Meal with chicken—per serving,serving,One serving of a meal including 150 grams of cooked chicken.,,Includes cradle-to-grave emissions for a representative chicken meal portion.
 FOOD.MEAL.VEG.SERVING,professional,food,Vegetarian meal—per serving,serving,One serving of a vegetarian meal centered on legumes and vegetables.,,Includes cradle-to-grave emissions for a representative plant-based meal portion.
