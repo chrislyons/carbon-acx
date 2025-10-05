@@ -28,8 +28,8 @@ unit,count,1.0,Generic count of manufactured equipment
 year,time,31536000.0,One calendar year expressed in seconds
 kg_foodyear,mass_time,31536000.0,One kilogram of food refrigerated for one year (kg·year)
 m2_year,area_time,31536000.0,One square metre of floor area sustained for one year (m²·year)
-pgco2_year,mass_time,3.1536e+19,One petagram of CO₂ exchanged over one year (Pg·yr).
-pgco2e_year,mass_time,3.1536e+19,One petagram of CO₂e exchanged over one year (Pg CO₂e·yr).
+pgco2_per_year,mass_time,3.1536e+19,One petagram of CO₂ exchanged over one year (Pg·yr).
+pgco2e_per_year,mass_time,3.1536e+19,One petagram of CO₂e exchanged over one year (Pg CO₂e·yr).
 ph_decade,index_time,315360000.0,One pH unit change sustained per decade (10-year window).
 w_m2,power_area,1.0,One watt of radiative flux per square metre (W/m²).
 m3_year,volume_time,31536000.0,One cubic metre of fluid discharged over one year (m³·yr).
