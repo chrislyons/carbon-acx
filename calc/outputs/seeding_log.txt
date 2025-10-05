@@ -1,0 +1,61 @@
+table,row_id,layer_id,action,source_id,notes,status
+emission_factors,EF.AI.IMAGE.GENERATION.PROMPT,online,offline_seed,SRC.ACX006.CA.V1_1,"ACX006 offline seed using provisional intensity profile.",pending
+emission_factors,EF.CLOUD.STORAGE.SYNC.GB_MONTH,online,offline_seed,SRC.ACX006.CA.V1_1,"ACX006 offline seed using provisional intensity profile.",pending
+emission_factors,EF.CONF.AUDIO.PER_PARTICIPANT_HOUR,online,offline_seed,SRC.ACX006.CA.V1_1,"ACX006 offline seed using provisional intensity profile.",pending
+emission_factors,EF.DOWNLOAD.GAME.CONSOLE.50GB,online,offline_seed,SRC.ACX006.CA.V1_1,"ACX006 offline seed using provisional intensity profile.",pending
+emission_factors,EF.IND_HEAVY.CEMENT.CLINKER.TONNE,industrial_heavy,offline_seed,SRC.ACX006.CA.V1_1,"ACX006 offline seed using provisional intensity profile.",pending
+emission_factors,EF.IND_HEAVY.MINING.HAUL.TRUCK.HOUR,industrial_heavy,offline_seed,SRC.ACX006.CA.V1_1,"ACX006 offline seed using provisional intensity profile.",pending
+emission_factors,EF.IND_HEAVY.REFINING.FIRED_UNIT.MMBTU,industrial_heavy,offline_seed,SRC.ACX006.CA.V1_1,"ACX006 offline seed using provisional intensity profile.",pending
+emission_factors,EF.IND_HEAVY.STEEL.EAF.TONNE,industrial_heavy,offline_seed,SRC.ACX006.CA.V1_1,"ACX006 offline seed using provisional intensity profile.",pending
+emission_factors,EF.IND_LIGHT.CONSTRUCTION.SITE_DAY,industrial_light,offline_seed,SRC.ACX006.CA.V1_1,"ACX006 offline seed using provisional intensity profile.",pending
+emission_factors,EF.IND_LIGHT.LOGISTICS.FORKLIFT.HOUR,industrial_light,offline_seed,SRC.ACX006.CA.V1_1,"ACX006 offline seed using provisional intensity profile.",pending
+emission_factors,EF.IND_LIGHT.WAREHOUSE.BASE_LOAD.SQFT_MONTH,industrial_light,offline_seed,SRC.ACX006.CA.V1_1,"ACX006 offline seed using provisional intensity profile.",pending
+emission_factors,EF.MEDIA.STREAM.SD.HOUR.MOBILE,online,offline_seed,SRC.ACX006.CA.V1_1,"ACX006 offline seed using provisional intensity profile.",pending
+emission_factors,EF.MEDIA.STREAM.UHD.HOUR.TV,online,offline_seed,SRC.ACX006.CA.V1_1,"ACX006 offline seed using provisional intensity profile.",pending
+emission_factors,EF.MIL.MUNITIONS.DETONATED.TONNE,industrial_heavy_military,offline_seed,SRC.ACX006.CA.V1_1,"ACX006 offline seed using provisional intensity profile.",pending
+emission_factors,EF.MIL.MUNITIONS.DETONATION.EVENT,modeled_events,offline_seed,SRC.ACX006.CA.V1_1,"ACX006 offline seed using provisional intensity profile.",pending
+emission_factors,EF.MODELED.WILDFIRE.EVENT,modeled_events,offline_seed,SRC.ACX006.CA.V1_1,"ACX006 offline seed using provisional intensity profile.",pending
+emission_factors,EF.MODELED.WILDFIRE.HECTARE,modeled_events,offline_seed,SRC.ACX006.CA.V1_1,"ACX006 offline seed using provisional intensity profile.",pending
+emission_factors,EF.MUSIC.STREAM.STANDARD.HOUR,online,offline_seed,SRC.ACX006.CA.V1_1,"ACX006 offline seed using provisional intensity profile.",pending
+emission_factors,EF.ONLINE.CDN.EDGE.GB,online,offline_seed,SRC.ACX006.CA.V1_1,"ACX006 offline seed using provisional intensity profile.",pending
+emission_factors,EF.ONLINE.DC.CLOUD.SERVER.HOUR,online,offline_seed,SRC.ACX006.CA.V1_1,"ACX006 offline seed using provisional intensity profile.",pending
+emission_factors,EF.ONLINE.DC.COLOCATION.RACK.MONTH,online,offline_seed,SRC.ACX006.CA.V1_1,"ACX006 offline seed using provisional intensity profile.",pending
+activity_schedule,BASE.TO.PROF.HYBRID.2025|REFR.APPL.FRIDGE.OP.YEAR,professional,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] Household refrigerator use treated as daily continuous load.",pending
+activity_schedule,EARTH.CA.BIOSPHERE.2025|CRYO.ALBEDO.LOSS.WM2,biosphere_feedbacks,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] Weekly cryosphere forcing checkpoint pending automated ingest.",pending
+activity_schedule,EARTH.CA.BIOSPHERE.2025|OCEAN.ACIDIFICATION.PH.DEC,biosphere_feedbacks,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] Weekly ocean pH delta surrogate for offline mode.",pending
+activity_schedule,EARTH.CA.BIOSPHERE.2025|OCEAN.CO2.UPTAKE.PGCO2,biosphere_feedbacks,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] Weekly CO2 uptake checkpoint surrogate until live data.",pending
+activity_schedule,EARTH.CA.BIOSPHERE.2025|PERMAFROST.EMISSIONS.PGCO2E,biosphere_feedbacks,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] Weekly permafrost flux surrogate using ACX011 cadence.",pending
+activity_schedule,EARTH.CA.BIOSPHERE.2025|RIVER.HYPOXIA.KM2.YEAR,biosphere_feedbacks,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] Weekly hypoxic extent monitoring surrogate (offline).",pending
+activity_schedule,IND.TO.HEAVY.2025|AGRI.BEEF.CARCASS.KG,industrial_heavy,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] Five production shifts/week with 1 unit baseline throughput (offline).",pending
+activity_schedule,IND.TO.HEAVY.2025|ENERGY.GASOLINE.LITRE,industrial_heavy,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] Refinery blending cycle approximated at five drawdowns per week (offline).",pending
+activity_schedule,IND.TO.HEAVY.2025|ENERGY.KWH.DELIVERED,industrial_heavy,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] 24/7 grid draw surrogate for Ontario heavy industry (offline).",pending
+activity_schedule,IND.TO.HEAVY.2025|ENERGY.NATGAS.M3,industrial_heavy,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] Continuous natural gas throughput assumed while pending metered feed.",pending
+activity_schedule,IND.TO.HEAVY.2025|LOGI.AIR.TONNEKM,industrial_heavy,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] Air freight proxy uses 10 tonne-km daily median transport distance.",pending
+activity_schedule,IND.TO.HEAVY.2025|LOGI.TRUCK.TONNEKM,industrial_heavy,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] Road freight proxy seeded at 10 tonne-km per day while offline.",pending
+activity_schedule,IND.TO.HEAVY.2025|MATERIAL.CEMENT.CLINKER.TONNE,industrial_heavy,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] Dry kiln line modeled for weekday operation pending live data.",pending
+activity_schedule,IND.TO.HEAVY.2025|MATERIAL.PET.VIRGIN.TONNE,industrial_heavy,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] Polymerisation train offline surrogate using ACX011 industrial cadence.",pending
+activity_schedule,IND.TO.HEAVY.2025|MATERIAL.STEEL.CRUDESLAB.TONNE,industrial_heavy,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] Hamilton BOF cadence assumed weekdays only until telemetry online.",pending
+activity_schedule,IND_EXT.CA.BASELINE.2025|AMD.ACID.DRAINAGE.M3.YEAR,industrial_externalities,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] Weekly monitoring surrogate for unmanaged acid drainage volumes.",pending
+activity_schedule,IND_EXT.CA.BASELINE.2025|TAILINGS.DEGASS.EVENT,industrial_externalities,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] Quarterly degassing incident surrogate while offline.",pending
+activity_schedule,IND_EXT.CA.BASELINE.2025|TAILINGS.POND.M2.YEAR,industrial_externalities,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] Weekly tailings surface area snapshot seeded from ACX011 heuristics.",pending
+activity_schedule,IND_LIGHT.ON.LOGISTICS.2025|AGRI.POULTRY.READY.KG,industrial_light,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] Weekday poultry throughput surrogate mirroring ACX011 shift mix.",pending
+activity_schedule,IND_LIGHT.ON.LOGISTICS.2025|FOOD.COFFEE.ROASTED.KG,industrial_light,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] Roasting line cadence seeded at weekday operation pending telemetry.",pending
+activity_schedule,IND_LIGHT.ON.LOGISTICS.2025|LOGI.PARCEL.URBAN,industrial_light,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] Urban parcel loop proxied at 10 km daily coverage while offline.",pending
+activity_schedule,IND_LIGHT.ON.LOGISTICS.2025|MUNI.WASTE.INCINERATION.KG,industrial_light,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] Daily waste-to-energy feed surrogate until live weighbridge data.",pending
+activity_schedule,IND_LIGHT.ON.LOGISTICS.2025|MUNI.WASTE.LANDFILL.KG,industrial_light,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] Landfill transfers assumed daily using ACX011 service cadence.",pending
+activity_schedule,IND_LIGHT.ON.LOGISTICS.2025|MUNI.WATER.POTABLE.M3,industrial_light,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] Continuous potable water throughput seeded from municipal median.",pending
+activity_schedule,IND_LIGHT.ON.LOGISTICS.2025|REFR.APPL.FRIDGE.UNIT,industrial_light,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] Weekly manufacturing batch surrogate for appliance assembly.",pending
+activity_schedule,IND_LIGHT.ON.LOGISTICS.2025|REFR.COLDCHAIN.SUPERMARKET.KG,industrial_light,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] Daily cold-chain holding baseline seeded from ACX011 retail mix.",pending
+activity_schedule,IND_LIGHT.ON.LOGISTICS.2025|REFR.HVAC.AC.OP.YEAR,industrial_light,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] HVAC operations assumed continuous until SCADA ingest available.",pending
+activity_schedule,IND_LIGHT.ON.LOGISTICS.2025|REFR.HVAC.AC.UNIT,industrial_light,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] Weekly AC unit production surrogate guided by ACX011 heuristics.",pending
+activity_schedule,IND_LIGHT.ON.LOGISTICS.2025|TRAN.DELIVERY.TRUCK.CLASS6.KM,industrial_light,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] Class-6 delivery cadence set to 10 km daily while offline.",pending
+activity_schedule,IND_LIGHT.ON.LOGISTICS.2025|TRAN.FLIGHT.LONGHAUL.PKM,industrial_light,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] Long-haul aviation surrogate at biweekly rotation while offline.",pending
+activity_schedule,IND_LIGHT.ON.LOGISTICS.2025|TRAN.FLIGHT.SHORTHAUL.PKM,industrial_light,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] Short-haul aviation modeled at two rotations/week using 10 pkm heuristic.",pending
+activity_schedule,ONLINE.TO.CONSUMER.2025|AI.USAGE.ANTHROPIC.QUERY,online,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] Median of ACX011 Toronto professional AI lookups (weekday focus).",pending
+activity_schedule,ONLINE.TO.CONSUMER.2025|AI.USAGE.GOOGLE.QUERY,online,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] Consumer-side AI search adoption scaled from ACX011 baseline (offline).",pending
+activity_schedule,ONLINE.TO.CONSUMER.2025|CLOUD.STORAGE.SYNC.GB_MONTH,online,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] Assumed weekly sync burst approximating ACX011 cloud backup cadence (offline surrogate).",pending
+activity_schedule,ONLINE.TO.CONSUMER.2025|SOCIAL.TIKTOK.HOUR,online,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] One hour per day median short-form video consumption in offline mode.",pending
+activity_schedule,PROFILE.ELITE.SECURITY.2025|TRAN.FLIGHT.PRIVATE.PKM,personal_security_layer,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] Quarterly private jet rotation approximated with 10 pkm median leg.",pending
+profiles,EARTH.CA.BIOSPHERE.2025,biosphere_feedbacks,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] Offline surrogate baseline seeded from ACX011 heuristics for biosphere reporting.",pending
+profiles,IND_EXT.CA.BASELINE.2025,industrial_externalities,offline_seed,SRC.ACX006.CA.V1_1,"[OFFLINE_SEED] Offline surrogate baseline seeded from ACX011 heuristics for externalities.",pending
+sources,SRC.ACX006.CA.V1_1,,registered,SRC.ACX006.CA.V1_1,"ACX006 offline registry citation added to catalog",pending
