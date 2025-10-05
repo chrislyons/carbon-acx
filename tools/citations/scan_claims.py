@@ -147,9 +147,9 @@ def analyze_emission_factors(path: Path) -> DatasetReport:
             if not claims:
                 continue
             issues: List[str] = []
-            for field in REQUIRED_FIELDS:
-                if field not in row or is_missing(row[field]):
-                    issues.append(f"Missing required field: {field}")
+            for req_field in REQUIRED_FIELDS:
+                if req_field not in row or is_missing(row[req_field]):
+                    issues.append(f"Missing required field: {req_field}")
             is_grid_indexed = row.get("is_grid_indexed", "").strip().lower() == "true"
             if is_grid_indexed:
                 for field in GRID_INDEXED_REQUIREMENTS:
@@ -177,9 +177,9 @@ def analyze_grid_intensity(path: Path) -> DatasetReport:
             if not claims:
                 continue
             issues: List[str] = []
-            for field in REQUIRED_FIELDS:
-                if field not in row or is_missing(row[field]):
-                    issues.append(f"Missing required field: {field}")
+            for req_field in REQUIRED_FIELDS:
+                if req_field not in row or is_missing(row[req_field]):
+                    issues.append(f"Missing required field: {req_field}")
             findings.append(
                 RowFinding(
                     row_number=index,
