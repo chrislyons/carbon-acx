@@ -16,7 +16,7 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence
 
 import pandas as pd
 
-from . import citations, figures
+from . import citations, figures, manifest as manifest_module
 from .upstream import dependency_metadata
 from .api import collect_activity_source_keys
 from .dal import DataStore, choose_backend
@@ -1669,6 +1669,8 @@ def export_view(
     _write_figure("bubble", "figures.bubble", bubble_points)
     _write_figure("sankey", "figures.sankey", sankey)
     _write_figure("feedback", "figures.feedback", feedback_graph)
+
+    manifest_module.generate_all(out_dir)
 
     manifest = dict(manifest_payload)
     manifest["build_hash"] = build_hash
