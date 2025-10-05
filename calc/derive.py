@@ -37,6 +37,7 @@ from .schema import (
     load_assets as schema_load_assets,
     load_entities as schema_load_entities,
     load_functional_units,
+    load_feedback_loops as schema_load_feedback_loops,
     load_operations as schema_load_operations,
     load_sites as schema_load_sites,
 )
@@ -1197,6 +1198,17 @@ def export_view(
     assets = {asset.asset_id: asset for asset in asset_iter if asset.asset_id}
     efs = {ef.activity_id: ef for ef in datastore.load_emission_factors()}
     profiles = {p.profile_id: p for p in datastore.load_profiles()}
+    load_feedback_loops_fn = getattr(datastore, "load_feedback_loops", None)
+    feedback_loops = (
+        list(load_feedback_loops_fn()) if callable(load_feedback_loops_fn) else []
+    )
+    if not feedback_loops:
+        try:
+            feedback_loops = list(
+                schema_load_feedback_loops(activities=list(activities.values()))
+            )
+        except Exception:  # pragma: no cover - defensive fallback
+            feedback_loops = []
     if activities:
         try:
             functional_units = list(load_functional_units())
@@ -1393,12 +1405,27 @@ def export_view(
     df = pd.DataFrame(normalised_rows, columns=EXPORT_COLUMNS)
 
     citation_keys = sorted(collect_activity_source_keys(derived_rows))
+    loop_citation_keys = sorted({loop.source_id for loop in feedback_loops if loop.source_id})
+    for key in loop_citation_keys:
+        if key and key not in citation_keys:
+            citation_keys.append(key)
     resolved_profiles = sorted(resolved_profile_ids)
     profile_arg = resolved_profiles if resolved_profiles else None
     generated_at = _resolve_generated_at()
     sorted_layers = sorted(manifest_layers)
 
     layer_key_sets: dict[str, set[str]] = {}
+    for loop in feedback_loops:
+        if not loop.source_id:
+            continue
+        trigger_activity = activities.get(loop.trigger_activity_id)
+        response_activity = activities.get(loop.response_activity_id)
+        for activity in (trigger_activity, response_activity):
+            layer_value = None
+            if activity is not None:
+                layer_value = getattr(activity.layer_id, "value", activity.layer_id)
+            if layer_value:
+                layer_key_sets.setdefault(str(layer_value), set()).add(loop.source_id)
     for row in derived_rows:
         layer = row.get("layer_id") if isinstance(row, dict) else getattr(row, "layer_id", None)
         if not layer:
@@ -1606,6 +1633,19 @@ def export_view(
         if isinstance(links, list):
             sankey = dict(sankey)
             sankey["links"] = [_with_layer_id(link) for link in links if isinstance(link, Mapping)]
+    feedback_graph = figures.slice_feedback(feedback_loops, activities, df)
+    if isinstance(feedback_graph, Mapping):
+        feedback_graph = dict(feedback_graph)
+        feedback_nodes = feedback_graph.get("nodes")
+        if isinstance(feedback_nodes, list):
+            feedback_graph["nodes"] = [
+                _with_layer_id(node) for node in feedback_nodes if isinstance(node, Mapping)
+            ]
+        feedback_links = feedback_graph.get("links")
+        if isinstance(feedback_links, list):
+            feedback_graph["links"] = [
+                _with_layer_id(link) for link in feedback_links if isinstance(link, Mapping)
+            ]
 
     def _write_figure(name: str, method: str, data: object) -> None:
         meta = figures.build_metadata(
@@ -1628,6 +1668,7 @@ def export_view(
     _write_figure("stacked", "figures.stacked", stacked)
     _write_figure("bubble", "figures.bubble", bubble_points)
     _write_figure("sankey", "figures.sankey", sankey)
+    _write_figure("feedback", "figures.feedback", feedback_graph)
 
     manifest = dict(manifest_payload)
     manifest["build_hash"] = build_hash

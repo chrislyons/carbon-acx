@@ -10,6 +10,7 @@ from ..schema import (
     ActivityDependency,
     ActivitySchedule,
     Asset,
+    FeedbackLoop,
     EmissionFactor,
     Entity,
     GridIntensity,
@@ -72,3 +73,10 @@ class CsvStore:
     def load_activity_dependencies(self) -> Sequence[ActivityDependency]:
         rows = _load_csv(DATA_DIR / "dependencies.csv")
         return [ActivityDependency(**row) for row in rows]
+
+    def load_feedback_loops(self) -> Sequence[FeedbackLoop]:
+        path = DATA_DIR / "feedback_loops.csv"
+        if not path.exists():
+            return []
+        rows = _load_csv(path)
+        return [FeedbackLoop(**row) for row in rows]

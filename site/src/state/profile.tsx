@@ -61,6 +61,13 @@ export interface ComputeResult {
       layer_citation_keys?: Record<string, unknown>;
       [key: string]: unknown;
     };
+    feedback?: {
+      data?: unknown;
+      citation_keys?: string[];
+      layers?: string[];
+      layer_citation_keys?: Record<string, unknown>;
+      [key: string]: unknown;
+    };
     [key: string]: unknown;
   };
   references?: string[];
@@ -380,6 +387,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
     push(result?.figures?.stacked?.layers);
     push(result?.figures?.bubble?.layers);
     push(result?.figures?.sankey?.layers);
+    push(result?.figures?.feedback?.layers);
     if (unique.size === 0) {
       unique.add(PRIMARY_LAYER_ID);
     }
@@ -407,6 +415,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
     merge(normaliseLayerMapping(result?.figures?.stacked?.layer_citation_keys));
     merge(normaliseLayerMapping(result?.figures?.bubble?.layer_citation_keys));
     merge(normaliseLayerMapping(result?.figures?.sankey?.layer_citation_keys));
+    merge(normaliseLayerMapping(result?.figures?.feedback?.layer_citation_keys));
     return combined;
   }, [result]);
 
@@ -427,6 +436,10 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
     const bubbleKeys = toStringArray(result?.figures?.bubble?.citation_keys);
     if (bubbleKeys.length > 0) {
       return bubbleKeys;
+    }
+    const feedbackKeys = toStringArray(result?.figures?.feedback?.citation_keys);
+    if (feedbackKeys.length > 0) {
+      return feedbackKeys;
     }
     return toStringArray(result?.figures?.sankey?.citation_keys);
   }, [result]);

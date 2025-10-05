@@ -55,5 +55,5 @@ def test_layout_contains_expected_sections(monkeypatch) -> None:
 
     component_ids = layout_ids | panel_ids
 
-    expected_ids = {"stacked", "bubble", "sankey", "references"}
+    expected_ids = {"stacked", "bubble", "sankey", "feedback", "references"}
     assert expected_ids.issubset(component_ids)
