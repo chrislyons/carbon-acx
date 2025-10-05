@@ -254,8 +254,13 @@ def render(
     dark: bool = False,
     layer_id: str | None = None,
     active_activity: str | None = None,
+    component_name: str = "sankey",
+    title_prefix: str = "Activity flow",
+    empty_message: str | None = None,
+    mode_labels: Mapping[str, str] | None = None,
 ) -> html.Section:
-    title = "Activity flow"
+    section_id = component_name or "sankey"
+    title = title_prefix or "Activity flow"
     if title_suffix:
         title = f"{title} — {title_suffix}"
 
@@ -270,15 +275,16 @@ def render(
     )
 
     if not figure.data:
-        message = "No flow data available."
-        if title_suffix:
+        message = empty_message or "No flow data available."
+        if title_suffix and empty_message is None:
             message = f"No flow data available for {title_suffix}."
         content = html.P(message)
         controls_section = None
     else:
-        graph_id: str | dict = "sankey-chart"
+        graph_component = f"{section_id}-chart"
+        graph_id: str | dict = graph_component
         if layer_id:
-            graph_id = {"component": "sankey-chart", "layer": layer_id}
+            graph_id = {"component": graph_component, "layer": layer_id}
         content = dcc.Graph(
             id=graph_id,
             figure=figure,
@@ -289,12 +295,17 @@ def render(
         )
         controls_section = None
         if len(modes) > 1:
-            mode_id: str | dict = "sankey-mode"
+            labels_map: Mapping[str, str] = MODE_LABELS
+            if mode_labels:
+                labels_map = {**MODE_LABELS, **mode_labels}
+
+            mode_component = f"{section_id}-mode"
+            mode_id: str | dict = mode_component
             if layer_id:
-                mode_id = {"component": "sankey-mode", "layer": layer_id}
+                mode_id = {"component": mode_component, "layer": layer_id}
             options = [
                 {
-                    "label": MODE_LABELS.get(mode, mode.replace("_", " ").title()),
+                    "label": labels_map.get(mode, mode.replace("_", " ").title()),
                     "value": mode,
                 }
                 for mode in modes
@@ -332,7 +343,7 @@ def render(
     return html.Section(
         children,
         className="chart-section chart-section--sankey",
-        id="sankey",
+        id=section_id,
     )
 
 

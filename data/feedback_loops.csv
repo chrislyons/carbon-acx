@@ -1,0 +1,6 @@
+loop_id,trigger_activity_id,response_activity_id,sign,lag_years,strength,source_id,notes
+FB.ACID.OCEAN,OCEAN.CO2.UPTAKE.PGCO2,OCEAN.ACIDIFICATION.PH.DEC,-,5-10,0.5,SRC.NOAA.OCEAN.2023,Acidification from ocean CO₂ uptake dampens future sink capacity.
+FB.CRYO.ALBEDO,CRYO.ALBEDO.LOSS.WM2,PERMAFROST.EMISSIONS.PGCO2E,+,1-5,0.4,SRC.IPCC.AR6.2021,Additional forcing from albedo loss accelerates permafrost thaw.
+FB.TAILINGS.METHANE,TAILINGS.POND.M2.YEAR,CRYO.ALBEDO.LOSS.WM2,+,0-1,0.2,SRC.AB.TAILINGS.2023,Tailings methane forcing marginally increases radiative imbalance affecting cryosphere.
+FB.HYPOXIA.SINKLOSS,RIVER.HYPOXIA.KM2.YEAR,OCEAN.CO2.UPTAKE.PGCO2,+,0-3,0.3,SRC.RIVER.HYPOXIA.2020,Hypoxic zones erode biological carbon pumps reducing net ocean uptake.
+FB.AMD.BIOGEOCHEM,AMD.ACID.DRAINAGE.M3.YEAR,RIVER.HYPOXIA.KM2.YEAR,+,0-2,0.4,SRC.INTL.MINING.2022,Acid drainage nutrient and metal loads propagate to hypoxia and secondary emissions.

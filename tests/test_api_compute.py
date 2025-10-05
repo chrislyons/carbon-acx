@@ -72,12 +72,13 @@ def test_compute_profile_shape_and_latency(sqlite_db: Path) -> None:
 
     assert set(response) == {"figures", "references", "manifest"}
     figures = response["figures"]
-    assert set(figures) == {"stacked", "bubble", "sankey"}
+    assert set(figures) == {"stacked", "bubble", "sankey", "feedback"}
     assert response["manifest"]["profile_id"] == "PRO.TO.24_39.HYBRID.2025"
     assert response["manifest"]["dataset_version"]
     assert figures["stacked"]["method"] == "figures.stacked"
     assert figures["bubble"]["method"] == "figures.bubble"
     assert figures["sankey"]["method"] == "figures.sankey"
+    assert figures["feedback"]["method"] == "figures.feedback"
     assert response["references"]
     _assert_reference_contract(response)
 

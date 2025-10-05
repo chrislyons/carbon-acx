@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
-from typing import Any, Mapping, MutableMapping
+from typing import Any, Mapping, MutableMapping, Sequence
 from dataclasses import dataclass
 import datetime as _datetime_module
 import os
@@ -11,7 +11,7 @@ from pathlib import Path
 import pandas as pd
 import yaml
 
-from .schema import LayerId
+from .schema import Activity, FeedbackLoop, LayerId
 
 CONFIG_PATH = Path(__file__).parent / "config.yaml"
 
@@ -147,6 +147,14 @@ def _layer_rank(value: str | None) -> int:
     if value in LAYER_ORDER:
         return LAYER_ORDER.index(value)
     return len(LAYER_ORDER)
+
+
+def _activity_label(activity: Activity | None, fallback_id: str) -> str:
+    if activity is None:
+        return fallback_id
+    if activity.name:
+        return activity.name
+    return fallback_id
 
 
 def _ensure_columns(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
@@ -524,6 +532,97 @@ def slice_sankey(
     return payload
 
 
+def slice_feedback(
+    loops: Sequence[FeedbackLoop],
+    activities: Mapping[str, Activity],
+    df: pd.DataFrame | None = None,
+) -> dict:
+    if not loops:
+        return {"nodes": [], "links": []}
+
+    activity_totals: dict[str, float] = {}
+    activity_layers: dict[str, str | None] = {}
+    if df is not None and not df.empty:
+        if {"activity_id", "annual_emissions_g"}.issubset(df.columns):
+            grouped = (
+                df.groupby("activity_id")[["annual_emissions_g"]]
+                .sum(min_count=1)
+                .reset_index()
+            )
+            for _, row in grouped.iterrows():
+                activity_id = str(row.get("activity_id"))
+                if not activity_id or activity_id == "nan":
+                    continue
+                value = row.get("annual_emissions_g")
+                if value is None or (isinstance(value, float) and pd.isna(value)):
+                    continue
+                activity_totals[activity_id] = float(value)
+        if {"activity_id", "layer_id"}.issubset(df.columns):
+            for _, row in df.iterrows():
+                activity_key = row.get("activity_id")
+                if activity_key in (None, ""):
+                    continue
+                activity_layers[str(activity_key)] = _normalise_layer(row.get("layer_id"))
+
+    nodes: dict[tuple[str, str], dict] = {}
+    links: list[dict] = []
+
+    def ensure_node(activity_id: str, role: str) -> dict:
+        key = (role, activity_id)
+        node = nodes.get(key)
+        if node is not None:
+            return node
+        activity = activities.get(activity_id)
+        label = _activity_label(activity, activity_id)
+        layer = activity_layers.get(activity_id)
+        if layer is None and activity is not None:
+            layer_value = getattr(activity.layer_id, "value", activity.layer_id)
+            layer = str(layer_value) if layer_value is not None else None
+        node_type = "category" if role == "source" else "activity"
+        node = {
+            "id": f"{role}:{activity_id}",
+            "label": label,
+            "type": node_type,
+            "layer_id": layer,
+            "activity_id": activity_id,
+        }
+        nodes[key] = node
+        return node
+
+    for loop in loops:
+        trigger_id = loop.trigger_activity_id
+        response_id = loop.response_activity_id
+        if not trigger_id or not response_id:
+            continue
+        strength = float(loop.strength) if loop.strength is not None else 0.0
+        magnitude = abs(strength)
+        trigger_total = activity_totals.get(trigger_id)
+        if trigger_total is not None and trigger_total != 0:
+            magnitude = abs(trigger_total) * abs(strength)
+        if magnitude <= 0:
+            continue
+
+        trigger_node = ensure_node(trigger_id, "source")
+        response_node = ensure_node(response_id, "target")
+
+        link: dict[str, object] = {
+            "source": trigger_node["id"],
+            "target": response_node["id"],
+            "values": {"mean": magnitude},
+            "citation_keys": [loop.source_id] if loop.source_id else None,
+            "metadata": {
+                "loop_id": loop.loop_id,
+                "sign": loop.sign,
+                "lag_years": loop.lag_years,
+                "strength": strength,
+                "notes": loop.notes,
+            },
+        }
+        links.append(link)
+
+    return {"nodes": list(nodes.values()), "links": links}
+
+
 def invalidate_cache() -> None:
     _load_config.cache_clear()
 
@@ -535,6 +634,7 @@ __all__ = [
     "trim_figure_payload",
     "invalidate_cache",
     "slice_bubble",
+    "slice_feedback",
     "slice_sankey",
     "slice_stacked",
 ]

@@ -356,6 +356,7 @@ export default function Story(): JSX.Element {
     pushUnique(result?.figures?.stacked?.citation_keys);
     pushUnique(result?.figures?.bubble?.citation_keys);
     pushUnique(result?.figures?.sankey?.citation_keys);
+    pushUnique(result?.figures?.feedback?.citation_keys);
     return collected;
   }, [result]);
 
