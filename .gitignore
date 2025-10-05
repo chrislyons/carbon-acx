@@ -4,7 +4,11 @@ __pycache__/
 .poetry/
 build/
 dist/
-calc/outputs/
+calc/outputs/*
+!calc/outputs/references_master.txt
+!calc/outputs/sources_archive/
+calc/outputs/sources_archive/*
+!calc/outputs/sources_archive/*.txt
 *.egg-info/
 .ruff_cache/
 .pytest_cache/

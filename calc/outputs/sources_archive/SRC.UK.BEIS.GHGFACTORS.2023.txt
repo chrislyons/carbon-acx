@@ -1,0 +1,8 @@
+IEEE Citation:
+[58] UK Department for Energy Security and Net Zero, “UK Government Greenhouse Gas Conversion Factors for Company Reporting (2023),” 2023. Available: https://raw.githubusercontent.com/filcuk/ghg_conversion_factors/main/country/gbr/release/ghg-conversion-factors-2023-gbr-v1.1.csv
+
+URL:
+https://raw.githubusercontent.com/filcuk/ghg_conversion_factors/main/country/gbr/release/ghg-conversion-factors-2023-gbr-v1.1.csv
+
+Access Status:
+online

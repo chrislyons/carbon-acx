@@ -1,0 +1,8 @@
+IEEE Citation:
+[36] A. Shehabi et al., “Estimating the Energy Use of Data Centers: 2024 Update,” Lawrence Berkeley National Laboratory, 2024. Available: https://eta.lbl.gov/publications/estimating-energy-use-data-centers
+
+URL:
+https://eta.lbl.gov/publications/estimating-energy-use-data-centers
+
+Access Status:
+offline snapshot required

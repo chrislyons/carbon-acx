@@ -1,0 +1,8 @@
+IEEE Citation:
+[37] A. Luccioni, A. Ligozat, and Y. Bengio, “Estimating the Carbon Footprint of Inference,” 2023. Available: https://arxiv.org/abs/2304.03271
+
+URL:
+https://arxiv.org/abs/2304.03271
+
+Access Status:
+offline snapshot required
