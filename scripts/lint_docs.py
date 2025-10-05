@@ -5,6 +5,7 @@ compliance regressions in previous pull requests. It exits with a non-zero
 status code if any banned term is detected so the check can be wired into CI or
 local lint pipelines.
 """
+
 from __future__ import annotations
 
 import argparse

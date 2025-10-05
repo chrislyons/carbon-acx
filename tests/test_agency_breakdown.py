@@ -33,7 +33,11 @@ def test_breakdown_returns_segments_with_individual_share():
 def test_breakdown_handles_unknown_types_as_institutional():
     dependency_map = {
         "ACT.UNKNOWN": [
-            {"share": 0.5, "operation_activity_label": "Service", "operation_entity_type": "cooperative"}
+            {
+                "share": 0.5,
+                "operation_activity_label": "Service",
+                "operation_entity_type": "cooperative",
+            }
         ]
     }
 

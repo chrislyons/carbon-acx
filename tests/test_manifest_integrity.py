@@ -35,9 +35,7 @@ def sample_output(tmp_path: Path) -> Path:
 
 def _dataset_hash() -> str:
     paths = [
-        (Path.cwd() / path)
-        for path in DATASET_FILES
-        if (Path.cwd() / path).resolve().exists()
+        (Path.cwd() / path) for path in DATASET_FILES if (Path.cwd() / path).resolve().exists()
     ]
     if not paths:
         return sha256_bytes(b"")
@@ -103,7 +101,7 @@ def test_repo_outputs_have_manifests() -> None:
     figure_dir = output_root / "figures"
     manifest_dir = output_root / "manifests"
 
-    generated = generate_all(output_root)
+    generate_all(output_root)
 
     for figure_path in figure_dir.glob("*.json"):
         manifest_path = manifest_dir / figure_path.name

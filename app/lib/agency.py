@@ -180,5 +180,7 @@ def breakdown_for_activity(
             }
         )
 
-    segments.sort(key=lambda item: (-float(item.get("share", 0.0)), _agency_rank(str(item.get("agency")))))
+    segments.sort(
+        key=lambda item: (-float(item.get("share", 0.0)), _agency_rank(str(item.get("agency"))))
+    )
     return segments
