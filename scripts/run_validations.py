@@ -110,14 +110,10 @@ def check_schema_headers() -> CheckResult:
         expected_columns, required_columns = _columns_from_model(model)
         extra = sorted(actual_columns - expected_columns)
         if extra:
-            issues.append(
-                f"{filename}: unexpected columns {', '.join(extra)}"
-            )
+            issues.append(f"{filename}: unexpected columns {', '.join(extra)}")
         missing = sorted(required_columns - actual_columns)
         if missing:
-            issues.append(
-                f"{filename}: missing required columns {', '.join(missing)}"
-            )
+            issues.append(f"{filename}: missing required columns {', '.join(missing)}")
 
     for filename, expected in manual_datasets.items():
         path = DATA_DIR / filename
@@ -186,9 +182,7 @@ def check_citation_completeness() -> CheckResult:
         reader = csv.DictReader(handle)
         for row in reader:
             ef_id = (row.get("ef_id") or row.get("activity_id") or "<unknown>").strip()
-            has_numeric = any(
-                _is_numeric(row.get(column)) for column in numeric_columns
-            )
+            has_numeric = any(_is_numeric(row.get(column)) for column in numeric_columns)
             if not has_numeric:
                 continue
             source_id = (row.get("source_id") or "").strip()
@@ -196,9 +190,7 @@ def check_citation_completeness() -> CheckResult:
                 offenders.append(f"{ef_id}: missing source_id")
                 continue
             if source_id not in known_source_ids:
-                offenders.append(
-                    f"{ef_id}: unknown source_id '{source_id}'"
-                )
+                offenders.append(f"{ef_id}: unknown source_id '{source_id}'")
                 continue
             entry = sources[source_id]
             if not entry.ieee_citation:
@@ -345,10 +337,7 @@ def numerical_sanity_checks() -> CheckResult:
     annual_fu = merged["annual_fu"].fillna(0)
     negative_rows = merged[
         merged["annual_kg"].notna()
-        & (
-            (merged["annual_kg"] < 0)
-            | ((merged["annual_kg"] == 0) & (annual_fu > 0))
-        )
+        & ((merged["annual_kg"] < 0) | ((merged["annual_kg"] == 0) & (annual_fu > 0)))
     ]
     if not negative_rows.empty:
         details = [
@@ -463,4 +452,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
