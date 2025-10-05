@@ -57,6 +57,7 @@ CREATE TABLE profiles (
 CREATE TABLE emission_factors (
     ef_id TEXT PRIMARY KEY,
     activity_id TEXT NOT NULL,
+    layer_id TEXT,
     unit TEXT,
     value_g_per_unit REAL,
     is_grid_indexed INTEGER,
@@ -74,6 +75,23 @@ CREATE TABLE emission_factors (
     FOREIGN KEY (activity_id) REFERENCES activities(activity_id),
     FOREIGN KEY (unit) REFERENCES units(unit_code),
     FOREIGN KEY (source_id) REFERENCES sources(source_id),
+    CHECK (
+        layer_id IS NULL
+        OR layer_id IN (
+            'professional',
+            'online',
+            'industrial_light',
+            'industrial_heavy',
+            'industrial_heavy_military',
+            'industrial_heavy_embodied',
+            'buildings_defense',
+            'modeled_events',
+            'materials_chemicals',
+            'personal_security_layer',
+            'biosphere_feedbacks',
+            'industrial_externalities'
+        )
+    ),
     CHECK (is_grid_indexed IN (0, 1) OR is_grid_indexed IS NULL),
     CHECK (
         (
