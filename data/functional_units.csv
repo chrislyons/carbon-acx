@@ -4,6 +4,7 @@ FU.LITRE_DELIVERED,litre delivered,logistics,L,Beverage or liquid delivered
 FU.VIEW_HOUR,viewing-hour,information,hour,One hour of content viewed
 FU.PROMPT,prompt,information,prompt,One generative AI prompt processed by an inference service
 FU.TOKEN_K,token-thousand,information,1000 tokens,One thousand model tokens processed
+FU.GB_TRANSFER,gigabyte delivered,information,gigabyte,One gigabyte of content transferred through online services infrastructure
 FU.NUTRITIONAL_SERVING,nutritional serving,nutrition,serving,One standard meal serving
 FU.KWH,kilowatt-hour,energy,kWh,Electrical energy delivered
 FU.KG,kilogram throughput,agriculture,kg,One kilogram of agricultural or food throughput
@@ -25,6 +26,9 @@ FU.M2YEAR,floor-area-year,shelter,square_metre_year,One square metre of floor ar
 FU.MONTH,month,modeled,month,One month of sustained activity
 FU.HOUR,service-hour,services,hour,One hour of operational service delivery
 FU.SITE_DAY,site-day of operation,services,site_day,One active construction site operating for a standard workday
+FU.SERVER_HOUR,server-hour,data_centres,server_hour,One physical or virtual server operating for one hour under representative IT load
+FU.RACK_MONTH,rack-month,data_centres,rack_month,One rack-equivalent of colocation capacity sustained for one month
+FU.HECTARE_BURNED,hectare burned,natural_hazards,hectare,One hectare of vegetated land burned during a wildfire event
 FU.PGCO2YEAR,petagram CO₂ per year,climate,carbon_dioxide_pg_per_year,Annualised ocean-atmosphere CO₂ exchange expressed in petagrams CO₂ per year.
 FU.PH.DECADE,pH shift per decade,climate,ph_decade,Mean surface-ocean pH change measured over a decade.
 FU.WM2,watt per square metre,climate,watt_per_square_metre,Radiative forcing intensity referenced to Earth system albedo shifts.

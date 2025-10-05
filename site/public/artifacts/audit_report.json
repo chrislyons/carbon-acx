@@ -181,9 +181,14 @@
           "category": "military_mobility",
           "id": "MIL.NAVAL.TONNEKM",
           "name": "Military naval shipping (tonne-km)"
+        },
+        {
+          "category": "military_operations",
+          "id": "MIL.MUNITIONS.DETONATED.TONNE",
+          "name": "Munitions detonated\u2014per tonne"
         }
       ],
-      "count": 3
+      "count": 4
     },
     "industrial_light": {
       "activities": [
@@ -306,9 +311,24 @@
           "category": "conflict_scenarios",
           "id": "MIL.CONFLICT.MONTH",
           "name": "Armed conflict (month)"
+        },
+        {
+          "category": "weapons_effects",
+          "id": "MIL.MUNITIONS.DETONATION.EVENT",
+          "name": "Munitions detonation event"
+        },
+        {
+          "category": "natural_hazards",
+          "id": "MODELED.WILDFIRE.HECTARE",
+          "name": "Wildfire burned area\u2014per hectare"
+        },
+        {
+          "category": "natural_hazards",
+          "id": "MODELED.WILDFIRE.EVENT",
+          "name": "Wildfire incident\u2014per event"
         }
       ],
-      "count": 1
+      "count": 4
     },
     "online": {
       "activities": [
@@ -316,6 +336,11 @@
           "category": "conferencing",
           "id": "CONF.AUDIO.PER_PARTICIPANT_HOUR",
           "name": "Audio-only conference per participant-hour"
+        },
+        {
+          "category": "online_services",
+          "id": "ONLINE.CDN.EDGE.GB",
+          "name": "CDN edge delivery\u2014per GB"
         },
         {
           "category": "downloads",
@@ -326,6 +351,11 @@
           "category": "cloud",
           "id": "CLOUD.STORAGE.SYNC.GB_MONTH",
           "name": "Cloud storage sync per GB-month"
+        },
+        {
+          "category": "online_services",
+          "id": "ONLINE.DC.COLOCATION.RACK.MONTH",
+          "name": "Colocation rack footprint\u2014per month"
         },
         {
           "category": "downloads",
@@ -356,6 +386,11 @@
           "category": "media",
           "id": "MEDIA.STREAM.HD.HOUR",
           "name": "HD video streaming\u2014per hour"
+        },
+        {
+          "category": "online_services",
+          "id": "ONLINE.DC.CLOUD.SERVER.HOUR",
+          "name": "Hyperscale cloud server\u2014per hour"
         },
         {
           "category": "social",
@@ -433,7 +468,7 @@
           "name": "YouTube usage\u2014per hour"
         }
       ],
-      "count": 24
+      "count": 27
     },
     "personal_security_layer": {
       "activities": [
@@ -593,9 +628,11 @@
       "with_emission_factors": 3
     },
     "industrial_heavy_military": {
-      "activities": 3,
-      "coverage_ratio": 1.0,
-      "missing_activity_ids": [],
+      "activities": 4,
+      "coverage_ratio": 0.75,
+      "missing_activity_ids": [
+        "MIL.MUNITIONS.DETONATED.TONNE"
+      ],
       "with_emission_factors": 3
     },
     "industrial_light": {
@@ -615,14 +652,18 @@
       "with_emission_factors": 2
     },
     "modeled_events": {
-      "activities": 1,
-      "coverage_ratio": 1.0,
-      "missing_activity_ids": [],
+      "activities": 4,
+      "coverage_ratio": 0.25,
+      "missing_activity_ids": [
+        "MIL.MUNITIONS.DETONATION.EVENT",
+        "MODELED.WILDFIRE.EVENT",
+        "MODELED.WILDFIRE.HECTARE"
+      ],
       "with_emission_factors": 1
     },
     "online": {
-      "activities": 24,
-      "coverage_ratio": 0.708,
+      "activities": 27,
+      "coverage_ratio": 0.63,
       "missing_activity_ids": [
         "AI.IMAGE.GENERATION.PROMPT",
         "CLOUD.STORAGE.SYNC.GB_MONTH",
@@ -630,7 +671,10 @@
         "DOWNLOAD.GAME.CONSOLE.50GB",
         "MEDIA.STREAM.SD.HOUR.MOBILE",
         "MEDIA.STREAM.UHD.HOUR.TV",
-        "MUSIC.STREAM.STANDARD.HOUR"
+        "MUSIC.STREAM.STANDARD.HOUR",
+        "ONLINE.CDN.EDGE.GB",
+        "ONLINE.DC.CLOUD.SERVER.HOUR",
+        "ONLINE.DC.COLOCATION.RACK.MONTH"
       ],
       "with_emission_factors": 17
     },
@@ -647,7 +691,7 @@
       "with_emission_factors": 19
     }
   },
-  "generated_at": "2025-10-05T07:42:18.930700+00:00",
+  "generated_at": "2025-10-05T07:58:17.042359+00:00",
   "layers_present": [
     {
       "activities": 5,
@@ -740,11 +784,13 @@
       "ui_configured": false
     },
     {
-      "activities": 3,
+      "activities": 4,
       "emission_factor_coverage": {
-        "activities": 3,
-        "coverage_ratio": 1.0,
-        "missing_activity_ids": [],
+        "activities": 4,
+        "coverage_ratio": 0.75,
+        "missing_activity_ids": [
+          "MIL.MUNITIONS.DETONATED.TONNE"
+        ],
         "with_emission_factors": 3
       },
       "has_references": false,
@@ -795,11 +841,15 @@
       "ui_configured": false
     },
     {
-      "activities": 1,
+      "activities": 4,
       "emission_factor_coverage": {
-        "activities": 1,
-        "coverage_ratio": 1.0,
-        "missing_activity_ids": [],
+        "activities": 4,
+        "coverage_ratio": 0.25,
+        "missing_activity_ids": [
+          "MIL.MUNITIONS.DETONATION.EVENT",
+          "MODELED.WILDFIRE.EVENT",
+          "MODELED.WILDFIRE.HECTARE"
+        ],
         "with_emission_factors": 1
       },
       "has_references": false,
@@ -807,15 +857,15 @@
       "id": "modeled_events",
       "operations": 0,
       "optional": true,
-      "summary": "Modeled warfighting and contingency scenarios with aggregated operational intensity.",
-      "title": "Conflict simulations",
+      "summary": "Modeled warfighting and natural hazard scenarios with aggregated operational intensity.",
+      "title": "Scenario simulations",
       "ui_configured": false
     },
     {
-      "activities": 24,
+      "activities": 27,
       "emission_factor_coverage": {
-        "activities": 24,
-        "coverage_ratio": 0.708,
+        "activities": 27,
+        "coverage_ratio": 0.63,
         "missing_activity_ids": [
           "AI.IMAGE.GENERATION.PROMPT",
           "CLOUD.STORAGE.SYNC.GB_MONTH",
@@ -823,7 +873,10 @@
           "DOWNLOAD.GAME.CONSOLE.50GB",
           "MEDIA.STREAM.SD.HOUR.MOBILE",
           "MEDIA.STREAM.UHD.HOUR.TV",
-          "MUSIC.STREAM.STANDARD.HOUR"
+          "MUSIC.STREAM.STANDARD.HOUR",
+          "ONLINE.CDN.EDGE.GB",
+          "ONLINE.DC.CLOUD.SERVER.HOUR",
+          "ONLINE.DC.COLOCATION.RACK.MONTH"
         ],
         "with_emission_factors": 17
       },

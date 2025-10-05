@@ -104,6 +104,12 @@ _UNIT_VARIABLE_HINTS: dict[str, tuple[str, ...]] = {
     "mmbtu": ("mmbtu", "energy_mmbtu"),
     "tonne": ("tonnes", "mass_tonnes"),
     "1k_tokens": ("tokens", "token_k"),
+    "gb": ("gb_transferred", "data_gb"),
+    "gigabyte": ("gb_transferred", "data_gb"),
+    "server_hour": ("server_hours", "it_server_hours"),
+    "rack_month": ("rack_months", "rack_equivalent_months"),
+    "hectare": ("hectares_burned", "area_hectares"),
+    "event": ("events",),
 }
 
 _CASE_TO_LITRE_MULTIPLIER = 24.0 * 0.355
