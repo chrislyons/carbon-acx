@@ -203,6 +203,7 @@ class ActivityFunctionalUnitMap(BaseModel):
 
 
 class EmissionFactor(BaseModel):
+    ef_id: Optional[str] = None
     activity_id: str
     layer_id: Optional[LayerId] = None
     unit: Optional[str] = None
@@ -213,8 +214,10 @@ class EmissionFactor(BaseModel):
     electricity_kwh_per_unit_high: Optional[float] = None
     region: Optional[RegionCode] = None
     scope_boundary: Optional[ScopeBoundary] = None
+    gwp_horizon: Optional[str] = None
     vintage_year: Optional[int] = None
     source_id: Optional[str] = None
+    method_notes: Optional[str] = None
     uncert_low_g_per_unit: Optional[float] = None
     uncert_high_g_per_unit: Optional[float] = None
 
@@ -278,7 +281,12 @@ class EmissionFactor(BaseModel):
 class Profile(BaseModel):
     profile_id: str
     layer_id: LayerId
+    name: Optional[str] = None
+    grid_strategy: Optional[str] = None
+    grid_mix_json: Optional[str] = None
+    cohort_id: Optional[str] = None
     office_days_per_week: Optional[float] = None
+    assumption_notes: Optional[str] = None
     default_grid_region: Optional[RegionCode] = Field(default=None, alias="region_code_default")
 
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
@@ -363,6 +371,7 @@ class ActivitySchedule(BaseModel):
     region_override: Optional[RegionCode] = None
     mix_region: Optional[RegionCode] = None
     use_canada_average: Optional[bool] = None
+    schedule_notes: Optional[str] = None
     distance_km: Optional[float] = None
     passengers: Optional[float] = None
     hours: Optional[float] = None
@@ -380,6 +389,7 @@ class ActivitySchedule(BaseModel):
 
 class GridIntensity(BaseModel):
     region: RegionCode = Field(alias="region_code")
+    region_label: Optional[str] = Field(default=None, alias="region")
     scope_boundary: Optional[ScopeBoundary] = None
     gwp_horizon: Optional[str] = None
     intensity_g_per_kwh: Optional[float] = Field(default=None, alias="g_per_kwh")

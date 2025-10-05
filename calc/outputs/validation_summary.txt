@@ -1,0 +1,30 @@
+Validation Summary
+===================
+
+[PASS] Schema integrity
+  - All CSV headers align with schema definitions.
+
+[PASS] Citation completeness
+  - All numeric emission factors map to cited sources.
+
+[PASS] Frequency exclusivity
+  - No schedule rows define both freq_per_day and freq_per_week.
+
+[PASS] Layer coverage
+  - All activities and emission factors include valid layer identifiers.
+
+[PASS] Deterministic build
+  - Repeated builds produced identical JSON artefact hashes.
+
+[PASS] Numerical sanity checks
+  - clothing: total annual_kg=733.008242
+  - food: total annual_kg=1877.142857
+  - media: total annual_kg=1.921725
+  - mobility: total annual_kg=194.894357
+  - private_security: total annual_kg=55792.857143
+  - social: total annual_kg=113.150000
+
+build_id: 7e4af6717ca0
+schema_hash: ee027708518a8cecd7503c0506421c8353ac5eddf4242b6df22d2cf445fe1f9e
+JSON artefact hashes:
+  - latest-build.json: 6a10e9968cf14af619c7318f49bf62705201807d94fbae2b33b0e686cb1e49e9
