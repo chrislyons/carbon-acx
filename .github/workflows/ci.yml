@@ -63,6 +63,19 @@ jobs:
     needs: [build-static]
     steps:
       - uses: actions/checkout@v4
+      - name: Guard — fail if binaries slipped into PR
+        run: |
+          set -euo pipefail
+          if git ls-files --error-unmatch 'refs/raw/*' >/dev/null 2>&1 || \
+             git ls-files --error-unmatch 'refs/normalized/*' >/dev/null 2>&1; then
+            echo "::error::Binary/normalized files under refs/* must not be committed."
+            exit 1
+          fi
+          LARGE=$(git ls-files refs | xargs -I{} bash -c 'test -f "{}" && [ $(wc -c < "{}") -gt 65536 ] && echo "{}" || true' | tr -s '\n' ' ')
+          if [ -n "$LARGE" ]; then
+            echo "::error::Large files detected under refs/: $LARGE"
+            exit 1
+          fi
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
