@@ -1,74 +1,77 @@
 {
-  "biosphere_feedbacks": {
-    "activity_count": 5,
-    "profile_count": 0,
-    "emission_factor_count": 5,
-    "emission_factor_activity_coverage": 1.0
-  },
-  "buildings_defense": {
-    "activity_count": 2,
-    "profile_count": 0,
-    "emission_factor_count": 2,
-    "emission_factor_activity_coverage": 1.0
-  },
-  "industrial_externalities": {
-    "activity_count": 3,
-    "profile_count": 0,
-    "emission_factor_count": 3,
-    "emission_factor_activity_coverage": 1.0
-  },
-  "industrial_heavy": {
-    "activity_count": 15,
-    "profile_count": 0,
-    "emission_factor_count": 11,
-    "emission_factor_activity_coverage": 0.733
-  },
-  "industrial_heavy_embodied": {
-    "activity_count": 3,
-    "profile_count": 0,
-    "emission_factor_count": 3,
-    "emission_factor_activity_coverage": 1.0
-  },
-  "industrial_heavy_military": {
-    "activity_count": 4,
-    "profile_count": 0,
-    "emission_factor_count": 3,
-    "emission_factor_activity_coverage": 0.75
-  },
-  "industrial_light": {
-    "activity_count": 19,
-    "profile_count": 0,
-    "emission_factor_count": 17,
-    "emission_factor_activity_coverage": 0.842
-  },
-  "materials_chemicals": {
-    "activity_count": 2,
-    "profile_count": 0,
-    "emission_factor_count": 2,
-    "emission_factor_activity_coverage": 1.0
-  },
-  "modeled_events": {
-    "activity_count": 4,
-    "profile_count": 1,
-    "emission_factor_count": 1,
-    "emission_factor_activity_coverage": 0.25
-  },
-  "online": {
-    "activity_count": 27,
-    "profile_count": 0,
-    "emission_factor_count": 17,
-    "emission_factor_activity_coverage": 0.63
-  },
-  "personal_security_layer": {
-    "activity_count": 3,
-    "profile_count": 1,
-    "emission_factor_count": 3,
-    "emission_factor_activity_coverage": 1.0
-  },
-  "professional": {
-    "activity_count": 19,
-    "profile_count": 12,
-    "emission_factor_count": 23,
-    "emission_factor_activity_coverage": 1.0
-  }
+  "generated_at": "2025-10-05T21:49:34.381096+00:00",
+  "layers": [
+    {
+      "layer_id": "biosphere_feedbacks",
+      "activities": 5,
+      "profiles": 1,
+      "emission_factors": 5
+    },
+    {
+      "layer_id": "buildings_defense",
+      "activities": 2,
+      "profiles": 0,
+      "emission_factors": 2
+    },
+    {
+      "layer_id": "industrial_externalities",
+      "activities": 3,
+      "profiles": 1,
+      "emission_factors": 3
+    },
+    {
+      "layer_id": "industrial_heavy",
+      "activities": 15,
+      "profiles": 1,
+      "emission_factors": 11
+    },
+    {
+      "layer_id": "industrial_heavy_embodied",
+      "activities": 3,
+      "profiles": 0,
+      "emission_factors": 3
+    },
+    {
+      "layer_id": "industrial_heavy_military",
+      "activities": 4,
+      "profiles": 0,
+      "emission_factors": 3
+    },
+    {
+      "layer_id": "industrial_light",
+      "activities": 19,
+      "profiles": 2,
+      "emission_factors": 17
+    },
+    {
+      "layer_id": "materials_chemicals",
+      "activities": 2,
+      "profiles": 0,
+      "emission_factors": 2
+    },
+    {
+      "layer_id": "modeled_events",
+      "activities": 4,
+      "profiles": 1,
+      "emission_factors": 1
+    },
+    {
+      "layer_id": "online",
+      "activities": 27,
+      "profiles": 4,
+      "emission_factors": 17
+    },
+    {
+      "layer_id": "personal_security_layer",
+      "activities": 3,
+      "profiles": 1,
+      "emission_factors": 3
+    },
+    {
+      "layer_id": "professional",
+      "activities": 19,
+      "profiles": 12,
+      "emission_factors": 23
+    }
+  ]
 }

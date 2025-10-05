@@ -1,5 +1,14 @@
 profile_id,layer_id,name,region_code_default,grid_strategy,grid_mix_json,cohort_id,office_days_per_week,assumption_notes
 BASE.TO.PROF.HYBRID.2025,professional,Toronto professional baseline hybrid (2025),CA-ON,region_default,,,3,Baseline scenario for mixed office/home routine with seeded activities.
+EARTH.CA.BIOSPHERE.2025,biosphere_feedbacks,Canadian earth system baseline (2025),CA,region_default,,,0,
+IND.TO.HEAVY.2025,industrial_heavy,Ontario heavy-industrial baseline (2025),CA-ON,region_default,,,,"Publishes clinker, steel, refining, and mining haul activity coverage for the Toronto heavy-industrial baseline."
+IND_EXT.CA.BASELINE.2025,industrial_externalities,Canadian industrial externalities baseline (2025),CA,region_default,,,0,
+IND_LIGHT.ON.CONSTRUCTION.2025,industrial_light,Ontario light-industrial construction (2025),CA-ON,region_default,,,,Activates construction trade mix schedules aligned to 2025 Toronto project benchmarks.
+IND_LIGHT.ON.LOGISTICS.2025,industrial_light,Ontario light-industrial logistics & warehousing (2025),CA-ON,region_default,,,,Includes regional load profiles and shift schedules for representative 2025 logistics operations.
+ONLINE.AB.CONSUMER.2025,online,Online Services — Alberta consumer (2025),CA-AB,region_default,,,,
+ONLINE.BC.CONSUMER.2025,online,Online Services — British Columbia consumer (2025),CA-BC,region_default,,,,
+ONLINE.QC.CONSUMER.2025,online,Online Services — Quebec consumer (2025),CA-QC,region_default,,,,
+ONLINE.TO.CONSUMER.2025,online,Online Services — Toronto consumer (2025),CA-ON,region_default,,,,
 PRO.AB.24_39.HYBRID.2025,professional,Alberta Pros 24–39 — Hybrid (2025),CA-AB,region_default,,,3,
 PRO.AB.40_56.HYBRID.2025,professional,Alberta Pros 40–56 — Hybrid (2025),CA-AB,region_default,,,3,
 PRO.BC.24_39.HYBRID.2025,professional,British Columbia Pros 24–39 — Hybrid (2025),CA-BC,region_default,,,3,
@@ -13,7 +22,3 @@ PROFILE.CHILD.CLOTHING.2025,professional,Child clothing consumption (2025),,regi
 PROFILE.ELITE.SECURITY.2025,personal_security_layer,Elite private security program (2025),CA-ON,region_default,,,0,"High-net-worth security envelope covering convoy, guard, and aerial patrol services."
 PROFILE.SENIOR.CLOTHING.2025,professional,Senior clothing consumption (2025),,region_default,,,0,Annualized clothing purchases for a representative senior cohort.
 PROFILE.WAR.UKRAINE.2022,modeled_events,Ukraine conflict operations (2022),,region_default,,,0,Modeled monthly high-intensity conflict footprint across 2022 hostilities.
-ONLINE.TO.CONSUMER.2025,online,Ontario consumer digital services baseline (2025),CA-ON,region_default,,,,
-ONLINE.QC.CONSUMER.2025,online,Québec consumer digital services baseline (2025),CA-QC,region_default,,,,
-ONLINE.AB.CONSUMER.2025,online,Alberta consumer digital services baseline (2025),CA-AB,region_default,,,,
-ONLINE.BC.CONSUMER.2025,online,British Columbia consumer digital services baseline (2025),CA-BC,region_default,,,,
