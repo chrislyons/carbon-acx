@@ -22,6 +22,8 @@ markdownify = ">=0.11,<0.13"
 trafilatura = ">=1.9,<2"
 pymupdf = ">=1.24,<1.25"
 "pdfminer.six" = ">=20221105"
+PyNaCl = ">=1.5,<1.7"
+wn = ">=0.13,<0.14"
 
 [tool.poetry.extras]
 db = ["duckdb"]

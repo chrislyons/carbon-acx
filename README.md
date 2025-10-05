@@ -255,6 +255,7 @@ Deploy with Wrangler (`wrangler publish`) or run locally with `wrangler dev`. Co
 - `python -m scripts.sync_layers_json` – Mirrors `data/layers.csv` into `site/public/artifacts/layers.json` for the static client.
 - `bash scripts/dev_diag.sh` – Compares artefact headers locally and remotely, respecting `PUBLIC_BASE_PATH` and `PAGES_DOMAIN` for quick HTTP debugging.【F:scripts/dev_diag.sh†L1-L16】
 - `make sbom` – Produces `dist/sbom/cyclonedx.json` using `tools/sbom.py` for release compliance.【F:tools/sbom.py†L1-L120】
+- `python -m scripts.build_en` – Downloads the Princeton WordNet / OMW corpora, materialises the English SQLite pack, and emits a signed manifest when an Ed25519 key is supplied.【F:scripts/build_en.py†L1-L78】【F:calc/pack/english.py†L1-L239】
 
 ---
 

@@ -1,0 +1,2 @@
+[1] Princeton University, "WordNet: An Electronic Lexical Database," Princeton University, Princeton, NJ. Available: https://wordnet.princeton.edu/
+[2] F. Bond and R. Foster, "Linking and extending an open multilingual wordnet," in *Proceedings of the 51st Annual Meeting of the Association for Computational Linguistics*, Sofia, Bulgaria, 2013. Available: https://omwn.org/
