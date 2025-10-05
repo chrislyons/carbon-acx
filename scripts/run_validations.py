@@ -19,7 +19,7 @@ import json
 import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterable, Mapping, Sequence
+from typing import Mapping, Sequence
 
 import pandas as pd
 
@@ -55,10 +55,10 @@ def _columns_from_model(model: type[schema.BaseModel]) -> tuple[set[str], set[st
 
     expected: set[str] = set()
     required: set[str] = set()
-    for field_name, field in model.model_fields.items():
-        column = field.alias or field_name
+    for field_name, model_field in model.model_fields.items():
+        column = model_field.alias or field_name
         expected.add(column)
-        if field.is_required():
+        if model_field.is_required():
             required.add(column)
     return expected, required
 
