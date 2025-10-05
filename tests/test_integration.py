@@ -84,8 +84,8 @@ class GoldenStore:
                 intensity_g_per_kwh=100,
                 intensity_low_g_per_kwh=90,
                 intensity_high_g_per_kwh=110,
-                source_id="SRC.IESO.2024",
-                vintage_year=2024,
+                source_id="SRC.IESO.POWERDATA.2025",
+                vintage_year=2025,
             )
         ]
 

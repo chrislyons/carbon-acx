@@ -1,6 +1,6 @@
 {
   "citation_keys": [
-    "SRC.IESO.2024",
+    "SRC.IESO.POWERDATA.2025",
     "coffee",
     "streaming"
   ],
@@ -29,7 +29,7 @@
       "annual_emissions_g_low": 16380.0,
       "emission_factor_vintage_year": 2023,
       "grid_region": "CA-ON",
-      "grid_vintage_year": 2024,
+      "grid_vintage_year": 2025,
       "layer_id": "professional",
       "profile_id": "p1",
       "scope_boundary": null,
@@ -39,14 +39,14 @@
   "generated_at": "2024-01-02T03:04:05+00:00",
   "layer_citation_keys": {
     "professional": [
-      "SRC.IESO.2024",
+      "SRC.IESO.POWERDATA.2025",
       "coffee",
       "streaming"
     ]
   },
   "layer_references": {
     "professional": [
-      "[1] Independent Electricity System Operator (IESO), \u201cEmissions and Grid Intensity (Ontario)\u2014Data and Reports,\u201d 2024. Available: https://www.ieso.ca/en/Power-Data/Data-Directory.",
+      "[1] Independent Electricity System Operator (IESO), “Emissions and Grid Intensity (Ontario)—Data and Reports,” 2025. Available: https://www.ieso.ca/en/Power-Data/Data-Directory",
       "[2] Coffee reference.",
       "[3] Streaming reference."
     ]
@@ -63,7 +63,7 @@
     ]
   },
   "references": [
-    "[1] Independent Electricity System Operator (IESO), \u201cEmissions and Grid Intensity (Ontario)\u2014Data and Reports,\u201d 2024. Available: https://www.ieso.ca/en/Power-Data/Data-Directory.",
+    "[1] Independent Electricity System Operator (IESO), “Emissions and Grid Intensity (Ontario)—Data and Reports,” 2025. Available: https://www.ieso.ca/en/Power-Data/Data-Directory",
     "[2] Coffee reference.",
     "[3] Streaming reference."
   ]

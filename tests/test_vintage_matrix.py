@@ -29,13 +29,13 @@ def test_provincial_grid_vintage_matrix_complete():
     assert ontario_rows, "expected at least one Ontario grid intensity row"
     latest_ontario = max(ontario_rows, key=lambda row: row.vintage_year)
     assert latest_ontario.vintage_year == 2025
-    assert latest_ontario.source_id == "SRC.IESO.2025"
+    assert latest_ontario.source_id == "SRC.IESO.POWERDATA.2025"
 
     qc_row = matrix[(RegionCode.CA_QC, 2025)]
     ab_row = matrix[(RegionCode.CA_AB, 2025)]
     bc_row = matrix[(RegionCode.CA_BC, 2025)]
 
-    assert qc_row.source_id == "SRC.NIR.2025"
+    assert qc_row.source_id == "SRC.ECCC.NIR.2025"
 
     qc_2025 = qc_row.intensity_g_per_kwh
     ab_2025 = ab_row.intensity_g_per_kwh
