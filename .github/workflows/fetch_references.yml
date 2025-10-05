@@ -28,28 +28,30 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Git LFS
+        run: |
+          git lfs install --local
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Install deps
+      - name: Install dependencies
         run: |
+          set -euo pipefail
           pipx install poetry
           poetry install --with dev
 
-      - name: Prepare args from inputs
-        id: args
+      - name: Prepare CLI arguments
         run: |
           set -euo pipefail
           args=()
 
-          # only_ids → --only-ids
           if [[ -n "${{ inputs.only_ids }}" ]]; then
-            args+=( "--only-ids" "${{ inputs.only_ids }}" )
+            args+=( "--only" "${{ inputs.only_ids }}" )
           fi
 
-          # domains_allowlist → file, then --domains <file>
           if [[ -n "${{ inputs.domains_allowlist }}" ]]; then
             mkdir -p refs
             printf '%s\n' "${{ inputs.domains_allowlist }}" \
@@ -57,22 +59,26 @@ jobs:
             args+=( "--domains" "refs/domains_allowlist.txt" )
           fi
 
-          # normalize boolean (already boolean in YAML inputs)
-          if [[ "${{ inputs.normalize }}" == "true" ]]; then
-            args+=( "--normalize" )
+          if [[ ${#args[@]} -gt 0 ]]; then
+            printf 'ARGS=%s\n' "$(printf '%q ' "${args[@]}")" >> "$GITHUB_ENV"
+          else
+            echo 'ARGS=' >> "$GITHUB_ENV"
           fi
 
-          printf 'ARGS=%q ' "${args[@]}" | tee -a "$GITHUB_OUTPUT"
-          echo
+      - name: refs-check
+        run: make refs-check
 
-      - name: Fetch references
-        run: |
-          set -euo pipefail
-          # Adjust path to your fetch script if different:
-          # examples assume: calc/references/fetch_refs.py
-          poetry run python calc/references/fetch_refs.py ${ARGS:-}
+      - name: refs-fetch
+        run: make refs-fetch
 
-      - name: Persist fetched refs as artifact (optional)
+      - name: refs-normalize
+        if: ${{ inputs.normalize == true }}
+        run: make refs-normalize
+
+      - name: refs-audit
+        run: make refs-audit
+
+      - name: Persist fetched refs as artifact
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
