@@ -1,0 +1,2 @@
+# List source IDs that are temporarily exempt from manifest coverage checks.
+# One source ID per line; lines starting with # are ignored.
