@@ -473,9 +473,7 @@ def slice_sankey(
             share_value = float(operation_entry.get("share", 0.0))
             if share_value <= 0:
                 continue
-            operation_key = str(
-                operation_entry.get("operation_id") or f"direct:{activity_id}"
-            )
+            operation_key = str(operation_entry.get("operation_id") or f"direct:{activity_id}")
             operation_label = _operation_label(operation_entry, operation_key)
             operation_node_id = f"operation:{operation_key}"
             _ensure_two_stage_node(operation_node_id, "operation", operation_label)
@@ -545,9 +543,7 @@ def slice_feedback(
     if df is not None and not df.empty:
         if {"activity_id", "annual_emissions_g"}.issubset(df.columns):
             grouped = (
-                df.groupby("activity_id")[["annual_emissions_g"]]
-                .sum(min_count=1)
-                .reset_index()
+                df.groupby("activity_id")[["annual_emissions_g"]].sum(min_count=1).reset_index()
             )
             for _, row in grouped.iterrows():
                 activity_id = str(row.get("activity_id"))

@@ -365,9 +365,7 @@ def compute_profile(
         assets = {asset.asset_id: asset for asset in asset_iter if asset.asset_id}
 
         load_feedback_fn = getattr(store, "load_feedback_loops", None)
-        feedback_loops = (
-            list(load_feedback_fn()) if callable(load_feedback_fn) else []
-        )
+        feedback_loops = list(load_feedback_fn()) if callable(load_feedback_fn) else []
         if not feedback_loops:
             try:
                 feedback_loops = list(

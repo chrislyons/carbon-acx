@@ -35,9 +35,7 @@ def sample_output(tmp_path: Path) -> Path:
 
 def _dataset_hash() -> str:
     paths = [
-        (Path.cwd() / path)
-        for path in DATASET_FILES
-        if (Path.cwd() / path).resolve().exists()
+        (Path.cwd() / path) for path in DATASET_FILES if (Path.cwd() / path).resolve().exists()
     ]
     if not paths:
         return sha256_bytes(b"")

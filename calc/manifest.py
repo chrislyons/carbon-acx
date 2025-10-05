@@ -178,7 +178,9 @@ def generate_all(output_dir: Path | str | None = None) -> list[Path]:
 
     dataset_paths = _resolve_dataset_paths(DATASET_FILES)
     dataset_hash = sha256_concat(dataset_paths) if dataset_paths else sha256_bytes(b"")
-    source_files = _source_filenames(dataset_paths) if dataset_paths else [str(path) for path in DATASET_FILES]
+    source_files = (
+        _source_filenames(dataset_paths) if dataset_paths else [str(path) for path in DATASET_FILES]
+    )
     created_at = _resolve_generated_at()
     manifest_paths: list[Path] = []
 
@@ -192,15 +194,15 @@ def generate_all(output_dir: Path | str | None = None) -> list[Path]:
 
         figure_hash = sha256_bytes(figure_bytes)
         references_hash = sha256_bytes(references_bytes)
-        top_hash = sha256_bytes(
-            (dataset_hash + figure_hash + references_hash).encode("utf-8")
-        )
+        top_hash = sha256_bytes((dataset_hash + figure_hash + references_hash).encode("utf-8"))
 
         figure_payload = _read_json(figure_path)
         citation_keys = []
         if isinstance(figure_payload, Mapping):
             candidate_keys = figure_payload.get("citation_keys")
-            if isinstance(candidate_keys, Sequence) and not isinstance(candidate_keys, (str, bytes)):
+            if isinstance(candidate_keys, Sequence) and not isinstance(
+                candidate_keys, (str, bytes)
+            ):
                 citation_keys = [str(key) for key in candidate_keys]
 
         references_ieee = _load_references(references_path)

@@ -277,11 +277,13 @@ def _filter_payload(payload: dict | None, layer_id: str | None) -> dict | None:
                 mode_links = [
                     link for link in mode_payload.get("links", []) if _row_layer(link) == layer_id
                 ]
-                mode_node_ids = {
-                    link.get("source") for link in mode_links
-                } | {link.get("target") for link in mode_links}
+                mode_node_ids = {link.get("source") for link in mode_links} | {
+                    link.get("target") for link in mode_links
+                }
                 mode_nodes = [
-                    node for node in mode_payload.get("nodes", []) if node.get("id") in mode_node_ids
+                    node
+                    for node in mode_payload.get("nodes", [])
+                    if node.get("id") in mode_node_ids
                 ]
                 filtered_modes[str(mode_name)] = {"nodes": mode_nodes, "links": mode_links}
         data_copy = dict(data)
@@ -1114,7 +1116,9 @@ def create_app() -> Dash:
         State("figures-store", "data"),
         State({"component": "sankey-mode", "layer": MATCH}, "id"),
     )
-    def _update_sankey_mode(mode_value, active_activity, theme_mode_value, figures_store_state, mode_id):
+    def _update_sankey_mode(
+        mode_value, active_activity, theme_mode_value, figures_store_state, mode_id
+    ):
         layer_value = None
         if isinstance(mode_id, Mapping):
             raw_layer = mode_id.get("layer")

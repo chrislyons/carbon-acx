@@ -154,9 +154,7 @@ def analyze_emission_factors(path: Path) -> DatasetReport:
             if is_grid_indexed:
                 for field in GRID_INDEXED_REQUIREMENTS:
                     if field not in row or is_missing(row[field]):
-                        issues.append(
-                            "Grid-indexed row missing required field: " + field
-                        )
+                        issues.append("Grid-indexed row missing required field: " + field)
             findings.append(
                 RowFinding(
                     row_number=index,
@@ -231,9 +229,10 @@ def render_markdown(report: ScanReport) -> str:
             for finding in dataset.findings:
                 if not finding.issues:
                     continue
-                identifier = ", ".join(
-                    f"{key}={value}" for key, value in finding.identifier.items()
-                ) or f"row {finding.row_number}"
+                identifier = (
+                    ", ".join(f"{key}={value}" for key, value in finding.identifier.items())
+                    or f"row {finding.row_number}"
+                )
                 lines.append(f"- **{identifier}**")
                 for issue in finding.issues:
                     lines.append(f"  - {issue}")

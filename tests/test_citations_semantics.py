@@ -30,9 +30,10 @@ def test_numeric_rows_require_source_id() -> None:
         if has_numeric and not row.get("source_id", "").strip():
             offenders.append(row.get("ef_id", "<unknown>"))
 
-    assert not offenders, (
-        "Numeric emission factor rows must include a source_id. Missing for: "
-        + ", ".join(sorted(offenders))
+    assert (
+        not offenders
+    ), "Numeric emission factor rows must include a source_id. Missing for: " + ", ".join(
+        sorted(offenders)
     )
 
 
@@ -55,9 +56,7 @@ def test_grid_indexed_rows_have_vintage_and_electricity() -> None:
 
 
 def test_category_scope_alignment() -> None:
-    activities = {
-        row["activity_id"]: row for row in _load_csv("activities.csv")
-    }
+    activities = {row["activity_id"]: row for row in _load_csv("activities.csv")}
     emission_factors = _load_csv("emission_factors.csv")
 
     transport_offenders: list[str] = []
@@ -96,9 +95,10 @@ def test_sources_ieee_citations_include_availability() -> None:
         and "Available:" not in row["ieee_citation"]
         and "http" not in row["ieee_citation"]
     ]
-    assert not offenders, (
-        "sources.csv entries must include an access note or URL. Missing for: "
-        + ", ".join(sorted(offenders))
+    assert (
+        not offenders
+    ), "sources.csv entries must include an access note or URL. Missing for: " + ", ".join(
+        sorted(offenders)
     )
 
 

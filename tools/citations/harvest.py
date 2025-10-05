@@ -137,7 +137,9 @@ def run(check_only: bool) -> int:
         previous = existing_manifest.get(source_id, {})
         if check_only:
             if not local_path.exists():
-                _append_error(errors, f"Missing harvested file for {source_id}: expected {local_path}")
+                _append_error(
+                    errors, f"Missing harvested file for {source_id}: expected {local_path}"
+                )
             fetched_at = previous.get("fetched_at", "")
             archive_url = previous.get("archive_url", "")
         else:
@@ -166,7 +168,9 @@ def run(check_only: bool) -> int:
 
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Harvest source material for references")
-    parser.add_argument("--check", action="store_true", help="Verify harvest state without downloading")
+    parser.add_argument(
+        "--check", action="store_true", help="Verify harvest state without downloading"
+    )
     args = parser.parse_args(argv)
 
     exit_code = run(check_only=args.check)

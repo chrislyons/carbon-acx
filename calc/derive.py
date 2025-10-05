@@ -1210,14 +1210,10 @@ def export_view(
     efs = {ef.activity_id: ef for ef in datastore.load_emission_factors()}
     profiles = {p.profile_id: p for p in datastore.load_profiles()}
     load_feedback_loops_fn = getattr(datastore, "load_feedback_loops", None)
-    feedback_loops = (
-        list(load_feedback_loops_fn()) if callable(load_feedback_loops_fn) else []
-    )
+    feedback_loops = list(load_feedback_loops_fn()) if callable(load_feedback_loops_fn) else []
     if not feedback_loops:
         try:
-            feedback_loops = list(
-                schema_load_feedback_loops(activities=list(activities.values()))
-            )
+            feedback_loops = list(schema_load_feedback_loops(activities=list(activities.values())))
         except Exception:  # pragma: no cover - defensive fallback
             feedback_loops = []
     if activities:

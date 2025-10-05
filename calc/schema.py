@@ -540,11 +540,7 @@ def load_feedback_loops(
     activity_records = activities if activities is not None else load_activities()
     activity_ids = {activity.activity_id for activity in activity_records}
     missing = sorted(
-        {
-            loop.trigger_activity_id
-            for loop in loops
-            if loop.trigger_activity_id not in activity_ids
-        }
+        {loop.trigger_activity_id for loop in loops if loop.trigger_activity_id not in activity_ids}
         | {
             loop.response_activity_id
             for loop in loops
@@ -552,9 +548,7 @@ def load_feedback_loops(
         }
     )
     if missing:
-        raise ValueError(
-            "Unknown activity referenced by feedback_loops: " + ", ".join(missing)
-        )
+        raise ValueError("Unknown activity referenced by feedback_loops: " + ", ".join(missing))
     return loops
 
 
@@ -629,6 +623,8 @@ def invalidate_caches() -> None:
     """Clear cached CSV reads for schema models."""
 
     _csv_cache.clear()
+
+
 class FeedbackLoop(BaseModel):
     loop_id: str
     trigger_activity_id: str
@@ -640,4 +636,3 @@ class FeedbackLoop(BaseModel):
     notes: Optional[str] = None
 
     model_config = ConfigDict(extra="ignore")
-

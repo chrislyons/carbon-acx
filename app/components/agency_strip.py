@@ -34,7 +34,9 @@ def _segment(segment: Mapping[str, object]) -> html.Span:
     if tooltip:
         attrs["title"] = tooltip
         safe_tooltip = tooltip.replace("\n", "; ")
-        attrs["aria-label"] = f"{segment.get('label', '')}: {segment.get('percent', '')}. {safe_tooltip}"
+        attrs["aria-label"] = (
+            f"{segment.get('label', '')}: {segment.get('percent', '')}. {safe_tooltip}"
+        )
     else:
         attrs["aria-label"] = f"{segment.get('label', '')}: {segment.get('percent', '')}"
     return html.Span(**attrs)
