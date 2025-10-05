@@ -6,7 +6,7 @@ industrial_heavy,Industrial (Heavy),Full-scale manufacturing and heavy industry 
 industrial_heavy_military,Military operations,"Fuel-intensive air, land, and naval missions for defence and peacekeeping scenarios.",true,military_ops.svg,Military aviation (pkm); Armoured convoy patrol
 industrial_heavy_embodied,Weapons manufacturing,"Embodied emissions from armaments, aircraft, and vehicle production lines.",true,defense_embodied.svg,Fighter aircraft production; Armoured vehicle build
 buildings_defense,Defence installations,"Operational footprints for bases, depots, and secure facilities.",true,defense_building.svg,Military base (m²-year); Munitions depot (m²-year)
-modeled_events,Conflict simulations,Modeled warfighting and contingency scenarios with aggregated operational intensity.,true,conflict_modeled.svg,Armed conflict (month)
+modeled_events,Scenario simulations,Modeled warfighting and natural hazard scenarios with aggregated operational intensity.,true,conflict_modeled.svg,Armed conflict (month); Wildfire burned area—per hectare
 materials_chemicals,Defence supply chain,Energetic materials and upstream explosives manufacturing pathways.,true,chemicals_defense.svg,TNT explosive production; RDX explosive production
 personal_security_layer,Private security,"High-net-worth security operations spanning convoys, guards, and aerial patrols.",true,personal_security.svg,Private security convoy (km); Security helicopter (hour)
 biosphere_feedbacks,Earth system feedbacks,"Ocean, cryosphere, and permafrost feedback pathways with sink attenuation context.",true,online.svg,Ocean CO₂ uptake; Cryosphere albedo loss

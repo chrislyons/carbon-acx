@@ -179,6 +179,8 @@ class FunctionalUnitDomain(str, Enum):
     MODELED = "modeled"
     SERVICES = "services"
     CLIMATE = "climate"
+    DATA_CENTRES = "data_centres"
+    NATURAL_HAZARDS = "natural_hazards"
 
 
 class FunctionalUnit(BaseModel):

@@ -1,5 +1,38 @@
 [
   {
+    "id": "biosphere_feedbacks",
+    "title": "Earth system feedbacks",
+    "summary": "Ocean, cryosphere, and permafrost feedback pathways with sink attenuation context.",
+    "optional": true,
+    "icon": "online.svg",
+    "examples": [
+      "Ocean CO\u2082 uptake",
+      "Cryosphere albedo loss"
+    ]
+  },
+  {
+    "id": "buildings_defense",
+    "title": "Defence installations",
+    "summary": "Operational footprints for bases, depots, and secure facilities.",
+    "optional": true,
+    "icon": "defense_building.svg",
+    "examples": [
+      "Military base (m\u00b2-year)",
+      "Munitions depot (m\u00b2-year)"
+    ]
+  },
+  {
+    "id": "industrial_externalities",
+    "title": "Industrial externalities",
+    "summary": "Tailings, acid drainage, and hypoxic knock-on effects linked to industrial operations.",
+    "optional": true,
+    "icon": "industrial_heavy.svg",
+    "examples": [
+      "Tailings pond footprint",
+      "Acid mine drainage"
+    ]
+  },
+  {
     "id": "industrial_heavy",
     "title": "Industrial (Heavy)",
     "summary": "Full-scale manufacturing and heavy industry references for R&D insight.",
@@ -8,6 +41,28 @@
     "examples": [
       "Steel batch furnace",
       "Heavy equipment runtime"
+    ]
+  },
+  {
+    "id": "industrial_heavy_embodied",
+    "title": "Weapons manufacturing",
+    "summary": "Embodied emissions from armaments, aircraft, and vehicle production lines.",
+    "optional": true,
+    "icon": "defense_embodied.svg",
+    "examples": [
+      "Fighter aircraft production",
+      "Armoured vehicle build"
+    ]
+  },
+  {
+    "id": "industrial_heavy_military",
+    "title": "Military operations",
+    "summary": "Fuel-intensive air, land, and naval missions for defence and peacekeeping scenarios.",
+    "optional": true,
+    "icon": "military_ops.svg",
+    "examples": [
+      "Military aviation (pkm)",
+      "Armoured convoy patrol"
     ]
   },
   {
@@ -22,6 +77,28 @@
     ]
   },
   {
+    "id": "materials_chemicals",
+    "title": "Defence supply chain",
+    "summary": "Energetic materials and upstream explosives manufacturing pathways.",
+    "optional": true,
+    "icon": "chemicals_defense.svg",
+    "examples": [
+      "TNT explosive production",
+      "RDX explosive production"
+    ]
+  },
+  {
+    "id": "modeled_events",
+    "title": "Scenario simulations",
+    "summary": "Modeled warfighting and natural hazard scenarios with aggregated operational intensity.",
+    "optional": true,
+    "icon": "conflict_modeled.svg",
+    "examples": [
+      "Armed conflict (month)",
+      "Wildfire burned area\u2014per hectare"
+    ]
+  },
+  {
     "id": "online",
     "title": "Online services",
     "summary": "SaaS, meetings, and streaming workloads for remote-first teams.",
@@ -30,6 +107,17 @@
     "examples": [
       "Video conferencing hour",
       "SaaS productivity suite seat"
+    ]
+  },
+  {
+    "id": "personal_security_layer",
+    "title": "Private security",
+    "summary": "High-net-worth security operations spanning convoys, guards, and aerial patrols.",
+    "optional": true,
+    "icon": "personal_security.svg",
+    "examples": [
+      "Private security convoy (km)",
+      "Security helicopter (hour)"
     ]
   },
   {

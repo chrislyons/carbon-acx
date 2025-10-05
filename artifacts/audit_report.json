@@ -1,5 +1,70 @@
 {
   "activities_by_layer": {
+    "biosphere_feedbacks": {
+      "activities": [
+        {
+          "category": "earth_system",
+          "id": "CRYO.ALBEDO.LOSS.WM2",
+          "name": "Cryosphere albedo forcing (W/m\u00b2)"
+        },
+        {
+          "category": "earth_system",
+          "id": "OCEAN.CO2.UPTAKE.PGCO2",
+          "name": "Ocean CO\u2082 absorption (Pg CO\u2082/yr)"
+        },
+        {
+          "category": "earth_system",
+          "id": "PERMAFROST.EMISSIONS.PGCO2E",
+          "name": "Permafrost carbon release (Pg CO\u2082e/yr)"
+        },
+        {
+          "category": "water_quality_cycles",
+          "id": "RIVER.HYPOXIA.KM2.YEAR",
+          "name": "River/ocean hypoxia (km\u00b2\u00b7yr)"
+        },
+        {
+          "category": "earth_system",
+          "id": "OCEAN.ACIDIFICATION.PH.DEC",
+          "name": "Surface-ocean pH decline (\u0394pH/decade)"
+        }
+      ],
+      "count": 5
+    },
+    "buildings_defense": {
+      "activities": [
+        {
+          "category": "bases_infrastructure",
+          "id": "MIL.BASE.M2.YEAR",
+          "name": "Military base (m\u00b2-year)"
+        },
+        {
+          "category": "bases_infrastructure",
+          "id": "MIL.DEPOT.M2.YEAR",
+          "name": "Munitions depot (m\u00b2-year)"
+        }
+      ],
+      "count": 2
+    },
+    "industrial_externalities": {
+      "activities": [
+        {
+          "category": "industrial_external",
+          "id": "AMD.ACID.DRAINAGE.M3.YEAR",
+          "name": "Acid mine drainage (m\u00b3\u00b7yr)"
+        },
+        {
+          "category": "industrial_external",
+          "id": "TAILINGS.DEGASS.EVENT",
+          "name": "Tailings degassing (event)"
+        },
+        {
+          "category": "industrial_external",
+          "id": "TAILINGS.POND.M2.YEAR",
+          "name": "Tailings pond (m\u00b2\u00b7yr)"
+        }
+      ],
+      "count": 3
+    },
     "industrial_heavy": {
       "activities": [
         {
@@ -13,14 +78,34 @@
           "name": "Beef carcass throughput\u2014per kg"
         },
         {
+          "category": "logistics",
+          "id": "LOGI.SHIPPING.BULK.TONNEKM",
+          "name": "Bulk carrier freight (tonne-km)"
+        },
+        {
+          "category": "cement",
+          "id": "IND_HEAVY.CEMENT.CLINKER.TONNE",
+          "name": "Cement clinker production\u2014per tonne"
+        },
+        {
           "category": "materials",
           "id": "MATERIAL.CEMENT.CLINKER.TONNE",
           "name": "Clinker production\u2014per tonne"
         },
         {
+          "category": "logistics",
+          "id": "LOGI.SHIPPING.CONTAINER.TONNEKM",
+          "name": "Container ship freight (tonne-km)"
+        },
+        {
           "category": "materials",
           "id": "MATERIAL.STEEL.CRUDESLAB.TONNE",
           "name": "Crude steel slab production\u2014per tonne"
+        },
+        {
+          "category": "steel",
+          "id": "IND_HEAVY.STEEL.EAF.TONNE",
+          "name": "EAF steelmaking\u2014per tonne"
         },
         {
           "category": "energy",
@@ -33,9 +118,19 @@
           "name": "Gasoline refined & delivered (L)"
         },
         {
+          "category": "mining",
+          "id": "IND_HEAVY.MINING.HAUL.TRUCK.HOUR",
+          "name": "Mining haul truck operation\u2014per hour"
+        },
+        {
           "category": "energy",
           "id": "ENERGY.NATGAS.M3",
           "name": "Natural gas delivered (m3)"
+        },
+        {
+          "category": "refining",
+          "id": "IND_HEAVY.REFINING.FIRED_UNIT.MMBTU",
+          "name": "Refinery fired heaters\u2014per MMBtu fired"
         },
         {
           "category": "freight",
@@ -48,10 +143,65 @@
           "name": "Virgin PET polymer production\u2014per tonne"
         }
       ],
-      "count": 9
+      "count": 15
+    },
+    "industrial_heavy_embodied": {
+      "activities": [
+        {
+          "category": "weapons_production",
+          "id": "MIL.MUNITIONS.TONNE",
+          "name": "Ammunition production (t)"
+        },
+        {
+          "category": "weapons_production",
+          "id": "MIL.TANK.UNIT",
+          "name": "Armoured vehicle production (unit)"
+        },
+        {
+          "category": "weapons_production",
+          "id": "MIL.AIRCRAFT.UNIT",
+          "name": "Fighter aircraft production (unit)"
+        }
+      ],
+      "count": 3
+    },
+    "industrial_heavy_military": {
+      "activities": [
+        {
+          "category": "military_mobility",
+          "id": "MIL.FLIGHT.PKM",
+          "name": "Military aviation (pkm)"
+        },
+        {
+          "category": "military_mobility",
+          "id": "MIL.VEHICLE.KM",
+          "name": "Military ground vehicles (km)"
+        },
+        {
+          "category": "military_mobility",
+          "id": "MIL.NAVAL.TONNEKM",
+          "name": "Military naval shipping (tonne-km)"
+        },
+        {
+          "category": "military_operations",
+          "id": "MIL.MUNITIONS.DETONATED.TONNE",
+          "name": "Munitions detonated\u2014per tonne"
+        }
+      ],
+      "count": 4
     },
     "industrial_light": {
       "activities": [
+        {
+          "category": "building_services",
+          "id": "REFR.HVAC.AC.OP.YEAR",
+          "name": "Air-conditioner operation (year)"
+        },
+        {
+          "category": "building_services",
+          "id": "REFR.HVAC.AC.UNIT",
+          "name": "Air-conditioner unit produced"
+        },
         {
           "category": "logistics",
           "id": "TRAN.DELIVERY.TRUCK.CLASS6.KM",
@@ -61,6 +211,21 @@
           "category": "logistics",
           "id": "IND_LIGHT.LOGISTICS.FORKLIFT.HOUR",
           "name": "Forklift material handling\u2014per operating hour"
+        },
+        {
+          "category": "electronics",
+          "id": "DEVICE.LAPTOP.UNIT",
+          "name": "Laptop unit produced"
+        },
+        {
+          "category": "construction",
+          "id": "IND_LIGHT.CONSTRUCTION.SITE_DAY",
+          "name": "Light-industrial construction site\u2014per workday"
+        },
+        {
+          "category": "aviation",
+          "id": "TRAN.FLIGHT.LONGHAUL.PKM",
+          "name": "Long-haul passenger flight (pkm)"
         },
         {
           "category": "municipal_services",
@@ -83,9 +248,34 @@
           "name": "Poultry ready-to-cook throughput\u2014per kg"
         },
         {
+          "category": "appliance_domestic",
+          "id": "REFR.APPL.FRIDGE.UNIT",
+          "name": "Refrigerator unit produced"
+        },
+        {
           "category": "food_processing",
           "id": "FOOD.COFFEE.ROASTED.KG",
           "name": "Roasted coffee throughput\u2014per kg"
+        },
+        {
+          "category": "aviation",
+          "id": "TRAN.FLIGHT.SHORTHAUL.PKM",
+          "name": "Short-haul passenger flight (pkm)"
+        },
+        {
+          "category": "electronics",
+          "id": "DEVICE.SMARTPHONE.UNIT",
+          "name": "Smartphone unit produced"
+        },
+        {
+          "category": "industrial_light",
+          "id": "REFR.COLDCHAIN.SUPERMARKET.KG",
+          "name": "Supermarket cold storage (kg food-year)"
+        },
+        {
+          "category": "electronics",
+          "id": "DEVICE.TV.UNIT",
+          "name": "Television unit produced"
         },
         {
           "category": "logistics",
@@ -98,7 +288,47 @@
           "name": "Warehouse base building load\u2014per ft\u00b2-month"
         }
       ],
-      "count": 9
+      "count": 19
+    },
+    "materials_chemicals": {
+      "activities": [
+        {
+          "category": "defense_supply_chain",
+          "id": "CHEM.RDX.TONNE",
+          "name": "RDX explosive production (t)"
+        },
+        {
+          "category": "defense_supply_chain",
+          "id": "CHEM.TNT.TONNE",
+          "name": "TNT explosive production (t)"
+        }
+      ],
+      "count": 2
+    },
+    "modeled_events": {
+      "activities": [
+        {
+          "category": "conflict_scenarios",
+          "id": "MIL.CONFLICT.MONTH",
+          "name": "Armed conflict (month)"
+        },
+        {
+          "category": "weapons_effects",
+          "id": "MIL.MUNITIONS.DETONATION.EVENT",
+          "name": "Munitions detonation event"
+        },
+        {
+          "category": "natural_hazards",
+          "id": "MODELED.WILDFIRE.HECTARE",
+          "name": "Wildfire burned area\u2014per hectare"
+        },
+        {
+          "category": "natural_hazards",
+          "id": "MODELED.WILDFIRE.EVENT",
+          "name": "Wildfire incident\u2014per event"
+        }
+      ],
+      "count": 4
     },
     "online": {
       "activities": [
@@ -106,6 +336,11 @@
           "category": "conferencing",
           "id": "CONF.AUDIO.PER_PARTICIPANT_HOUR",
           "name": "Audio-only conference per participant-hour"
+        },
+        {
+          "category": "online_services",
+          "id": "ONLINE.CDN.EDGE.GB",
+          "name": "CDN edge delivery\u2014per GB"
         },
         {
           "category": "downloads",
@@ -118,6 +353,11 @@
           "name": "Cloud storage sync per GB-month"
         },
         {
+          "category": "online_services",
+          "id": "ONLINE.DC.COLOCATION.RACK.MONTH",
+          "name": "Colocation rack footprint\u2014per month"
+        },
+        {
           "category": "downloads",
           "id": "DOWNLOAD.GAME.CONSOLE.50GB",
           "name": "Download 50 GB console game"
@@ -126,6 +366,11 @@
           "category": "social",
           "id": "SOCIAL.FACEBOOK.HOUR",
           "name": "Facebook usage\u2014per hour"
+        },
+        {
+          "category": "ai",
+          "id": "AI.IMAGE.GENERATION.PROMPT",
+          "name": "Generative image inference per prompt"
         },
         {
           "category": "conferencing",
@@ -141,6 +386,11 @@
           "category": "media",
           "id": "MEDIA.STREAM.HD.HOUR",
           "name": "HD video streaming\u2014per hour"
+        },
+        {
+          "category": "online_services",
+          "id": "ONLINE.DC.CLOUD.SERVER.HOUR",
+          "name": "Hyperscale cloud server\u2014per hour"
         },
         {
           "category": "social",
@@ -178,6 +428,16 @@
           "name": "Mobile social media browsing\u2014per hour"
         },
         {
+          "category": "media",
+          "id": "MUSIC.STREAM.STANDARD.HOUR",
+          "name": "Music streaming\u2014standard quality per hour"
+        },
+        {
+          "category": "media",
+          "id": "MEDIA.STREAM.SD.HOUR.MOBILE",
+          "name": "SD video streaming on mobile\u2014per hour"
+        },
+        {
           "category": "social",
           "id": "SOCIAL.SNAPCHAT.HOUR",
           "name": "Snapchat usage\u2014per hour"
@@ -208,7 +468,27 @@
           "name": "YouTube usage\u2014per hour"
         }
       ],
-      "count": 21
+      "count": 27
+    },
+    "personal_security_layer": {
+      "activities": [
+        {
+          "category": "private_security",
+          "id": "SEC.CONVOY.KM",
+          "name": "Private security convoy (km)"
+        },
+        {
+          "category": "private_security",
+          "id": "SEC.GUARD.HOUR",
+          "name": "Security guard presence (hour)"
+        },
+        {
+          "category": "private_security",
+          "id": "SEC.HELI.HOUR",
+          "name": "Security helicopter (hour)"
+        }
+      ],
+      "count": 3
     },
     "professional": {
       "activities": [
@@ -228,6 +508,11 @@
           "name": "Denim jeans"
         },
         {
+          "category": "buildings",
+          "id": "BUILDING.HOSPITAL.M2.YEAR",
+          "name": "Hospital energy use (m\u00b2-year)"
+        },
+        {
           "category": "food",
           "id": "FOOD.MEAL.BEEF.SERVING",
           "name": "Meal with beef\u2014per serving"
@@ -238,9 +523,29 @@
           "name": "Meal with chicken\u2014per serving"
         },
         {
+          "category": "buildings",
+          "id": "BUILDING.OFFICE.M2.YEAR",
+          "name": "Office building energy use (m\u00b2-year)"
+        },
+        {
           "category": "energy",
           "id": "ENERGY.CA-ON.GRID.KWH",
           "name": "Ontario grid electricity\u2014per kWh"
+        },
+        {
+          "category": "aviation",
+          "id": "TRAN.FLIGHT.PRIVATE.PKM",
+          "name": "Private jet flight (pkm)"
+        },
+        {
+          "category": "appliance_domestic",
+          "id": "REFR.APPL.FRIDGE.OP.YEAR",
+          "name": "Refrigerator operation (year)"
+        },
+        {
+          "category": "buildings",
+          "id": "BUILDING.RESIDENTIAL.M2.YEAR",
+          "name": "Residential building energy use (m\u00b2-year)"
         },
         {
           "category": "mobility",
@@ -283,52 +588,174 @@
           "name": "Vegetarian meal\u2014per serving"
         }
       ],
-      "count": 14
+      "count": 19
     }
   },
   "ef_coverage": {
-    "industrial_heavy": {
-      "activities": 9,
+    "biosphere_feedbacks": {
+      "activities": 5,
       "coverage_ratio": 1.0,
       "missing_activity_ids": [],
-      "with_emission_factors": 9
+      "with_emission_factors": 5
+    },
+    "buildings_defense": {
+      "activities": 2,
+      "coverage_ratio": 1.0,
+      "missing_activity_ids": [],
+      "with_emission_factors": 2
+    },
+    "industrial_externalities": {
+      "activities": 3,
+      "coverage_ratio": 1.0,
+      "missing_activity_ids": [],
+      "with_emission_factors": 3
+    },
+    "industrial_heavy": {
+      "activities": 15,
+      "coverage_ratio": 0.733,
+      "missing_activity_ids": [
+        "IND_HEAVY.CEMENT.CLINKER.TONNE",
+        "IND_HEAVY.MINING.HAUL.TRUCK.HOUR",
+        "IND_HEAVY.REFINING.FIRED_UNIT.MMBTU",
+        "IND_HEAVY.STEEL.EAF.TONNE"
+      ],
+      "with_emission_factors": 11
+    },
+    "industrial_heavy_embodied": {
+      "activities": 3,
+      "coverage_ratio": 1.0,
+      "missing_activity_ids": [],
+      "with_emission_factors": 3
+    },
+    "industrial_heavy_military": {
+      "activities": 4,
+      "coverage_ratio": 0.75,
+      "missing_activity_ids": [
+        "MIL.MUNITIONS.DETONATED.TONNE"
+      ],
+      "with_emission_factors": 3
     },
     "industrial_light": {
-      "activities": 9,
-      "coverage_ratio": 0.778,
+      "activities": 19,
+      "coverage_ratio": 0.842,
       "missing_activity_ids": [
+        "IND_LIGHT.CONSTRUCTION.SITE_DAY",
         "IND_LIGHT.LOGISTICS.FORKLIFT.HOUR",
         "IND_LIGHT.WAREHOUSE.BASE_LOAD.SQFT_MONTH"
       ],
-      "with_emission_factors": 7
+      "with_emission_factors": 16
+    },
+    "materials_chemicals": {
+      "activities": 2,
+      "coverage_ratio": 1.0,
+      "missing_activity_ids": [],
+      "with_emission_factors": 2
+    },
+    "modeled_events": {
+      "activities": 4,
+      "coverage_ratio": 0.25,
+      "missing_activity_ids": [
+        "MIL.MUNITIONS.DETONATION.EVENT",
+        "MODELED.WILDFIRE.EVENT",
+        "MODELED.WILDFIRE.HECTARE"
+      ],
+      "with_emission_factors": 1
     },
     "online": {
-      "activities": 21,
-      "coverage_ratio": 0.81,
+      "activities": 27,
+      "coverage_ratio": 0.63,
       "missing_activity_ids": [
+        "AI.IMAGE.GENERATION.PROMPT",
         "CLOUD.STORAGE.SYNC.GB_MONTH",
         "CONF.AUDIO.PER_PARTICIPANT_HOUR",
         "DOWNLOAD.GAME.CONSOLE.50GB",
-        "MEDIA.STREAM.UHD.HOUR.TV"
+        "MEDIA.STREAM.SD.HOUR.MOBILE",
+        "MEDIA.STREAM.UHD.HOUR.TV",
+        "MUSIC.STREAM.STANDARD.HOUR",
+        "ONLINE.CDN.EDGE.GB",
+        "ONLINE.DC.CLOUD.SERVER.HOUR",
+        "ONLINE.DC.COLOCATION.RACK.MONTH"
       ],
       "with_emission_factors": 17
     },
-    "professional": {
-      "activities": 14,
+    "personal_security_layer": {
+      "activities": 3,
       "coverage_ratio": 1.0,
       "missing_activity_ids": [],
-      "with_emission_factors": 14
+      "with_emission_factors": 3
+    },
+    "professional": {
+      "activities": 19,
+      "coverage_ratio": 1.0,
+      "missing_activity_ids": [],
+      "with_emission_factors": 19
     }
   },
-  "generated_at": "2025-10-01T17:38:03.633476+00:00",
+  "generated_at": "2025-10-05T07:58:17.042359+00:00",
   "layers_present": [
     {
-      "activities": 9,
+      "activities": 5,
       "emission_factor_coverage": {
-        "activities": 9,
+        "activities": 5,
         "coverage_ratio": 1.0,
         "missing_activity_ids": [],
-        "with_emission_factors": 9
+        "with_emission_factors": 5
+      },
+      "has_references": false,
+      "icon": "online.svg",
+      "id": "biosphere_feedbacks",
+      "operations": 5,
+      "optional": true,
+      "summary": "Ocean, cryosphere, and permafrost feedback pathways with sink attenuation context.",
+      "title": "Earth system feedbacks",
+      "ui_configured": false
+    },
+    {
+      "activities": 2,
+      "emission_factor_coverage": {
+        "activities": 2,
+        "coverage_ratio": 1.0,
+        "missing_activity_ids": [],
+        "with_emission_factors": 2
+      },
+      "has_references": false,
+      "icon": "defense_building.svg",
+      "id": "buildings_defense",
+      "operations": 0,
+      "optional": true,
+      "summary": "Operational footprints for bases, depots, and secure facilities.",
+      "title": "Defence installations",
+      "ui_configured": false
+    },
+    {
+      "activities": 3,
+      "emission_factor_coverage": {
+        "activities": 3,
+        "coverage_ratio": 1.0,
+        "missing_activity_ids": [],
+        "with_emission_factors": 3
+      },
+      "has_references": false,
+      "icon": "industrial_heavy.svg",
+      "id": "industrial_externalities",
+      "operations": 3,
+      "optional": true,
+      "summary": "Tailings, acid drainage, and hypoxic knock-on effects linked to industrial operations.",
+      "title": "Industrial externalities",
+      "ui_configured": false
+    },
+    {
+      "activities": 15,
+      "emission_factor_coverage": {
+        "activities": 15,
+        "coverage_ratio": 0.733,
+        "missing_activity_ids": [
+          "IND_HEAVY.CEMENT.CLINKER.TONNE",
+          "IND_HEAVY.MINING.HAUL.TRUCK.HOUR",
+          "IND_HEAVY.REFINING.FIRED_UNIT.MMBTU",
+          "IND_HEAVY.STEEL.EAF.TONNE"
+        ],
+        "with_emission_factors": 11
       },
       "has_references": false,
       "icon": "industrial_heavy.svg",
@@ -340,103 +767,268 @@
       "ui_configured": true
     },
     {
-      "activities": 9,
+      "activities": 3,
       "emission_factor_coverage": {
-        "activities": 9,
-        "coverage_ratio": 0.778,
+        "activities": 3,
+        "coverage_ratio": 1.0,
+        "missing_activity_ids": [],
+        "with_emission_factors": 3
+      },
+      "has_references": false,
+      "icon": "defense_embodied.svg",
+      "id": "industrial_heavy_embodied",
+      "operations": 0,
+      "optional": true,
+      "summary": "Embodied emissions from armaments, aircraft, and vehicle production lines.",
+      "title": "Weapons manufacturing",
+      "ui_configured": false
+    },
+    {
+      "activities": 4,
+      "emission_factor_coverage": {
+        "activities": 4,
+        "coverage_ratio": 0.75,
         "missing_activity_ids": [
+          "MIL.MUNITIONS.DETONATED.TONNE"
+        ],
+        "with_emission_factors": 3
+      },
+      "has_references": false,
+      "icon": "military_ops.svg",
+      "id": "industrial_heavy_military",
+      "operations": 0,
+      "optional": true,
+      "summary": "Fuel-intensive air, land, and naval missions for defence and peacekeeping scenarios.",
+      "title": "Military operations",
+      "ui_configured": false
+    },
+    {
+      "activities": 19,
+      "emission_factor_coverage": {
+        "activities": 19,
+        "coverage_ratio": 0.842,
+        "missing_activity_ids": [
+          "IND_LIGHT.CONSTRUCTION.SITE_DAY",
           "IND_LIGHT.LOGISTICS.FORKLIFT.HOUR",
           "IND_LIGHT.WAREHOUSE.BASE_LOAD.SQFT_MONTH"
         ],
-        "with_emission_factors": 7
+        "with_emission_factors": 16
       },
       "has_references": false,
       "icon": "industrial_light.svg",
       "id": "industrial_light",
-      "operations": 7,
+      "operations": 13,
       "optional": true,
       "summary": "Lab, prototyping, and light fabrication scenarios for innovation hubs.",
       "title": "Industrial (Light)",
       "ui_configured": true
     },
     {
-      "activities": 21,
+      "activities": 2,
       "emission_factor_coverage": {
-        "activities": 21,
-        "coverage_ratio": 0.81,
+        "activities": 2,
+        "coverage_ratio": 1.0,
+        "missing_activity_ids": [],
+        "with_emission_factors": 2
+      },
+      "has_references": false,
+      "icon": "chemicals_defense.svg",
+      "id": "materials_chemicals",
+      "operations": 0,
+      "optional": true,
+      "summary": "Energetic materials and upstream explosives manufacturing pathways.",
+      "title": "Defence supply chain",
+      "ui_configured": false
+    },
+    {
+      "activities": 4,
+      "emission_factor_coverage": {
+        "activities": 4,
+        "coverage_ratio": 0.25,
         "missing_activity_ids": [
+          "MIL.MUNITIONS.DETONATION.EVENT",
+          "MODELED.WILDFIRE.EVENT",
+          "MODELED.WILDFIRE.HECTARE"
+        ],
+        "with_emission_factors": 1
+      },
+      "has_references": false,
+      "icon": "conflict_modeled.svg",
+      "id": "modeled_events",
+      "operations": 0,
+      "optional": true,
+      "summary": "Modeled warfighting and natural hazard scenarios with aggregated operational intensity.",
+      "title": "Scenario simulations",
+      "ui_configured": false
+    },
+    {
+      "activities": 27,
+      "emission_factor_coverage": {
+        "activities": 27,
+        "coverage_ratio": 0.63,
+        "missing_activity_ids": [
+          "AI.IMAGE.GENERATION.PROMPT",
           "CLOUD.STORAGE.SYNC.GB_MONTH",
           "CONF.AUDIO.PER_PARTICIPANT_HOUR",
           "DOWNLOAD.GAME.CONSOLE.50GB",
-          "MEDIA.STREAM.UHD.HOUR.TV"
+          "MEDIA.STREAM.SD.HOUR.MOBILE",
+          "MEDIA.STREAM.UHD.HOUR.TV",
+          "MUSIC.STREAM.STANDARD.HOUR",
+          "ONLINE.CDN.EDGE.GB",
+          "ONLINE.DC.CLOUD.SERVER.HOUR",
+          "ONLINE.DC.COLOCATION.RACK.MONTH"
         ],
         "with_emission_factors": 17
       },
       "has_references": false,
       "icon": "online.svg",
       "id": "online",
-      "operations": 6,
+      "operations": 7,
       "optional": true,
       "summary": "SaaS, meetings, and streaming workloads for remote-first teams.",
       "title": "Online services",
       "ui_configured": true
     },
     {
-      "activities": 14,
+      "activities": 3,
       "emission_factor_coverage": {
-        "activities": 14,
+        "activities": 3,
         "coverage_ratio": 1.0,
         "missing_activity_ids": [],
-        "with_emission_factors": 14
+        "with_emission_factors": 3
+      },
+      "has_references": false,
+      "icon": "personal_security.svg",
+      "id": "personal_security_layer",
+      "operations": 0,
+      "optional": true,
+      "summary": "High-net-worth security operations spanning convoys, guards, and aerial patrols.",
+      "title": "Private security",
+      "ui_configured": false
+    },
+    {
+      "activities": 19,
+      "emission_factor_coverage": {
+        "activities": 19,
+        "coverage_ratio": 1.0,
+        "missing_activity_ids": [],
+        "with_emission_factors": 19
       },
       "has_references": false,
       "icon": "professional.svg",
       "id": "professional",
-      "operations": 0,
+      "operations": 2,
       "optional": false,
       "summary": "Baseline knowledge worker footprint anchored to hybrid office routines.",
       "title": "Professional services",
       "ui_configured": true
     }
   ],
-  "missing_icons": [],
+  "missing_icons": [
+    {
+      "expected_path": "site/public/assets/layers/military_ops.svg",
+      "layer": "industrial_heavy_military"
+    },
+    {
+      "expected_path": "site/public/assets/layers/defense_embodied.svg",
+      "layer": "industrial_heavy_embodied"
+    },
+    {
+      "expected_path": "site/public/assets/layers/defense_building.svg",
+      "layer": "buildings_defense"
+    },
+    {
+      "expected_path": "site/public/assets/layers/conflict_modeled.svg",
+      "layer": "modeled_events"
+    },
+    {
+      "expected_path": "site/public/assets/layers/chemicals_defense.svg",
+      "layer": "materials_chemicals"
+    },
+    {
+      "expected_path": "site/public/assets/layers/personal_security.svg",
+      "layer": "personal_security_layer"
+    }
+  ],
   "missing_refs": [
+    "biosphere_feedbacks",
+    "buildings_defense",
+    "industrial_externalities",
     "industrial_heavy",
+    "industrial_heavy_embodied",
+    "industrial_heavy_military",
     "industrial_light",
+    "materials_chemicals",
+    "modeled_events",
     "online",
+    "personal_security_layer",
     "professional"
   ],
   "ops_by_layer": {
+    "biosphere_feedbacks": {
+      "count": 5,
+      "examples": [
+        "OCEAN.CO2.UPTAKE.PGCO2",
+        "OCEAN.ACIDIFICATION.PH.DEC",
+        "CRYO.ALBEDO.LOSS.WM2",
+        "PERMAFROST.EMISSIONS.PGCO2E",
+        "RIVER.HYPOXIA.KM2.YEAR"
+      ]
+    },
+    "industrial_externalities": {
+      "count": 3,
+      "examples": [
+        "TAILINGS.POND.M2.YEAR",
+        "TAILINGS.DEGASS.EVENT",
+        "AMD.ACID.DRAINAGE.M3.YEAR"
+      ]
+    },
     "industrial_heavy": {
       "count": 9,
       "examples": [
-        "ENERGY.KWH.DELIVERED",
+        "MATERIAL.STEEL.CRUDESLAB.TONNE",
+        "AGRI.BEEF.CARCASS.KG",
+        "LOGI.TRUCK.TONNEKM",
         "ENERGY.NATGAS.M3",
-        "ENERGY.GASOLINE.LITRE",
-        "MATERIAL.CEMENT.CLINKER.TONNE",
-        "MATERIAL.STEEL.CRUDESLAB.TONNE"
+        "LOGI.AIR.TONNEKM"
       ]
     },
     "industrial_light": {
-      "count": 7,
+      "count": 13,
       "examples": [
+        "LOGI.PARCEL.URBAN",
         "TRAN.DELIVERY.TRUCK.CLASS6.KM",
-        "AGRI.POULTRY.READY.KG",
-        "MUNI.WASTE.LANDFILL.KG",
-        "MUNI.WASTE.INCINERATION.KG",
-        "MUNI.WATER.POTABLE.M3"
+        "TRAN.FLIGHT.SHORTHAUL.PKM",
+        "TRAN.FLIGHT.LONGHAUL.PKM",
+        "AGRI.POULTRY.READY.KG"
       ]
     },
     "online": {
-      "count": 6,
+      "count": 7,
       "examples": [
-        "SOCIAL.YOUTUBE.HOUR",
-        "SOCIAL.INSTAGRAM.HOUR",
+        "AI.USAGE.ANTHROPIC.QUERY",
         "SOCIAL.TIKTOK.HOUR",
-        "AI.USAGE.GPT.QUERY",
-        "AI.USAGE.ANTHROPIC.QUERY"
+        "AI.USAGE.GOOGLE.QUERY",
+        "SOCIAL.YOUTUBE.HOUR",
+        "SOCIAL.INSTAGRAM.HOUR"
+      ]
+    },
+    "professional": {
+      "count": 2,
+      "examples": [
+        "TRAN.FLIGHT.PRIVATE.PKM",
+        "REFR.APPL.FRIDGE.OP.YEAR"
       ]
     }
   },
-  "seeded_not_configured": []
+  "seeded_not_configured": [
+    "biosphere_feedbacks",
+    "buildings_defense",
+    "industrial_externalities",
+    "industrial_heavy_embodied",
+    "industrial_heavy_military",
+    "materials_chemicals",
+    "modeled_events",
+    "personal_security_layer"
+  ]
 }
