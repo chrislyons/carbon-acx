@@ -37,6 +37,8 @@ Carbon ACX is an open reference stack for building trustworthy carbon accounting
 12. [FAQ & troubleshooting](#faq--troubleshooting)
 13. [References](#references)
 14. [Serials & traceability](#serials--traceability)
+15. [Architecture extensions](#architecture-extensions)
+    - [ACX041 View Provenance Module](#acx041-view-provenance-module)
 
 ---
 
@@ -407,3 +409,11 @@ _Note: To satisfy repo hygiene tests, avoid using the contiguous token spelled �
 ## Serials & traceability
 
 Refer to `docs/CONTRIBUTING_SERIES.md` for guidance on citing ACX specifications, CDX prompts, and the PR lineage required for every contribution.【F:docs/CONTRIBUTING_SERIES.md†L1-L120】
+
+## Architecture extensions
+
+### ACX041 View Provenance Module
+
+The ACX041 extension adds signed hash-chains for every published figure. The derivation pipeline now emits `calc/outputs/manifests/*.json` files that stitch together dataset digests, figure payload hashes, reference checksums, and promptware lineage so any client can verify tampering before presenting data. The manifests ride alongside the immutable artefact bundle and are packaged with the static site for Cloudflare Pages deployments.【F:calc/manifest.py†L1-L209】【F:calc/derive.py†L1506-L1515】【F:scripts/prepare_pages_bundle.py†L1-L82】
+
+Client tooling consumes the same manifest format to disable downloads or watermark plots when verification fails; see `docs/ACX041_View_Provenance_Module_v1_2.md` for the integration checklist.【F:docs/ACX041_View_Provenance_Module_v1_2.md†L1-L120】
