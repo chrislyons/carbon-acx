@@ -74,7 +74,7 @@ def normalize_url(raw: str) -> str:
 
 
 def doi_to_url(doi: str) -> str:
-    cleaned = doi.strip().strip('.')
+    cleaned = doi.strip().strip(".")
     return f"https://doi.org/{cleaned}"
 
 
@@ -101,7 +101,7 @@ def synthesize_source_id(url: str, fallback_label: str | None = None) -> str:
 
 
 def _extract_inline_ids(text: str) -> list[str]:
-    return [match.group(0).rstrip('.,;') for match in INLINE_SRC_RE.finditer(text)]
+    return [match.group(0).rstrip(".,;") for match in INLINE_SRC_RE.finditer(text)]
 
 
 def _extract_urls(text: str) -> list[str]:
@@ -109,11 +109,11 @@ def _extract_urls(text: str) -> list[str]:
 
 
 def _extract_dois(text: str) -> list[str]:
-    return [match.group(0).rstrip('.,;') for match in DOI_RE.finditer(text)]
+    return [match.group(0).rstrip(".,;") for match in DOI_RE.finditer(text)]
 
 
 def _extract_arxiv(text: str) -> list[str]:
-    return [match.group(1).rstrip('.,;') for match in ARXIV_RE.finditer(text)]
+    return [match.group(1).rstrip(".,;") for match in ARXIV_RE.finditer(text)]
 
 
 def load_source_catalog(path: Path | None = None) -> dict[str, SourceCatalogEntry]:
@@ -278,7 +278,9 @@ def discover_reference_candidates(
             canonical_id = synthesize_source_id(unique_urls[0], canonical_id)
 
         entry = catalog_map.get(canonical_id)
-        primary_url = entry.url if entry and entry.url else (unique_urls[0] if unique_urls else None)
+        primary_url = (
+            entry.url if entry and entry.url else (unique_urls[0] if unique_urls else None)
+        )
 
         existing = candidates.get(canonical_id)
         if existing:
@@ -300,7 +302,9 @@ def discover_reference_candidates(
     return candidates
 
 
-def merge_manifest(existing: Sequence[ManifestRow], updates: Mapping[str, ManifestRow]) -> list[ManifestRow]:
+def merge_manifest(
+    existing: Sequence[ManifestRow], updates: Mapping[str, ManifestRow]
+) -> list[ManifestRow]:
     lookup = {row.get("source_id", ""): dict(row) for row in existing if row.get("source_id")}
     for key, row in updates.items():
         lookup[key] = {**lookup.get(key, {}), **row, "source_id": key}

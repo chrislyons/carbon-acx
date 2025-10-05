@@ -78,9 +78,13 @@ def _validate_hashes(manifest: Sequence[Mapping[str, str]], is_ci: bool) -> list
         sha_actual = hash_file(path)
         size_actual = str(path.stat().st_size)
         if sha_expected and sha_expected != sha_actual:
-            errors.append(f"SHA mismatch for {source_id}: expected {sha_expected}, got {sha_actual}")
+            errors.append(
+                f"SHA mismatch for {source_id}: expected {sha_expected}, got {sha_actual}"
+            )
         if size_expected and size_expected != size_actual:
-            errors.append(f"Size mismatch for {source_id}: expected {size_expected}, got {size_actual}")
+            errors.append(
+                f"Size mismatch for {source_id}: expected {size_expected}, got {size_actual}"
+            )
     return errors
 
 

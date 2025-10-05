@@ -86,7 +86,9 @@ def _extract_markdown(raw_path: Path, content_type: str) -> str:
     return _normalize_plain(payload)
 
 
-def _update_manifest_row(row: dict[str, str], normalized_path: Path, sha_value: str) -> dict[str, str]:
+def _update_manifest_row(
+    row: dict[str, str], normalized_path: Path, sha_value: str
+) -> dict[str, str]:
     updated = dict(row)
     updated["normalized_md"] = str(Path("refs/normalized") / normalized_path.name)
     updated["normalized_sha256"] = sha_value

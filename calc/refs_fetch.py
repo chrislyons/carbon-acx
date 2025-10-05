@@ -199,7 +199,9 @@ def _fetch_with_backoff(
     return None
 
 
-def _attempt_wayback(client: httpx.Client, limiter: HostRateLimiter, url: str) -> httpx.Response | None:
+def _attempt_wayback(
+    client: httpx.Client, limiter: HostRateLimiter, url: str
+) -> httpx.Response | None:
     params = {
         "url": url,
         "output": "json",
@@ -356,7 +358,9 @@ def run_fetch(
     robots = RobotsGate(USER_AGENT)
     manifest_rows = load_manifest()
 
-    with httpx.Client(follow_redirects=True, headers={"User-Agent": USER_AGENT}, timeout=60.0) as client:
+    with httpx.Client(
+        follow_redirects=True, headers={"User-Agent": USER_AGENT}, timeout=60.0
+    ) as client:
         for candidate in selected:
             result = fetch_candidate(client, limiter, robots, candidate, allowlist, dry_run)
             if result is None:
