@@ -1,0 +1,26 @@
+{
+  "professional": {
+    "activity_count": 19,
+    "profile_count": 12,
+    "emission_factor_count": 23,
+    "emission_factor_activity_coverage": 1.0
+  },
+  "light_industrial": {
+    "activity_count": 5,
+    "profile_count": 5,
+    "emission_factor_count": 5,
+    "emission_factor_activity_coverage": 1.0
+  },
+  "heavy_industrial": {
+    "activity_count": 4,
+    "profile_count": 4,
+    "emission_factor_count": 4,
+    "emission_factor_activity_coverage": 1.0
+  },
+  "online": {
+    "activity_count": 30,
+    "profile_count": 7,
+    "emission_factor_count": 30,
+    "emission_factor_activity_coverage": 1.0
+  }
+}

@@ -22,3 +22,15 @@ PROFILE.CHILD.CLOTHING.2025,professional,Child clothing consumption (2025),,regi
 PROFILE.ELITE.SECURITY.2025,personal_security_layer,Elite private security program (2025),CA-ON,region_default,,,0,"High-net-worth security envelope covering convoy, guard, and aerial patrol services."
 PROFILE.SENIOR.CLOTHING.2025,professional,Senior clothing consumption (2025),,region_default,,,0,Annualized clothing purchases for a representative senior cohort.
 PROFILE.WAR.UKRAINE.2022,modeled_events,Ukraine conflict operations (2022),,region_default,,,0,Modeled monthly high-intensity conflict footprint across 2022 hostilities.
+LIGHTIND.ON.CONSTRUCTION.2025,light_industrial,Ontario light-industrial construction (2025),CA-ON,region_default,,,,Imported from ACX012 construction stack with 2025 Ontario crew and generator mix.
+LIGHTIND.ON.LOGISTICS.2025,light_industrial,Ontario light-industrial logistics & warehousing (2025),CA-ON,region_default,,,,ACX012 logistics bay utilisation translated to Ontario warehousing schedules.
+LIGHTIND.ON.LASTMILE.2025,light_industrial,Ontario last-mile delivery depots (2025),CA-ON,region_default,,,,ACX012 last-mile route archetypes for diesel vans operating in the GTHA.
+LIGHTIND.ON.SERVICES.2025,light_industrial,Ontario facility services crews (2025),CA-ON,region_default,,,,ACX012 services cohort capturing maintenance technician dispatch profiles.
+LIGHTIND.ON.WASTE.2025,light_industrial,Ontario light-industrial waste handling (2025),CA-ON,region_default,,,,ACX012 waste stream management cycle for roll-off compactors and loaders.
+HEAVYIND.ON.CLINKER.2025,heavy_industrial,Ontario cement clinker line (2025),CA-ON,region_default,,,,ACX013 clinker kiln stub awaiting throughput calibration; freq_per_day intentionally null.
+HEAVYIND.ON.EAF.2025,heavy_industrial,Ontario EAF steel mini-mill (2025),CA-ON,region_default,,,,ACX013 EAF cycle stub seeded without daily throughput; freq_per_day left null in schedules.
+HEAVYIND.ON.REFINERY.2025,heavy_industrial,Ontario refinery fired equipment (2025),CA-ON,region_default,,,,ACX013 refinery fired duty stub awaiting heater throughput validation; schedule frequency left null.
+HEAVYIND.ON.MINING.2025,heavy_industrial,Ontario mining haulage fleet (2025),CA-ON,region_default,,,,ACX013 mining haul truck stub awaiting pit duty cycle metering; schedule frequency left null.
+ONLINE.CA.STREAMING.2025,online,Canada consumer streaming mix (2025),CA-ON,region_default,,,,"ACX014 streaming cohort referencing 2023–2025 DIMPACT, IEA digital, and Masanet et al. findings."
+ONLINE.CA.LLM.2025,online,Canada cloud LLM usage (2025),CA-ON,region_default,,,,"ACX014 LLM demand mix cross-checked with 2023–2025 AI energy studies (Luccioni, Patterson, Google)."
+ONLINE.CA.STORAGE.2025,online,Canada cloud storage workloads (2025),CA-ON,region_default,,,,ACX014 object storage workloads reconciled against 2023–2025 hyperscale sustainability reports.
