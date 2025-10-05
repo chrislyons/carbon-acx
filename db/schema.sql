@@ -168,6 +168,9 @@ CREATE TABLE activity_schedule (
 
 CREATE TABLE grid_intensity (
     region_code TEXT NOT NULL,
+    region TEXT NOT NULL,
+    scope_boundary TEXT NOT NULL,
+    gwp_horizon TEXT NOT NULL,
     vintage_year INTEGER NOT NULL,
     g_per_kwh REAL,
     g_per_kwh_low REAL,

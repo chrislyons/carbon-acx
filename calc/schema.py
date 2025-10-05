@@ -379,6 +379,8 @@ class ActivitySchedule(BaseModel):
 
 class GridIntensity(BaseModel):
     region: RegionCode = Field(alias="region_code")
+    scope_boundary: Optional[ScopeBoundary] = None
+    gwp_horizon: Optional[str] = None
     intensity_g_per_kwh: Optional[float] = Field(default=None, alias="g_per_kwh")
     intensity_low_g_per_kwh: Optional[float] = Field(default=None, alias="g_per_kwh_low")
     intensity_high_g_per_kwh: Optional[float] = Field(default=None, alias="g_per_kwh_high")

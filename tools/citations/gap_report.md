@@ -1,114 +1,20 @@
 # Citation Gap Report
 
-- Total claims inventoried: 352
-- Total issues detected: 65
+- Total claims inventoried: 353
+- Total issues detected: 0
 
 ## Datasets
 ### emission_factors.csv
 
 - Rows with claims: 90
-- Claims inventoried: 317
-- Issues detected: 11
-
-#### Issues
-- **ef_id=EF.DEMO.COFFEE.FIXED, activity_id=FOOD.COFFEE.CUP.HOT**
-  - Missing required field: region
-- **ef_id=EF.DEMO.STREAM, activity_id=stream**
-  - Missing required field: vintage_year
-  - Missing required field: scope_boundary
-  - Missing required field: gwp_horizon
-  - Missing required field: region
-  - Grid-indexed row missing required field: vintage_year
-- **ef_id=EF.ONLINE.MEDIA.STREAM.HD.HOUR.TV, activity_id=MEDIA.STREAM.HD.HOUR.TV**
-  - Missing required field: region
-- **ef_id=EF.ONLINE.CONF.HD.PARTICIPANT_HOUR, activity_id=CONF.HD.PARTICIPANT_HOUR**
-  - Missing required field: region
-- **ef_id=EF.ONLINE.CLOUD.DOWNLOAD.GB, activity_id=CLOUD.DOWNLOAD.GB**
-  - Missing required field: region
-- **ef_id=EF.ONLINE.SOCIAL.SCROLL.HOUR.MOBILE, activity_id=SOCIAL.SCROLL.HOUR.MOBILE**
-  - Missing required field: region
-- **ef_id=EF.ONLINE.AI.LLM.INFER.1K_TOKENS, activity_id=AI.LLM.INFER.1K_TOKENS.GENERIC**
-  - Missing required field: region
+- Claims inventoried: 318
+- Issues detected: 0
 
 ### grid_intensity.csv
 
 - Rows with claims: 18
 - Claims inventoried: 35
-- Issues detected: 54
-
-#### Issues
-- **region_code=CA, vintage_year=2024**
-  - Missing required field: scope_boundary
-  - Missing required field: gwp_horizon
-  - Missing required field: region
-- **region_code=CA-ON, vintage_year=2024**
-  - Missing required field: scope_boundary
-  - Missing required field: gwp_horizon
-  - Missing required field: region
-- **region_code=CA-ON, vintage_year=2025**
-  - Missing required field: scope_boundary
-  - Missing required field: gwp_horizon
-  - Missing required field: region
-- **region_code=CA-QC, vintage_year=2021**
-  - Missing required field: scope_boundary
-  - Missing required field: gwp_horizon
-  - Missing required field: region
-- **region_code=CA-QC, vintage_year=2022**
-  - Missing required field: scope_boundary
-  - Missing required field: gwp_horizon
-  - Missing required field: region
-- **region_code=CA-QC, vintage_year=2023**
-  - Missing required field: scope_boundary
-  - Missing required field: gwp_horizon
-  - Missing required field: region
-- **region_code=CA-QC, vintage_year=2024**
-  - Missing required field: scope_boundary
-  - Missing required field: gwp_horizon
-  - Missing required field: region
-- **region_code=CA-QC, vintage_year=2025**
-  - Missing required field: scope_boundary
-  - Missing required field: gwp_horizon
-  - Missing required field: region
-- **region_code=CA-AB, vintage_year=2021**
-  - Missing required field: scope_boundary
-  - Missing required field: gwp_horizon
-  - Missing required field: region
-- **region_code=CA-AB, vintage_year=2022**
-  - Missing required field: scope_boundary
-  - Missing required field: gwp_horizon
-  - Missing required field: region
-- **region_code=CA-AB, vintage_year=2023**
-  - Missing required field: scope_boundary
-  - Missing required field: gwp_horizon
-  - Missing required field: region
-- **region_code=CA-AB, vintage_year=2024**
-  - Missing required field: scope_boundary
-  - Missing required field: gwp_horizon
-  - Missing required field: region
-- **region_code=CA-AB, vintage_year=2025**
-  - Missing required field: scope_boundary
-  - Missing required field: gwp_horizon
-  - Missing required field: region
-- **region_code=CA-BC, vintage_year=2021**
-  - Missing required field: scope_boundary
-  - Missing required field: gwp_horizon
-  - Missing required field: region
-- **region_code=CA-BC, vintage_year=2022**
-  - Missing required field: scope_boundary
-  - Missing required field: gwp_horizon
-  - Missing required field: region
-- **region_code=CA-BC, vintage_year=2023**
-  - Missing required field: scope_boundary
-  - Missing required field: gwp_horizon
-  - Missing required field: region
-- **region_code=CA-BC, vintage_year=2024**
-  - Missing required field: scope_boundary
-  - Missing required field: gwp_horizon
-  - Missing required field: region
-- **region_code=CA-BC, vintage_year=2025**
-  - Missing required field: scope_boundary
-  - Missing required field: gwp_horizon
-  - Missing required field: region
+- Issues detected: 0
 
 ## Scanned files
 ### data_csv

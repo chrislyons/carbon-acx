@@ -25,6 +25,7 @@ lint:
 
 test:
 	PYTHONPATH=. poetry run pytest
+	PYTHONPATH=. python tools/validate_assets.py
 
 $(LATEST_BUILD):
 	@mkdir -p $(DIST_ARTIFACTS_DIR)

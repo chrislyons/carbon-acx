@@ -146,8 +146,15 @@ class SqlStore:
     def load_grid_intensity(self) -> Sequence[GridIntensity]:
         rows = self._fetch_all(
             """
-            SELECT region_code, vintage_year, g_per_kwh, g_per_kwh_low,
-                   g_per_kwh_high, source_id
+            SELECT region_code,
+                   region,
+                   scope_boundary,
+                   gwp_horizon,
+                   vintage_year,
+                   g_per_kwh,
+                   g_per_kwh_low,
+                   g_per_kwh_high,
+                   source_id
             FROM grid_intensity
             ORDER BY region_code, COALESCE(vintage_year, 0)
             """
