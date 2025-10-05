@@ -1,0 +1,2622 @@
+{
+  "scanned_files": {
+    "data_csv": [
+      "data/activities.csv",
+      "data/activity_fu_map.csv",
+      "data/activity_schedule.csv",
+      "data/assets.csv",
+      "data/dependencies.csv",
+      "data/emission_factors.csv",
+      "data/entities.csv",
+      "data/feedback_loops.csv",
+      "data/functional_units.csv",
+      "data/grid_intensity.csv",
+      "data/layers.csv",
+      "data/operations.csv",
+      "data/profiles.csv",
+      "data/sites.csv",
+      "data/sources.csv",
+      "data/units.csv"
+    ],
+    "site_artifacts_json": [
+      "site/public/artifacts/audit_report.json",
+      "site/public/artifacts/layers.json"
+    ],
+    "artifacts_json": [
+      "artifacts/audit_report.json",
+      "artifacts/dependency_map.json"
+    ]
+  },
+  "datasets": [
+    {
+      "name": "emission_factors.csv",
+      "path": "data/emission_factors.csv",
+      "findings": [
+        {
+          "row_number": 2,
+          "identifier": {
+            "ef_id": "EF.DEMO.COFFEE.FIXED",
+            "activity_id": "FOOD.COFFEE.CUP.HOT"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 1.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2025.0
+            }
+          ],
+          "issues": [
+            "Missing required field: region"
+          ]
+        },
+        {
+          "row_number": 3,
+          "identifier": {
+            "ef_id": "EF.DEMO.STREAM",
+            "activity_id": "stream"
+          },
+          "claims": [
+            {
+              "field": "electricity_kwh_per_unit",
+              "value": 0.1
+            }
+          ],
+          "issues": [
+            "Missing required field: vintage_year",
+            "Missing required field: scope_boundary",
+            "Missing required field: gwp_horizon",
+            "Missing required field: region",
+            "Grid-indexed row missing required field: vintage_year"
+          ]
+        },
+        {
+          "row_number": 4,
+          "identifier": {
+            "ef_id": "EF.ONLINE.MEDIA.STREAM.HD.HOUR.TV",
+            "activity_id": "MEDIA.STREAM.HD.HOUR.TV"
+          },
+          "claims": [
+            {
+              "field": "electricity_kwh_per_unit",
+              "value": 0.165
+            },
+            {
+              "field": "vintage_year",
+              "value": 2024.0
+            }
+          ],
+          "issues": [
+            "Missing required field: region"
+          ]
+        },
+        {
+          "row_number": 5,
+          "identifier": {
+            "ef_id": "EF.ONLINE.CONF.HD.PARTICIPANT_HOUR",
+            "activity_id": "CONF.HD.PARTICIPANT_HOUR"
+          },
+          "claims": [
+            {
+              "field": "electricity_kwh_per_unit",
+              "value": 0.082
+            },
+            {
+              "field": "vintage_year",
+              "value": 2024.0
+            }
+          ],
+          "issues": [
+            "Missing required field: region"
+          ]
+        },
+        {
+          "row_number": 6,
+          "identifier": {
+            "ef_id": "EF.MIL.FLIGHT.PKM",
+            "activity_id": "MIL.FLIGHT.PKM"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 340.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2023.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 330.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 350.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 7,
+          "identifier": {
+            "ef_id": "EF.MIL.NAVAL.TONNEKM",
+            "activity_id": "MIL.NAVAL.TONNEKM"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 30.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2023.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 20.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 40.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 8,
+          "identifier": {
+            "ef_id": "EF.MIL.VEHICLE.KM",
+            "activity_id": "MIL.VEHICLE.KM"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 1600.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2023.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 1200.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 2000.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 9,
+          "identifier": {
+            "ef_id": "EF.MIL.MUNITIONS.TONNE",
+            "activity_id": "MIL.MUNITIONS.TONNE"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 2500000.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2024.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 2000000.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 3000000.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 10,
+          "identifier": {
+            "ef_id": "EF.MIL.AIRCRAFT.UNIT",
+            "activity_id": "MIL.AIRCRAFT.UNIT"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 250000000.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2024.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 200000000.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 300000000.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 11,
+          "identifier": {
+            "ef_id": "EF.MIL.TANK.UNIT",
+            "activity_id": "MIL.TANK.UNIT"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 135000000.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2024.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 120000000.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 150000000.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 12,
+          "identifier": {
+            "ef_id": "EF.MIL.BASE.M2.YEAR",
+            "activity_id": "MIL.BASE.M2.YEAR"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 150000.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2023.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 120000.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 180000.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 13,
+          "identifier": {
+            "ef_id": "EF.MIL.DEPOT.M2.YEAR",
+            "activity_id": "MIL.DEPOT.M2.YEAR"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 225000.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2023.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 200000.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 250000.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 14,
+          "identifier": {
+            "ef_id": "EF.MIL.CONFLICT.MONTH",
+            "activity_id": "MIL.CONFLICT.MONTH"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 1500000000000.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2024.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 1000000000000.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 2000000000000.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 15,
+          "identifier": {
+            "ef_id": "EF.CHEM.TNT.TONNE",
+            "activity_id": "CHEM.TNT.TONNE"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 6000000.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2023.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 5000000.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 7000000.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 16,
+          "identifier": {
+            "ef_id": "EF.CHEM.RDX.TONNE",
+            "activity_id": "CHEM.RDX.TONNE"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 6000000.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2023.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 5000000.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 7000000.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 17,
+          "identifier": {
+            "ef_id": "EF.SEC.CONVOY.KM",
+            "activity_id": "SEC.CONVOY.KM"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 1500.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2024.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 1000.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 2100.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 18,
+          "identifier": {
+            "ef_id": "EF.SEC.GUARD.HOUR",
+            "activity_id": "SEC.GUARD.HOUR"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 2500.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2024.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 2000.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 3000.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 19,
+          "identifier": {
+            "ef_id": "EF.SEC.HELI.HOUR",
+            "activity_id": "SEC.HELI.HOUR"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 325000.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2024.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 250000.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 400000.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 20,
+          "identifier": {
+            "ef_id": "EF.CAR.KM",
+            "activity_id": "TRAN.SCHOOLRUN.CAR.KM"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 180.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2023.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 21,
+          "identifier": {
+            "ef_id": "EF.BIKE.KM",
+            "activity_id": "TRAN.SCHOOLRUN.BIKE.KM"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 0.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2023.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 22,
+          "identifier": {
+            "ef_id": "EF.STREAM.HD.HOUR.CA-ON",
+            "activity_id": "MEDIA.STREAM.HD.HOUR"
+          },
+          "claims": [
+            {
+              "field": "electricity_kwh_per_unit",
+              "value": 0.13
+            },
+            {
+              "field": "electricity_kwh_per_unit_low",
+              "value": 0.077
+            },
+            {
+              "field": "electricity_kwh_per_unit_high",
+              "value": 0.261
+            },
+            {
+              "field": "vintage_year",
+              "value": 2024.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 23,
+          "identifier": {
+            "ef_id": "EF.STREAM.UHD.HOUR.CA-ON",
+            "activity_id": "MEDIA.STREAM.UHD.HOUR"
+          },
+          "claims": [
+            {
+              "field": "electricity_kwh_per_unit",
+              "value": 0.255
+            },
+            {
+              "field": "electricity_kwh_per_unit_low",
+              "value": 0.137
+            },
+            {
+              "field": "electricity_kwh_per_unit_high",
+              "value": 0.548
+            },
+            {
+              "field": "vintage_year",
+              "value": 2024.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 24,
+          "identifier": {
+            "ef_id": "EF.MEAL.BEEF.SERVING",
+            "activity_id": "FOOD.MEAL.BEEF.SERVING"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 9000.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2018.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 5400.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 12300.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 25,
+          "identifier": {
+            "ef_id": "EF.DEVICE.SMARTPHONE.UNIT.CA-ON",
+            "activity_id": "DEVICE.SMARTPHONE.UNIT"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 70000.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2024.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 26,
+          "identifier": {
+            "ef_id": "EF.DEVICE.LAPTOP.UNIT.CA-ON",
+            "activity_id": "DEVICE.LAPTOP.UNIT"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 200000.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2024.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 27,
+          "identifier": {
+            "ef_id": "EF.DEVICE.TV.UNIT.CA-ON",
+            "activity_id": "DEVICE.TV.UNIT"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 300000.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2024.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 28,
+          "identifier": {
+            "ef_id": "EF.LOGI.SHIPPING.CONTAINER.CA-ON",
+            "activity_id": "LOGI.SHIPPING.CONTAINER.TONNEKM"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 12.5
+            },
+            {
+              "field": "vintage_year",
+              "value": 2023.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 10.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 15.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 29,
+          "identifier": {
+            "ef_id": "EF.LOGI.SHIPPING.BULK.CA-ON",
+            "activity_id": "LOGI.SHIPPING.BULK.TONNEKM"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 6.5
+            },
+            {
+              "field": "vintage_year",
+              "value": 2023.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 5.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 8.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 30,
+          "identifier": {
+            "ef_id": "EF.BUILDING.OFFICE.M2.YEAR.CA-ON",
+            "activity_id": "BUILDING.OFFICE.M2.YEAR"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 80000.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2024.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 31,
+          "identifier": {
+            "ef_id": "EF.BUILDING.HOSPITAL.M2.YEAR.CA-ON",
+            "activity_id": "BUILDING.HOSPITAL.M2.YEAR"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 250000.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2024.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 32,
+          "identifier": {
+            "ef_id": "EF.BUILDING.RESIDENTIAL.M2.YEAR.CA-ON",
+            "activity_id": "BUILDING.RESIDENTIAL.M2.YEAR"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 50000.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2024.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 33,
+          "identifier": {
+            "ef_id": "EF.MEAL.CHICKEN.SERVING",
+            "activity_id": "FOOD.MEAL.CHICKEN.SERVING"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 900.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2018.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 600.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 1050.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 34,
+          "identifier": {
+            "ef_id": "EF.MEAL.VEG.SERVING",
+            "activity_id": "FOOD.MEAL.VEG.SERVING"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 300.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2018.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 180.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 480.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 35,
+          "identifier": {
+            "ef_id": "EF.AGRI.BEEF.CARCASS.POORE2018",
+            "activity_id": "AGRI.BEEF.CARCASS.KG"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 60000.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2018.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 36000.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 82000.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 36,
+          "identifier": {
+            "ef_id": "EF.AGRI.POULTRY.READY.POORE2018",
+            "activity_id": "AGRI.POULTRY.READY.KG"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 6000.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2018.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 4000.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 7000.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 37,
+          "identifier": {
+            "ef_id": "EF.FOOD.COFFEE.ROASTED.POORE2018",
+            "activity_id": "FOOD.COFFEE.ROASTED.KG"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 15000.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2018.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 10000.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 21000.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 38,
+          "identifier": {
+            "ef_id": "EF.ONLINE.CLOUD.DOWNLOAD.GB",
+            "activity_id": "CLOUD.DOWNLOAD.GB"
+          },
+          "claims": [
+            {
+              "field": "electricity_kwh_per_unit",
+              "value": 0.015
+            },
+            {
+              "field": "vintage_year",
+              "value": 2024.0
+            }
+          ],
+          "issues": [
+            "Missing required field: region"
+          ]
+        },
+        {
+          "row_number": 39,
+          "identifier": {
+            "ef_id": "EF.ONLINE.SOCIAL.SCROLL.HOUR.MOBILE",
+            "activity_id": "SOCIAL.SCROLL.HOUR.MOBILE"
+          },
+          "claims": [
+            {
+              "field": "electricity_kwh_per_unit",
+              "value": 0.0048
+            },
+            {
+              "field": "vintage_year",
+              "value": 2024.0
+            }
+          ],
+          "issues": [
+            "Missing required field: region"
+          ]
+        },
+        {
+          "row_number": 40,
+          "identifier": {
+            "ef_id": "EF.SOCIAL.YOUTUBE.HOUR",
+            "activity_id": "SOCIAL.YOUTUBE.HOUR"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 230.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2022.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 150.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 400.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 41,
+          "identifier": {
+            "ef_id": "EF.SOCIAL.FACEBOOK.HOUR",
+            "activity_id": "SOCIAL.FACEBOOK.HOUR"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 60.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2022.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 30.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 120.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 42,
+          "identifier": {
+            "ef_id": "EF.SOCIAL.INSTAGRAM.HOUR",
+            "activity_id": "SOCIAL.INSTAGRAM.HOUR"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 85.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2022.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 50.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 150.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 43,
+          "identifier": {
+            "ef_id": "EF.SOCIAL.TIKTOK.HOUR",
+            "activity_id": "SOCIAL.TIKTOK.HOUR"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 150.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2022.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 80.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 250.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 44,
+          "identifier": {
+            "ef_id": "EF.SOCIAL.TWITTER.HOUR",
+            "activity_id": "SOCIAL.TWITTER.HOUR"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 55.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2022.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 25.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 100.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 45,
+          "identifier": {
+            "ef_id": "EF.SOCIAL.SNAPCHAT.HOUR",
+            "activity_id": "SOCIAL.SNAPCHAT.HOUR"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 70.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2022.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 40.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 120.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 46,
+          "identifier": {
+            "ef_id": "EF.MATERIAL.CEMENT.CLINKER.GNR2023",
+            "activity_id": "MATERIAL.CEMENT.CLINKER.TONNE"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 850000.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2023.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 800000.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 900000.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 47,
+          "identifier": {
+            "ef_id": "EF.MATERIAL.STEEL.CRUDESLAB.WS2023",
+            "activity_id": "MATERIAL.STEEL.CRUDESLAB.TONNE"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 2000000.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2023.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 1800000.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 2200000.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 48,
+          "identifier": {
+            "ef_id": "EF.MATERIAL.PET.VIRGIN.PE2022",
+            "activity_id": "MATERIAL.PET.VIRGIN.TONNE"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 2700000.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2022.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 2400000.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 3000000.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 49,
+          "identifier": {
+            "ef_id": "EF.CLOTHING.TSHIRT.COTTON",
+            "activity_id": "CLOTHING.TSHIRT.COTTON"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 4000.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2017.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 3000.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 6000.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 50,
+          "identifier": {
+            "ef_id": "EF.CLOTHING.JEANS.DENIM",
+            "activity_id": "CLOTHING.JEANS.DENIM"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 33000.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2018.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 20000.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 50000.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 51,
+          "identifier": {
+            "ef_id": "EF.CLOTHING.JACKET.SYNTH",
+            "activity_id": "CLOTHING.JACKET.SYNTH"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 25000.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2020.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 15000.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 40000.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 52,
+          "identifier": {
+            "ef_id": "EF.CLOTHING.SHOES.SNEAKERS",
+            "activity_id": "CLOTHING.SHOES.SNEAKERS"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 14000.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2018.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 10000.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 20000.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 53,
+          "identifier": {
+            "ef_id": "EF.CLOTHING.TSHIRT.COTTON.WEAR",
+            "activity_id": "CLOTHING.TSHIRT.COTTON"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 80.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2017.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 60.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 120.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 54,
+          "identifier": {
+            "ef_id": "EF.CLOTHING.JEANS.DENIM.WEAR",
+            "activity_id": "CLOTHING.JEANS.DENIM"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 330.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2018.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 200.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 500.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 55,
+          "identifier": {
+            "ef_id": "EF.CLOTHING.JACKET.SYNTH.WEAR",
+            "activity_id": "CLOTHING.JACKET.SYNTH"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 166.67
+            },
+            {
+              "field": "vintage_year",
+              "value": 2020.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 100.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 266.67
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 56,
+          "identifier": {
+            "ef_id": "EF.CLOTHING.SHOES.SNEAKERS.WEAR",
+            "activity_id": "CLOTHING.SHOES.SNEAKERS"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 70.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2018.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 50.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 100.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 57,
+          "identifier": {
+            "ef_id": "EF.SOCIAL.LINKEDIN.HOUR",
+            "activity_id": "SOCIAL.LINKEDIN.HOUR"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 50.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2022.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 20.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 90.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 58,
+          "identifier": {
+            "ef_id": "EF.ONLINE.AI.LLM.INFER.1K_TOKENS",
+            "activity_id": "AI.LLM.INFER.1K_TOKENS.GENERIC"
+          },
+          "claims": [
+            {
+              "field": "electricity_kwh_per_unit",
+              "value": 0.003
+            },
+            {
+              "field": "vintage_year",
+              "value": 2025.0
+            }
+          ],
+          "issues": [
+            "Missing required field: region"
+          ]
+        },
+        {
+          "row_number": 59,
+          "identifier": {
+            "ef_id": "EF.LLM.GPT.TOKENK",
+            "activity_id": "AI.USAGE.GPT.QUERY"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 280.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2023.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 200.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 400.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 60,
+          "identifier": {
+            "ef_id": "EF.LLM.ANTHROPIC.TOKENK",
+            "activity_id": "AI.USAGE.ANTHROPIC.QUERY"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 250.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2023.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 180.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 350.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 61,
+          "identifier": {
+            "ef_id": "EF.LLM.GOOGLE.TOKENK",
+            "activity_id": "AI.USAGE.GOOGLE.QUERY"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 200.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2021.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 150.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 300.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 62,
+          "identifier": {
+            "ef_id": "GRID.CA-ON.2024",
+            "activity_id": "ENERGY.CA-ON.GRID.KWH"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 28.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2024.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 63,
+          "identifier": {
+            "ef_id": "EF.REFR.FRIDGE.UNIT",
+            "activity_id": "REFR.APPL.FRIDGE.UNIT"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 400000.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2023.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 64,
+          "identifier": {
+            "ef_id": "EF.REFR.FRIDGE.OP.YEAR",
+            "activity_id": "REFR.APPL.FRIDGE.OP.YEAR"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 150000.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2024.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 65,
+          "identifier": {
+            "ef_id": "EF.REFR.AC.UNIT",
+            "activity_id": "REFR.HVAC.AC.UNIT"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 700000.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2023.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 66,
+          "identifier": {
+            "ef_id": "EF.REFR.AC.OP.YEAR",
+            "activity_id": "REFR.HVAC.AC.OP.YEAR"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 400000.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2024.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 67,
+          "identifier": {
+            "ef_id": "EF.REFR.COLDCHAIN.KG",
+            "activity_id": "REFR.COLDCHAIN.SUPERMARKET.KG"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 500.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2024.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 68,
+          "identifier": {
+            "ef_id": "EF.GRID.CAON.2024",
+            "activity_id": "ENERGY.KWH.DELIVERED"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 35.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2024.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 25.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 60.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 69,
+          "identifier": {
+            "ef_id": "EF.NATGAS.CA.2024",
+            "activity_id": "ENERGY.NATGAS.M3"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 1900.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2024.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 1750.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 2100.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 70,
+          "identifier": {
+            "ef_id": "EF.GASOLINE.CA.2024",
+            "activity_id": "ENERGY.GASOLINE.LITRE"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 2300.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2024.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 2100.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 2600.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 71,
+          "identifier": {
+            "ef_id": "EF.TTC.SUBWAY.PKM",
+            "activity_id": "TRAN.TTC.SUBWAY.KM"
+          },
+          "claims": [
+            {
+              "field": "electricity_kwh_per_unit",
+              "value": 0.17
+            },
+            {
+              "field": "electricity_kwh_per_unit_low",
+              "value": 0.136
+            },
+            {
+              "field": "electricity_kwh_per_unit_high",
+              "value": 0.222
+            },
+            {
+              "field": "vintage_year",
+              "value": 2024.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 72,
+          "identifier": {
+            "ef_id": "EF.TTC.BUS.PKM",
+            "activity_id": "TRAN.TTC.BUS.KM"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 86.62
+            },
+            {
+              "field": "vintage_year",
+              "value": 2023.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 78.74
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 96.24
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 73,
+          "identifier": {
+            "ef_id": "EF.TRUCK.CLASS6.KM",
+            "activity_id": "TRAN.DELIVERY.TRUCK.CLASS6.KM"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 860.79
+            },
+            {
+              "field": "vintage_year",
+              "value": 2025.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 774.71
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 946.87
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 74,
+          "identifier": {
+            "ef_id": "EF.FLIGHT.SHORTHAUL.PKM",
+            "activity_id": "TRAN.FLIGHT.SHORTHAUL.PKM"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 250.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2023.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 200.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 320.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 75,
+          "identifier": {
+            "ef_id": "EF.FLIGHT.LONGHAUL.PKM",
+            "activity_id": "TRAN.FLIGHT.LONGHAUL.PKM"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 190.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2024.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 150.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 260.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 76,
+          "identifier": {
+            "ef_id": "EF.FLIGHT.PRIVATE.PKM",
+            "activity_id": "TRAN.FLIGHT.PRIVATE.PKM"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 900.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2023.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 600.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 1200.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 77,
+          "identifier": {
+            "ef_id": "EF.MUNI.WASTE.LANDFILL.WARM15",
+            "activity_id": "MUNI.WASTE.LANDFILL.KG"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 482.8
+            },
+            {
+              "field": "vintage_year",
+              "value": 2023.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 360.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 605.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 78,
+          "identifier": {
+            "ef_id": "EF.MUNI.WASTE.INCIN.WARM15",
+            "activity_id": "MUNI.WASTE.INCINERATION.KG"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 295.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2023.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 190.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 400.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 79,
+          "identifier": {
+            "ef_id": "EF.MUNI.WATER.POTABLE.TO2023",
+            "activity_id": "MUNI.WATER.POTABLE.M3"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 180.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2023.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 125.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 235.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 80,
+          "identifier": {
+            "ef_id": "EF.TRUCK.CLASS6.KM.ELECTRIC",
+            "activity_id": "TRAN.DELIVERY.TRUCK.CLASS6.KM"
+          },
+          "claims": [
+            {
+              "field": "electricity_kwh_per_unit",
+              "value": 1.3
+            },
+            {
+              "field": "electricity_kwh_per_unit_low",
+              "value": 1.1
+            },
+            {
+              "field": "electricity_kwh_per_unit_high",
+              "value": 1.5
+            },
+            {
+              "field": "vintage_year",
+              "value": 2018.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 81,
+          "identifier": {
+            "ef_id": "EF.LOGI.PARCEL.URBAN",
+            "activity_id": "LOGI.PARCEL.URBAN"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 400.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2023.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 300.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 520.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 82,
+          "identifier": {
+            "ef_id": "EF.LOGI.TRUCK.TONNEKM",
+            "activity_id": "LOGI.TRUCK.TONNEKM"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 60.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2024.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 48.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 72.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 83,
+          "identifier": {
+            "ef_id": "EF.LOGI.AIR.TONNEKM",
+            "activity_id": "LOGI.AIR.TONNEKM"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 500.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2024.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 350.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 650.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 84,
+          "identifier": {
+            "ef_id": "EF.OCEAN.CO2.UPTAKE.2023",
+            "activity_id": "OCEAN.CO2.UPTAKE.PGCO2"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": -2500000000000000.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2023.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": -3000000000000000.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": -2000000000000000.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 85,
+          "identifier": {
+            "ef_id": "EF.OCEAN.ACID.PH.2023",
+            "activity_id": "OCEAN.ACIDIFICATION.PH.DEC"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": -0.02
+            },
+            {
+              "field": "vintage_year",
+              "value": 2023.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": -0.03
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": -0.01
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 86,
+          "identifier": {
+            "ef_id": "EF.CRYO.ALBEDO.2023",
+            "activity_id": "CRYO.ALBEDO.LOSS.WM2"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 0.11
+            },
+            {
+              "field": "vintage_year",
+              "value": 2023.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 0.07
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 0.15
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 87,
+          "identifier": {
+            "ef_id": "EF.PERMAFROST.EMISSIONS.2023",
+            "activity_id": "PERMAFROST.EMISSIONS.PGCO2E"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 300000000000000.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2023.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 200000000000000.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 400000000000000.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 88,
+          "identifier": {
+            "ef_id": "EF.TAILINGS.POND.2023",
+            "activity_id": "TAILINGS.POND.M2.YEAR"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 850.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2023.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 200.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 1500.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 89,
+          "identifier": {
+            "ef_id": "EF.TAILINGS.DEGASS.2023",
+            "activity_id": "TAILINGS.DEGASS.EVENT"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 105000000.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2023.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 10000000.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 200000000.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 90,
+          "identifier": {
+            "ef_id": "EF.AMD.ACID.2023",
+            "activity_id": "AMD.ACID.DRAINAGE.M3.YEAR"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 275.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2023.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 50.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 500.0
+            }
+          ],
+          "issues": []
+        },
+        {
+          "row_number": 91,
+          "identifier": {
+            "ef_id": "EF.RIVER.HYPOXIA.2023",
+            "activity_id": "RIVER.HYPOXIA.KM2.YEAR"
+          },
+          "claims": [
+            {
+              "field": "value_g_per_unit",
+              "value": 275000000.0
+            },
+            {
+              "field": "vintage_year",
+              "value": 2023.0
+            },
+            {
+              "field": "uncert_low_g_per_unit",
+              "value": 50000000.0
+            },
+            {
+              "field": "uncert_high_g_per_unit",
+              "value": 500000000.0
+            }
+          ],
+          "issues": []
+        }
+      ]
+    },
+    {
+      "name": "grid_intensity.csv",
+      "path": "data/grid_intensity.csv",
+      "findings": [
+        {
+          "row_number": 2,
+          "identifier": {
+            "region_code": "CA",
+            "vintage_year": "2024"
+          },
+          "claims": [
+            {
+              "field": "vintage_year",
+              "value": 2024.0
+            }
+          ],
+          "issues": [
+            "Missing required field: scope_boundary",
+            "Missing required field: gwp_horizon",
+            "Missing required field: region"
+          ]
+        },
+        {
+          "row_number": 3,
+          "identifier": {
+            "region_code": "CA-ON",
+            "vintage_year": "2024"
+          },
+          "claims": [
+            {
+              "field": "vintage_year",
+              "value": 2024.0
+            },
+            {
+              "field": "g_per_kwh",
+              "value": 28.0
+            }
+          ],
+          "issues": [
+            "Missing required field: scope_boundary",
+            "Missing required field: gwp_horizon",
+            "Missing required field: region"
+          ]
+        },
+        {
+          "row_number": 4,
+          "identifier": {
+            "region_code": "CA-ON",
+            "vintage_year": "2025"
+          },
+          "claims": [
+            {
+              "field": "vintage_year",
+              "value": 2025.0
+            },
+            {
+              "field": "g_per_kwh",
+              "value": 27.0
+            }
+          ],
+          "issues": [
+            "Missing required field: scope_boundary",
+            "Missing required field: gwp_horizon",
+            "Missing required field: region"
+          ]
+        },
+        {
+          "row_number": 5,
+          "identifier": {
+            "region_code": "CA-QC",
+            "vintage_year": "2021"
+          },
+          "claims": [
+            {
+              "field": "vintage_year",
+              "value": 2021.0
+            },
+            {
+              "field": "g_per_kwh",
+              "value": 1.5
+            }
+          ],
+          "issues": [
+            "Missing required field: scope_boundary",
+            "Missing required field: gwp_horizon",
+            "Missing required field: region"
+          ]
+        },
+        {
+          "row_number": 6,
+          "identifier": {
+            "region_code": "CA-QC",
+            "vintage_year": "2022"
+          },
+          "claims": [
+            {
+              "field": "vintage_year",
+              "value": 2022.0
+            },
+            {
+              "field": "g_per_kwh",
+              "value": 1.4
+            }
+          ],
+          "issues": [
+            "Missing required field: scope_boundary",
+            "Missing required field: gwp_horizon",
+            "Missing required field: region"
+          ]
+        },
+        {
+          "row_number": 7,
+          "identifier": {
+            "region_code": "CA-QC",
+            "vintage_year": "2023"
+          },
+          "claims": [
+            {
+              "field": "vintage_year",
+              "value": 2023.0
+            },
+            {
+              "field": "g_per_kwh",
+              "value": 1.3
+            }
+          ],
+          "issues": [
+            "Missing required field: scope_boundary",
+            "Missing required field: gwp_horizon",
+            "Missing required field: region"
+          ]
+        },
+        {
+          "row_number": 8,
+          "identifier": {
+            "region_code": "CA-QC",
+            "vintage_year": "2024"
+          },
+          "claims": [
+            {
+              "field": "vintage_year",
+              "value": 2024.0
+            },
+            {
+              "field": "g_per_kwh",
+              "value": 1.2
+            }
+          ],
+          "issues": [
+            "Missing required field: scope_boundary",
+            "Missing required field: gwp_horizon",
+            "Missing required field: region"
+          ]
+        },
+        {
+          "row_number": 9,
+          "identifier": {
+            "region_code": "CA-QC",
+            "vintage_year": "2025"
+          },
+          "claims": [
+            {
+              "field": "vintage_year",
+              "value": 2025.0
+            },
+            {
+              "field": "g_per_kwh",
+              "value": 1.1
+            }
+          ],
+          "issues": [
+            "Missing required field: scope_boundary",
+            "Missing required field: gwp_horizon",
+            "Missing required field: region"
+          ]
+        },
+        {
+          "row_number": 10,
+          "identifier": {
+            "region_code": "CA-AB",
+            "vintage_year": "2021"
+          },
+          "claims": [
+            {
+              "field": "vintage_year",
+              "value": 2021.0
+            },
+            {
+              "field": "g_per_kwh",
+              "value": 610.0
+            }
+          ],
+          "issues": [
+            "Missing required field: scope_boundary",
+            "Missing required field: gwp_horizon",
+            "Missing required field: region"
+          ]
+        },
+        {
+          "row_number": 11,
+          "identifier": {
+            "region_code": "CA-AB",
+            "vintage_year": "2022"
+          },
+          "claims": [
+            {
+              "field": "vintage_year",
+              "value": 2022.0
+            },
+            {
+              "field": "g_per_kwh",
+              "value": 600.0
+            }
+          ],
+          "issues": [
+            "Missing required field: scope_boundary",
+            "Missing required field: gwp_horizon",
+            "Missing required field: region"
+          ]
+        },
+        {
+          "row_number": 12,
+          "identifier": {
+            "region_code": "CA-AB",
+            "vintage_year": "2023"
+          },
+          "claims": [
+            {
+              "field": "vintage_year",
+              "value": 2023.0
+            },
+            {
+              "field": "g_per_kwh",
+              "value": 580.0
+            }
+          ],
+          "issues": [
+            "Missing required field: scope_boundary",
+            "Missing required field: gwp_horizon",
+            "Missing required field: region"
+          ]
+        },
+        {
+          "row_number": 13,
+          "identifier": {
+            "region_code": "CA-AB",
+            "vintage_year": "2024"
+          },
+          "claims": [
+            {
+              "field": "vintage_year",
+              "value": 2024.0
+            },
+            {
+              "field": "g_per_kwh",
+              "value": 550.0
+            }
+          ],
+          "issues": [
+            "Missing required field: scope_boundary",
+            "Missing required field: gwp_horizon",
+            "Missing required field: region"
+          ]
+        },
+        {
+          "row_number": 14,
+          "identifier": {
+            "region_code": "CA-AB",
+            "vintage_year": "2025"
+          },
+          "claims": [
+            {
+              "field": "vintage_year",
+              "value": 2025.0
+            },
+            {
+              "field": "g_per_kwh",
+              "value": 540.0
+            }
+          ],
+          "issues": [
+            "Missing required field: scope_boundary",
+            "Missing required field: gwp_horizon",
+            "Missing required field: region"
+          ]
+        },
+        {
+          "row_number": 15,
+          "identifier": {
+            "region_code": "CA-BC",
+            "vintage_year": "2021"
+          },
+          "claims": [
+            {
+              "field": "vintage_year",
+              "value": 2021.0
+            },
+            {
+              "field": "g_per_kwh",
+              "value": 12.0
+            }
+          ],
+          "issues": [
+            "Missing required field: scope_boundary",
+            "Missing required field: gwp_horizon",
+            "Missing required field: region"
+          ]
+        },
+        {
+          "row_number": 16,
+          "identifier": {
+            "region_code": "CA-BC",
+            "vintage_year": "2022"
+          },
+          "claims": [
+            {
+              "field": "vintage_year",
+              "value": 2022.0
+            },
+            {
+              "field": "g_per_kwh",
+              "value": 11.0
+            }
+          ],
+          "issues": [
+            "Missing required field: scope_boundary",
+            "Missing required field: gwp_horizon",
+            "Missing required field: region"
+          ]
+        },
+        {
+          "row_number": 17,
+          "identifier": {
+            "region_code": "CA-BC",
+            "vintage_year": "2023"
+          },
+          "claims": [
+            {
+              "field": "vintage_year",
+              "value": 2023.0
+            },
+            {
+              "field": "g_per_kwh",
+              "value": 10.0
+            }
+          ],
+          "issues": [
+            "Missing required field: scope_boundary",
+            "Missing required field: gwp_horizon",
+            "Missing required field: region"
+          ]
+        },
+        {
+          "row_number": 18,
+          "identifier": {
+            "region_code": "CA-BC",
+            "vintage_year": "2024"
+          },
+          "claims": [
+            {
+              "field": "vintage_year",
+              "value": 2024.0
+            },
+            {
+              "field": "g_per_kwh",
+              "value": 9.0
+            }
+          ],
+          "issues": [
+            "Missing required field: scope_boundary",
+            "Missing required field: gwp_horizon",
+            "Missing required field: region"
+          ]
+        },
+        {
+          "row_number": 19,
+          "identifier": {
+            "region_code": "CA-BC",
+            "vintage_year": "2025"
+          },
+          "claims": [
+            {
+              "field": "vintage_year",
+              "value": 2025.0
+            },
+            {
+              "field": "g_per_kwh",
+              "value": 8.0
+            }
+          ],
+          "issues": [
+            "Missing required field: scope_boundary",
+            "Missing required field: gwp_horizon",
+            "Missing required field: region"
+          ]
+        }
+      ]
+    }
+  ]
+}
