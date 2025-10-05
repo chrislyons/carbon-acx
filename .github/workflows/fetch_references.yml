@@ -15,7 +15,7 @@ on:
       normalize:
         description: "Run Markdown normalization after fetching"
         required: true
-        default: true
+        default: "true"
         type: boolean
 
 jobs:
