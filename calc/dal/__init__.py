@@ -9,6 +9,7 @@ from ..schema import (
     ActivityDependency,
     ActivitySchedule,
     Asset,
+    FeedbackLoop,
     EmissionFactor,
     Entity,
     GridIntensity,
@@ -28,6 +29,7 @@ __all__ = [
     "CsvStore",
     "DataStore",
     "DuckDbStore",
+    "FeedbackLoop",
     "EmissionFactor",
     "Entity",
     "GridIntensity",
@@ -59,6 +61,8 @@ class DataStore(Protocol):
     def load_grid_intensity(self) -> Sequence[GridIntensity]: ...
 
     def load_activity_dependencies(self) -> Sequence[ActivityDependency]: ...
+
+    def load_feedback_loops(self) -> Sequence[FeedbackLoop]: ...
 
 
 def _resolve_db_path(candidate: str | os.PathLike[str] | None) -> Path:

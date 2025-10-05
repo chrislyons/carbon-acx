@@ -717,6 +717,7 @@ export function VizCanvas({ stage }: VizCanvasProps): JSX.Element {
   const rawStacked = (result?.figures?.stacked?.data as StackedDatum[]) ?? [];
   const rawBubble = (result?.figures?.bubble?.data as BubbleDatum[]) ?? [];
   const rawSankey = (result?.figures?.sankey?.data as SankeyData) ?? { nodes: [], links: [] };
+  const rawFeedback = (result?.figures?.feedback?.data as SankeyData) ?? { nodes: [], links: [] };
 
   const stackedData = useMemo(
     () => filterStackedByLayers(rawStacked, activeLayerSet),
@@ -767,6 +768,11 @@ export function VizCanvas({ stage }: VizCanvasProps): JSX.Element {
 
   const stackedTotal = useMemo(() => sumStackedEmissions(stageStackedData), [stageStackedData]);
   const sankeyTotal = useMemo(() => sumSankeyEmissions(stageSankeyData), [stageSankeyData]);
+  const feedbackData = useMemo(
+    () => filterSankeyByLayers(rawFeedback, activeLayerSet),
+    [rawFeedback, activeLayerSet]
+  );
+  const feedbackTotal = useMemo(() => sumSankeyEmissions(feedbackData), [feedbackData]);
   const totals = useMemo(
     () =>
       reconcileTotals({
@@ -791,6 +797,7 @@ export function VizCanvas({ stage }: VizCanvasProps): JSX.Element {
   const bubbleShareLabel =
     stage === 'segment' ? 'segment emissions' : stage === 'profile' ? 'category emissions' : 'activity emissions';
   const sankeyShareLabel = stage === 'segment' ? 'segment flow' : 'mapped flow';
+  const feedbackShareLabel = 'feedback intensity';
   const stackedPanelTitle = stage === 'segment' ? 'Annual emissions by segment' : 'Annual emissions by category';
   const bubblePanelTitle =
     stage === 'segment'
@@ -799,6 +806,7 @@ export function VizCanvas({ stage }: VizCanvasProps): JSX.Element {
         ? 'Category emissions bubble chart'
         : 'Activity emissions bubble chart';
   const sankeyPanelTitle = stage === 'segment' ? 'Segment emission pathways' : 'Emission pathways';
+  const feedbackPanelTitle = 'Feedback loops';
   const stackedEmptyMessage = stage === 'segment' ? 'No segment data available.' : 'No category data available.';
   const bubbleEmptyMessage =
     stage === 'segment'
@@ -807,6 +815,7 @@ export function VizCanvas({ stage }: VizCanvasProps): JSX.Element {
         ? 'No category data available.'
         : 'No activity data available.';
   const sankeyEmptyMessage = stage === 'segment' ? 'No segment flow data available.' : 'No sankey data available.';
+  const feedbackEmptyMessage = 'No feedback loop data available.';
 
   const stackedSummary = useMemo(() => {
     const rows = Array.isArray(stageStackedData)
@@ -907,6 +916,58 @@ export function VizCanvas({ stage }: VizCanvasProps): JSX.Element {
     return { items, total: aggregate };
   }, [stageSankeyData, resolvedTotal, sankeyTotal, sankeyShareLabel]);
 
+  const feedbackSummary = useMemo(() => {
+    const nodes = Array.isArray(feedbackData?.nodes) ? feedbackData.nodes ?? [] : [];
+    const nodeLabels = new Map<string, string>();
+    nodes.forEach((node) => {
+      if (typeof node?.id === 'string') {
+        nodeLabels.set(node.id, typeof node?.label === 'string' && node.label ? node.label : node.id);
+      }
+    });
+    const links = Array.isArray(feedbackData?.links) ? feedbackData.links ?? [] : [];
+    const rows = links
+      .map((link, index) => {
+        const mean = typeof link?.values?.mean === 'number' ? link.values.mean : null;
+        if (mean == null || !Number.isFinite(mean) || mean <= 0) {
+          return null;
+        }
+        const sourceLabel = nodeLabels.get(link.source) ?? link.source;
+        const targetLabel = nodeLabels.get(link.target) ?? link.target;
+        const strengthValue = link?.metadata?.strength;
+        const segments: string[] = [];
+        if (link?.metadata?.sign === '+') {
+          segments.push('amplifying');
+        } else if (link?.metadata?.sign === '-') {
+          segments.push('damping');
+        }
+        if (typeof strengthValue === 'number' && Number.isFinite(strengthValue)) {
+          segments.push(`${Math.round(Math.abs(strengthValue) * 100)}% link`);
+        }
+        if (link?.metadata?.lag_years) {
+          segments.push(`lag ${link.metadata.lag_years}`);
+        }
+        const description = segments.length > 0 ? segments.join(' · ') : undefined;
+        return {
+          id: `${link.source}-${link.target}-${index}`,
+          label: `${sourceLabel} → ${targetLabel}`,
+          value: mean,
+          description
+        };
+      })
+      .filter((entry): entry is { id: string; label: string; value: number; description?: string } => entry !== null)
+      .sort((a, b) => b.value - a.value);
+    const computedTotal = rows.reduce((sum, row) => sum + row.value, 0);
+    const aggregate = typeof feedbackTotal === 'number' && feedbackTotal > 0 ? feedbackTotal : computedTotal;
+    const items = rows.slice(0, 3).map((row) => ({
+      id: row.id,
+      label: row.label,
+      value: formatEmission(row.value),
+      description:
+        row.description ?? (aggregate > 0 ? `${Math.round((row.value / aggregate) * 100)}% of ${feedbackShareLabel}` : undefined)
+    }));
+    return { items, total: aggregate };
+  }, [feedbackData, feedbackTotal, feedbackShareLabel]);
+
   const referenceLookup = useMemo(
     () => buildReferenceLookup(activeReferenceKeys),
     [activeReferenceKeys]
@@ -916,7 +977,7 @@ export function VizCanvas({ stage }: VizCanvasProps): JSX.Element {
   const statusLabel = STATUS_LABEL[status] ?? status;
   const canvasRef = useRef<HTMLElement | null>(null);
   const [expandedViz, setExpandedViz] = useState<Set<string>>(
-    () => new Set(['stacked', 'bubble', 'sankey'])
+    () => new Set(['stacked', 'bubble', 'sankey', 'feedback'])
   );
 
   const handleToggleVisualizer = useCallback((id: string) => {
@@ -1057,6 +1118,17 @@ export function VizCanvas({ stage }: VizCanvasProps): JSX.Element {
                   onToggle={handleToggleVisualizer}
                 >
                   <Sankey data={stageSankeyData} referenceLookup={referenceLookup} variant="embedded" />
+                </VisualizerPanel>
+                <VisualizerPanel
+                  id="feedback"
+                  title={feedbackPanelTitle}
+                  summary={
+                    <SummaryList items={feedbackSummary.items} emptyMessage={feedbackEmptyMessage} />
+                  }
+                  expanded={expandedViz.has('feedback')}
+                  onToggle={handleToggleVisualizer}
+                >
+                  <Sankey data={feedbackData} referenceLookup={referenceLookup} variant="embedded" />
                 </VisualizerPanel>
               </div>
             </div>

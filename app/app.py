@@ -37,7 +37,7 @@ from app.components._helpers import extend_unique
 
 ARTIFACT_ENV = "ACX_ARTIFACT_DIR"
 DEFAULT_ARTIFACT_DIR = Path(__file__).resolve().parent.parent / "calc" / "outputs"
-FIGURE_NAMES = ("stacked", "bubble", "sankey")
+FIGURE_NAMES = ("stacked", "bubble", "sankey", "feedback")
 DEPENDENCY_MAP_NAME = "dependency_map.json"
 
 LAYER_ORDER = [layer.value for layer in LayerId]
@@ -1089,6 +1089,17 @@ def create_app() -> Dash:
                             layer_id=layer_id,
                             active_activity=active_activity,
                         ),
+                        sankey.render(
+                            filtered.get("feedback"),
+                            reference_lookup,
+                            title_suffix=label,
+                            dark=dark_mode,
+                            layer_id=layer_id,
+                            active_activity=active_activity,
+                            component_name="feedback",
+                            title_prefix="Feedback loops",
+                            empty_message="No feedback data available.",
+                        ),
                     ],
                 )
             )
@@ -1131,6 +1142,54 @@ def create_app() -> Dash:
 
         return sankey.build_figure(
             sankey_payload,
+            reference_lookup,
+            dark=dark_mode,
+            selected_activity=active_activity,
+            mode=selected_mode,
+        )
+
+    @app.callback(
+        Output({"component": "feedback-chart", "layer": MATCH}, "figure"),
+        Input({"component": "feedback-mode", "layer": MATCH}, "value"),
+        Input("acx-active-activity", "data"),
+        Input("theme-mode", "data"),
+        State("figures-store", "data"),
+        State({"component": "feedback-mode", "layer": MATCH}, "id"),
+    )
+    def _update_feedback_mode(
+        mode_value,
+        active_activity,
+        theme_mode_value,
+        figures_store_state,
+        mode_id,
+    ):
+        layer_value = None
+        if isinstance(mode_id, Mapping):
+            raw_layer = mode_id.get("layer")
+            if raw_layer not in (None, ""):
+                layer_value = str(raw_layer)
+
+        feedback_payload = None
+        if isinstance(figures_store_state, Mapping):
+            feedback_payload = figures_store_state.get("feedback")
+
+        if layer_value:
+            feedback_payload = _filter_payload(feedback_payload, layer_value)
+        elif feedback_payload is not None:
+            feedback_payload = copy.deepcopy(feedback_payload)
+
+        if not feedback_payload:
+            return no_update
+
+        available_modes = sankey.available_modes(feedback_payload)
+        selected_mode = str(mode_value).strip() if isinstance(mode_value, str) else None
+        if not selected_mode or selected_mode not in available_modes:
+            selected_mode = available_modes[0] if available_modes else sankey.DEFAULT_MODE
+
+        dark_mode = isinstance(theme_mode_value, str) and theme_mode_value.lower() == "dark"
+
+        return sankey.build_figure(
+            feedback_payload,
             reference_lookup,
             dark=dark_mode,
             selected_activity=active_activity,

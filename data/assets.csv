@@ -3,29 +3,35 @@ ASSET.COKE.TRUCK.C6.DIESEL.2023,SITE.COKE.TO.DC01,vehicle,Class-6 Beverage Truck
 ASSET.HYDROONE.GRID.CAON,SITE.HYDROONE.ON.GRID,line,CA-ON grid,2024,,electricity,
 ASSET.ENBRIDGE.PIPE.CAON,SITE.ENBRIDGE.ON.PIPE,pipeline,Ontario pipeline,2024,,natural_gas,
 ASSET.SHELL.REF.AB,SITE.SHELL.AB.REFINERY,refinery,Edmonton refinery,2024,,liquid_fuels,
-ASSET.LAFARGE.CLINKER.KILN,SITE.LAFARGE.BC.CLINKER,kiln,Richmond clinker kiln,2024,,coal_and_altfuels,"Precalciner kiln with alternative fuel co-firing"
-ASSET.ARCELORMITTAL.BOF.LINE,SITE.ARCELORMITTAL.ON.STEEL,steelworks,Hamilton BF-BOF line,2024,,metallurgical_coal,"Integrated blast furnace and basic oxygen furnace line"
-ASSET.NOVA.PET.REACTOR,SITE.NOVA.ON.PET,polymer_line,Sarnia PET polymerisation train,2024,,natural_gas,"Ethylene glycol and PTA polymerisation/reactor system"
+ASSET.LAFARGE.CLINKER.KILN,SITE.LAFARGE.BC.CLINKER,kiln,Richmond clinker kiln,2024,,coal_and_altfuels,Precalciner kiln with alternative fuel co-firing
+ASSET.ARCELORMITTAL.BOF.LINE,SITE.ARCELORMITTAL.ON.STEEL,steelworks,Hamilton BF-BOF line,2024,,metallurgical_coal,Integrated blast furnace and basic oxygen furnace line
+ASSET.NOVA.PET.REACTOR,SITE.NOVA.ON.PET,polymer_line,Sarnia PET polymerisation train,2024,,natural_gas,Ethylene glycol and PTA polymerisation/reactor system
 ASSET.CARGILL.HIGHRIVER.BEEF_LINE,SITE.CARGILL.AB.BEEF,slaughter_fabrication,High River beef harvest and fabrication train,2024,,natural_gas,"Integrated slaughter, carcass chilling, and fabrication line."
-ASSET.MAPLELEAF.LONDON.POULTRY_LINE,SITE.MAPLELEAF.ON.POULTRY,poultry_line,London evisceration and chilling line,2024,,electricity,"Large-scale ready-to-cook poultry processing line."
+ASSET.MAPLELEAF.LONDON.POULTRY_LINE,SITE.MAPLELEAF.ON.POULTRY,poultry_line,London evisceration and chilling line,2024,,electricity,Large-scale ready-to-cook poultry processing line.
 ASSET.AIRCANADA.A320,SITE.AIRCANADA.PEARSON,aircraft,A320 fleet,2024,,jet_fuel,
 ASSET.AIRCANADA.B787,SITE.AIRCANADA.PEARSON,aircraft,Wide-body fleet,2024,,jet_fuel,
 ASSET.AIRCANADA.JETZ,SITE.AIRCANADA.PEARSON,aircraft,Business jet charter fleet,2024,,jet_fuel,
-ASSET.TORONTO.GREENLANE.LANDFILL,SITE.TORONTO.GREENLANE.LANDFILL,landfill,Green Lane Residual Landfill,2023,,landfill_gas,"City-owned landfill handling Toronto residual solid waste."
-ASSET.TORONTO.DURHAMYORK.EFW,SITE.TORONTO.DURHAMYORK.EFW,efw_plant,Durham York Energy-from-Waste Facility,2023,,waste_combustion,"Regional waste-to-energy facility contracted for Toronto municipal loads."
-ASSET.TORONTO.WATER.SYSTEM,SITE.TORONTO.WATER.SYSTEM,water_system,Toronto Integrated Water Supply,2023,,electricity,"Aggregated drinking water treatment and distribution system serving Toronto."
-ASSET.NESTLE.BRIDGEWATER.COFFEE_ROASTER,SITE.NESTLE.NS.COFFEE,roaster,Bridgewater coffee roasting battery,2024,,natural_gas,"Nescafé spray-dry and roasting operations."
-ASSET.AMAZON.ON.LASTMILE,SITE.AMAZON.ON.YYZ1,delivery_network,Amazon Logistics last-mile fleet,2024,,diesel,"Mixed electric and diesel vans dispatching dense urban parcel routes."
-ASSET.FEDEX.ON.AIR_NET,SITE.FEDEX.ON.YYZHUB,air_network,FedEx Express YYZ air network,2024,,jet_fuel,"Pearson-based express air cargo sortation and flight operations."
-ASSET.CNRAIL.QC.TRUCK,SITE.CNRAIL.QC.INTERMODAL,truck_fleet,CN intermodal drayage fleet,2024,,diesel,"Heavy-duty trucks handling first/last-mile moves for intermodal containers."
-ASSET.WHIRLPOOL.ON.REFR_LINE,SITE.WHIRLPOOL.ON.APPLIANCE,assembly_line,Refrigerator assembly line,2025,,electricity,"Canadian refrigerator and freezer assembly with automated charging and testing."
-ASSET.LG.ON.REFR_UNIT,SITE.LG.ON.APPLIANCE,appliance,Household refrigerator in service,2025,,electricity,"Representative LG Energy Star refrigerator operating in an Ontario household."
-ASSET.CARRIER.ON.AC_LINE,SITE.CARRIER.ON.HVAC,assembly_line,Carrier split AC production line,2025,,electricity,"Split and central AC manufacturing and refrigerant charging operations."
-ASSET.DAIKIN.ON.AC_FLEET,SITE.DAIKIN.ON.SERVICE,hvac_system,Daikin installed AC fleet,2025,,electricity,"Aggregated Daikin residential and light-commercial AC systems maintained in Ontario."
-ASSET.WALMART.ON.COLDCHAIN,SITE.WALMART.ON.COLDCHAIN,cold_storage,Walmart supermarket cold storage,2025,,electricity,"Ontario refrigerated distribution centers and in-store cases handling food throughput."
+ASSET.TORONTO.GREENLANE.LANDFILL,SITE.TORONTO.GREENLANE.LANDFILL,landfill,Green Lane Residual Landfill,2023,,landfill_gas,City-owned landfill handling Toronto residual solid waste.
+ASSET.TORONTO.DURHAMYORK.EFW,SITE.TORONTO.DURHAMYORK.EFW,efw_plant,Durham York Energy-from-Waste Facility,2023,,waste_combustion,Regional waste-to-energy facility contracted for Toronto municipal loads.
+ASSET.TORONTO.WATER.SYSTEM,SITE.TORONTO.WATER.SYSTEM,water_system,Toronto Integrated Water Supply,2023,,electricity,Aggregated drinking water treatment and distribution system serving Toronto.
+ASSET.NESTLE.BRIDGEWATER.COFFEE_ROASTER,SITE.NESTLE.NS.COFFEE,roaster,Bridgewater coffee roasting battery,2024,,natural_gas,Nescafé spray-dry and roasting operations.
+ASSET.AMAZON.ON.LASTMILE,SITE.AMAZON.ON.YYZ1,delivery_network,Amazon Logistics last-mile fleet,2024,,diesel,Mixed electric and diesel vans dispatching dense urban parcel routes.
+ASSET.FEDEX.ON.AIR_NET,SITE.FEDEX.ON.YYZHUB,air_network,FedEx Express YYZ air network,2024,,jet_fuel,Pearson-based express air cargo sortation and flight operations.
+ASSET.CNRAIL.QC.TRUCK,SITE.CNRAIL.QC.INTERMODAL,truck_fleet,CN intermodal drayage fleet,2024,,diesel,Heavy-duty trucks handling first/last-mile moves for intermodal containers.
+ASSET.WHIRLPOOL.ON.REFR_LINE,SITE.WHIRLPOOL.ON.APPLIANCE,assembly_line,Refrigerator assembly line,2025,,electricity,Canadian refrigerator and freezer assembly with automated charging and testing.
+ASSET.LG.ON.REFR_UNIT,SITE.LG.ON.APPLIANCE,appliance,Household refrigerator in service,2025,,electricity,Representative LG Energy Star refrigerator operating in an Ontario household.
+ASSET.CARRIER.ON.AC_LINE,SITE.CARRIER.ON.HVAC,assembly_line,Carrier split AC production line,2025,,electricity,Split and central AC manufacturing and refrigerant charging operations.
+ASSET.DAIKIN.ON.AC_FLEET,SITE.DAIKIN.ON.SERVICE,hvac_system,Daikin installed AC fleet,2025,,electricity,Aggregated Daikin residential and light-commercial AC systems maintained in Ontario.
+ASSET.WALMART.ON.COLDCHAIN,SITE.WALMART.ON.COLDCHAIN,cold_storage,Walmart supermarket cold storage,2025,,electricity,Ontario refrigerated distribution centers and in-store cases handling food throughput.
 ASSET.GOOGLE.YOUTUBE.GLOBAL,SITE.GOOGLE.GLOBAL.PLATFORM,digital_platform,YouTube content delivery infrastructure,2024,,electricity,"Represents blended device, network, and datacentre power draw delivering one viewing-hour."
-ASSET.META.INSTAGRAM.GLOBAL,SITE.META.GLOBAL.PLATFORM,digital_platform,Instagram social platform infrastructure,2024,,electricity,"Captures smartphone-heavy Instagram browsing energy mix across Meta sites."
-ASSET.BYTEDANCE.TIKTOK.GLOBAL,SITE.BYTEDANCE.GLOBAL.PLATFORM,digital_platform,TikTok short-video delivery infrastructure,2024,,electricity,"Represents ByteDance-operated TikTok streaming footprint across global regions."
-ASSET.OPENAI.GPT.GLOBAL,SITE.OPENAI.GLOBAL.SERVICE,ai_service,OpenAI GPT inference service,2024,,electricity,"Represents OpenAI API inference clusters supporting GPT prompts and completions."
-ASSET.ANTHROPIC.CLAUDE.GLOBAL,SITE.ANTHROPIC.GLOBAL.SERVICE,ai_service,Anthropic Claude inference service,2024,,electricity,"Represents Anthropic Claude serving clusters across partner cloud regions."
-ASSET.GOOGLE.GEMINI.GLOBAL,SITE.GOOGLE.GLOBAL.PLATFORM,ai_service,Google Gemini inference service,2024,,electricity,"Represents Google Cloud TPU-based Gemini inference delivery footprint."
+ASSET.META.INSTAGRAM.GLOBAL,SITE.META.GLOBAL.PLATFORM,digital_platform,Instagram social platform infrastructure,2024,,electricity,Captures smartphone-heavy Instagram browsing energy mix across Meta sites.
+ASSET.BYTEDANCE.TIKTOK.GLOBAL,SITE.BYTEDANCE.GLOBAL.PLATFORM,digital_platform,TikTok short-video delivery infrastructure,2024,,electricity,Represents ByteDance-operated TikTok streaming footprint across global regions.
+ASSET.OPENAI.GPT.GLOBAL,SITE.OPENAI.GLOBAL.SERVICE,ai_service,OpenAI GPT inference service,2024,,electricity,Represents OpenAI API inference clusters supporting GPT prompts and completions.
+ASSET.ANTHROPIC.CLAUDE.GLOBAL,SITE.ANTHROPIC.GLOBAL.SERVICE,ai_service,Anthropic Claude inference service,2024,,electricity,Represents Anthropic Claude serving clusters across partner cloud regions.
+ASSET.GOOGLE.GEMINI.GLOBAL,SITE.GOOGLE.GLOBAL.PLATFORM,ai_service,Google Gemini inference service,2024,,electricity,Represents Google Cloud TPU-based Gemini inference delivery footprint.
+ASSET.NOAA.OCEAN.CHEMISTRY,SITE.NOAA.OCEAN.GLOBAL,monitoring_network,Global Ocean Carbonate Network,2024,,,NOAA sustained ocean observing network measuring carbon uptake and heat content.
+ASSET.NASA.CRYO.OBS,SITE.NASA.CRYO.GLOBAL,earth_observatory,Cryosphere Albedo Observation Fleet,2024,,,NASA remote sensing missions aggregating albedo change estimates.
+ASSET.ECCC.PERMAFROST.NET,SITE.ECCC.ARCTIC.NETWORK,monitoring_network,Arctic Permafrost Flux Network,2024,,,ECCC high-latitude stations measuring thaw depth and greenhouse gas release.
+ASSET.AB.TAILINGS.REGISTRY,SITE.PROV.ALTA.TAILINGS,registry,Oil Sands Tailings Registry,2024,,,"Provincial register tracking tailings pond inventory, area, and incidents."
+ASSET.INTL.MINING.AMD,SITE.INTL.MINING.AMD,monitoring_network,Global Acid Mine Drainage Watch,2024,,,International guidance and monitoring for AMD and remediation flows.
+ASSET.RIVER.BASIN.HYPOXIA,SITE.RIVER.BASIN.MONITOR,monitoring_network,River-Basin Hypoxia Network,2024,,,Global observation network linking nutrient run-off to hypoxic zone extent.

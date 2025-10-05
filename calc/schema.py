@@ -83,6 +83,8 @@ class LayerId(str, Enum):
     MODELED_EVENTS = "modeled_events"
     MATERIALS_CHEMICALS = "materials_chemicals"
     PERSONAL_SECURITY_LAYER = "personal_security_layer"
+    BIOSPHERE_FEEDBACKS = "biosphere_feedbacks"
+    INDUSTRIAL_EXTERNALITIES = "industrial_externalities"
 
     @property
     def label(self) -> str:
@@ -106,6 +108,10 @@ class LayerId(str, Enum):
             return "Defence supply chain"
         if self is LayerId.PERSONAL_SECURITY_LAYER:
             return "Private security"
+        if self is LayerId.BIOSPHERE_FEEDBACKS:
+            return "Earth system feedbacks"
+        if self is LayerId.INDUSTRIAL_EXTERNALITIES:
+            return "Industrial externalities"
         return self.value.title()
 
 
@@ -172,6 +178,7 @@ class FunctionalUnitDomain(str, Enum):
     CONSUMPTION = "consumption"
     MODELED = "modeled"
     SERVICES = "services"
+    CLIMATE = "climate"
 
 
 class FunctionalUnit(BaseModel):
@@ -517,6 +524,38 @@ def load_activity_dependencies(
     return dependencies
 
 
+def load_feedback_loops(
+    *,
+    activities: Sequence[Activity] | None = None,
+) -> List[FeedbackLoop]:
+    path = DATA_DIR / "feedback_loops.csv"
+    if not path.exists():
+        return []
+    loops = _load_csv_list(path, FeedbackLoop)
+    if not loops:
+        return loops
+
+    activity_records = activities if activities is not None else load_activities()
+    activity_ids = {activity.activity_id for activity in activity_records}
+    missing = sorted(
+        {
+            loop.trigger_activity_id
+            for loop in loops
+            if loop.trigger_activity_id not in activity_ids
+        }
+        | {
+            loop.response_activity_id
+            for loop in loops
+            if loop.response_activity_id not in activity_ids
+        }
+    )
+    if missing:
+        raise ValueError(
+            "Unknown activity referenced by feedback_loops: " + ", ".join(missing)
+        )
+    return loops
+
+
 def load_emission_factors() -> List[EmissionFactor]:
     return _load_csv_list(DATA_DIR / "emission_factors.csv", EmissionFactor)
 
@@ -588,3 +627,15 @@ def invalidate_caches() -> None:
     """Clear cached CSV reads for schema models."""
 
     _csv_cache.clear()
+class FeedbackLoop(BaseModel):
+    loop_id: str
+    trigger_activity_id: str
+    response_activity_id: str
+    sign: Literal["+", "-"]
+    lag_years: Optional[str] = None
+    strength: Optional[float] = None
+    source_id: Optional[str] = None
+    notes: Optional[str] = None
+
+    model_config = ConfigDict(extra="ignore")
+

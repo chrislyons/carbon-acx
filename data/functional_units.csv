@@ -1,24 +1,31 @@
 functional_unit_id,name,domain,si_equiv,notes
-FU.PERSON_KM,person-kilometre,mobility,person*km,"Person travel distance"
-FU.LITRE_DELIVERED,litre delivered,logistics,L,"Beverage or liquid delivered"
-FU.VIEW_HOUR,viewing-hour,information,hour,"One hour of content viewed"
-FU.TOKEN_K,token-thousand,information,1000 tokens,"One thousand model tokens processed"
-FU.NUTRITIONAL_SERVING,nutritional serving,nutrition,serving,"One standard meal serving"
-FU.KWH,kilowatt-hour,energy,kWh,"Electrical energy delivered"
-FU.KG,kilogram throughput,agriculture,kg,"One kilogram of agricultural or food throughput"
-FU.GARMENT,garment,consumption,1 garment,"One clothing item produced"
-FU.WEAR,wear,consumption,wear,"One wear of a clothing item"
-FU.KG_WASTE,kilogram waste handled,materials,kg,"One kilogram of municipal solid waste processed"
-FU.M3_WATER,cubic metre potable water,hydration,m3,"One cubic metre of potable water supplied"
-FU.M3_GAS,cubic meter gas,energy,m3,"Natural gas delivered"
-FU.L_GASOLINE,litre gasoline,energy,L,"Refined motor gasoline delivered"
-FU.TONNE,tonne,materials,tonne,"One metric tonne of material throughput"
-FU.KM,vehicle-kilometre,mobility,km,"One kilometre of vehicle travel"
-FU.PARCEL,parcel,logistics,parcel,"One parcel delivered"
-FU.TONNEKM,tonne-kilometre,logistics,tonne*km,"Freight work"
-FU.UNIT,unit,materials,unit,"One completed appliance or HVAC unit"
+FU.PERSON_KM,person-kilometre,mobility,person*km,Person travel distance
+FU.LITRE_DELIVERED,litre delivered,logistics,L,Beverage or liquid delivered
+FU.VIEW_HOUR,viewing-hour,information,hour,One hour of content viewed
+FU.TOKEN_K,token-thousand,information,1000 tokens,One thousand model tokens processed
+FU.NUTRITIONAL_SERVING,nutritional serving,nutrition,serving,One standard meal serving
+FU.KWH,kilowatt-hour,energy,kWh,Electrical energy delivered
+FU.KG,kilogram throughput,agriculture,kg,One kilogram of agricultural or food throughput
+FU.GARMENT,garment,consumption,1 garment,One clothing item produced
+FU.WEAR,wear,consumption,wear,One wear of a clothing item
+FU.KG_WASTE,kilogram waste handled,materials,kg,One kilogram of municipal solid waste processed
+FU.M3_WATER,cubic metre potable water,hydration,m3,One cubic metre of potable water supplied
+FU.M3_GAS,cubic meter gas,energy,m3,Natural gas delivered
+FU.L_GASOLINE,litre gasoline,energy,L,Refined motor gasoline delivered
+FU.TONNE,tonne,materials,tonne,One metric tonne of material throughput
+FU.KM,vehicle-kilometre,mobility,km,One kilometre of vehicle travel
+FU.PARCEL,parcel,logistics,parcel,One parcel delivered
+FU.TONNEKM,tonne-kilometre,logistics,tonne*km,Freight work
+FU.UNIT,unit,materials,unit,One completed appliance or HVAC unit
 FU.YEAR,year,comfort,year,"One year of appliance, HVAC, or cold-chain operation"
-FU.KG_FOODYEAR,kg food-year,nutrition,kg_foodyear,"Kilograms of food maintained under refrigeration for a year"
-FU.M2YEAR,floor-area-year,shelter,m2_year,"One square metre of floor area operated for one year"
-FU.MONTH,month,modeled,month,"One month of sustained activity"
-FU.HOUR,service-hour,services,hour,"One hour of operational service delivery"
+FU.KG_FOODYEAR,kg food-year,nutrition,kg_foodyear,Kilograms of food maintained under refrigeration for a year
+FU.M2YEAR,floor-area-year,shelter,m2_year,One square metre of floor area operated for one year
+FU.MONTH,month,modeled,month,One month of sustained activity
+FU.HOUR,service-hour,services,hour,One hour of operational service delivery
+FU.PGCO2YEAR,petagram CO₂ per year,climate,pgco2_year,Annualised ocean-atmosphere CO₂ exchange expressed in petagrams CO₂ per year.
+FU.PH.DECADE,pH shift per decade,climate,ph_decade,Mean surface-ocean pH change measured over a decade.
+FU.WM2,watt per square metre,climate,w_m2,Radiative forcing intensity referenced to Earth system albedo shifts.
+FU.PGCO2EYEAR,petagram CO₂e per year,climate,pgco2e_year,Annualised greenhouse-gas flux in petagrams CO₂e per year.
+FU.M3YEAR,cubic metre per year,climate,m3_year,Acid mine drainage or similar effluent flow scaled annually.
+FU.KM2YEAR,square kilometre per year,climate,km2_year,Area extent of hypoxic waters integrated over a year.
+FU.EVENT,event,climate,event,Discrete degassing or upset event.

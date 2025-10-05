@@ -1,30 +1,37 @@
 unit_code,unit_type,si_conversion_factor,notes
 cup,volume,0.000236588,
-hour,time,3600,
-month,time,2628000,"One calendar month (average 30.44 days)"
-km,length,1000,
-pkm,person_distance,1000,"One passenger transported one kilometre (1,000 person-metre)."
-kWh,energy,3600000,
-GB,data,1000000000,
+hour,time,3600.0,
+month,time,2628000.0,One calendar month (average 30.44 days)
+km,length,1000.0,
+pkm,person_distance,1000.0,"One passenger transported one kilometre (1,000 person-metre)."
+kWh,energy,3600000.0,
+GB,data,1000000000.0,
 L,volume,0.001,
-m3,volume,1,
-participant-hour,participation,3600,
-serving,count,1,
-1k_tokens,data,1000,
-image,count,1,
-prompt,count,1,
-download,data,50000000000,"One download equals 50 gigabytes transferred."
-gb_month,data_time,2592000000000000,"One gigabyte stored for 30 days (approximate month)."
-site_day,time,28800,"One active light-industrial construction site operating for a standard 8-hour shift."
-ft2_month,area_time,240768.5376,"One square foot sustained for 30 days (~0.0929 m² × 30 days)."
-kg,mass,1,"One kilogram of mass throughput."
-tonne,mass,1000,"One metric tonne equal to 1,000 kilograms."
-mmbtu,energy,1055055852,"One million British thermal units expressed in joules."
-garment,count,1,"One finished clothing item"
-wear,count,1,"One wear of a clothing item"
-parcel,count,1,"One customer parcel delivered"
-tonne_km,mass_distance,1000000,"One metric tonne transported one kilometre (1,000 kg × 1,000 m)"
-unit,count,1,"Generic count of manufactured equipment"
-year,time,31536000,"One calendar year expressed in seconds"
-kg_foodyear,mass_time,31536000,"One kilogram of food refrigerated for one year (kg·year)"
-m2_year,area_time,31536000,"One square metre of floor area sustained for one year (m²·year)"
+m3,volume,1.0,
+participant-hour,participation,3600.0,
+serving,count,1.0,
+1k_tokens,data,1000.0,
+image,count,1.0,
+prompt,count,1.0,
+download,data,50000000000.0,One download equals 50 gigabytes transferred.
+gb_month,data_time,2592000000000000.0,One gigabyte stored for 30 days (approximate month).
+site_day,time,28800.0,One active light-industrial construction site operating for a standard 8-hour shift.
+ft2_month,area_time,240768.5376,One square foot sustained for 30 days (~0.0929 m² × 30 days).
+kg,mass,1.0,One kilogram of mass throughput.
+tonne,mass,1000.0,"One metric tonne equal to 1,000 kilograms."
+mmbtu,energy,1055055852.0,One million British thermal units expressed in joules.
+garment,count,1.0,One finished clothing item
+wear,count,1.0,One wear of a clothing item
+parcel,count,1.0,One customer parcel delivered
+tonne_km,mass_distance,1000000.0,"One metric tonne transported one kilometre (1,000 kg × 1,000 m)"
+unit,count,1.0,Generic count of manufactured equipment
+year,time,31536000.0,One calendar year expressed in seconds
+kg_foodyear,mass_time,31536000.0,One kilogram of food refrigerated for one year (kg·year)
+m2_year,area_time,31536000.0,One square metre of floor area sustained for one year (m²·year)
+pgco2_year,mass_time,3.1536e+19,One petagram of CO₂ exchanged over one year (Pg·yr).
+pgco2e_year,mass_time,3.1536e+19,One petagram of CO₂e exchanged over one year (Pg CO₂e·yr).
+ph_decade,index_time,315360000.0,One pH unit change sustained per decade (10-year window).
+w_m2,power_area,1.0,One watt of radiative flux per square metre (W/m²).
+m3_year,volume_time,31536000.0,One cubic metre of fluid discharged over one year (m³·yr).
+km2_year,area_time,31536000000000.0,One square kilometre sustained for one year (km²·yr).
+event,count,1.0,One discrete event.

@@ -13,6 +13,7 @@ from ..schema import (
     ActivityDependency,
     ActivitySchedule,
     Asset,
+    FeedbackLoop,
     EmissionFactor,
     Entity,
     GridIntensity,
@@ -104,3 +105,10 @@ class DuckDbStore:
     def load_activity_dependencies(self) -> Sequence[ActivityDependency]:
         rows = self._load("dependencies.csv")
         return [ActivityDependency(**row) for row in rows]
+
+    def load_feedback_loops(self) -> Sequence[FeedbackLoop]:
+        try:
+            rows = self._load("feedback_loops.csv")
+        except FileNotFoundError:
+            return []
+        return [FeedbackLoop(**row) for row in rows]

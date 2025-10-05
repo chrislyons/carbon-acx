@@ -66,11 +66,19 @@ async function loadArtifactText(path: string, signal?: AbortSignal): Promise<str
 
 async function loadComputeArtifacts(signal?: AbortSignal): Promise<ComputeResult> {
   const referencesPath = 'references/export_view_refs.txt';
-  const [manifestJson, stackedJson, bubbleJson, sankeyJson, referencesText] = await Promise.all([
+  const [
+    manifestJson,
+    stackedJson,
+    bubbleJson,
+    sankeyJson,
+    feedbackJson,
+    referencesText
+  ] = await Promise.all([
     loadArtifactJson('manifest.json', signal),
     loadArtifactJson('figures/stacked.json', signal),
     loadArtifactJson('figures/bubble.json', signal),
     loadArtifactJson('figures/sankey.json', signal),
+    loadArtifactJson('figures/feedback.json', signal),
     loadArtifactText(referencesPath, signal)
   ]);
 
@@ -89,7 +97,8 @@ async function loadComputeArtifacts(signal?: AbortSignal): Promise<ComputeResult
     figures: {
       stacked: stackedJson,
       bubble: bubbleJson,
-      sankey: sankeyJson
+      sankey: sankeyJson,
+      feedback: feedbackJson
     },
     references
   } as ComputeResult;

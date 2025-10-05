@@ -28,6 +28,7 @@ from .schema import (
     load_assets as schema_load_assets,
     load_entities as schema_load_entities,
     load_functional_units as schema_load_functional_units,
+    load_feedback_loops as schema_load_feedback_loops,
     load_operations as schema_load_operations,
     load_sites as schema_load_sites,
 )
@@ -363,6 +364,18 @@ def compute_profile(
                 asset_iter = []
         assets = {asset.asset_id: asset for asset in asset_iter if asset.asset_id}
 
+        load_feedback_fn = getattr(store, "load_feedback_loops", None)
+        feedback_loops = (
+            list(load_feedback_fn()) if callable(load_feedback_fn) else []
+        )
+        if not feedback_loops:
+            try:
+                feedback_loops = list(
+                    schema_load_feedback_loops(activities=list(activities.values()))
+                )
+            except Exception:  # pragma: no cover - defensive fallback
+                feedback_loops = []
+
         load_fu_fn = getattr(store, "load_functional_units", None)
         fu_iter = list(load_fu_fn()) if callable(load_fu_fn) else []
         if not fu_iter:
@@ -557,6 +570,10 @@ def compute_profile(
         df = pd.DataFrame(normalised_rows, columns=derive.EXPORT_COLUMNS)
 
         citation_keys = sorted(collect_activity_source_keys(derived_rows))
+        loop_citation_keys = sorted({loop.source_id for loop in feedback_loops if loop.source_id})
+        for key in loop_citation_keys:
+            if key and key not in citation_keys:
+                citation_keys.append(key)
         generated_at = derive._resolve_generated_at()
         profile_list = sorted(resolved_profiles)
         layers_sorted = sorted(manifest_layers)
@@ -564,6 +581,40 @@ def compute_profile(
         layer_citation_keys, layer_references = _collect_layer_references(
             derived_rows, citation_keys
         )
+        loop_layer_keys: dict[str, set[str]] = {}
+        for loop in feedback_loops:
+            if not loop.source_id:
+                continue
+            trigger_activity = activities.get(loop.trigger_activity_id)
+            response_activity = activities.get(loop.response_activity_id)
+            for activity in (trigger_activity, response_activity):
+                layer_value = None
+                if activity is not None:
+                    layer_value = getattr(activity.layer_id, "value", activity.layer_id)
+                if layer_value:
+                    loop_layer_keys.setdefault(str(layer_value), set()).add(loop.source_id)
+        if loop_layer_keys:
+            for layer, keys in loop_layer_keys.items():
+                existing = layer_citation_keys.get(layer, [])
+                existing_set = set(existing)
+                ordered = [key for key in citation_keys if key in keys]
+                for key in ordered:
+                    if key not in existing_set:
+                        existing.append(key)
+                        existing_set.add(key)
+                remaining = sorted(keys.difference(existing_set))
+                for key in remaining:
+                    if key not in existing_set:
+                        existing.append(key)
+                        existing_set.add(key)
+                layer_citation_keys[layer] = existing
+            layer_references = {
+                layer: [
+                    citations.format_ieee(ref.numbered(idx))
+                    for idx, ref in enumerate(citations.references_for(keys), start=1)
+                ]
+                for layer, keys in layer_citation_keys.items()
+            }
 
         stacked_map, bubble_map, sankey_map = _reference_maps(derived_rows, citation_keys)
 
@@ -606,6 +657,7 @@ def compute_profile(
             if chain is not None and layer_value in civilian_layers:
                 point["upstream_chain"] = [dict(entry) for entry in chain]
         sankey_result = figures.slice_sankey(df, reference_map=sankey_map)
+        feedback_result = figures.slice_feedback(feedback_loops, activities, df)
 
         figures_payload = {
             "stacked": _figure_payload(
@@ -633,6 +685,17 @@ def compute_profile(
             "sankey": _figure_payload(
                 "figures.sankey",
                 sankey_result,
+                generated_at=generated_at,
+                profiles=profile_list,
+                citation_keys=citation_keys,
+                layers=layers_sorted,
+                layer_citation_keys=layer_citation_keys,
+                layer_references=layer_references,
+                references=references,
+            ),
+            "feedback": _figure_payload(
+                "figures.feedback",
+                feedback_result,
                 generated_at=generated_at,
                 profiles=profile_list,
                 citation_keys=citation_keys,
