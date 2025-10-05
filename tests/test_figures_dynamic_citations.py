@@ -43,7 +43,7 @@ class DynamicStore:
             GridIntensity(
                 region="CA-ON",
                 intensity_g_per_kwh=12,
-                source_id="SRC.IESO.2024",
+                source_id="SRC.IESO.POWERDATA.2025",
             )
         ]
 
@@ -59,17 +59,17 @@ def test_figures_use_dynamic_citations(derived_output_dir, derived_output_root):
     export_payload = json.loads((out_dir / "export_view.json").read_text())
     expected_keys = [
         "SRC.DIMPACT.2021",
-        "SRC.IESO.2024",
+        "SRC.IESO.POWERDATA.2025",
         "SRC.AB.TAILINGS.2023",
         "SRC.INTL.MINING.2022",
-        "SRC.IPCC.AR6.2021",
+        "SRC.IPCC.AR6.WG1.2021",
         "SRC.NOAA.OCEAN.2023",
         "SRC.RIVER.HYPOXIA.2020",
     ]
     assert export_payload["citation_keys"] == expected_keys
     assert export_payload["layers"] == ["professional"]
     assert all(row["layer_id"] == "professional" for row in export_payload["data"])
-    expected_layer_keys = ["SRC.DIMPACT.2021", "SRC.IESO.2024"]
+    expected_layer_keys = ["SRC.DIMPACT.2021", "SRC.IESO.POWERDATA.2025"]
 
     expected_refs = [
         citations.format_ieee(ref.numbered(idx))

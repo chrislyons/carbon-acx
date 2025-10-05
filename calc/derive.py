@@ -1329,8 +1329,6 @@ def export_view(
         details = EmissionDetails(mean=None, low=None, high=None)
         emission = None
         layer_id = _resolve_layer_id(sched, profile, activity)
-        if layer_id:
-            manifest_layers.add(layer_id)
 
         if profile and ef:
             if ef.vintage_year is not None:
@@ -1356,6 +1354,8 @@ def export_view(
                         manifest_grid_vintages.add(int(grid_row.vintage_year))
             details = compute_emission_details(sched, profile, ef, grid_lookup, grid_row)
             emission = details.mean
+            if emission is not None and layer_id:
+                manifest_layers.add(str(layer_id))
 
         upstream_chain: list[dict[str, Any]] | None = None
         if layer_id and layer_id in civilian_layers:

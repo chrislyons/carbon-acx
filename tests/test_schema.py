@@ -117,7 +117,7 @@ def test_online_emission_factors_are_grid_indexed():
         if activity is None or activity.layer_id != LayerId.ONLINE:
             continue
 
-        assert ef.scope_boundary == "Operational electricity"
+        assert ef.scope_boundary == "Electricity LCA"
         assert ef.unit == activity.default_unit
 
         if ef.is_grid_indexed:

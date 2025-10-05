@@ -80,7 +80,7 @@ def test_export_metadata_and_references(derived_output_dir, derived_output_root)
         "streaming",
         "SRC.AB.TAILINGS.2023",
         "SRC.INTL.MINING.2022",
-        "SRC.IPCC.AR6.2021",
+        "SRC.IPCC.AR6.WG1.2021",
         "SRC.NOAA.OCEAN.2023",
         "SRC.RIVER.HYPOXIA.2020",
     ]
