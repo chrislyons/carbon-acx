@@ -1,4 +1,5 @@
 """Validate that static site asset references resolve to files."""
+
 from __future__ import annotations
 
 import re
