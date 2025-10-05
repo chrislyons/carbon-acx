@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
-from typing import Any, Mapping, MutableMapping, Sequence
+from typing import Any, MutableMapping, Sequence
 from dataclasses import dataclass
 import datetime as _datetime_module
 import os
