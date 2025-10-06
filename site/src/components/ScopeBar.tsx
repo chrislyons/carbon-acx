@@ -1,9 +1,9 @@
 import type { StageId, StageSummaries } from './Layout';
 
-const STAGE_SEQUENCE: StageId[] = ['segment', 'profile', 'activity'];
+const STAGE_SEQUENCE: StageId[] = ['sector', 'profile', 'activity'];
 
 const STAGE_LABEL: Record<StageId, string> = {
-  segment: 'Sector',
+  sector: 'Sector',
   profile: 'Profile',
   activity: 'Activity'
 };
