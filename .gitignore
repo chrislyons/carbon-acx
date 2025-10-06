@@ -6,6 +6,8 @@ build/
 dist/
 calc/outputs/*
 !calc/outputs/references_master.txt
+!calc/outputs/ambiguity_flags.csv
+!calc/outputs/data_quality_summary.txt
 !calc/outputs/sources_archive/
 calc/outputs/sources_archive/*
 !calc/outputs/sources_archive/*.txt

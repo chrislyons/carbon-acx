@@ -1,0 +1,4 @@
+Conflicting duplicate activity: 10
+Method notes flagged: 16
+Missing uncertainty bounds: 50
+Numeric outlier: 2
