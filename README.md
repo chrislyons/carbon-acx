@@ -59,9 +59,10 @@ The result is a transparent example of how to publish carbon disclosures without
 ### What you get
 
 - **Trustworthy data pipeline** – strict validation, reference tracking, and manifest metadata keep every build auditable.【F:calc/schema.py†L1-L167】【F:calc/derive.py†L1474-L1542】
-- **Interactive storytelling** – Plotly-based Dash components and a Tailwind-powered React site render the same charts, tables, and disclosure copy for presentations or public sites, now with focus-managed stage navigation, an agency contribution strip, and two-stage Sankey overlays for layered scenarios.【F:app/components/_plotly_settings.py†L1-L40】【F:app/components/agency_strip.py†L1-L52】【F:app/components/sankey.py†L17-L113】【F:site/src/components/LayerBrowser.tsx†L77-L145】【F:site/src/components/VizCanvas.tsx†L1-L160】
+- **Interactive storytelling** – Plotly-based Dash components and a Tailwind-powered React site render the same charts, tables, and disclosure copy for presentations or public sites, now with focus-managed stage navigation, an agency contribution strip, two-stage Sankey overlays for layered scenarios, and a feedback-loop explorer that keeps Dash and the static site in sync with the new figure slice.【F:app/components/_plotly_settings.py†L1-L40】【F:app/components/agency_strip.py†L1-L52】【F:app/components/sankey.py†L1-L218】【F:calc/derive.py†L1622-L1678】【F:app/app.py†L1094-L1201】【F:site/src/components/VizCanvas.tsx†L730-L1146】
 - **Automation hooks** – CLI commands, Make targets, and a Cloudflare Worker make it easy to integrate the dataset into CI/CD or downstream services.【F:Makefile†L1-L80】【F:workers/compute/runtime.ts†L1-L120】
 - **Scenario depth** – Refrigerant operations, embodied defence manufacturing, private security overlays, and new civilian aviation pathways expand the dataset for stress-testing optional layer toggles and disclosures.【F:data/activities.csv†L44-L84】【F:data/layers.csv†L1-L16】
+- **Citation governance** – Reference harvesting, claim scanning, and ACX041 provenance manifests keep disclosure copy auditable via dedicated CLI utilities and CI workflows.【F:calc/manifest.py†L29-L198】【F:tools/citations/scan_claims.py†L1-L200】【F:tools/citations/references_builder.py†L1-L132】【F:tools/citations/harvest.py†L1-L178】
 
 ### Who uses Carbon ACX
 
@@ -182,9 +183,11 @@ PYTHONPATH=. poetry run python -m calc.derive export \
 Key outputs inside `dist/artifacts/<hash>/calc/outputs` include:
 
 - `export_view.{csv,json}` – tabular emissions dataset with metadata headers.
-- `figures/{stacked,bubble,sankey}.json` – Plotly payloads consumed by Dash and the static site.
+- `figures/{stacked,bubble,sankey,feedback}.json` – Plotly payloads consumed by Dash and the static site, including the feedback-loop explorer slice.【F:calc/derive.py†L1622-L1678】
 - `references/*_refs.txt` – IEEE-formatted reference lists.
-- `manifest.json` – Build hash, generated timestamp, layer coverage, regional vintages, citation keys, and dependency hashes.
+- `dependency_map.json` – Operation-to-activity lineage records surfaced in Sankey hover metadata.【F:calc/derive.py†L1599-L1605】
+- `manifests/*.json` – ACX041 provenance manifests with figure hashes, dataset digests, and promptware metadata.【F:calc/manifest.py†L172-L198】
+- `manifest.json` – Build hash, generated timestamp, layer coverage, regional vintages, citation keys, and dependency hashes.【F:calc/derive.py†L1539-L1568】
 
 Use `ACX_DATA_BACKEND`, `ACX_OUTPUT_ROOT`, and `ACX_ALLOW_OUTPUT_RM` to control where artefacts are written and which datastore backs the run.【F:calc/derive.py†L292-L382】【F:calc/derive.py†L1600-L1664】
 
@@ -242,12 +245,12 @@ print(reference_keys)
 
 ### On-demand compute service
 
-`calc.service.compute_profile` mirrors the batch derivation logic for live API contexts: it loads data through any `DataStore`, applies overrides, gathers upstream metadata, and returns trimmed figure payloads with per-layer references.【F:calc/service.py†L296-L414】
+`calc.service.compute_profile` mirrors the batch derivation logic for live API contexts: it loads data through any `DataStore`, applies overrides, gathers upstream metadata, and returns trimmed stacked/bubble/sankey/feedback payloads with per-layer references and dependency context.【F:calc/service.py†L296-L414】【F:calc/service.py†L640-L705】
 
 The Cloudflare Worker in `workers/compute` exposes:
 
 - `GET /api/health` – Returns `{ ok: true, dataset: <hash> }` based on the dataset version fingerprint.【F:workers/compute/index.ts†L70-L104】【F:calc/service.py†L45-L102】
-- `POST /api/compute` – Accepts profile selections and overrides, then responds with stacked/bubble/sankey payloads, manifest metadata, and numbered references.【F:workers/compute/index.ts†L1-L86】【F:workers/compute/runtime.ts†L1-L120】
+- `POST /api/compute` – Accepts profile selections and overrides, then responds with stacked/bubble/sankey/feedback payloads, manifest metadata, upstream chains, and numbered references.【F:workers/compute/index.ts†L1-L86】【F:workers/compute/runtime.ts†L1-L120】【F:calc/service.py†L640-L705】
 
 Deploy with Wrangler (`wrangler publish`) or run locally with `wrangler dev`. Configuration lives in `wrangler.toml`.【F:wrangler.toml†L1-L12】
 
@@ -257,6 +260,8 @@ Deploy with Wrangler (`wrangler publish`) or run locally with `wrangler dev`. Co
 - `python -m scripts.sync_layers_json` – Mirrors `data/layers.csv` into `site/public/artifacts/layers.json` for the static client.
 - `bash scripts/dev_diag.sh` – Compares artefact headers locally and remotely, respecting `PUBLIC_BASE_PATH` and `PAGES_DOMAIN` for quick HTTP debugging.【F:scripts/dev_diag.sh†L1-L16】
 - `make sbom` – Produces `dist/sbom/cyclonedx.json` using `tools/sbom.py` for release compliance.【F:tools/sbom.py†L1-L120】
+- `poetry run python -m calc.refs_fetch --mode fetch` / `--mode audit` – Harvest, normalise, and audit reference source material with Markdown fallbacks and manifest consistency checks; the manual Fetch References workflow stitches the same steps together for collaborators.【F:calc/refs_fetch.py†L1-L200】【F:calc/refs_normalize.py†L1-L160】【F:calc/refs_audit.py†L1-L138】【F:tools/citations/harvest.py†L1-L178】【F:.github/workflows/fetch_references.yml†L1-L102】
+- `poetry run python tools/citations/scan_claims.py` – Generates structured gap reports for numeric claims across CSV inputs and published artefacts to keep disclosure text sourced.【F:tools/citations/scan_claims.py†L1-L200】
 
 ---
 
@@ -271,8 +276,13 @@ Deploy with Wrangler (`wrangler publish`) or run locally with `wrangler dev`. Co
 | `ACX_OUTPUT_ROOT` | Base directory for hashed artefact builds. | `dist/artifacts` |
 | `ACX_ALLOW_OUTPUT_RM` | Set to `1` to allow cleaning arbitrary output directories (bypasses safety checks). | unset |
 | `ACX_GENERATED_AT` | Force the timestamp embedded in figure metadata and manifests. | Current UTC time |
+| `ACX_BUILD_ENV` | Annotate provenance manifests with the build environment label. | `local`【F:calc/manifest.py†L145-L152】 |
 | `ACX_ARTIFACT_DIR` | Point the Dash client at a non-default artefact directory. | `calc/outputs` |
 | `ACX_DATASET_VERSION` | Override the dataset fingerprint exposed by `compute_profile` and worker health checks. | Derived from SQL stats or `dev` in Wrangler config【F:calc/service.py†L45-L102】【F:wrangler.toml†L1-L12】 |
+| `ACX_PROMPT_JOB_ID` | Record upstream promptware job identifiers in ACX041 manifests. | unset【F:calc/manifest.py†L29-L152】 |
+| `ACX_AGENT_MODEL` | Capture the AI model name used when generating artefacts. | unset【F:calc/manifest.py†L29-L152】 |
+| `ACX_PROMPT_HASH` | Pin the prompt hash associated with a generated bundle. | unset【F:calc/manifest.py†L29-L152】 |
+| `ACX_EXECUTOR` | Document the automation surface (agent, workflow) that triggered the build. | unset【F:calc/manifest.py†L29-L152】 |
 | `ACX_REDUCED_MOTION` | When truthy, disables Plotly transitions in the Dash client. | unset |
 | `CARBON_ACX_ORIGIN` | Cloudflare Pages Function upstream origin for proxying `/carbon-acx/*` routes. | unset |
 | `PUBLIC_BASE_PATH` | Adjust static site asset fetch paths and Cloudflare routing helpers. | `/` |
@@ -297,10 +307,11 @@ Deploy with Wrangler (`wrangler publish`) or run locally with `wrangler dev`. Co
 
 1. **Local build** – `make build` → `dist/artifacts/<hash>` → `make site` → `dist/site` → `make package` → `dist/packaged-artifacts` plus `_headers/_redirects` ready for Cloudflare Pages.【F:Makefile†L1-L80】【F:scripts/prepare_pages_bundle.py†L1-L82】
 2. **Continuous integration** – `.github/workflows/ci.yml` installs Poetry, runs deterministic builds (`make build-static`), uploads artefacts, and executes pytest and lint checks.【F:.github/workflows/ci.yml†L1-L67】
-3. **Release automation** – `.github/workflows/release.yml` generates SBOMs, installs extras (including DuckDB), and publishes GitHub releases for `v*` tags.【F:.github/workflows/release.yml†L1-L41】
-4. **Cloudflare Pages** – Deploy `dist/site/` to Pages. `_headers` enforce immutable caching for `/artifacts/*`, `_redirects` handles canonical routing, and the Pages Function proxies `/carbon-acx/*` traffic when `CARBON_ACX_ORIGIN` is configured.【F:functions/carbon-acx/[[path]].ts†L1-L200】
-5. **Cloudflare Worker (compute)** – Publish `workers/compute` with Wrangler. The Worker ships with an embedded demo dataset and can call `calc.service` when bundled with Python artefacts or exposed via an upstream API.
-6. **Artefact provenance** – `dist/artifacts/latest-build.json` points to the most recent build hash; package that directory verbatim for downstream consumers or audits.【F:calc/derive.py†L1474-L1542】
+3. **Citation QA** – `.github/workflows/ci-citations.yml` runs claim scans, regenerates References.txt companions, and verifies harvested source manifests on every pull request.【F:.github/workflows/ci-citations.yml†L1-L43】
+4. **Release automation** – `.github/workflows/release.yml` generates SBOMs, installs extras (including DuckDB), and publishes GitHub releases for `v*` tags.【F:.github/workflows/release.yml†L1-L41】
+5. **Cloudflare Pages** – Deploy `dist/site/` to Pages. `_headers` enforce immutable caching for `/artifacts/*`, `_redirects` handles canonical routing, and the Pages Function proxies `/carbon-acx/*` traffic when `CARBON_ACX_ORIGIN` is configured.【F:functions/carbon-acx/[[path]].ts†L1-L200】
+6. **Cloudflare Worker (compute)** – Publish `workers/compute` with Wrangler. The Worker ships with an embedded demo dataset and can call `calc.service` when bundled with Python artefacts or exposed via an upstream API.
+7. **Artefact provenance** – `dist/artifacts/latest-build.json` points to the most recent build hash; package that directory verbatim for downstream consumers or audits.【F:calc/derive.py†L1474-L1542】
 
 ---
 
@@ -317,6 +328,7 @@ Carbon ACX enforces quality through automated testing and reproducible builds:
 - **Static analysis** – `make lint` runs ruff and black (100-character line length). `.yamllint` keeps workflow YAML clean.【F:Makefile†L1-L40】【F:.github/workflows/ci.yml†L1-L26】
 - **Front-end tests** – `npm run test` in `site/` executes Vitest suites co-located with React components.
 - **Dependency governance** – `make sbom` generates a CycloneDX SBOM (`dist/sbom/cyclonedx.json`) and pip-audit ships with the Poetry dev dependencies.【F:tools/sbom.py†L1-L120】
+- **Citation workflows** – Dedicated CI runs keep references current by scanning claims, rebuilding References.txt, and auditing harvested manifests (`tools/citations/scan_claims.py`, `tools/citations/references_builder.py`, `calc.refs_audit`).【F:tools/citations/scan_claims.py†L1-L200】【F:tools/citations/references_builder.py†L1-L132】【F:calc/refs_audit.py†L1-L138】【F:.github/workflows/ci-citations.yml†L1-L43】
 
 Before opening a pull request, run:
 
