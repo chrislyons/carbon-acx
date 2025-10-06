@@ -1,0 +1,5 @@
+[1] Transport Canada. Commuter Vehicle Emissions, 2023.
+[2] Canadian Urban Transit Association. Ridership and Emissions Profile, 2023.
+[3] Agriculture and Agri-Food Canada. Diet-based Life Cycle Assessment, 2022.
+[4] CRTC. Streaming Electricity Intensity in Canadian Households, 2023.
+[5] Earth System Feedback Consortium. Feedback Intensity Synthesis, 2024.

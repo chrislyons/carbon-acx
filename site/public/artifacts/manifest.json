@@ -1,0 +1,43 @@
+{
+  "dataset_version": "demo-static-2024",
+  "generated_at": "2024-06-01T12:00:00Z",
+  "profile_id": "PRO.TO.24_39.HYBRID.2025",
+  "layers": [
+    "professional",
+    "lifestyle",
+    "biosphere_feedbacks"
+  ],
+  "sources": [
+    "SRC.COMMUTE.AUTO",
+    "SRC.COMMUTE.TRANSIT",
+    "SRC.DIET",
+    "SRC.MEDIA",
+    "SRC.FEEDBACK"
+  ],
+  "layer_citation_keys": {
+    "professional": [
+      "SRC.COMMUTE.AUTO",
+      "SRC.COMMUTE.TRANSIT"
+    ],
+    "lifestyle": [
+      "SRC.DIET",
+      "SRC.MEDIA"
+    ],
+    "biosphere_feedbacks": [
+      "SRC.FEEDBACK"
+    ]
+  },
+  "layer_references": {
+    "professional": [
+      "Transport Canada. Commuter Vehicle Emissions, 2023.",
+      "Canadian Urban Transit Association. Ridership and Emissions Profile, 2023."
+    ],
+    "lifestyle": [
+      "Agriculture and Agri-Food Canada. Diet-based Life Cycle Assessment, 2022.",
+      "CRTC. Streaming Electricity Intensity in Canadian Households, 2023."
+    ],
+    "biosphere_feedbacks": [
+      "Earth System Feedback Consortium. Feedback Intensity Synthesis, 2024."
+    ]
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "data": [
+    {
+      "category": "Commute",
+      "layer_id": "professional",
+      "values": {
+        "mean": 11800,
+        "low": 9500,
+        "high": 14200
+      },
+      "citation_keys": ["SRC.COMMUTE.AUTO"],
+      "units": {
+        "mean": "g/yr"
+      }
+    },
+    {
+      "category": "Transit",
+      "layer_id": "professional",
+      "values": {
+        "mean": 4200,
+        "low": 3200,
+        "high": 5100
+      },
+      "citation_keys": ["SRC.COMMUTE.TRANSIT"],
+      "units": {
+        "mean": "g/yr"
+      }
+    },
+    {
+      "category": "Diet",
+      "layer_id": "lifestyle",
+      "values": {
+        "mean": 8600,
+        "low": 7800,
+        "high": 9300
+      },
+      "citation_keys": ["SRC.DIET"],
+      "units": {
+        "mean": "g/yr"
+      }
+    },
+    {
+      "category": "Streaming",
+      "layer_id": "lifestyle",
+      "values": {
+        "mean": 950,
+        "low": 700,
+        "high": 1200
+      },
+      "citation_keys": ["SRC.MEDIA"],
+      "units": {
+        "mean": "g/yr"
+      }
+    }
+  ],
+  "citation_keys": [
+    "SRC.COMMUTE.AUTO",
+    "SRC.COMMUTE.TRANSIT",
+    "SRC.DIET",
+    "SRC.MEDIA"
+  ],
+  "layers": [
+    "professional",
+    "lifestyle"
+  ]
+}
