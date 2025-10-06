@@ -35,8 +35,8 @@ describe('parseReferenceList', () => {
     ]);
   });
 
-  it('falls back to trimmed lines when HTML parsing fails', () => {
-    const text = '<!doctype html>\n<custom-element>'; // malformed for DOMParser
-    expect(parseReferenceList(text)).toEqual(['<!doctype html>', '<custom-element>']);
+  it('returns an empty list for HTML documents when DOMParser is unavailable', () => {
+    const text = '<!doctype html>\n<custom-element>'; // treated as a full HTML document
+    expect(parseReferenceList(text)).toEqual([]);
   });
 });

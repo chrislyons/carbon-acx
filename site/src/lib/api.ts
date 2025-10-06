@@ -38,12 +38,16 @@ export function parseReferenceList(text: string): string[] {
     .filter((entry) => entry.length > 0);
 
   const htmlIndicator = /<(!doctype|html|head|body|ol|ul|li)\b/i;
+  const htmlDocumentIndicator = /^\s*<!doctype html\b/i;
+  const htmlRootIndicator = /^\s*<html\b/i;
+  const looksLikeHtmlDocument = htmlDocumentIndicator.test(trimmed) || htmlRootIndicator.test(trimmed);
+
   if (!htmlIndicator.test(trimmed)) {
     return fallback.map(normaliseWhitespace);
   }
 
   if (typeof DOMParser === 'undefined') {
-    return fallback.map(normaliseWhitespace);
+    return looksLikeHtmlDocument ? [] : fallback.map(normaliseWhitespace);
   }
 
   try {
@@ -59,6 +63,10 @@ export function parseReferenceList(text: string): string[] {
       return references;
     }
 
+    if (looksLikeHtmlDocument) {
+      return [];
+    }
+
     const bodyText = doc.body?.textContent ?? '';
     if (bodyText.trim().length === 0) {
       return fallback.map(normaliseWhitespace);
@@ -69,7 +77,7 @@ export function parseReferenceList(text: string): string[] {
       .map(normaliseWhitespace)
       .filter((entry) => entry.length > 0);
   } catch {
-    return fallback.map(normaliseWhitespace);
+    return looksLikeHtmlDocument ? [] : fallback.map(normaliseWhitespace);
   }
 }
 
