@@ -124,6 +124,11 @@ async function handleArtifactRequest(
   const staticResponse = await ctx.next();
   if (staticResponse && staticResponse.status !== 404) {
     const contentType = staticResponse.headers.get("content-type")?.toLowerCase() ?? "";
+    const isReferenceText =
+      sanitizedKey.toLowerCase().startsWith("references/") && sanitizedKey.toLowerCase().endsWith(".txt");
+    if (isReferenceText && !contentType.includes("text/html")) {
+      return applyArtifactHeaders(staticResponse, artifactKey, { includeDiagHeader }, "text/plain");
+    }
     if (!contentType.includes("text/html")) {
       return applyArtifactHeaders(staticResponse, artifactKey, { includeDiagHeader }, desiredContentType);
     }
