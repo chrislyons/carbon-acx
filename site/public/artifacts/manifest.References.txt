@@ -1,5 +1,0 @@
-[64] Transport Canada, “Commuter Vehicle Emissions,” Ottawa, ON, Canada, 2023. Available: https://tc.canada.ca/en/
-[65] Canadian Urban Transit Association, “Ridership and Emissions Profile,” Toronto, ON, Canada, 2023. Available: https://cutaactu.ca/en/resources/
-[66] Agriculture and Agri-Food Canada, “Diet-based Life Cycle Assessment,” Ottawa, ON, Canada, 2022. Available: https://agriculture.canada.ca/en
-[67] Canadian Radio-television and Telecommunications Commission, “Streaming Electricity Intensity in Canadian Households,” Ottawa, ON, Canada, 2023. Available: https://crtc.gc.ca/eng/publications/index.htm
-[68] Earth System Feedback Consortium, “Feedback Intensity Synthesis,” 2024. Available: https://earthsystemfeedbacks.org/reports/2024-intensity-synthesis

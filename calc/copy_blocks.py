@@ -27,7 +27,7 @@ _DISCLOSURE_SENTENCES = (
 )
 
 NA_SENTENCES = (
-    'Sectors labelled "NA" indicate activity categories that do not yet have model coverage for the selected layer.',
+    'Segments labelled "NA" indicate activity categories that do not yet have model coverage for the selected layer.',
     "They remain placeholders and are excluded from totals until new data is published in the dataset manifest.",
 )
 

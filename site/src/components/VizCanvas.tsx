@@ -741,7 +741,7 @@ export function VizCanvas({ stage }: VizCanvasProps): JSX.Element {
 
   const stageStackedData = useMemo(
     () =>
-      stage === 'sector'
+      stage === 'segment'
         ? aggregateStackedByLayer(rawStacked, activeLayerSet, layerTitleLookup)
         : stackedData,
     [stage, rawStacked, activeLayerSet, layerTitleLookup, stackedData]
@@ -762,7 +762,7 @@ export function VizCanvas({ stage }: VizCanvasProps): JSX.Element {
 
   const stageSankeyData = useMemo(
     () =>
-      stage === 'sector'
+      stage === 'segment'
         ? buildLayerSankey(rawSankey, activeLayerSet, layerTitleLookup)
         : sankeyData,
     [stage, rawSankey, activeLayerSet, layerTitleLookup, sankeyData]
@@ -799,29 +799,29 @@ export function VizCanvas({ stage }: VizCanvasProps): JSX.Element {
   const resolvedTotal = totals.total ?? stackedTotal ?? bubbleTotal ?? sankeyTotal ?? null;
 
   const focusLabel =
-    stage === 'sector' ? 'Sectors tracked' : stage === 'profile' ? 'Categories tracked' : 'Activities tracked';
-  const stackedShareLabel = stage === 'sector' ? 'sector portfolio' : 'tracked categories';
+    stage === 'segment' ? 'Segments tracked' : stage === 'profile' ? 'Categories tracked' : 'Activities tracked';
+  const stackedShareLabel = stage === 'segment' ? 'segment portfolio' : 'tracked categories';
   const bubbleShareLabel =
-    stage === 'sector' ? 'sector emissions' : stage === 'profile' ? 'category emissions' : 'activity emissions';
-  const sankeyShareLabel = stage === 'sector' ? 'sector flow' : 'mapped flow';
+    stage === 'segment' ? 'segment emissions' : stage === 'profile' ? 'category emissions' : 'activity emissions';
+  const sankeyShareLabel = stage === 'segment' ? 'segment flow' : 'mapped flow';
   const feedbackShareLabel = 'feedback intensity';
-  const stackedPanelTitle = stage === 'sector' ? 'Annual emissions by sector' : 'Annual emissions by category';
+  const stackedPanelTitle = stage === 'segment' ? 'Annual emissions by segment' : 'Annual emissions by category';
   const bubblePanelTitle =
-    stage === 'sector'
-      ? 'Sector emissions bubble chart'
+    stage === 'segment'
+      ? 'Segment emissions bubble chart'
       : stage === 'profile'
         ? 'Category emissions bubble chart'
         : 'Activity emissions bubble chart';
-  const sankeyPanelTitle = stage === 'sector' ? 'Sector emission pathways' : 'Emission pathways';
+  const sankeyPanelTitle = stage === 'segment' ? 'Segment emission pathways' : 'Emission pathways';
   const feedbackPanelTitle = 'Feedback loops';
-  const stackedEmptyMessage = stage === 'sector' ? 'No sector data available.' : 'No category data available.';
+  const stackedEmptyMessage = stage === 'segment' ? 'No segment data available.' : 'No category data available.';
   const bubbleEmptyMessage =
-    stage === 'sector'
-      ? 'No sector data available.'
+    stage === 'segment'
+      ? 'No segment data available.'
       : stage === 'profile'
         ? 'No category data available.'
         : 'No activity data available.';
-  const sankeyEmptyMessage = stage === 'sector' ? 'No sector flow data available.' : 'No sankey data available.';
+  const sankeyEmptyMessage = stage === 'segment' ? 'No segment flow data available.' : 'No sankey data available.';
   const feedbackEmptyMessage = 'No feedback loop data available.';
 
   const stackedSummary = useMemo(() => {

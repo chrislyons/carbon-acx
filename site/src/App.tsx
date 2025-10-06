@@ -7,7 +7,7 @@ import { ReferencesDrawer } from './components/ReferencesDrawer';
 import { VizCanvas } from './components/VizCanvas';
 import { ProfileProvider, useProfile } from './state/profile';
 import { ActivityPlanner } from './components/ActivityPlanner';
-import { ScopeBar, type ScopePin, type ScopeSectorDescriptor } from './components/ScopeBar';
+import { ScopeBar, type ScopePin, type ScopeSegmentDescriptor } from './components/ScopeBar';
 import { useLayerCatalog } from './lib/useLayerCatalog';
 
 export default function App(): JSX.Element {
@@ -18,7 +18,7 @@ export default function App(): JSX.Element {
   );
 }
 
-const STAGE_SEQUENCE: StageId[] = ['sector', 'profile', 'activity'];
+const STAGE_SEQUENCE: StageId[] = ['segment', 'profile', 'activity'];
 
 function AppShell(): JSX.Element {
   const { activeLayers, primaryLayer, hasLifestyleOverrides } = useProfile();
@@ -29,12 +29,12 @@ function AppShell(): JSX.Element {
     }
     return window.matchMedia('(min-width: 1280px)').matches;
   });
-  const [stage, setStage] = useState<StageId>('sector');
+  const [stage, setStage] = useState<StageId>('segment');
   const [unlockedStages, setUnlockedStages] = useState<Set<StageId>>(
-    () => new Set(['sector'])
+    () => new Set(['segment'])
   );
 
-  const optionalSectors = useMemo(
+  const optionalSegments = useMemo(
     () => activeLayers.filter((layer) => layer !== primaryLayer),
     [activeLayers, primaryLayer]
   );
@@ -49,7 +49,7 @@ function AppShell(): JSX.Element {
     return lookup;
   }, [layerCatalog]);
 
-  const activeSectorDescriptors = useMemo<ScopeSectorDescriptor[]>(
+  const activeSegmentDescriptors = useMemo<ScopeSegmentDescriptor[]>(
     () =>
       activeLayers.map((id) => ({
         id,
@@ -57,29 +57,29 @@ function AppShell(): JSX.Element {
       })),
     [activeLayers, layerTitleLookup]
   );
-  const sectorContextReady = activeLayers.length > 0;
+  const segmentContextReady = activeLayers.length > 0;
   const profileUnlocked = unlockedStages.has('profile');
   const activityUnlocked = unlockedStages.has('activity');
 
   const stageStates: StageStateMap = useMemo(
     () => ({
-      sector: { unlocked: true, ready: sectorContextReady },
+      segment: { unlocked: true, ready: segmentContextReady },
       profile: { unlocked: profileUnlocked, ready: hasLifestyleOverrides },
       activity: { unlocked: activityUnlocked, ready: false }
     }),
-    [sectorContextReady, profileUnlocked, hasLifestyleOverrides, activityUnlocked]
+    [segmentContextReady, profileUnlocked, hasLifestyleOverrides, activityUnlocked]
   );
 
   const stageSummaries = useMemo(() => {
     const baselineIncluded = activeLayers.includes(primaryLayer);
-    const totalSectors = optionalSectors.length + (baselineIncluded ? 1 : 0);
+    const totalSegments = optionalSegments.length + (baselineIncluded ? 1 : 0);
     return {
-      sector:
-        totalSectors > 1
-          ? `${totalSectors} sectors active`
+      segment:
+        totalSegments > 1
+          ? `${totalSegments} segments active`
           : baselineIncluded
-            ? 'Single baseline sector active'
-            : 'No sectors selected yet',
+            ? 'Single baseline segment active'
+            : 'No segments selected yet',
       profile: hasLifestyleOverrides
         ? 'Lifestyle inputs customised'
         : 'Using default lifestyle baseline',
@@ -87,7 +87,7 @@ function AppShell(): JSX.Element {
         ? 'Activity planner unlocked'
         : 'Add lifestyle detail to unlock activities'
     };
-  }, [activeLayers, primaryLayer, optionalSectors.length, hasLifestyleOverrides, activityUnlocked]);
+  }, [activeLayers, primaryLayer, optionalSegments.length, hasLifestyleOverrides, activityUnlocked]);
 
   const profileDetail = stageSummaries.profile;
   const activityDetail = stageSummaries.activity;
@@ -101,7 +101,7 @@ function AppShell(): JSX.Element {
   const handlePinScope = useCallback(() => {
     const fingerprint = JSON.stringify({
       stage,
-      sectors: activeSectorDescriptors.map((sector) => sector.id),
+      segments: activeSegmentDescriptors.map((segment) => segment.id),
       profile: profileDetail,
       activity: activityDetail
     });
@@ -110,11 +110,11 @@ function AppShell(): JSX.Element {
         return previous;
       }
       const stageLabel =
-        stage === 'sector' ? 'Sector scope' : stage === 'profile' ? 'Profile scope' : 'Activity scope';
+        stage === 'segment' ? 'Segment scope' : stage === 'profile' ? 'Profile scope' : 'Activity scope';
       const title =
-        activeSectorDescriptors.length > 0
-          ? activeSectorDescriptors.map((sector) => sector.label).join(' · ')
-          : 'No sectors selected';
+        activeSegmentDescriptors.length > 0
+          ? activeSegmentDescriptors.map((segment) => segment.label).join(' · ')
+          : 'No segments selected';
       const subtitleParts = [stageLabel];
       if (profileDetail) {
         subtitleParts.push(profileDetail);
@@ -134,7 +134,7 @@ function AppShell(): JSX.Element {
       };
       return [...previous, nextPin];
     });
-  }, [stage, activeSectorDescriptors, profileDetail, activityDetail, stageSummaries]);
+  }, [stage, activeSegmentDescriptors, profileDetail, activityDetail, stageSummaries]);
 
   const handleRemovePinnedScope = useCallback((id: string) => {
     setPinnedScopes((previous) => previous.filter((pin) => pin.id !== id));
@@ -146,7 +146,7 @@ function AppShell(): JSX.Element {
   );
 
   const isStageUnlocked = useCallback(
-    (stageId: StageId) => stageId === 'sector' || unlockedStages.has(stageId),
+    (stageId: StageId) => stageId === 'segment' || unlockedStages.has(stageId),
     [unlockedStages]
   );
 
@@ -170,7 +170,7 @@ function AppShell(): JSX.Element {
       if (!nextStage) {
         return;
       }
-      if (currentStage === 'sector' && !sectorContextReady) {
+      if (currentStage === 'segment' && !segmentContextReady) {
         return;
       }
       if (currentStage === 'profile' && !hasLifestyleOverrides) {
@@ -186,7 +186,7 @@ function AppShell(): JSX.Element {
       });
       setStage(nextStage);
     },
-    [sectorContextReady, hasLifestyleOverrides]
+    [segmentContextReady, hasLifestyleOverrides]
   );
 
   return (
@@ -234,7 +234,7 @@ function AppShell(): JSX.Element {
             <ScopeBar
               stage={stage}
               stageSummaries={stageSummaries}
-              sectors={activeSectorDescriptors}
+              segments={activeSegmentDescriptors}
               profileDetail={profileDetail}
               activityDetail={activityDetail}
               pinnedScopes={visiblePinnedScopes}

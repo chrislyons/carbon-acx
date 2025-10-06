@@ -1,5 +1,5 @@
 from app.components import bubble, na_notice, sankey, stacked
-from app.components._helpers import has_na_sectors
+from app.components._helpers import has_na_segments
 
 
 def _class_name(child) -> str | None:
@@ -10,14 +10,14 @@ def _class_name(child) -> str | None:
     return None
 
 
-def test_has_na_sectors_detects_category_label() -> None:
+def test_has_na_segments_detects_category_label() -> None:
     payload = {"data": [{"category": "NA", "values": {"mean": 100}}]}
-    assert has_na_sectors(payload)
+    assert has_na_segments(payload)
 
 
-def test_has_na_sectors_detects_sankey_node() -> None:
+def test_has_na_segments_detects_sankey_node() -> None:
     payload = {"data": {"nodes": [{"label": "NA"}], "links": []}}
-    assert has_na_sectors(payload)
+    assert has_na_segments(payload)
 
 
 def test_na_notice_renders_dash_component() -> None:

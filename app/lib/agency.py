@@ -150,7 +150,7 @@ def breakdown_for_activity(
     total_share = max(0.0, min(total_share, 1.0))
     individual_share = max(0.0, 1.0 - total_share)
 
-    sectors: list[dict[str, object]] = []
+    segments: list[dict[str, object]] = []
     for agency, payload in groups.items():
         share = float(payload.get("share", 0.0))
         if share <= 0:
@@ -159,7 +159,7 @@ def breakdown_for_activity(
         tooltip_lines: list[str] = []
         if isinstance(entries_for_tooltip, Iterable):
             tooltip_lines = _build_tooltip_lines(entries_for_tooltip)
-        sectors.append(
+        segments.append(
             {
                 "agency": agency,
                 "label": AGENCY_LABELS.get(agency, agency.title()),
@@ -170,7 +170,7 @@ def breakdown_for_activity(
         )
 
     if individual_share > 0.0005:
-        sectors.append(
+        segments.append(
             {
                 "agency": "individual",
                 "label": AGENCY_LABELS["individual"],
@@ -180,7 +180,7 @@ def breakdown_for_activity(
             }
         )
 
-    sectors.sort(
+    segments.sort(
         key=lambda item: (-float(item.get("share", 0.0)), _agency_rank(str(item.get("agency"))))
     )
-    return sectors
+    return segments

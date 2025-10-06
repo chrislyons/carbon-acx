@@ -1,14 +1,14 @@
 import type { StageId, StageSummaries } from './Layout';
 
-const STAGE_SEQUENCE: StageId[] = ['sector', 'profile', 'activity'];
+const STAGE_SEQUENCE: StageId[] = ['segment', 'profile', 'activity'];
 
 const STAGE_LABEL: Record<StageId, string> = {
-  sector: 'Sector',
+  segment: 'Segment',
   profile: 'Profile',
   activity: 'Activity'
 };
 
-export interface ScopeSectorDescriptor {
+export interface ScopeSegmentDescriptor {
   id: string;
   label: string;
 }
@@ -24,7 +24,7 @@ export interface ScopePin {
 interface ScopeBarProps {
   stage: StageId;
   stageSummaries?: StageSummaries;
-  sectors: ScopeSectorDescriptor[];
+  segments: ScopeSegmentDescriptor[];
   profileDetail?: string;
   activityDetail?: string;
   pinnedScopes: ScopePin[];
@@ -35,7 +35,7 @@ interface ScopeBarProps {
 export function ScopeBar({
   stage,
   stageSummaries = {},
-  sectors,
+  segments,
   profileDetail,
   activityDetail,
   pinnedScopes,
@@ -87,17 +87,17 @@ export function ScopeBar({
           </button>
         </div>
         <div className="flex flex-wrap items-center gap-[calc(var(--gap-0)*0.6)] text-[12px] text-slate-200">
-          {sectors.length > 0 ? (
-            sectors.map((sector) => (
+          {segments.length > 0 ? (
+            segments.map((segment) => (
               <span
-                key={sector.id}
+                key={segment.id}
                 className="inline-flex items-center rounded-full border border-slate-700/70 bg-slate-900/40 px-3 py-[0.2rem] text-[12px] text-slate-100"
               >
-                {sector.label}
+                {segment.label}
               </span>
             ))
           ) : (
-            <span className="text-[12px] text-slate-500">No sectors selected</span>
+            <span className="text-[12px] text-slate-500">No segments selected</span>
           )}
         </div>
         <div className="flex flex-wrap items-center gap-[calc(var(--gap-0)*0.6)] text-[11px] text-slate-400">

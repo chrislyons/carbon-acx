@@ -14,7 +14,7 @@ from ._helpers import (
     format_emissions,
     format_range,
     format_reference_line,
-    has_na_sectors,
+    has_na_segments,
     primary_reference_index,
     reference_numbers,
 )
@@ -337,7 +337,7 @@ def render(
         children.append(controls_section)
     children.append(content)
 
-    if has_na_sectors(figure_payload):
+    if has_na_segments(figure_payload):
         children.append(na_notice.render())
 
     return html.Section(
