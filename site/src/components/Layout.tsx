@@ -1,6 +1,6 @@
 import { KeyboardEvent, ReactNode, useCallback, useId } from 'react';
 
-export type StageId = 'sector' | 'profile' | 'activity';
+export type StageId = 'segment' | 'profile' | 'activity';
 
 export interface StageStateMeta {
   unlocked: boolean;
@@ -37,7 +37,7 @@ interface StageMeta {
 
 const STAGES: StageMeta[] = [
   {
-    id: 'sector',
+    id: 'segment',
     label: 'Sectors',
     summary: 'Anchor the analysis to the sectors you want to compare.',
     advanceLabel: 'Continue to profiles',
@@ -63,7 +63,7 @@ const STAGES: StageMeta[] = [
 
 function renderStagePanel(stage: StageId, slots: Pick<LayoutProps, 'layerBrowser' | 'controls' | 'activity'>) {
   switch (stage) {
-    case 'sector':
+    case 'segment':
       return slots.layerBrowser;
     case 'profile':
       return slots.controls;
@@ -93,7 +93,7 @@ export function Layout({
   const activeIndex = stageIds.indexOf(stage);
 
   const isStageUnlocked = useCallback(
-    (stageId: StageId) => stageId === 'sector' || Boolean(stageStates[stageId]?.unlocked),
+    (stageId: StageId) => stageId === 'segment' || Boolean(stageStates[stageId]?.unlocked),
     [stageStates]
   );
 
@@ -184,7 +184,7 @@ export function Layout({
             className="flex flex-col gap-[calc(var(--gap-0)*0.75)]"
           >
             {STAGES.map((meta) => {
-              const state = stageStates[meta.id] ?? { unlocked: meta.id === 'sector', ready: false };
+              const state = stageStates[meta.id] ?? { unlocked: meta.id === 'segment', ready: false };
               const unlocked = isStageUnlocked(meta.id);
               const isActive = unlocked && stage === meta.id;
               const stageIndex = stageIds.indexOf(meta.id);

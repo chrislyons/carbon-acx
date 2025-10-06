@@ -18,7 +18,7 @@ export default function App(): JSX.Element {
   );
 }
 
-const STAGE_SEQUENCE: StageId[] = ['sector', 'profile', 'activity'];
+const STAGE_SEQUENCE: StageId[] = ['segment', 'profile', 'activity'];
 
 function AppShell(): JSX.Element {
   const { activeLayers, primaryLayer, hasLifestyleOverrides } = useProfile();
@@ -29,9 +29,9 @@ function AppShell(): JSX.Element {
     }
     return window.matchMedia('(min-width: 1280px)').matches;
   });
-  const [stage, setStage] = useState<StageId>('sector');
+  const [stage, setStage] = useState<StageId>('segment');
   const [unlockedStages, setUnlockedStages] = useState<Set<StageId>>(
-    () => new Set(['sector'])
+    () => new Set(['segment'])
   );
 
   const optionalSectors = useMemo(
@@ -63,7 +63,7 @@ function AppShell(): JSX.Element {
 
   const stageStates: StageStateMap = useMemo(
     () => ({
-      sector: { unlocked: true, ready: sectorContextReady },
+      segment: { unlocked: true, ready: sectorContextReady },
       profile: { unlocked: profileUnlocked, ready: hasLifestyleOverrides },
       activity: { unlocked: activityUnlocked, ready: false }
     }),
@@ -74,7 +74,7 @@ function AppShell(): JSX.Element {
     const baselineIncluded = activeLayers.includes(primaryLayer);
     const totalSectors = optionalSectors.length + (baselineIncluded ? 1 : 0);
     return {
-      sector:
+      segment:
         totalSectors > 1
           ? `${totalSectors} sectors active`
           : baselineIncluded
@@ -110,7 +110,7 @@ function AppShell(): JSX.Element {
         return previous;
       }
       const stageLabel =
-        stage === 'sector' ? 'Sector scope' : stage === 'profile' ? 'Profile scope' : 'Activity scope';
+        stage === 'segment' ? 'Sector scope' : stage === 'profile' ? 'Profile scope' : 'Activity scope';
       const title =
         activeSectorDescriptors.length > 0
           ? activeSectorDescriptors.map((sector) => sector.label).join(' · ')
@@ -146,7 +146,7 @@ function AppShell(): JSX.Element {
   );
 
   const isStageUnlocked = useCallback(
-    (stageId: StageId) => stageId === 'sector' || unlockedStages.has(stageId),
+    (stageId: StageId) => stageId === 'segment' || unlockedStages.has(stageId),
     [unlockedStages]
   );
 
@@ -170,7 +170,7 @@ function AppShell(): JSX.Element {
       if (!nextStage) {
         return;
       }
-      if (currentStage === 'sector' && !sectorContextReady) {
+      if (currentStage === 'segment' && !sectorContextReady) {
         return;
       }
       if (currentStage === 'profile' && !hasLifestyleOverrides) {
