@@ -1,1 +1,4 @@
 table,row_id,layer_id,action,source_id,notes,status
+data/emission_factors.csv,TRAN.DELIVERY.TRUCK.CLASS6.KM,industrial_light,update,SRC.NRCAN.FUEL_LCA.2024,Resolved ISSUE-001 duplicate entry by consolidating Class 6 delivery factor.,resolved
+data/profiles.csv,DEF.CA.GARRISON.2025,industrial_heavy_military,insert,SRC.DND.2024,Resolved ISSUE-002 by seeding defense garrison baseline profile.,resolved
+data/sectors.csv,SECTOR.DEFENSE_OPERATIONS,buildings_defense,insert,SRC.DND.2024,Resolved ISSUE-003 with formal defense operations sector row.,resolved

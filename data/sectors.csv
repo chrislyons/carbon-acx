@@ -1,0 +1,11 @@
+sector_id,name,description
+SECTOR.PROFESSIONAL_SERVICES,Professional services,"Knowledge-economy roles, consulting engagements, and office services with hybrid work models."
+SECTOR.DIGITAL_INFRASTRUCTURE,Digital infrastructure,"Cloud, connectivity, and software delivery activities supporting digital operations."
+SECTOR.INDUSTRIAL_LIGHT,Industrial – light,"Prototyping, fabrication labs, and light manufacturing processes."
+SECTOR.INDUSTRIAL_HEAVY,Industrial – heavy,"Heavy manufacturing, embodied production runs, and associated logistics."
+SECTOR.INDUSTRIAL_EXTERNALITIES,Industrial externalities,"Externalized industrial impacts such as acid drainage, waste treatment, and remediation."
+SECTOR.MATERIALS_AND_CHEMICALS,Materials and chemicals,"Chemistry, materials research, and pilot-scale synthesis activities."
+SECTOR.DEFENSE_OPERATIONS,Defense operations,"Military logistics, hardened infrastructure, and defense-specific readiness activities."
+SECTOR.PRIVATE_SECURITY,Private security,"Protective services, private security operations, and defensive contracting footprints."
+SECTOR.MODELED_EVENTS,Modeled events,"Scenario-based or simulated activities that represent aggregated event footprints."
+SECTOR.BIOSPHERE,Biosphere feedbacks,"Earth system feedback processes and environmental sinks tracked in the dataset."

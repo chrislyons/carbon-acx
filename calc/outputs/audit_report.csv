@@ -1,0 +1,4 @@
+issue_id,table,row_id,status,resolution_notes
+ISSUE-001,data/emission_factors.csv,TRAN.DELIVERY.TRUCK.CLASS6.KM,resolved,Removed duplicate emission factor rows and re-keyed sector alignment.
+ISSUE-002,data/profiles.csv,DEF.CA.GARRISON.2025,resolved,Seeded defense baseline profiles to complete sector coverage.
+ISSUE-003,data/sectors.csv,SECTOR.DEFENSE_OPERATIONS,resolved,Added formal sector enumeration to replace legacy segment mapping.

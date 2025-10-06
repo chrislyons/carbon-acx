@@ -1,0 +1,17 @@
+{
+  "build_id": "7e4af6717ca0",
+  "dataset_version": "v1.2",
+  "figures": [
+    {
+      "artifact_id": "FIG.SECTOR_COVERAGE_OVERVIEW",
+      "artifact_type": "figure",
+      "path": "dist/artifacts/figures/sector_coverage_overview.svg",
+      "sha256": "497469763a996da1bfa521fb8ed41bfde9d61415184f1c9cb71554af3bb64da3",
+      "activity_id": "BUILDING.OFFICE.M2.YEAR",
+      "sector_id": "SECTOR.PROFESSIONAL_SERVICES",
+      "layer_id": "professional",
+      "title": "Sector coverage overview",
+      "description": "Stacked coverage summary showing dataset completeness across sectors."
+    }
+  ]
+}

@@ -1,3 +1,16 @@
 {
-  "dataset_version": "v1.2"
+  "build_id": "7e4af6717ca0",
+  "dataset_version": "v1.2",
+  "manifests": [
+    {
+      "name": "figures",
+      "path": "dist/artifacts/manifests/figures.json",
+      "sha256": "728d2215dd973bed0437212c1afdf1be12e4faeff09eda61a7efdaa1656f5a4e"
+    },
+    {
+      "name": "references",
+      "path": "dist/artifacts/manifests/references.json",
+      "sha256": "666847cb1fd8f7daf3824b4e6feb9c2789dd476d09d3aebd04afb41584e8520d"
+    }
+  ]
 }

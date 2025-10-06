@@ -1,0 +1,385 @@
+{
+  "build_id": "7e4af6717ca0",
+  "dataset_version": "v1.2",
+  "count": 63,
+  "references": [
+    {
+      "source_id": "SRC.AB.TAILINGS.2023",
+      "path": "dist/artifacts/references/SRC.AB.TAILINGS.2023.txt",
+      "sha256": "9cae018a1924c740ac2c2a03b4779f05b51e535d3da8b07155ee5acdba0c81fb",
+      "url": "https://static.aer.ca/prd/documents/reports/Tailings-Management-Framework-2023.pdf"
+    },
+    {
+      "source_id": "SRC.APPLE.MALMODIN.2024",
+      "path": "dist/artifacts/references/SRC.APPLE.MALMODIN.2024.txt",
+      "sha256": "9811b3348649c1b28cce3d1d80760a56d42f1f65d2ab362f44e3d6e11c617966",
+      "url": "https://www.apple.com/environment/pdf/Apple_Environmental_Progress_Report_2024.pdf"
+    },
+    {
+      "source_id": "SRC.CEOBS.2023",
+      "path": "dist/artifacts/references/SRC.CEOBS.2023.txt",
+      "sha256": "18c6f8fb1b8f56f8c43891a9651bfcb223b58f02e6a69e0b5cb60dfb28d7989d",
+      "url": "https://ceobs.org/report-explosive-materials-supply-chain-emissions/"
+    },
+    {
+      "source_id": "SRC.CER.2024",
+      "path": "dist/artifacts/references/SRC.CER.2024.txt",
+      "sha256": "7db9d66532c3b9b460489f886169527b66e3b2bc6a9e5fb15964db0461c9dcb7",
+      "url": "https://www.cer-rec.gc.ca/en/data-analysis/energy-markets/market-snapshots/"
+    },
+    {
+      "source_id": "SRC.CER.AB.2024",
+      "path": "dist/artifacts/references/SRC.CER.AB.2024.txt",
+      "sha256": "ef4c89392b75948c973b001400a1180755cf33642d8005948f62c0dfd40f7634",
+      "url": "https://www.cer-rec.gc.ca/en/data-analysis/energy-markets/provincial-territorial-energy-profiles/alberta.html"
+    },
+    {
+      "source_id": "SRC.CER.BC.2024",
+      "path": "dist/artifacts/references/SRC.CER.BC.2024.txt",
+      "sha256": "166cfef15f828fd5347d403cad96493d47217fe3f87585562496d47c7c76a7d4",
+      "url": "https://www.cer-rec.gc.ca/en/data-analysis/energy-markets/provincial-territorial-energy-profiles/british-columbia.html"
+    },
+    {
+      "source_id": "SRC.CER.QC.2024",
+      "path": "dist/artifacts/references/SRC.CER.QC.2024.txt",
+      "sha256": "246aa3817fcf94687dffedafcf4dff9475f8965d5a3d75b9eb754e34a6130229",
+      "url": "https://www.cer-rec.gc.ca/en/data-analysis/energy-markets/provincial-territorial-energy-profiles/quebec.html"
+    },
+    {
+      "source_id": "SRC.CSA.EPD.PCR.2024",
+      "path": "dist/artifacts/references/SRC.CSA.EPD.PCR.2024.txt",
+      "sha256": "6f12cd56ec9f8956b71f47271a231d92c007c38c155f8a805a0b46967f4764bf",
+      "url": "https://www.csagroup.org/store/product/spe-8901-2024/"
+    },
+    {
+      "source_id": "SRC.CUTA.TTC.2017",
+      "path": "dist/artifacts/references/SRC.CUTA.TTC.2017.txt",
+      "sha256": "bc4f8cc094104e813fff77b621648a80c3adc02d7cb63b78fd32ac79f789837e",
+      "url": "https://raw.githubusercontent.com/Nate-Wessel/TTC-funding/master/sources/Ontario_Transit_Factbooks/ttc/2017.pdf"
+    },
+    {
+      "source_id": "SRC.DEFRA.AVIATION.2024",
+      "path": "dist/artifacts/references/SRC.DEFRA.AVIATION.2024.txt",
+      "sha256": "d9fda038a8509ba5fcfd31f1fcb1130c8092a7cfafcf1b9a5d42d1ef0be595e8",
+      "url": "https://www.gov.uk/government/collections/government-conversion-factors-for-company-reporting"
+    },
+    {
+      "source_id": "SRC.DEMO",
+      "path": "dist/artifacts/references/SRC.DEMO.txt",
+      "sha256": "350bde73d1594015033941d27bf2fefe54f14927e1f9bec03d0717dda317c1e4",
+      "url": "https://example.org/demo"
+    },
+    {
+      "source_id": "SRC.DIMPACT.2021",
+      "path": "dist/artifacts/references/SRC.DIMPACT.2021.txt",
+      "sha256": "6b83342d071f4877c33e40457578166279bf395489e7847d80d02fe42928e900",
+      "url": "https://www.dimpact.org/resources#carbon-impact-of-video-streaming"
+    },
+    {
+      "source_id": "SRC.DIMPACT.STREAMING.2022",
+      "path": "dist/artifacts/references/SRC.DIMPACT.STREAMING.2022.txt",
+      "sha256": "58c0626113805b9333442308b29f8d1225ec1493ce18a24866582a5f148114ec",
+      "url": "https://www.dimpact.org/resources#video-streaming-guidance"
+    },
+    {
+      "source_id": "SRC.DND.2024",
+      "path": "dist/artifacts/references/SRC.DND.2024.txt",
+      "sha256": "db1597d3738c62904acad014dd3afc4a4500630c1ec4a95a0f7cfcab9cbc476a",
+      "url": "https://www.canada.ca/en/department-national-defence/corporate/reports-publications/defence-energy-environment-progress-2023.html"
+    },
+    {
+      "source_id": "SRC.ECCC.NIR.2025",
+      "path": "dist/artifacts/references/SRC.ECCC.NIR.2025.txt",
+      "sha256": "47a0bc426c6bdf382e4c4c03453762a0ac2e919d67ecaafcc626a313a8f89fb5",
+      "url": "https://publications.gc.ca/collections/collection_2025/eccc/En81-4-2025-1-eng.pdf"
+    },
+    {
+      "source_id": "SRC.ECCC.PERMAFROST.2023",
+      "path": "dist/artifacts/references/SRC.ECCC.PERMAFROST.2023.txt",
+      "sha256": "4a94e5f5b5384e4783393c78a03d222a75043aa3d92be9ec6b91b653702f192e",
+      "url": "https://www.canada.ca/en/environment-climate-change/services/climate-change/science-research-data/permafrost.html"
+    },
+    {
+      "source_id": "SRC.EPA.MOVES.HDV.2021",
+      "path": "dist/artifacts/references/SRC.EPA.MOVES.HDV.2021.txt",
+      "sha256": "6f02a6edf7185952684f60798128ac118dde94027b4c9c41e1b4e3a2601390c3",
+      "url": "https://www.epa.gov/system/files/documents/2021-11/moves-hdv-dvpg-508_0.pdf"
+    },
+    {
+      "source_id": "SRC.EPA.SMARTWAY.2023",
+      "path": "dist/artifacts/references/SRC.EPA.SMARTWAY.2023.txt",
+      "sha256": "5e89156e8dd947bb3e12934dd239788d559c442cf5c7ae1dada215bfc7e26929",
+      "url": "https://www.epa.gov/smartway"
+    },
+    {
+      "source_id": "SRC.EPA.WARM15.2023",
+      "path": "dist/artifacts/references/SRC.EPA.WARM15.2023.txt",
+      "sha256": "97e2899847bbc0a06f08d8b5738475a7eede08b038782dca9f9a95cb149bc20b",
+      "url": "https://www.epa.gov/warm/versions-waste-reduction-model-warm#15"
+    },
+    {
+      "source_id": "SRC.FAO.IEA.COLDCHAIN.2024",
+      "path": "dist/artifacts/references/SRC.FAO.IEA.COLDCHAIN.2024.txt",
+      "sha256": "d4ef178259ea6f654aeeab1d0a9097a28606440ce76f4bc923d357e4c7e51f15",
+      "url": "https://www.fao.org/energy/newsroom/detail/en/c/1654324/"
+    },
+    {
+      "source_id": "SRC.GHG.PROTOCOL.2015",
+      "path": "dist/artifacts/references/SRC.GHG.PROTOCOL.2015.txt",
+      "sha256": "81c036a876ad8c1038dafdaffd339cad51db7851b0497c781adc718d2b87155a",
+      "url": "https://ghgprotocol.org/corporate-standard"
+    },
+    {
+      "source_id": "SRC.GNR.2023",
+      "path": "dist/artifacts/references/SRC.GNR.2023.txt",
+      "sha256": "f051028665ba0e662618812280d91ad4d59c7659af24afde0825074025dbfc6c",
+      "url": "https://gccassociation.org/sustainability-innovation/gnr/"
+    },
+    {
+      "source_id": "SRC.HINTEMANN.2022",
+      "path": "dist/artifacts/references/SRC.HINTEMANN.2022.txt",
+      "sha256": "9d4de77d92c8b3455eb28e3afe16dd97ffde220f0028147d76c885a5119aba95",
+      "url": "https://www.iitp.de/digital-carbon-footprint"
+    },
+    {
+      "source_id": "SRC.ICAO.CORSIA.2023",
+      "path": "dist/artifacts/references/SRC.ICAO.CORSIA.2023.txt",
+      "sha256": "af504eecb9a85474ec6a84ea1d59ec45224fde2a6974845ca817bca890897acd",
+      "url": "https://www.icao.int/environmental-protection/CORSIA/Pages/default.aspx"
+    },
+    {
+      "source_id": "SRC.ICAO.CORSIA.2024",
+      "path": "dist/artifacts/references/SRC.ICAO.CORSIA.2024.txt",
+      "sha256": "0be3ec960c2736ce1d21ace4ac6882b21dd4b24b186086307f6110ffb9371ad4",
+      "url": "https://www.icao.int/environmental-protection/CORSIA"
+    },
+    {
+      "source_id": "SRC.ICCT.ELECTRIC_TRUCKS.2018",
+      "path": "dist/artifacts/references/SRC.ICCT.ELECTRIC_TRUCKS.2018.txt",
+      "sha256": "fc679aa6cac146fd7895977125ef5a4fc648ff21c0e6c741d8e14077d7fc5d7a",
+      "url": "https://theicct.org/wp-content/uploads/2021/06/Electric-truck-deployments-white-paper-ICCT-20181211.pdf"
+    },
+    {
+      "source_id": "SRC.IEA.AVIATION.2023",
+      "path": "dist/artifacts/references/SRC.IEA.AVIATION.2023.txt",
+      "sha256": "e144a7580cee539af5b6b6a94dcd31dd6496b0b76b73eacc2711d8de4c870843",
+      "url": "https://www.iea.org/reports/aviation"
+    },
+    {
+      "source_id": "SRC.IEA.COOLCOALITION.2024",
+      "path": "dist/artifacts/references/SRC.IEA.COOLCOALITION.2024.txt",
+      "sha256": "ff876a44a9643a0ad49d3f9fc192a3b4ef6611739fb6679216af12b6052f2f93",
+      "url": "https://www.coolcoalition.org/resources/"
+    },
+    {
+      "source_id": "SRC.IEA.COOLING.2024",
+      "path": "dist/artifacts/references/SRC.IEA.COOLING.2024.txt",
+      "sha256": "8da73f7e75b0c3af3f55e305186b26147a38914915117966848f43a319348acd",
+      "url": "https://www.iea.org/reports/cooling-and-appliance-efficiency-outlook"
+    },
+    {
+      "source_id": "SRC.IEA.DIGITAL.NETWORKS.2023",
+      "path": "dist/artifacts/references/SRC.IEA.DIGITAL.NETWORKS.2023.txt",
+      "sha256": "dc9ae7d2e411fc109c8b700f05cc2f4e9421bd83668c4a0ebbf725a01740ec41",
+      "url": "https://www.iea.org/reports/data-centres-and-data-transmission-networks"
+    },
+    {
+      "source_id": "SRC.IEA.NRCAN.BUILDINGS.2024",
+      "path": "dist/artifacts/references/SRC.IEA.NRCAN.BUILDINGS.2024.txt",
+      "sha256": "b15c9ea7c7e3dcc0ca269ec0d055abaaedd0811be474866060ed522b7bb3cb92",
+      "url": "https://oee.nrcan.gc.ca/corporate/statistics/neud/dpa/menus/trends/comprehensive_tables/list.cfm"
+    },
+    {
+      "source_id": "SRC.IESO.POWERDATA.2025",
+      "path": "dist/artifacts/references/SRC.IESO.POWERDATA.2025.txt",
+      "sha256": "10ed06b92c8af1cbecc2a6b85d95b26a4570519feaa593a8d050b59e9915dbd7",
+      "url": "https://www.ieso.ca/en/Power-Data/Data-Directory"
+    },
+    {
+      "source_id": "SRC.IMO.ICCT.SHIPPING.2023",
+      "path": "dist/artifacts/references/SRC.IMO.ICCT.SHIPPING.2023.txt",
+      "sha256": "bab02107171380e437b82962019df6ad6b3561130742bf593376c70d8814f4d0",
+      "url": "https://theicct.org/publication/global-shipping-ghg-jan23/"
+    },
+    {
+      "source_id": "SRC.INTL.MINING.2022",
+      "path": "dist/artifacts/references/SRC.INTL.MINING.2022.txt",
+      "sha256": "2a83a9aaa0dbc1cb06c7d97d403d1f1c9dba3e1b0c51c1eab019f35874c2438a",
+      "url": "https://www.icmm.com/en-gb/environment/materials-circularity/tailings/acid-drainage-guidance"
+    },
+    {
+      "source_id": "SRC.IPCC.AR6.WG1.2021",
+      "path": "dist/artifacts/references/SRC.IPCC.AR6.WG1.2021.txt",
+      "sha256": "9f6e6aa315e2382e4be03d0c4fc11d463a4bb377c7fbb99198e0cb5d420bad1b",
+      "url": "https://www.ipcc.ch/report/ar6/wg1/"
+    },
+    {
+      "source_id": "SRC.LBNL.DC.2024",
+      "path": "dist/artifacts/references/SRC.LBNL.DC.2024.txt",
+      "sha256": "09136698fdc9ec7a95e112934be6a19af312d62b59ec1ee8635ebcc1c7d6030a",
+      "url": "https://eta.lbl.gov/publications/estimating-energy-use-data-centers"
+    },
+    {
+      "source_id": "SRC.LUCCIONI.2023",
+      "path": "dist/artifacts/references/SRC.LUCCIONI.2023.txt",
+      "sha256": "caf1de6f73adb67d4cce476a4a29d411d204630f9df1bfeac9235bc06812a463",
+      "url": "https://arxiv.org/abs/2304.03271"
+    },
+    {
+      "source_id": "SRC.MALMODIN.2018",
+      "path": "dist/artifacts/references/SRC.MALMODIN.2018.txt",
+      "sha256": "dba82e1b81e0d55028fd2c9cbf8d7b49f992b94d55298146e34240373236c66a",
+      "url": "https://ieeexplore.ieee.org/document/8612362"
+    },
+    {
+      "source_id": "SRC.NASA.CRYO.2023",
+      "path": "dist/artifacts/references/SRC.NASA.CRYO.2023.txt",
+      "sha256": "3eb6913397c2af153fa62c74ab4918b9eb48ab3e3ea6d6fb20fca96a613684aa",
+      "url": "https://science.nasa.gov/earth-science/cryosphere"
+    },
+    {
+      "source_id": "SRC.NATO.2023",
+      "path": "dist/artifacts/references/SRC.NATO.2023.txt",
+      "sha256": "eb81b6b38e51d652a16c037a2abc3a1e6572c042f83c39ec90da2d9a21585ee0",
+      "url": "https://www.nato.int/cps/en/natohq/topics_197175.htm"
+    },
+    {
+      "source_id": "SRC.NETFLIX.SR.2023",
+      "path": "dist/artifacts/references/SRC.NETFLIX.SR.2023.txt",
+      "sha256": "251bfa171cbfd0cc4c3435714e47d8d26ad8394119dcee3dd325f7bc3ff8ec62",
+      "url": "https://sustainability.netflix.com/reports"
+    },
+    {
+      "source_id": "SRC.NIINIMAKI2020",
+      "path": "dist/artifacts/references/SRC.NIINIMAKI2020.txt",
+      "sha256": "168aeb025033d4743b21adce36fedf06751d6e1fe36957f2660b9f960e468f57",
+      "url": "https://doi.org/10.1038/s43017-020-0039-9"
+    },
+    {
+      "source_id": "SRC.NOAA.OCEAN.2023",
+      "path": "dist/artifacts/references/SRC.NOAA.OCEAN.2023.txt",
+      "sha256": "b67133883c940b226e4667c460cd6d0e18c85175dee1bea7ee71a71dbe4e4077",
+      "url": "https://www.noaa.gov/ocean-climate-report"
+    },
+    {
+      "source_id": "SRC.NRCAN.FREIGHT.2024",
+      "path": "dist/artifacts/references/SRC.NRCAN.FREIGHT.2024.txt",
+      "sha256": "ea117aacd6941b45d58a6814c4298ff4aed9b12d7386976869336c6229f19d84",
+      "url": "https://natural-resources.canada.ca"
+    },
+    {
+      "source_id": "SRC.NRCAN.FUEL_LCA.2024",
+      "path": "dist/artifacts/references/SRC.NRCAN.FUEL_LCA.2024.txt",
+      "sha256": "83b6235a718ef696c2e35306b5c486a4852c998d422d08b1af580c65c0531702",
+      "url": "https://www.nrcan.gc.ca/energy/energy-efficiency/transportation/fuel-life-cycle-assessment/21086"
+    },
+    {
+      "source_id": "SRC.PATTERSON.2022",
+      "path": "dist/artifacts/references/SRC.PATTERSON.2022.txt",
+      "sha256": "6d2c122a724f96b3d0229c857756ee98b01c03abbf7992c8e6c46863ee019f26",
+      "url": "https://arxiv.org/abs/2104.10350"
+    },
+    {
+      "source_id": "SRC.PLASTICSEUROPE.2022",
+      "path": "dist/artifacts/references/SRC.PLASTICSEUROPE.2022.txt",
+      "sha256": "fdf112d151e282acfc47fecb8ceb53d908f227ecf7b7472e4e3f6bc634f8775f",
+      "url": "https://plasticseurope.org/knowledge-hub/plastics-the-facts-2022/"
+    },
+    {
+      "source_id": "SRC.POORE2018",
+      "path": "dist/artifacts/references/SRC.POORE2018.txt",
+      "sha256": "80ccef13fa1667975da71ea1f04b59429694a2399476b45ad338274c386ebede",
+      "url": "https://www.science.org/doi/10.1126/science.aaq0216"
+    },
+    {
+      "source_id": "SRC.PRIVSEC.2024",
+      "path": "dist/artifacts/references/SRC.PRIVSEC.2024.txt",
+      "sha256": "cbc0a1bc0d1da9fa6046e8c551f9f7b89a13d93fa0c0aca90f018b9279080ee1",
+      "url": "https://www.garda.com/insights/protective-services-sustainability-2024"
+    },
+    {
+      "source_id": "SRC.QUANTIS2018",
+      "path": "dist/artifacts/references/SRC.QUANTIS2018.txt",
+      "sha256": "e0cd9ae2c32910f31a385267e38999af6f63c95f605a6ecd90d9859210db26a6",
+      "url": "https://quantis.com/measuring-fashion-report/"
+    },
+    {
+      "source_id": "SRC.RIVER.HYPOXIA.2020",
+      "path": "dist/artifacts/references/SRC.RIVER.HYPOXIA.2020.txt",
+      "sha256": "6f16ead14c2f48d7bfe4a4b031aeb4bfe28a9b256dd669f1551a535a1a647f4f",
+      "url": "https://unesdoc.unesco.org/ark:/48223/pf0000376705"
+    },
+    {
+      "source_id": "SRC.SCOPE3.DATA_TRANSFER.2024",
+      "path": "dist/artifacts/references/SRC.SCOPE3.DATA_TRANSFER.2024.txt",
+      "sha256": "054a57c7a9ebdfe8d938c829fab870d12751189b84c490cc6c236ccb67c71c5a",
+      "url": "https://scope3.com/insights/data-transfer-methodology"
+    },
+    {
+      "source_id": "SRC.SIPRI.2024",
+      "path": "dist/artifacts/references/SRC.SIPRI.2024.txt",
+      "sha256": "acd051a7dc48e23d34906ee1c51bd3acccf0aa314bfc50ae97b86c3af2aec5fa",
+      "url": "https://ceobs.org/wp-content/uploads/2024/05/military-emissions-database-2024.pdf"
+    },
+    {
+      "source_id": "SRC.STATCAN.COMMUTE.2021",
+      "path": "dist/artifacts/references/SRC.STATCAN.COMMUTE.2021.txt",
+      "sha256": "762cc7197349c25ec8db5b7d3120a90e15d65ade52ad7d50241e41dcce10224c",
+      "url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=9810030201"
+    },
+    {
+      "source_id": "SRC.TORONTO.FREIGHT.2024",
+      "path": "dist/artifacts/references/SRC.TORONTO.FREIGHT.2024.txt",
+      "sha256": "1df4403a1849f034174f958382eace2e6947c90e4ac4e71d5a89131046350898",
+      "url": "https://www.toronto.ca/services-payments/streets-parking-transportation/transportation-planning/transportation-master-plans/freight-and-goods-movement-strategy/"
+    },
+    {
+      "source_id": "SRC.TORONTO.IDLING.2024",
+      "path": "dist/artifacts/references/SRC.TORONTO.IDLING.2024.txt",
+      "sha256": "b1a3ace7532da92162009ec8dab879b4c6f0d8eac9b4152d1d853a464aa574b1",
+      "url": "https://www.toronto.ca/services-payments/permits-licences-bylaws/bylaws-applications/driveway-vehicle-bylaws/vehicle-idling/"
+    },
+    {
+      "source_id": "SRC.TORONTO.WATER.AR2023",
+      "path": "dist/artifacts/references/SRC.TORONTO.WATER.AR2023.txt",
+      "sha256": "c679eecc54493b4147ce503cc86beb4320b615592bed55bbbf215f7467789f76",
+      "url": "https://www.toronto.ca/services-payments/water-environment/tap-water-in-toronto/drinking-water-quality-reports/"
+    },
+    {
+      "source_id": "SRC.UK.BEIS.GHGFACTORS.2023",
+      "path": "dist/artifacts/references/SRC.UK.BEIS.GHGFACTORS.2023.txt",
+      "sha256": "343383606c76949eb8667002b7b917150e76168045f68ffdd9532ac1f5586cf1",
+      "url": "https://raw.githubusercontent.com/filcuk/ghg_conversion_factors/main/country/gbr/release/ghg-conversion-factors-2023-gbr-v1.1.csv"
+    },
+    {
+      "source_id": "SRC.UNEP.2022",
+      "path": "dist/artifacts/references/SRC.UNEP.2022.txt",
+      "sha256": "042fe4ed4bc22c0da9953f5d51629edf0b2b4f9e6ef7c6b2d758455ba627ac76",
+      "url": "https://wedocs.unep.org/handle/20.500.11822/40538"
+    },
+    {
+      "source_id": "SRC.UNEP.TEAP.2023",
+      "path": "dist/artifacts/references/SRC.UNEP.TEAP.2023.txt",
+      "sha256": "7f8d39749decafe2c98975fdc15357ba23435574b0d6042f07d8fb1b21675370",
+      "url": "https://ozone.unep.org/assessment-panels/teap"
+    },
+    {
+      "source_id": "SRC.WORLDSTEEL.2023",
+      "path": "dist/artifacts/references/SRC.WORLDSTEEL.2023.txt",
+      "sha256": "0e08f8ef39b39de5b14ca757f7ce4b676760f180bb0edba58c8279139c6ca004",
+      "url": "https://worldsteel.org/steel-topics/sustainable-steel/"
+    },
+    {
+      "source_id": "SRC.WRAP.2023",
+      "path": "dist/artifacts/references/SRC.WRAP.2023.txt",
+      "sha256": "e7083225cc01158f2ddadd4b06535ebb0c7d0e5df2acd252ba12fc697c40445e",
+      "url": "https://wrap.org.uk/resources/report/household-appliance-carbon-factors"
+    },
+    {
+      "source_id": "SRC.WRAP2017",
+      "path": "dist/artifacts/references/SRC.WRAP2017.txt",
+      "sha256": "12f122cf309b0a8260b0499028430e7e5ac12b25ee0f4bbf1801f7f4112e80ae",
+      "url": "https://wrap.org.uk/resources/report/valuing-our-clothes-2017"
+    }
+  ]
+}

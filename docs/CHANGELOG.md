@@ -10,3 +10,4 @@
 - Validation: All guardrail checks passed with build `7e4af6717ca0`, covering schema integrity, citations, frequency exclusivity, layer coverage, determinism, and numerical spot checks.
 - Manifest: `latest-build.json` hashed to `6a10e9968cf14af619c7318f49bf62705201807d94fbae2b33b0e686cb1e49e9` for release packaging.
 - Test coverage: Backend parity, API compute, and UI smoke suites remain the enforced coverage set for this release cycle.
+Sprint 7e4af6717ca0 (v1.2) verified – all deliverables present and unique.

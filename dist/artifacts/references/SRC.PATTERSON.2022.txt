@@ -1,0 +1,8 @@
+IEEE Citation:
+[46] D. Patterson et al., “Carbon Emissions and Large Neural Network Training,” 2022. Available: https://arxiv.org/abs/2104.10350
+
+URL:
+https://arxiv.org/abs/2104.10350
+
+Access Status:
+offline snapshot required
