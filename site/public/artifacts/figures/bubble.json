@@ -1,0 +1,70 @@
+{
+  "data": [
+    {
+      "activity_id": "TRAVEL.COMMUTE.CAR.WORKDAY",
+      "activity_name": "Drive to office",
+      "category": "Commute",
+      "layer_id": "professional",
+      "annual_emissions_g": 6200,
+      "values": {
+        "mean": 6200,
+        "low": 5100,
+        "high": 7200
+      },
+      "citation_keys": ["SRC.COMMUTE.AUTO"],
+      "hover_reference_indices": [1]
+    },
+    {
+      "activity_id": "TRAVEL.COMMUTE.TRANSIT.WORKDAY",
+      "activity_name": "Transit to office",
+      "category": "Commute",
+      "layer_id": "professional",
+      "annual_emissions_g": 1800,
+      "values": {
+        "mean": 1800,
+        "low": 1200,
+        "high": 2400
+      },
+      "citation_keys": ["SRC.COMMUTE.TRANSIT"],
+      "hover_reference_indices": [2]
+    },
+    {
+      "activity_id": "FOOD.DIET.OMNIVORE.WEEK",
+      "activity_name": "Omnivore diet",
+      "category": "Diet",
+      "layer_id": "lifestyle",
+      "annual_emissions_g": 6100,
+      "values": {
+        "mean": 6100,
+        "low": 5600,
+        "high": 6700
+      },
+      "citation_keys": ["SRC.DIET"],
+      "hover_reference_indices": [3]
+    },
+    {
+      "activity_id": "MEDIA.STREAM.HD.HOUR.TV",
+      "activity_name": "HD streaming",
+      "category": "Media",
+      "layer_id": "lifestyle",
+      "annual_emissions_g": 950,
+      "values": {
+        "mean": 950,
+        "low": 700,
+        "high": 1200
+      },
+      "citation_keys": ["SRC.MEDIA"],
+      "hover_reference_indices": [4]
+    }
+  ],
+  "citation_keys": [
+    "SRC.COMMUTE.AUTO",
+    "SRC.COMMUTE.TRANSIT",
+    "SRC.DIET",
+    "SRC.MEDIA"
+  ],
+  "layers": [
+    "professional",
+    "lifestyle"
+  ]
+}
