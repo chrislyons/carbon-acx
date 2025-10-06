@@ -2,6 +2,9 @@
 
 This changelog tracks local progress toward implementing the ACX041 View Provenance module.
 
+## 2025-10-06
+- Documented schema v1.2 migration replacing segment terminology with sector, retaining manifest compatibility and alias reads.
+
 ## 2024-05-20
 - Initialized changelog with placeholder entry outlining pending workstreams for ACX041 manifest implementation.
 - Documented outstanding tasks spanning manifest generation, CI enforcement, frontend verification, governance updates, and QA artifact collection.

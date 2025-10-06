@@ -13,6 +13,7 @@ export interface BubbleDatum extends ReferenceCarrier {
   activity_id?: string | null;
   activity_name?: string | null;
   category?: string | null;
+  sector?: string | null;
   values?: {
     mean?: number | null;
   } | null;
@@ -42,18 +43,6 @@ const PADDING_Y = 50;
 const MAX_RADIUS = 42;
 const AXIS_FONT_SIZE = 11;
 const AXIS_TICK_FONT_SIZE = 10;
-const MIN_LABEL_FONT_SIZE = 10;
-const MAX_LABEL_FONT_SIZE = 16;
-
-function resolveLabelFontSize(radius: number): number {
-  if (!Number.isFinite(radius) || radius <= 0) {
-    return MIN_LABEL_FONT_SIZE;
-  }
-  const computed = radius * 0.45;
-  const bounded = Math.max(MIN_LABEL_FONT_SIZE, Math.min(MAX_LABEL_FONT_SIZE, computed));
-  return Math.round(bounded);
-}
-
 function toCategory(value: string | null | undefined): string {
   if (!value) {
     return 'Other';
@@ -157,8 +146,6 @@ export function Bubble({
             const relative = point.kilograms / maxKg;
             const cy = PADDING_Y + chartHeight - relative * chartHeight;
             const radius = Math.max(8, Math.sqrt(relative) * MAX_RADIUS);
-            const labelFontSize = resolveLabelFontSize(radius);
-            const labelOffset = radius + labelFontSize + 4;
             return (
               <g
                 key={point.key}
@@ -174,14 +161,6 @@ export function Bubble({
                 >
                   <title>{point.hint}</title>
                 </circle>
-                <text
-                  y={labelOffset}
-                  textAnchor="middle"
-                  className="fill-slate-200 font-medium"
-                  style={{ fontSize: `${labelFontSize}px` }}
-                >
-                  {point.label}
-                </text>
               </g>
             );
           })}

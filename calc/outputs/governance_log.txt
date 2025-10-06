@@ -4,3 +4,4 @@ number_of_rows_changed: 0
 tests_passed: True
 citation_count: 55
 ambiguity_flag_count: 78
+notes: Schema v1.2 — segment → sector (dual-read, write-sector)

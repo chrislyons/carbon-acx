@@ -52,14 +52,6 @@ exports[`Bubble > renders bubble chart with pulsing circles 1`] = `
         Cooling — 2.50 kg CO₂e [1]
       </title>
     </circle>
-    <text
-      class="fill-slate-200 font-medium"
-      style="font-size: 16px;"
-      text-anchor="middle"
-      y="62"
-    >
-      Cooling
-    </text>
   </g>
   <g
     class="group"
@@ -76,14 +68,6 @@ exports[`Bubble > renders bubble chart with pulsing circles 1`] = `
         Lighting — 1.20 kg CO₂e [2]
       </title>
     </circle>
-    <text
-      class="fill-slate-200 font-medium"
-      style="font-size: 13px;"
-      text-anchor="middle"
-      y="46.09845356715714"
-    >
-      Lighting
-    </text>
   </g>
   <text
     class="fill-slate-400"

@@ -17,6 +17,8 @@ from typing import Dict, List, Optional, Literal, Sequence, Set, Tuple
 import pandas as pd
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from .dal.aliases import remap_record
+
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
 
@@ -36,6 +38,9 @@ UNIT_REGISTRY = set(_units_df[_unit_column].dropna().astype(str))
 _csv_cache: Dict[Path, Tuple[int, pd.DataFrame]] = {}
 
 
+BASE_MODEL_CONFIG = ConfigDict(populate_by_name=True, extra="ignore")
+
+
 def _load_csv(path: Path, model: type[BaseModel]) -> tuple[BaseModel, ...]:
     mtime_ns = path.stat().st_mtime_ns
     cached = _csv_cache.get(path)
@@ -46,7 +51,7 @@ def _load_csv(path: Path, model: type[BaseModel]) -> tuple[BaseModel, ...]:
         df = df.where(pd.notnull(df), None)
         _csv_cache[path] = (mtime_ns, df)
         df = df.copy(deep=True)
-    records = df.to_dict(orient="records")
+    records = (remap_record(row) for row in df.to_dict(orient="records"))
     return tuple(model(**row) for row in records)
 
 
@@ -153,8 +158,11 @@ class Activity(BaseModel):
     description: Optional[str] = None
     unit_definition: Optional[str] = None
     notes: Optional[str] = None
+    sector: Optional[str] = Field(default=None, alias="segment")
+    sector_name: Optional[str] = Field(default=None, alias="segment_name")
+    sector_id: Optional[str] = Field(default=None, alias="segment_id")
 
-    model_config = ConfigDict(extra="ignore")
+    model_config = BASE_MODEL_CONFIG
 
     @model_validator(mode="after")
     def check_unit(self):
@@ -190,7 +198,7 @@ class FunctionalUnit(BaseModel):
     si_equiv: Optional[str] = None
     notes: Optional[str] = None
 
-    model_config = ConfigDict(extra="ignore")
+    model_config = BASE_MODEL_CONFIG
 
 
 class ActivityFunctionalUnitMap(BaseModel):
@@ -199,7 +207,7 @@ class ActivityFunctionalUnitMap(BaseModel):
     conversion_formula: Optional[str] = None
     assumption_notes: Optional[str] = None
 
-    model_config = ConfigDict(extra="ignore")
+    model_config = BASE_MODEL_CONFIG
 
 
 class EmissionFactor(BaseModel):
@@ -221,7 +229,7 @@ class EmissionFactor(BaseModel):
     uncert_low_g_per_unit: Optional[float] = None
     uncert_high_g_per_unit: Optional[float] = None
 
-    model_config = ConfigDict(extra="ignore")
+    model_config = BASE_MODEL_CONFIG
 
     @model_validator(mode="after")
     def check_bounds(self):  # noqa: C901 - simple validator
@@ -289,7 +297,7 @@ class Profile(BaseModel):
     assumption_notes: Optional[str] = None
     default_grid_region: Optional[RegionCode] = Field(default=None, alias="region_code_default")
 
-    model_config = ConfigDict(populate_by_name=True, extra="ignore")
+    model_config = BASE_MODEL_CONFIG
 
 
 class Entity(BaseModel):
@@ -299,7 +307,7 @@ class Entity(BaseModel):
     parent_entity_id: Optional[str] = None
     notes: Optional[str] = None
 
-    model_config = ConfigDict(extra="ignore")
+    model_config = BASE_MODEL_CONFIG
 
 
 class Site(BaseModel):
@@ -311,7 +319,7 @@ class Site(BaseModel):
     lon: Optional[float] = None
     notes: Optional[str] = None
 
-    model_config = ConfigDict(extra="ignore")
+    model_config = BASE_MODEL_CONFIG
 
 
 class Asset(BaseModel):
@@ -324,7 +332,7 @@ class Asset(BaseModel):
     fuel_type: Optional[str] = None
     notes: Optional[str] = None
 
-    model_config = ConfigDict(extra="ignore")
+    model_config = BASE_MODEL_CONFIG
 
 
 class Operation(BaseModel):
@@ -339,7 +347,7 @@ class Operation(BaseModel):
     throughput_unit: Optional[str] = None
     notes: Optional[str] = None
 
-    model_config = ConfigDict(extra="ignore")
+    model_config = BASE_MODEL_CONFIG
 
 
 class ActivityDependency(BaseModel):
@@ -348,7 +356,7 @@ class ActivityDependency(BaseModel):
     share: float
     notes: Optional[str] = None
 
-    model_config = ConfigDict(extra="ignore")
+    model_config = BASE_MODEL_CONFIG
 
     @model_validator(mode="after")
     def validate_share(self):
@@ -378,7 +386,7 @@ class ActivitySchedule(BaseModel):
     viewers: Optional[float] = None
     servings: Optional[float] = None
 
-    model_config = ConfigDict(populate_by_name=True, extra="ignore")
+    model_config = BASE_MODEL_CONFIG
 
     @model_validator(mode="after")
     def check_freq(self):
@@ -398,7 +406,7 @@ class GridIntensity(BaseModel):
     source_id: Optional[str] = None
     vintage_year: Optional[int] = None
 
-    model_config = ConfigDict(populate_by_name=True, extra="ignore")
+    model_config = BASE_MODEL_CONFIG
 
 
 # Loader helpers
@@ -648,4 +656,4 @@ class FeedbackLoop(BaseModel):
     source_id: Optional[str] = None
     notes: Optional[str] = None
 
-    model_config = ConfigDict(extra="ignore")
+    model_config = BASE_MODEL_CONFIG

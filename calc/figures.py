@@ -11,6 +11,7 @@ from pathlib import Path
 import pandas as pd
 import yaml
 
+from .dal.aliases import coalesce_alias_columns, remap_columns
 from .schema import Activity, FeedbackLoop, LayerId
 
 CONFIG_PATH = Path(__file__).parent / "config.yaml"
@@ -143,6 +144,13 @@ def _normalise_layer(value: Any) -> str | None:
     return str(value)
 
 
+def _normalise_sector(value: Any) -> str | None:
+    if value is None or (isinstance(value, float) and pd.isna(value)):
+        return None
+    text = str(value).strip()
+    return text or None
+
+
 def _layer_rank(value: str | None) -> int:
     if value in LAYER_ORDER:
         return LAYER_ORDER.index(value)
@@ -178,19 +186,29 @@ def slice_stacked(
             "layer_id",
         ],
     ).copy()
+    frame = coalesce_alias_columns(frame)
+    frame = frame.rename(columns=remap_columns(frame.columns))
+    has_sector = "sector" in frame.columns
     frame["activity_category"] = frame["activity_category"].map(_normalise_category)
     frame["layer_id"] = frame["layer_id"].map(_normalise_layer)
+    if has_sector:
+        frame["sector"] = frame["sector"].map(_normalise_sector)
     value_columns = _value_columns(frame)
+    group_keys = ["layer_id", "activity_category"]
+    if has_sector:
+        group_keys.insert(1, "sector")
     aggregated = (
-        frame.groupby(["layer_id", "activity_category"], dropna=False)[value_columns]
-        .sum(min_count=1)
-        .reset_index()
+        frame.groupby(group_keys, dropna=False)[value_columns].sum(min_count=1).reset_index()
     )
     aggregated["_layer_rank"] = aggregated["layer_id"].map(_layer_rank)
-    aggregated = aggregated.sort_values(
-        ["_layer_rank", "layer_id", "activity_category", "annual_emissions_g"],
-        ascending=[True, True, True, False],
-    )
+    sort_keys = ["_layer_rank", "layer_id"]
+    if has_sector:
+        sort_keys.append("sector")
+    sort_keys.extend(["activity_category", "annual_emissions_g"])
+    ascending = [True] * len(sort_keys)
+    if ascending:
+        ascending[-1] = False
+    aggregated = aggregated.sort_values(sort_keys, ascending=ascending)
 
     results: list[dict] = []
     for _, row in aggregated.iterrows():
@@ -199,14 +217,17 @@ def slice_stacked(
             continue
         layer = _normalise_layer(row.get("layer_id"))
         category = row["activity_category"]
+        sector = row.get("sector") if has_sector else None
+        category_key = sector if sector is not None else category
         entry = {
             "layer_id": layer,
             "category": category,
+            "sector": sector,
             "values": values,
             "units": dict(ANNUAL_EMISSIONS_UNITS),
         }
         if reference_map is not None:
-            payload = reference_map.get((layer, category))
+            payload = reference_map.get((layer, category_key))
             if payload:
                 keys, indices = payload
                 if keys:
@@ -222,6 +243,7 @@ class BubblePoint:
     activity_id: str
     activity_name: str
     category: str | None
+    sector: str | None
     layer_id: str | None
     values: dict
     units: dict[str, str]
@@ -245,33 +267,34 @@ def slice_bubble(
             "layer_id",
         ],
     ).copy()
+    frame = coalesce_alias_columns(frame)
+    frame = frame.rename(columns=remap_columns(frame.columns))
+    has_sector = "sector" in frame.columns
     frame["activity_name"] = frame.apply(
         lambda row: row["activity_name"] if row["activity_name"] else row["activity_id"],
         axis=1,
     )
     frame["activity_category"] = frame["activity_category"].map(_normalise_category)
     frame["layer_id"] = frame["layer_id"].map(_normalise_layer)
+    if has_sector:
+        frame["sector"] = frame["sector"].map(_normalise_sector)
 
     value_columns = _value_columns(frame)
+    group_keys = ["layer_id", "activity_id", "activity_name", "activity_category"]
+    if has_sector:
+        group_keys.insert(3, "sector")
     aggregated = (
-        frame.groupby(
-            ["layer_id", "activity_id", "activity_name", "activity_category"],
-            dropna=False,
-        )[value_columns]
-        .sum(min_count=1)
-        .reset_index()
+        frame.groupby(group_keys, dropna=False)[value_columns].sum(min_count=1).reset_index()
     )
     aggregated["_layer_rank"] = aggregated["layer_id"].map(_layer_rank)
-    aggregated = aggregated.sort_values(
-        [
-            "_layer_rank",
-            "layer_id",
-            "activity_id",
-            "activity_name",
-            "annual_emissions_g",
-        ],
-        ascending=[True, True, True, True, False],
-    )
+    sort_keys = ["_layer_rank", "layer_id", "activity_id", "activity_name"]
+    if has_sector:
+        sort_keys.append("sector")
+    sort_keys.append("annual_emissions_g")
+    ascending = [True] * len(sort_keys)
+    if ascending:
+        ascending[-1] = False
+    aggregated = aggregated.sort_values(sort_keys, ascending=ascending)
 
     results: list[BubblePoint] = []
     for _, row in aggregated.iterrows():
@@ -279,6 +302,7 @@ def slice_bubble(
         if values is None:
             continue
         layer = _normalise_layer(row.get("layer_id"))
+        sector = row.get("sector") if has_sector else None
         ref_keys: list[str] | None = None
         ref_indices: list[int] | None = None
         if reference_map is not None:
@@ -291,6 +315,7 @@ def slice_bubble(
                 activity_id=str(row["activity_id"]),
                 activity_name=str(row["activity_name"]),
                 category=row["activity_category"],
+                sector=sector,
                 layer_id=layer,
                 values=values,
                 units=dict(ANNUAL_EMISSIONS_UNITS),
@@ -348,33 +373,40 @@ def slice_sankey(
             "layer_id",
         ],
     ).copy()
+    frame = coalesce_alias_columns(frame)
+    frame = frame.rename(columns=remap_columns(frame.columns))
+    has_sector = "sector" in frame.columns
     frame["activity_name"] = frame.apply(
         lambda row: row["activity_name"] if row["activity_name"] else row["activity_id"],
         axis=1,
     )
     frame["activity_category"] = frame["activity_category"].map(_normalise_category)
     frame["layer_id"] = frame["layer_id"].map(_normalise_layer)
+    if has_sector:
+        frame["sector"] = frame["sector"].map(_normalise_sector)
 
     value_columns = _value_columns(frame)
     aggregated = (
         frame.groupby(
-            ["layer_id", "activity_category", "activity_id", "activity_name"], dropna=False
+            (
+                ["layer_id", "activity_category", "activity_id", "activity_name"]
+                if not has_sector
+                else ["layer_id", "sector", "activity_category", "activity_id", "activity_name"]
+            ),
+            dropna=False,
         )[value_columns]
         .sum(min_count=1)
         .reset_index()
     )
     aggregated["_layer_rank"] = aggregated["layer_id"].map(_layer_rank)
-    aggregated = aggregated.sort_values(
-        [
-            "_layer_rank",
-            "layer_id",
-            "activity_category",
-            "activity_id",
-            "activity_name",
-            "annual_emissions_g",
-        ],
-        ascending=[True, True, True, True, True, False],
-    )
+    sort_keys = ["_layer_rank", "layer_id"]
+    if has_sector:
+        sort_keys.append("sector")
+    sort_keys.extend(["activity_category", "activity_id", "activity_name", "annual_emissions_g"])
+    ascending = [True] * len(sort_keys)
+    if ascending:
+        ascending[-1] = False
+    aggregated = aggregated.sort_values(sort_keys, ascending=ascending)
 
     nodes: dict[tuple[str, str], dict] = {}
     two_stage_nodes: dict[str, dict] = {}
@@ -427,7 +459,9 @@ def slice_sankey(
         if values is None:
             continue
         layer = _normalise_layer(row.get("layer_id"))
-        category_label = str(row["activity_category"])
+        raw_category = row["activity_category"]
+        sector = row.get("sector") if has_sector else None
+        category_label = str(sector) if sector is not None else str(raw_category)
         activity_label = str(row["activity_name"])
         activity_id = str(row["activity_id"])
         source = _ensure_node("category", category_label)
@@ -436,7 +470,8 @@ def slice_sankey(
             "source": source["id"],
             "target": target["id"],
             "activity_id": activity_id,
-            "category": category_label,
+            "category": raw_category,
+            "sector": sector,
             "layer_id": layer,
             "values": values,
             "units": dict(ANNUAL_EMISSIONS_UNITS),
@@ -482,7 +517,8 @@ def slice_sankey(
                 "source": operation_node_id,
                 "target": activity_node_id,
                 "activity_id": activity_id,
-                "category": category_label,
+                "category": raw_category,
+                "sector": sector,
                 "layer_id": layer,
                 "values": link_values,
                 "units": dict(ANNUAL_EMISSIONS_UNITS),

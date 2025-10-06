@@ -18,6 +18,7 @@ from ..schema import (
     Profile,
     Site,
 )
+from .aliases import remap_record
 
 DATA_DIR = Path(__file__).resolve().parents[2] / "data"
 
@@ -25,7 +26,7 @@ DATA_DIR = Path(__file__).resolve().parents[2] / "data"
 def _load_csv(path: Path) -> List[dict]:
     df = pd.read_csv(path, dtype=object)
     df = df.where(pd.notnull(df), None)
-    return df.to_dict(orient="records")
+    return [remap_record(row) for row in df.to_dict(orient="records")]
 
 
 class CsvStore:
