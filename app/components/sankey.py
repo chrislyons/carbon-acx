@@ -262,7 +262,6 @@ def build_figure(
                 color=colors,
                 pad=18,
                 thickness=20,
-                textfont=dict(size=font_sizes),
             ),
             link=dict(
                 source=sources,
