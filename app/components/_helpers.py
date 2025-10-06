@@ -48,8 +48,8 @@ def _is_na_label(value: object) -> bool:
     return text in _NA_LABELS
 
 
-def has_na_segments(payload: Mapping | None) -> bool:
-    """Return ``True`` when the payload contains NA-labelled segments."""
+def has_na_sectors(payload: Mapping | None) -> bool:
+    """Return ``True`` when the payload contains NA-labelled sectors."""
 
     if not isinstance(payload, Mapping):
         return False
@@ -209,7 +209,7 @@ __all__ = [
     "format_reference_line",
     "format_source_summary",
     "format_reference_hint",
-    "has_na_segments",
+    "has_na_sectors",
     "primary_reference_index",
     "reference_numbers",
     "truncate_label",

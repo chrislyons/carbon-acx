@@ -1363,14 +1363,14 @@ def create_app() -> Dash:
         if not active_activity:
             return agency_strip.render(None)
 
-        segments = breakdown_for_activity(active_activity, dependency_map_value)
-        if not segments:
+        sectors = breakdown_for_activity(active_activity, dependency_map_value)
+        if not sectors:
             return agency_strip.render(
                 None,
                 empty_message="No upstream agency data available for this activity.",
             )
 
-        return agency_strip.render(segments)
+        return agency_strip.render(sectors)
 
     @app.callback(
         Output("chart-badges", "children"),
