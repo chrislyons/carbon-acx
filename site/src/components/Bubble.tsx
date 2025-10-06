@@ -13,6 +13,7 @@ export interface BubbleDatum extends ReferenceCarrier {
   activity_id?: string | null;
   activity_name?: string | null;
   category?: string | null;
+  sector?: string | null;
   values?: {
     mean?: number | null;
   } | null;

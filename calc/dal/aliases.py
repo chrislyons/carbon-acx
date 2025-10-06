@@ -17,6 +17,7 @@ def _is_missing(value: object) -> bool:
     except Exception:  # pragma: no cover - defensive fallback
         return False
 
+
 TERM_ALIASES: dict[str, str] = {
     "segment": "sector",
     "segment_id": "sector_id",
@@ -107,4 +108,3 @@ __all__ = [
     "remap_columns",
     "remap_record",
 ]
-

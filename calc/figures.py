@@ -198,9 +198,7 @@ def slice_stacked(
     if has_sector:
         group_keys.insert(1, "sector")
     aggregated = (
-        frame.groupby(group_keys, dropna=False)[value_columns]
-        .sum(min_count=1)
-        .reset_index()
+        frame.groupby(group_keys, dropna=False)[value_columns].sum(min_count=1).reset_index()
     )
     aggregated["_layer_rank"] = aggregated["layer_id"].map(_layer_rank)
     sort_keys = ["_layer_rank", "layer_id"]
@@ -286,9 +284,7 @@ def slice_bubble(
     if has_sector:
         group_keys.insert(3, "sector")
     aggregated = (
-        frame.groupby(group_keys, dropna=False)[value_columns]
-        .sum(min_count=1)
-        .reset_index()
+        frame.groupby(group_keys, dropna=False)[value_columns].sum(min_count=1).reset_index()
     )
     aggregated["_layer_rank"] = aggregated["layer_id"].map(_layer_rank)
     sort_keys = ["_layer_rank", "layer_id", "activity_id", "activity_name"]

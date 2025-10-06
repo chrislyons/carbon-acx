@@ -66,4 +66,3 @@ def test_alias_reads_match_for_segment_and_sector() -> None:
 
     sankey_nodes = canonical_segment["sankey"]["nodes"]
     assert all("segment" not in json.dumps(node) for node in sankey_nodes)
-
