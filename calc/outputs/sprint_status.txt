@@ -1,0 +1,31 @@
+[Summary]
+build_id: 7e4af6717ca0
+dataset_version: v1.2
+tests_passed: False
+
+[Missing Deliverables]
+- calc/outputs/audit_report.csv
+- dist/artifacts/manifests/ (expected manifest JSON payloads)
+- dist/artifacts/figures/ (no rendered figures)
+- dist/artifacts/references/ (should mirror calc/outputs/sources_archive)
+
+[Duplicate or Orphaned Entries]
+- data/activity_schedule.csv references CONF.HD.PER_PARTICIPANT_HOUR, which is absent from data/activities.csv
+- data/emission_factors.csv contains duplicate activity/layer/region combinations for clothing wear-and-tear factors and TRAN.DELIVERY.TRUCK.CLASS6.KM
+- calc/outputs/seeding_log.txt has no resolvable linkage to audit outcomes because calc/outputs/audit_report.csv is missing
+
+[Omissions or Empty Tables]
+- data/sectors.csv is missing entirely; sector enumeration cannot be validated
+- calc/outputs/validation_summary.txt omits the required "tests_passed: True" indicator
+- data/profiles.csv columns grid_mix_json and cohort_id are empty for all rows
+
+[Citation Discrepancies]
+- data/sources.csv defines 63 unique source_id values but calc/outputs/references_master.txt only lists 55 citations
+- calc/outputs/references_master.txt duplicates every URL, violating the uniqueness requirement for references
+
+[Sector Mismatches]
+- data/activities.csv, data/emission_factors.csv, and data/profiles.csv lack sector_id columns despite schema mandate
+- dist/artifacts/manifest.json contains no artifact entries tied to sectors, preventing sector crosswalk validation
+
+[Overall Verdict]
+FAILED
