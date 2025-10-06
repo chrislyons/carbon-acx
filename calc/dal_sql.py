@@ -82,7 +82,7 @@ class SqlStore:
     def load_activities(self) -> Sequence[Activity]:
         rows = self._fetch_all(
             """
-            SELECT activity_id, layer_id, category, name, default_unit,
+            SELECT activity_id, sector_id, layer_id, category, name, default_unit,
                    description, unit_definition, notes
             FROM activities
             WHERE notes IS NULL OR notes != ?
@@ -95,7 +95,7 @@ class SqlStore:
     def load_emission_factors(self) -> Sequence[EmissionFactor]:
         rows = self._fetch_all(
             """
-            SELECT ef_id, activity_id, layer_id, unit, value_g_per_unit, is_grid_indexed,
+            SELECT ef_id, sector_id, activity_id, layer_id, unit, value_g_per_unit, is_grid_indexed,
                    electricity_kwh_per_unit, electricity_kwh_per_unit_low,
                    electricity_kwh_per_unit_high, region, scope_boundary,
                    gwp_horizon, vintage_year, source_id, method_notes,
@@ -109,7 +109,7 @@ class SqlStore:
     def load_profiles(self) -> Sequence[Profile]:
         rows = self._fetch_all(
             """
-            SELECT profile_id, layer_id, name, region_code_default, grid_strategy,
+            SELECT profile_id, sector_id, layer_id, name, region_code_default, grid_strategy,
                    grid_mix_json, cohort_id, office_days_per_week, assumption_notes
             FROM profiles
             ORDER BY profile_id
@@ -121,6 +121,7 @@ class SqlStore:
         rows = self._fetch_all(
             """
             SELECT profile_id,
+                   sector_id,
                    activity_id,
                    layer_id,
                    quantity_per_week,

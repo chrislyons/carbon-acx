@@ -20,7 +20,11 @@ PLACEHOLDER_NOTE = "__IMPORT_PLACEHOLDER__"
 
 BOOLEAN_COLUMNS: dict[str, tuple[str, ...]] = {
     "emission_factors": ("is_grid_indexed",),
-    "activity_schedule": ("office_days_only",),
+    "activity_schedule": (
+        "office_days_only",
+        "office_only",
+        "use_canada_average",
+    ),
 }
 
 FLOAT_COLUMNS: dict[str, tuple[str, ...]] = {
@@ -55,6 +59,7 @@ VALIDATORS: dict[str, type[BaseModel]] = {
 TABLE_ORDER = [
     "sources",
     "units",
+    "sectors",
     "activities",
     "profiles",
     "emission_factors",
@@ -71,9 +76,10 @@ def _ensure_activity_placeholders(
         if activity_id is None or activity_id in existing_ids:
             continue
         layer_id = row.get("layer_id")
+        sector_id = row.get("sector_id")
         conn.execute(
-            "INSERT INTO activities (activity_id, layer_id, notes) VALUES (?, ?, ?)",
-            (activity_id, layer_id, PLACEHOLDER_NOTE),
+            "INSERT INTO activities (activity_id, sector_id, layer_id, notes) VALUES (?, ?, ?, ?)",
+            (activity_id, sector_id, layer_id, PLACEHOLDER_NOTE),
         )
         existing_ids.add(activity_id)
 
@@ -178,6 +184,7 @@ def _clear_tables(conn, backend: str) -> None:
         "grid_intensity",
         "profiles",
         "activities",
+        "sectors",
         "units",
         "sources",
     ]

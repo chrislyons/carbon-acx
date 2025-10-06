@@ -1,0 +1,8 @@
+IEEE Citation:
+[11] Demo, “Demonstration reference,” 2025. Available: https://example.org/demo
+
+URL:
+https://example.org/demo
+
+Access Status:
+offline snapshot required

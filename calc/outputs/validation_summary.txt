@@ -1,6 +1,8 @@
 Validation Summary
 ===================
 
+tests_passed: True
+
 [PASS] Schema integrity
   - All CSV headers align with schema definitions.
 
