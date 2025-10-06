@@ -1,5 +1,7 @@
 # Carbon ACX
 
+> **Current dataset version:** v1.2
+
 Carbon ACX is an open reference stack for building trustworthy carbon accounting datasets and presenting them as polished digital experiences. It shows how to move from raw activity records to public-ready disclosures without losing transparency along the way.
 
 ---

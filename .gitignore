@@ -3,8 +3,12 @@ __pycache__/
 .venv/
 .poetry/
 build/
-dist/
+dist/*
+!dist/artifacts/
+dist/artifacts/*
+!dist/artifacts/manifest.json
 calc/outputs/*
+!calc/outputs/governance_log.txt
 !calc/outputs/references_master.txt
 !calc/outputs/ambiguity_flags.csv
 !calc/outputs/data_quality_summary.txt
