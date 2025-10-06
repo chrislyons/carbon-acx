@@ -22,6 +22,57 @@ const jsonArtifactCache = new Map<string, unknown>();
 const textArtifactCache = new Map<string, string>();
 const referenceListCache = new Map<string, string[]>();
 
+function normaliseWhitespace(value: string): string {
+  return value.replace(/\s+/g, ' ').trim();
+}
+
+export function parseReferenceList(text: string): string[] {
+  const trimmed = text.trim();
+  if (!trimmed) {
+    return [];
+  }
+
+  const fallback = trimmed
+    .split('\n')
+    .map((entry) => entry.trim())
+    .filter((entry) => entry.length > 0);
+
+  const htmlIndicator = /<(!doctype|html|head|body|ol|ul|li)\b/i;
+  if (!htmlIndicator.test(trimmed)) {
+    return fallback.map(normaliseWhitespace);
+  }
+
+  if (typeof DOMParser === 'undefined') {
+    return fallback.map(normaliseWhitespace);
+  }
+
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(trimmed, 'text/html');
+    const listItems = Array.from(doc.querySelectorAll('ol li, ul li'));
+    const references = listItems
+      .map((item) => item.textContent ?? '')
+      .map(normaliseWhitespace)
+      .filter((entry) => entry.length > 0);
+
+    if (references.length > 0) {
+      return references;
+    }
+
+    const bodyText = doc.body?.textContent ?? '';
+    if (bodyText.trim().length === 0) {
+      return fallback.map(normaliseWhitespace);
+    }
+
+    return bodyText
+      .split('\n')
+      .map(normaliseWhitespace)
+      .filter((entry) => entry.length > 0);
+  } catch {
+    return fallback.map(normaliseWhitespace);
+  }
+}
+
 interface ArtifactIndexEntry {
   path?: string;
 }
@@ -280,11 +331,7 @@ async function loadComputeArtifacts(signal?: AbortSignal): Promise<ComputeResult
     loadArtifactText(referencesPath, signal)
   ]);
 
-  const references = referenceListCache.get(referencesPath) ??
-    referencesText
-      .split('\n')
-      .map((entry) => entry.trim())
-      .filter((entry) => entry.length > 0);
+  const references = referenceListCache.get(referencesPath) ?? parseReferenceList(referencesText);
 
   if (!referenceListCache.has(referencesPath)) {
     referenceListCache.set(referencesPath, references);
