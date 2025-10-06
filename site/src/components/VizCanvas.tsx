@@ -342,9 +342,11 @@ function aggregateBubbleByCategory(data: readonly BubbleDatum[]): BubbleDatum[] 
     if (mean == null || !Number.isFinite(mean) || mean <= 0) {
       return;
     }
-    const category =
+    const baseCategory =
       typeof row?.category === 'string' && row.category ? row.category : 'Other';
-    let bucket = buckets.get(category);
+    const sectorLabel =
+      typeof row?.sector === 'string' && row.sector ? row.sector : baseCategory;
+    let bucket = buckets.get(sectorLabel);
     if (!bucket) {
       bucket = {
         total: 0,
@@ -352,7 +354,7 @@ function aggregateBubbleByCategory(data: readonly BubbleDatum[]): BubbleDatum[] 
         hoverIndices: new Set<number>(),
         units: row?.units ?? null
       };
-      buckets.set(category, bucket);
+      buckets.set(sectorLabel, bucket);
     }
     bucket.total += mean;
     if (!bucket.units && row?.units) {
@@ -373,7 +375,7 @@ function aggregateBubbleByCategory(data: readonly BubbleDatum[]): BubbleDatum[] 
   });
   const entries = Array.from(buckets.entries());
   entries.sort((a, b) => b[1].total - a[1].total);
-  return entries.map(([category, bucket], index) => {
+  return entries.map(([sectorLabel, bucket], index) => {
     const citation_keys =
       bucket.citationKeys.size > 0 ? Array.from(bucket.citationKeys) : undefined;
     const hover_reference_indices =
@@ -382,9 +384,10 @@ function aggregateBubbleByCategory(data: readonly BubbleDatum[]): BubbleDatum[] 
         : undefined;
     return {
       layer_id: null,
-      activity_id: `category:${category}:${index}`,
-      activity_name: category,
-      category,
+      activity_id: `category:${sectorLabel}:${index}`,
+      activity_name: sectorLabel,
+      category: sectorLabel,
+      sector: sectorLabel,
       values: { mean: bucket.total },
       units: bucket.units ?? undefined,
       citation_keys,
@@ -741,7 +744,7 @@ export function VizCanvas({ stage }: VizCanvasProps): JSX.Element {
 
   const stageStackedData = useMemo(
     () =>
-      stage === 'segment'
+      stage === 'sector'
         ? aggregateStackedByLayer(rawStacked, activeLayerSet, layerTitleLookup)
         : stackedData,
     [stage, rawStacked, activeLayerSet, layerTitleLookup, stackedData]
@@ -762,7 +765,7 @@ export function VizCanvas({ stage }: VizCanvasProps): JSX.Element {
 
   const stageSankeyData = useMemo(
     () =>
-      stage === 'segment'
+      stage === 'sector'
         ? buildLayerSankey(rawSankey, activeLayerSet, layerTitleLookup)
         : sankeyData,
     [stage, rawSankey, activeLayerSet, layerTitleLookup, sankeyData]
@@ -799,29 +802,29 @@ export function VizCanvas({ stage }: VizCanvasProps): JSX.Element {
   const resolvedTotal = totals.total ?? stackedTotal ?? bubbleTotal ?? sankeyTotal ?? null;
 
   const focusLabel =
-    stage === 'segment' ? 'Segments tracked' : stage === 'profile' ? 'Categories tracked' : 'Activities tracked';
-  const stackedShareLabel = stage === 'segment' ? 'segment portfolio' : 'tracked categories';
+    stage === 'sector' ? 'Sectors tracked' : stage === 'profile' ? 'Categories tracked' : 'Activities tracked';
+  const stackedShareLabel = stage === 'sector' ? 'sector portfolio' : 'tracked categories';
   const bubbleShareLabel =
-    stage === 'segment' ? 'segment emissions' : stage === 'profile' ? 'category emissions' : 'activity emissions';
-  const sankeyShareLabel = stage === 'segment' ? 'segment flow' : 'mapped flow';
+    stage === 'sector' ? 'sector emissions' : stage === 'profile' ? 'category emissions' : 'activity emissions';
+  const sankeyShareLabel = stage === 'sector' ? 'sector flow' : 'mapped flow';
   const feedbackShareLabel = 'feedback intensity';
-  const stackedPanelTitle = stage === 'segment' ? 'Annual emissions by segment' : 'Annual emissions by category';
+  const stackedPanelTitle = stage === 'sector' ? 'Annual emissions by sector' : 'Annual emissions by category';
   const bubblePanelTitle =
-    stage === 'segment'
-      ? 'Segment emissions bubble chart'
+    stage === 'sector'
+      ? 'Sector emissions bubble chart'
       : stage === 'profile'
         ? 'Category emissions bubble chart'
         : 'Activity emissions bubble chart';
-  const sankeyPanelTitle = stage === 'segment' ? 'Segment emission pathways' : 'Emission pathways';
+  const sankeyPanelTitle = stage === 'sector' ? 'Sector emission pathways' : 'Emission pathways';
   const feedbackPanelTitle = 'Feedback loops';
-  const stackedEmptyMessage = stage === 'segment' ? 'No segment data available.' : 'No category data available.';
+  const stackedEmptyMessage = stage === 'sector' ? 'No sector data available.' : 'No category data available.';
   const bubbleEmptyMessage =
-    stage === 'segment'
-      ? 'No segment data available.'
+    stage === 'sector'
+      ? 'No sector data available.'
       : stage === 'profile'
         ? 'No category data available.'
         : 'No activity data available.';
-  const sankeyEmptyMessage = stage === 'segment' ? 'No segment flow data available.' : 'No sankey data available.';
+  const sankeyEmptyMessage = stage === 'sector' ? 'No sector flow data available.' : 'No sankey data available.';
   const feedbackEmptyMessage = 'No feedback loop data available.';
 
   const stackedSummary = useMemo(() => {
@@ -833,8 +836,10 @@ export function VizCanvas({ stage }: VizCanvasProps): JSX.Element {
             if (mean == null || !Number.isFinite(mean) || mean <= 0) {
               return null;
             }
+            const sectorLabel = typeof row?.sector === 'string' && row.sector ? row.sector : null;
             const category = typeof row?.category === 'string' && row.category ? row.category : 'Uncategorized';
-            return { id: `${category}-${index}`, label: category, value: mean };
+            const label = sectorLabel ?? category;
+            return { id: `${label}-${index}`, label, value: mean };
           })
           .filter((entry): entry is { id: string; label: string; value: number } => entry !== null)
       : [];

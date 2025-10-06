@@ -139,7 +139,7 @@ export function ProfileControls(): JSX.Element {
     [commitStreamingHours]
   );
 
-  const modeSegments = useMemo(() => {
+  const modeShares = useMemo(() => {
     const entries = Object.entries(modeSplit) as [keyof ModeSplit, number][];
     return entries.map(([key, value]) => {
       const metadata = MODE_METADATA[key];
@@ -149,8 +149,8 @@ export function ProfileControls(): JSX.Element {
   }, [modeSplit.car, modeSplit.transit, modeSplit.bike, commuteDays]);
 
   const allocatedDays = useMemo(
-    () => modeSegments.reduce((sum, segment) => sum + segment.days, 0),
-    [modeSegments]
+    () => modeShares.reduce((sum, share) => sum + share.days, 0),
+    [modeShares]
   );
 
   const handleModeSplitDayChange = useCallback(
@@ -223,7 +223,7 @@ export function ProfileControls(): JSX.Element {
                 </span>
               </div>
               <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
-                {modeSegments.map(({ key, value, metadata }) => (
+                {modeShares.map(({ key, value, metadata }) => (
                   <div
                     key={key}
                     className={`${metadata.color} h-full`}
@@ -233,7 +233,7 @@ export function ProfileControls(): JSX.Element {
                 ))}
               </div>
               <div className="grid gap-[var(--gap-1)] sm:grid-cols-2">
-                {modeSegments.map(({ key, value, metadata, days }) => (
+                {modeShares.map(({ key, value, metadata, days }) => (
                   <div key={key} className="space-y-[var(--gap-0)] rounded-lg border border-slate-800/70 bg-slate-900/60 pad-compact">
                     <div className="flex items-center justify-between gap-[var(--gap-0)]">
                       <div>
@@ -335,7 +335,7 @@ export function ProfileControls(): JSX.Element {
           <div className="col-span-2 space-y-[var(--gap-1)] rounded-xl border border-slate-800/70 bg-slate-950/30 p-[var(--gap-1)] text-compact text-slate-400">
             <p className="text-[13px] font-semibold text-slate-200">Live overrides</p>
             <dl className="grid gap-[var(--gap-0)] md:grid-cols-2">
-              {modeSegments.map(({ key, value, metadata }) => (
+              {modeShares.map(({ key, value, metadata }) => (
                 <Fragment key={`override-${key}`}>
                   <dt className="text-[10px] uppercase tracking-[0.3em] text-slate-300">{metadata.label} days/wk</dt>
                   <dd className="text-[13px] font-semibold text-slate-200">

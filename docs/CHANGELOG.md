@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- _No changes yet._
+- Schema v1.2 — 'segment' → 'sector' (dual-read, write-sector).
 
 ## v1.2 - 2025-10-06
 

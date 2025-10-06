@@ -70,6 +70,8 @@ const PADDING_Y = 40;
 const MAX_LINK_WIDTH = 26;
 const NODE_LABEL_MIN_FONT = 11;
 const NODE_LABEL_MAX_FONT = 16;
+const NODE_LABEL_MAX_LINES = 3;
+const NODE_LABEL_PADDING = 18;
 const NODE_VALUE_FONT = 10;
 
 const CATEGORY_COLORS = [
@@ -81,13 +83,41 @@ const CATEGORY_COLORS = [
   '#f97316'
 ];
 
-function computeNodeLabelFont(label: string): number {
-  const trimmed = label?.trim() ?? '';
-  const length = Math.max(trimmed.length, 6);
-  const available = NODE_WIDTH - 24;
-  const approximate = available / (length * 0.5);
-  const bounded = Math.max(NODE_LABEL_MIN_FONT, Math.min(NODE_LABEL_MAX_FONT, approximate));
-  return Math.round(bounded);
+function wrapNodeLabel(label: string | null | undefined): { lines: string[]; fontSize: number } {
+  const raw = typeof label === 'string' ? label.trim() : '';
+  const safeLabel = raw.length > 0 ? raw : '—';
+  const words = safeLabel.split(/\s+/);
+  const maxWidth = NODE_WIDTH - NODE_LABEL_PADDING;
+  const estimateWidth = (text: string, fontSize: number) => text.length * fontSize * 0.55;
+
+  const layoutForFont = (fontSize: number) => {
+    const lines: string[] = [];
+    let current = '';
+    words.forEach((word) => {
+      const candidate = current ? `${current} ${word}` : word;
+      if (estimateWidth(candidate, fontSize) <= maxWidth || !current) {
+        current = candidate;
+      } else {
+        lines.push(current);
+        current = word;
+      }
+    });
+    if (current) {
+      lines.push(current);
+    }
+    return lines;
+  };
+
+  for (let fontSize = NODE_LABEL_MAX_FONT; fontSize >= NODE_LABEL_MIN_FONT; fontSize -= 1) {
+    const lines = layoutForFont(fontSize);
+    const fitsWidth = lines.every((line) => estimateWidth(line, fontSize) <= maxWidth * 1.02);
+    if (lines.length <= NODE_LABEL_MAX_LINES && fitsWidth) {
+      return { lines, fontSize };
+    }
+  }
+
+  const fallbackLines = layoutForFont(NODE_LABEL_MIN_FONT);
+  return { lines: fallbackLines.slice(0, NODE_LABEL_MAX_LINES), fontSize: NODE_LABEL_MIN_FONT };
 }
 
 export function Sankey({
@@ -301,8 +331,11 @@ export function Sankey({
           const active =
             hoveredNode === node.id ||
             (!!activeLink && (activeLink.source.id === node.id || activeLink.target.id === node.id));
-          const labelFontSize = computeNodeLabelFont(node.label);
-          const valueFontSize = Math.max(NODE_VALUE_FONT, Math.round(labelFontSize - 2));
+          const { lines, fontSize } = wrapNodeLabel(node.label);
+          const lineHeight = fontSize * 1.2;
+          const contentHeight = lineHeight * lines.length;
+          const startY = NODE_HEIGHT / 2 - contentHeight / 2 + lineHeight / 2;
+          const valueFontSize = Math.max(NODE_VALUE_FONT, Math.round(fontSize - 2));
           return (
             <g
               key={node.id}
@@ -329,14 +362,19 @@ export function Sankey({
                 </title>
               </rect>
               <text
-                x={NODE_WIDTH / 2}
-                y={NODE_HEIGHT / 2}
                 textAnchor="middle"
-                alignmentBaseline="middle"
-                className="fill-slate-950 font-semibold"
-                style={{ fontSize: `${labelFontSize}px` }}
+                className="sankey-node-label fill-slate-950 font-semibold"
+                style={{ fontSize: `${fontSize}px` }}
               >
-                {node.label}
+                {lines.map((line, lineIndex) => (
+                  <tspan
+                    key={`${node.id}-label-${lineIndex}`}
+                    x={NODE_WIDTH / 2}
+                    y={startY + lineHeight * lineIndex}
+                  >
+                    {line}
+                  </tspan>
+                ))}
               </text>
               <text
                 x={NODE_WIDTH / 2}

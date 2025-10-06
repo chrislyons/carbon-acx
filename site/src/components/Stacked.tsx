@@ -11,6 +11,7 @@ import {
 export interface StackedDatum extends ReferenceCarrier {
   layer_id?: string | null;
   category?: string | null;
+  sector?: string | null;
   values?: {
     mean?: number | null;
     low?: number | null;
@@ -59,7 +60,7 @@ export function Stacked({
         if (mean == null || !Number.isFinite(mean) || mean <= 0) {
           return null;
         }
-        const label = normaliseCategory(row?.category ?? null);
+        const label = normaliseCategory((row?.sector as string | null) ?? row?.category ?? null);
         const indices = resolveReferenceIndices(row, referenceLookup);
         return {
           key: `${label}-${index}`,
