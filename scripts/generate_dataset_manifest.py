@@ -13,18 +13,10 @@ from typing import Iterable, Mapping, Sequence
 
 import sys
 
-try:
-    from calc.manifest import DATASET_FILES
-    from calc.utils.hashio import normalise_newlines, sha256_bytes, sha256_concat, sha256_text
-except ModuleNotFoundError:  # pragma: no cover - import shim for direct script execution
-    REPO_ROOT = Path(__file__).resolve().parents[1]
-    if str(REPO_ROOT) not in sys.path:
-        sys.path.insert(0, str(REPO_ROOT))
-    from calc.manifest import DATASET_FILES  # noqa: E402
-    from calc.utils.hashio import normalise_newlines, sha256_bytes, sha256_concat, sha256_text  # noqa: E402
-else:
-    REPO_ROOT = Path(__file__).resolve().parents[1]
+from calc.manifest import DATASET_FILES
+from calc.utils.hashio import normalise_newlines, sha256_bytes, sha256_concat, sha256_text
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
