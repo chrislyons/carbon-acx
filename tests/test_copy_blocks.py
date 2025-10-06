@@ -24,5 +24,5 @@ def test_disclosure_markdown_includes_manifest_values(tmp_path: Path) -> None:
 
 def test_na_markdown_matches_expected_copy() -> None:
     markdown = copy_blocks.na_markdown()
-    assert 'Sectors labelled "NA"' in markdown
+    assert 'Segments labelled "NA"' in markdown
     assert markdown.endswith("\n")

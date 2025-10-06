@@ -1,7 +1,7 @@
 from app.lib.agency import breakdown_for_activity
 
 
-def test_breakdown_returns_sectors_with_individual_share():
+def test_breakdown_returns_segments_with_individual_share():
     dependency_map = {
         "ACT.TRANSPORT": [
             {
@@ -19,14 +19,14 @@ def test_breakdown_returns_sectors_with_individual_share():
         ]
     }
 
-    sectors = breakdown_for_activity("ACT.TRANSPORT", dependency_map)
+    segments = breakdown_for_activity("ACT.TRANSPORT", dependency_map)
 
-    labels = [sector["label"] for sector in sectors]
+    labels = [segment["label"] for segment in segments]
     assert labels == ["Corporate", "Institutional", "Individual"]
-    assert sectors[0]["percent"] == "72%"
-    assert sectors[1]["percent"] == "18%"
-    assert sectors[2]["percent"] == "10%"
-    tooltip_lines = sectors[0]["tooltip_lines"]
+    assert segments[0]["percent"] == "72%"
+    assert segments[1]["percent"] == "18%"
+    assert segments[2]["percent"] == "10%"
+    tooltip_lines = segments[0]["tooltip_lines"]
     assert tooltip_lines and "Shell Canada" in tooltip_lines[0]
 
 
@@ -41,13 +41,13 @@ def test_breakdown_handles_unknown_types_as_institutional():
         ]
     }
 
-    sectors = breakdown_for_activity("ACT.UNKNOWN", dependency_map)
+    segments = breakdown_for_activity("ACT.UNKNOWN", dependency_map)
 
-    assert len(sectors) == 2
-    assert sectors[0]["label"] == "Institutional"
-    assert sectors[0]["percent"] == "50%"
-    assert sectors[1]["label"] == "Individual"
-    assert sectors[1]["percent"] == "50%"
+    assert len(segments) == 2
+    assert segments[0]["label"] == "Institutional"
+    assert segments[0]["percent"] == "50%"
+    assert segments[1]["label"] == "Individual"
+    assert segments[1]["percent"] == "50%"
 
 
 def test_breakdown_empty_for_missing_activity():

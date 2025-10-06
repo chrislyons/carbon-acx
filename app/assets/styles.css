@@ -832,7 +832,7 @@ p {
   color: var(--color-text-muted);
 }
 
-.agency-strip__sector {
+.agency-strip__segment {
   display: inline-flex;
   align-items: baseline;
   gap: var(--space-xxs);
@@ -840,11 +840,11 @@ p {
   color: var(--color-text);
 }
 
-.agency-strip__sector-label {
+.agency-strip__segment-label {
   color: var(--color-text-muted);
 }
 
-.agency-strip__sector-value {
+.agency-strip__segment-value {
   font-weight: 600;
 }
 
@@ -853,8 +853,8 @@ p {
   font-weight: 600;
 }
 
-.agency-strip__separator + .agency-strip__sector,
-.agency-strip__sector + .agency-strip__separator {
+.agency-strip__separator + .agency-strip__segment,
+.agency-strip__segment + .agency-strip__separator {
   margin-left: 0;
 }
 

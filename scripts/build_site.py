@@ -12,7 +12,7 @@ import plotly.io as pio
 from app.components import bubble as bubble_component
 from app.components import sankey as sankey_component
 from app.components import stacked as stacked_component
-from app.components._helpers import extend_unique, has_na_sectors
+from app.components._helpers import extend_unique, has_na_segments
 from calc import citations
 from calc.copy_blocks import disclosure_html, na_html
 from ._artifact_paths import resolve_artifact_outputs
@@ -207,7 +207,7 @@ def build_site(artifact_dir: Path, output_dir: Path) -> Path:
             message = FALLBACK_MESSAGES.get(name, "No data available.")
             graph_html = f"<p>{escape(message)}</p>"
         footnotes: list[str] = []
-        if has_na_sectors(payload):
+        if has_na_segments(payload):
             footnotes.append(na_html())
 
         downloads: list[str] = []

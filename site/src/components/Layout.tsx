@@ -1,6 +1,6 @@
 import { KeyboardEvent, ReactNode, useCallback, useId } from 'react';
 
-export type StageId = 'sector' | 'profile' | 'activity';
+export type StageId = 'segment' | 'profile' | 'activity';
 
 export interface StageStateMeta {
   unlocked: boolean;
@@ -37,18 +37,18 @@ interface StageMeta {
 
 const STAGES: StageMeta[] = [
   {
-    id: 'sector',
-    label: 'Sectors',
-    summary: 'Anchor the analysis to the sectors you want to compare.',
+    id: 'segment',
+    label: 'Segments',
+    summary: 'Anchor the analysis to the segments you want to compare.',
     advanceLabel: 'Continue to profiles',
-    advanceHelper: 'Lock in the sectors that matter, then deepen the persona.',
+    advanceHelper: 'Lock in the segments that matter, then deepen the persona.',
     nextStage: 'profile'
   },
   {
     id: 'profile',
     label: 'Profiles',
-    summary: 'Shape the representative lifestyle for the active sectors.',
-    lockedSummary: 'Choose your sectors above to unlock profile refinement.',
+    summary: 'Shape the representative lifestyle for the active segments.',
+    lockedSummary: 'Choose your segments above to unlock profile refinement.',
     advanceLabel: 'Drill into activities',
     advanceHelper: 'Dial commute, diet, and media habits to expose activities.',
     nextStage: 'activity'
@@ -63,7 +63,7 @@ const STAGES: StageMeta[] = [
 
 function renderStagePanel(stage: StageId, slots: Pick<LayoutProps, 'layerBrowser' | 'controls' | 'activity'>) {
   switch (stage) {
-    case 'sector':
+    case 'segment':
       return slots.layerBrowser;
     case 'profile':
       return slots.controls;
@@ -93,7 +93,7 @@ export function Layout({
   const activeIndex = stageIds.indexOf(stage);
 
   const isStageUnlocked = useCallback(
-    (stageId: StageId) => stageId === 'sector' || Boolean(stageStates[stageId]?.unlocked),
+    (stageId: StageId) => stageId === 'segment' || Boolean(stageStates[stageId]?.unlocked),
     [stageStates]
   );
 
@@ -174,7 +174,7 @@ export function Layout({
             Context depth
           </p>
           <p className="mt-[6px] text-[12px] text-slate-400">
-            Feed the console more context to unlock deeper, sector-aware visualizations.
+            Feed the console more context to unlock deeper, segment-aware visualizations.
           </p>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto pt-[calc(var(--gap-0)*0.9)]">
@@ -184,7 +184,7 @@ export function Layout({
             className="flex flex-col gap-[calc(var(--gap-0)*0.75)]"
           >
             {STAGES.map((meta) => {
-              const state = stageStates[meta.id] ?? { unlocked: meta.id === 'sector', ready: false };
+              const state = stageStates[meta.id] ?? { unlocked: meta.id === 'segment', ready: false };
               const unlocked = isStageUnlocked(meta.id);
               const isActive = unlocked && stage === meta.id;
               const stageIndex = stageIds.indexOf(meta.id);
