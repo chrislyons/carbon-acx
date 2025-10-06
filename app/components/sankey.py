@@ -4,6 +4,7 @@ from typing import Mapping, Optional
 
 import plotly.graph_objects as go
 from dash import dcc, html
+from textwrap import wrap
 
 from calc.ui.theme import get_palette, get_plotly_template
 from app.lib.plotly_theme import DENSE_LAYOUT
@@ -21,10 +22,43 @@ from ._helpers import (
 from ._plotly_settings import apply_figure_layout_defaults
 
 MODE_LABELS = {
-    "civilian": "Civilian activity flow",
-    "two_stage": "Industry → civilian flow",
+    "civilian": "Civilian flow",
+    "two_stage": "Industry → civilian",
 }
 DEFAULT_MODE = "civilian"
+
+_NODE_LABEL_WIDTH = 18
+_NODE_LABEL_LINES = 3
+_NODE_FONT_MAX = 16
+_NODE_FONT_MIN = 10
+
+
+def _format_node_label(raw: str) -> tuple[str, int]:
+    text = (raw or "").strip()
+    if not text:
+        return "", _NODE_FONT_MAX
+
+    wrapped_lines = wrap(
+        text,
+        width=_NODE_LABEL_WIDTH,
+        max_lines=_NODE_LABEL_LINES,
+        placeholder="…",
+        break_long_words=True,
+        break_on_hyphens=False,
+    )
+    if not wrapped_lines:
+        wrapped_lines = [text]
+
+    longest = max(len(line) for line in wrapped_lines)
+    overflow = max(0, longest - _NODE_LABEL_WIDTH)
+    penalty = max(0, len(wrapped_lines) - 1)
+    size = _NODE_FONT_MAX - int(overflow / 2) - penalty
+    if size < _NODE_FONT_MIN:
+        size = _NODE_FONT_MIN
+    elif size > _NODE_FONT_MAX:
+        size = _NODE_FONT_MAX
+
+    return "<br>".join(wrapped_lines), size
 
 
 def _mode_payload(data: object, mode: str) -> tuple[list[dict], list[dict]]:
@@ -97,8 +131,9 @@ def build_figure(
     palette = get_palette(dark=dark)
 
     id_to_index: dict[str, int] = {}
-    labels: list[str] = []
     colors: list[str] = []
+    display_labels: list[str] = []
+    font_sizes: list[int] = []
 
     for node in nodes:
         node_id = str(node.get("id"))
@@ -106,7 +141,10 @@ def build_figure(
             continue
         idx = len(id_to_index)
         id_to_index[node_id] = idx
-        labels.append(str(node.get("label") or node_id))
+        raw_label = str(node.get("label") or node_id)
+        wrapped_label, font_size = _format_node_label(raw_label)
+        display_labels.append(wrapped_label)
+        font_sizes.append(font_size)
         node_type = str(node.get("type") or "node")
         if node_type == "category":
             colors.append(palette["accent_subtle"])
@@ -220,10 +258,11 @@ def build_figure(
         go.Sankey(
             arrangement="snap",
             node=dict(
-                label=labels,
+                label=display_labels,
                 color=colors,
                 pad=18,
                 thickness=20,
+                textfont=dict(size=font_sizes),
             ),
             link=dict(
                 source=sources,
@@ -255,12 +294,12 @@ def render(
     layer_id: str | None = None,
     active_activity: str | None = None,
     component_name: str = "sankey",
-    title_prefix: str = "Activity flow",
+    title_prefix: str = "Flow map",
     empty_message: str | None = None,
     mode_labels: Mapping[str, str] | None = None,
 ) -> html.Section:
     section_id = component_name or "sankey"
-    title = title_prefix or "Activity flow"
+    title = title_prefix or "Flow map"
     if title_suffix:
         title = f"{title} — {title_suffix}"
 
@@ -275,9 +314,9 @@ def render(
     )
 
     if not figure.data:
-        message = empty_message or "No flow data available."
+        message = empty_message or "No flow data."
         if title_suffix and empty_message is None:
-            message = f"No flow data available for {title_suffix}."
+            message = f"No flow data for {title_suffix}."
         content = html.P(message)
         controls_section = None
     else:

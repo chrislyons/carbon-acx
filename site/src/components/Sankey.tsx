@@ -71,6 +71,46 @@ const MAX_LINK_WIDTH = 26;
 const NODE_LABEL_MIN_FONT = 11;
 const NODE_LABEL_MAX_FONT = 16;
 const NODE_VALUE_FONT = 10;
+const NODE_LABEL_WRAP = 18;
+const NODE_LABEL_MAX_LINES = 3;
+
+function wrapNodeLabel(label: string): string[] {
+  const trimmed = label.trim();
+  if (!trimmed) {
+    return [''];
+  }
+  const lines: string[] = [];
+  let start = 0;
+  let truncated = false;
+  while (start < trimmed.length && lines.length < NODE_LABEL_MAX_LINES) {
+    let end = Math.min(trimmed.length, start + NODE_LABEL_WRAP);
+    if (end < trimmed.length) {
+      const lastSpace = trimmed.lastIndexOf(' ', end);
+      if (lastSpace > start) {
+        end = lastSpace;
+      }
+    }
+    let line = trimmed.slice(start, end).trim();
+    if (!line) {
+      line = trimmed.slice(start, Math.min(trimmed.length, start + NODE_LABEL_WRAP));
+    }
+    lines.push(line);
+    start = end;
+    while (start < trimmed.length && trimmed[start] === ' ') {
+      start += 1;
+    }
+  }
+  if (start < trimmed.length) {
+    truncated = true;
+  }
+  if (truncated && lines.length > 0) {
+    const lastIndex = lines.length - 1;
+    const base = lines[lastIndex];
+    const shortened = base.length > NODE_LABEL_WRAP ? base.slice(0, NODE_LABEL_WRAP - 1) : base;
+    lines[lastIndex] = `${shortened.trimEnd()}…`;
+  }
+  return lines;
+}
 
 const CATEGORY_COLORS = [
   '#38bdf8',
@@ -81,17 +121,18 @@ const CATEGORY_COLORS = [
   '#f97316'
 ];
 
-function computeNodeLabelFont(label: string): number {
-  const trimmed = label?.trim() ?? '';
-  const length = Math.max(trimmed.length, 6);
+function computeNodeLabelFont(lines: string[]): number {
+  const longest = lines.reduce((max, line) => Math.max(max, line.length), 1);
   const available = NODE_WIDTH - 24;
-  const approximate = available / (length * 0.5);
-  const bounded = Math.max(NODE_LABEL_MIN_FONT, Math.min(NODE_LABEL_MAX_FONT, approximate));
+  const approximate = available / Math.max(longest * 0.55, 6);
+  const penalty = (lines.length - 1) * 1.2;
+  const adjusted = approximate - penalty;
+  const bounded = Math.max(NODE_LABEL_MIN_FONT, Math.min(NODE_LABEL_MAX_FONT, adjusted));
   return Math.round(bounded);
 }
 
 export function Sankey({
-  title = 'Emission pathways',
+  title = 'Flow pathways',
   data,
   referenceLookup,
   variant = 'card'
@@ -301,8 +342,12 @@ export function Sankey({
           const active =
             hoveredNode === node.id ||
             (!!activeLink && (activeLink.source.id === node.id || activeLink.target.id === node.id));
-          const labelFontSize = computeNodeLabelFont(node.label);
+          const labelLines = wrapNodeLabel(node.label);
+          const labelFontSize = computeNodeLabelFont(labelLines);
           const valueFontSize = Math.max(NODE_VALUE_FONT, Math.round(labelFontSize - 2));
+          const lineHeight = labelFontSize * 1.1;
+          const totalHeight = lineHeight * labelLines.length;
+          const startY = NODE_HEIGHT / 2 - totalHeight / 2 + lineHeight / 2;
           return (
             <g
               key={node.id}
@@ -330,13 +375,15 @@ export function Sankey({
               </rect>
               <text
                 x={NODE_WIDTH / 2}
-                y={NODE_HEIGHT / 2}
                 textAnchor="middle"
-                alignmentBaseline="middle"
                 className="fill-slate-950 font-semibold"
                 style={{ fontSize: `${labelFontSize}px` }}
               >
-                {node.label}
+                {labelLines.map((line, index) => (
+                  <tspan key={`${node.id}-line-${index}`} x={NODE_WIDTH / 2} y={startY + lineHeight * index}>
+                    {line}
+                  </tspan>
+                ))}
               </text>
               <text
                 x={NODE_WIDTH / 2}

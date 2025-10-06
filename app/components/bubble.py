@@ -56,7 +56,6 @@ def _build_figure(
 
     categories: list[str] = []
     full_categories: list[str] = []
-    activities: list[str] = []
     full_activities: list[str] = []
     means: list[float] = []
     errors_high: list[float] = []
@@ -83,7 +82,6 @@ def _build_figure(
         categories.append(truncate_label(category_label, limit=20))
         full_categories.append(category_label)
         activity_label = str(row.get("activity_name") or row.get("activity_id") or "Activity")
-        activities.append(truncate_label(activity_label, limit=22))
         full_activities.append(activity_label)
         means.append(mean)
         upper = high if high is not None else mean
@@ -161,7 +159,7 @@ def _build_figure(
     hover_template = (
         f"<b>%{{customdata{idx0}}}</b>"
         f"<br>Category: %{{customdata{idx1}}}"
-        f"<br>Annual emissions: %{{customdata{idx2}}}"
+        f"<br>Emissions: %{{customdata{idx2}}}"
         f"%{{customdata{idx3}}}"
         f"<br>%{{customdata{idx4}}}"
         f"%{{customdata{idx5}}}"
@@ -207,7 +205,6 @@ def _build_figure(
         x=categories,
         y=means,
         mode="markers",
-        text=activities,
         marker=dict(
             size=means,
             sizemode="area",
@@ -232,8 +229,8 @@ def _build_figure(
 
     figure.update_layout(
         template=get_plotly_template(dark=dark),
-        xaxis=dict(title="Activity category", type="category"),
-        yaxis=dict(title="Annual emissions (kg/yr)", rangemode="tozero"),
+        xaxis=dict(title="Category", type="category"),
+        yaxis=dict(title="Emissions (kg/yr)", rangemode="tozero"),
         showlegend=False,
     )
     figure.update_layout(**DENSE_LAYOUT)
@@ -249,7 +246,7 @@ def render(
     layer_id: str | None = None,
     active_activity: str | None = None,
 ) -> html.Section:
-    title = "Activity bubble chart"
+    title = "Activity emissions"
     if title_suffix:
         title = f"{title} — {title_suffix}"
     figure = _build_figure(

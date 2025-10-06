@@ -812,7 +812,7 @@ export function VizCanvas({ stage }: VizCanvasProps): JSX.Element {
       : stage === 'profile'
         ? 'Category emissions bubble chart'
         : 'Activity emissions bubble chart';
-  const sankeyPanelTitle = stage === 'segment' ? 'Segment emission pathways' : 'Emission pathways';
+  const sankeyPanelTitle = stage === 'segment' ? 'Sector flow pathways' : 'Flow pathways';
   const feedbackPanelTitle = 'Feedback loops';
   const stackedEmptyMessage = stage === 'segment' ? 'No segment data available.' : 'No category data available.';
   const bubbleEmptyMessage =

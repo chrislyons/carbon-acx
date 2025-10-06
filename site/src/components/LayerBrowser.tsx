@@ -208,7 +208,7 @@ export function LayerBrowser(): JSX.Element {
     return (
       <section className="acx-card bg-slate-950/60">
         <header className="flex items-center justify-between gap-[var(--gap-0)]">
-          <h2 className="text-[13px] font-semibold">Segment Browser</h2>
+          <h2 className="text-[13px] font-semibold">Sector Browser</h2>
           <span className="text-[10px] uppercase tracking-[0.3em] text-slate-400">Loading…</span>
         </header>
         <div className="mt-[var(--gap-1)] space-y-[var(--gap-0)]">
@@ -232,7 +232,7 @@ export function LayerBrowser(): JSX.Element {
     return (
       <section className="acx-card bg-slate-950/60">
         <header className="flex items-center justify-between gap-[var(--gap-0)]">
-          <h2 className="text-[13px] font-semibold">Segment Browser</h2>
+          <h2 className="text-[13px] font-semibold">Sector Browser</h2>
         </header>
         <div className="mt-[var(--gap-1)] space-y-[var(--gap-1)]">
           <p className="text-sm text-rose-300">
@@ -293,10 +293,10 @@ export function LayerBrowser(): JSX.Element {
     return (
       <section className="acx-card bg-slate-950/60">
         <header className="flex items-center justify-between gap-[var(--gap-0)]">
-          <h2 className="text-[13px] font-semibold">Segment Browser</h2>
+          <h2 className="text-[13px] font-semibold">Sector Browser</h2>
         </header>
         <div className="mt-[var(--gap-1)] space-y-[var(--gap-0)] text-sm text-slate-300">
-          <p>No segments are currently configured.</p>
+          <p>No sectors configured.</p>
           <p>
             Update <code className="rounded bg-slate-900/80 px-1 py-0.5 text-xs">data/layers.csv</code> and run
             {' '}<code className="rounded bg-slate-900/80 px-1 py-0.5 text-xs">python scripts/audit_layers.py</code> to refresh
@@ -315,11 +315,9 @@ export function LayerBrowser(): JSX.Element {
       <header className="flex items-center justify-between gap-[var(--gap-0)]">
         <div>
           <h2 id="segment-browser-heading" className="text-[13px] font-semibold">
-            Segment Browser
+            Sector Browser
           </h2>
-          <p className="mt-[2px] text-[11px] uppercase tracking-[0.3em] text-slate-400">
-            Browse seeded segments & activity coverage
-          </p>
+          <p className="mt-[2px] text-[11px] uppercase tracking-[0.25em] text-slate-400">Coverage snapshot</p>
         </div>
       </header>
       <div className="flex flex-col gap-[var(--gap-1)]">
@@ -344,58 +342,54 @@ export function LayerBrowser(): JSX.Element {
               : null;
           return (
             <details key={layer.id} className="group rounded-xl border border-slate-800/70 bg-slate-950/40" open={isActive}>
-              <summary className="flex cursor-pointer flex-col gap-[var(--gap-0)] px-[var(--gap-1)] py-[var(--gap-1)] text-left outline-none transition hover:bg-slate-900/50">
+              <summary className="flex cursor-pointer flex-col gap-[var(--gap-0)] px-[var(--gap-1)] py-3 text-left outline-none transition hover:bg-slate-900/50">
                 <div className="flex items-start gap-[var(--gap-1)]">
                   {iconPath ? (
                     <img
                       src={iconPath}
                       alt=""
-                      className="h-10 w-10 flex-shrink-0 rounded-lg border border-slate-800/70 bg-slate-950/80 object-contain"
+                      className="h-9 w-9 flex-shrink-0 rounded-lg border border-slate-800/70 bg-slate-950/80 object-contain"
                     />
                   ) : null}
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between gap-[var(--gap-0)]">
-                      <div>
+                  <div className="flex flex-1 flex-col gap-[var(--gap-0)]">
+                    <div className="flex flex-wrap items-start gap-[var(--gap-1)]">
+                      <div className="min-w-[200px] flex-1 basis-[55%] space-y-[2px]">
                         <p className="text-sm font-semibold text-slate-100">{layer.title}</p>
-                        {layer.summary ? (
-                          <p className="mt-[2px] text-xs text-slate-400">{layer.summary}</p>
-                        ) : null}
+                        {layer.summary ? <p className="text-xs text-slate-400">{layer.summary}</p> : null}
                       </div>
-                      <span
-                        className={`inline-flex items-center gap-[4px] rounded-full border px-2 py-[2px] text-[11px] font-semibold ${statusMeta.tone}`}
-                      >
-                        <span aria-hidden="true">{statusMeta.badge}</span>
-                        {statusMeta.label}
-                      </span>
-                    </div>
-                    <div className="mt-[var(--gap-0)] flex flex-wrap items-center gap-3 text-[11px] uppercase tracking-[0.25em] text-slate-400">
-                      <span>{activityBucket.count ?? 0} activities</span>
-                      <span>{operations} ops</span>
-                      {coverageLabel ? <span>{coverageLabel}</span> : null}
+                      <div className="flex flex-wrap items-center justify-end gap-2 text-[11px] uppercase tracking-[0.18em] text-slate-400">
+                        <span
+                          className={`inline-flex items-center gap-[4px] rounded-full border px-2 py-[2px] text-[11px] font-semibold ${statusMeta.tone}`}
+                        >
+                          <span aria-hidden="true">{statusMeta.badge}</span>
+                          {statusMeta.label}
+                        </span>
+                        <span>{activityBucket.count ?? 0} activities</span>
+                        <span>{operations} ops</span>
+                        {coverageLabel ? <span>{coverageLabel}</span> : null}
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            handleToggleLayer(layer.id);
+                          }}
+                          className={`inline-flex items-center gap-1 rounded-md border px-2 py-[6px] text-[11px] font-semibold uppercase tracking-[0.18em] transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 ${
+                            isActive
+                              ? 'border-sky-400/60 bg-sky-500/10 text-sky-200 hover:border-sky-300'
+                              : 'border-slate-700 bg-slate-900/70 text-slate-200 hover:border-slate-500'
+                          }`}
+                        >
+                          {isActive ? 'Active' : 'Include'}
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="flex items-center justify-end gap-[var(--gap-0)]">
-                  <button
-                    type="button"
-                    onClick={(event) => {
-                      event.preventDefault();
-                      event.stopPropagation();
-                      handleToggleLayer(layer.id);
-                    }}
-                    className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 ${
-                      isActive
-                        ? 'border-sky-400/60 bg-sky-500/10 text-sky-200 hover:border-sky-300'
-                        : 'border-slate-700 bg-slate-900/70 text-slate-200 hover:border-slate-500'
-                    }`}
-                  >
-                    {isActive ? 'Active' : 'Include'}
-                  </button>
                 </div>
               </summary>
               <div className="border-t border-slate-800/60 bg-slate-950/70 px-[var(--gap-1)] py-[var(--gap-1)]">
                 {activities.length === 0 ? (
-                  <p className="text-xs text-slate-400">No activities mapped to this layer in the dataset.</p>
+                  <p className="text-xs text-slate-400">No mapped activities.</p>
                 ) : (
                   <ul className="flex flex-col gap-[6px]">
                     {activities.map((activity) => {
@@ -409,8 +403,8 @@ export function LayerBrowser(): JSX.Element {
                           >
                             <span className="flex flex-col gap-[2px]">
                               <span className="font-medium text-slate-100">{activity.name}</span>
-                              <span className="text-[11px] uppercase tracking-[0.3em] text-slate-400">
-                                Focus {view === 'stacked' ? 'leaderboard' : 'Sankey'}
+                              <span className="text-[11px] uppercase tracking-[0.25em] text-slate-400">
+                                View {view === 'stacked' ? 'leaderboard' : 'Sankey'}
                               </span>
                             </span>
                           </button>
