@@ -15,8 +15,15 @@ CREATE TABLE units (
     notes TEXT
 );
 
+CREATE TABLE sectors (
+    sector_id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT
+);
+
 CREATE TABLE activities (
     activity_id TEXT PRIMARY KEY,
+    sector_id TEXT NOT NULL,
     layer_id TEXT NOT NULL,
     category TEXT,
     name TEXT,
@@ -24,11 +31,13 @@ CREATE TABLE activities (
     description TEXT,
     unit_definition TEXT,
     notes TEXT,
+    FOREIGN KEY (sector_id) REFERENCES sectors(sector_id),
     FOREIGN KEY (default_unit) REFERENCES units(unit_code)
 );
 
 CREATE TABLE profiles (
     profile_id TEXT PRIMARY KEY,
+    sector_id TEXT NOT NULL,
     layer_id TEXT NOT NULL,
     name TEXT,
     region_code_default TEXT,
@@ -37,6 +46,7 @@ CREATE TABLE profiles (
     cohort_id TEXT,
     office_days_per_week REAL,
     assumption_notes TEXT,
+    FOREIGN KEY (sector_id) REFERENCES sectors(sector_id),
     CHECK (
         region_code_default IS NULL
         OR (
@@ -56,6 +66,7 @@ CREATE TABLE profiles (
 
 CREATE TABLE emission_factors (
     ef_id TEXT PRIMARY KEY,
+    sector_id TEXT NOT NULL,
     activity_id TEXT NOT NULL,
     layer_id TEXT,
     unit TEXT,
@@ -73,6 +84,7 @@ CREATE TABLE emission_factors (
     uncert_low_g_per_unit REAL,
     uncert_high_g_per_unit REAL,
     FOREIGN KEY (activity_id) REFERENCES activities(activity_id),
+    FOREIGN KEY (sector_id) REFERENCES sectors(sector_id),
     FOREIGN KEY (unit) REFERENCES units(unit_code),
     FOREIGN KEY (source_id) REFERENCES sources(source_id),
     CHECK (
@@ -139,6 +151,7 @@ CREATE TABLE emission_factors (
 
 CREATE TABLE activity_schedule (
     profile_id TEXT NOT NULL,
+    sector_id TEXT NOT NULL,
     activity_id TEXT NOT NULL,
     layer_id TEXT NOT NULL,
     quantity_per_week REAL,
@@ -158,6 +171,7 @@ CREATE TABLE activity_schedule (
     PRIMARY KEY (profile_id, activity_id),
     FOREIGN KEY (profile_id) REFERENCES profiles(profile_id),
     FOREIGN KEY (activity_id) REFERENCES activities(activity_id),
+    FOREIGN KEY (sector_id) REFERENCES sectors(sector_id),
     CHECK (office_days_only IN (0, 1) OR office_days_only IS NULL),
     CHECK (office_only IN (0, 1) OR office_only IS NULL),
     CHECK (use_canada_average IN (0, 1) OR use_canada_average IS NULL),

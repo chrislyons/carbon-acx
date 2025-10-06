@@ -25,6 +25,7 @@ def connection(schema_sql: str) -> sqlite3.Connection:
 
 def test_schema_constraints(connection: sqlite3.Connection) -> None:
     current_year = dt.date.today().year
+    sector_id = "SECTOR.TEST"
     # Seed lookup tables
     connection.execute(
         "INSERT INTO sources (source_id, year) VALUES (?, ?)",
@@ -35,22 +36,26 @@ def test_schema_constraints(connection: sqlite3.Connection) -> None:
         ("unit", "generic", 1.0),
     )
     connection.execute(
-        "INSERT INTO activities (activity_id, layer_id, default_unit, name) VALUES (?, ?, ?, ?)",
-        ("ACT.TEST", "professional", "unit", "Test Activity"),
+        "INSERT INTO sectors (sector_id, name, description) VALUES (?, ?, ?)",
+        (sector_id, "Test Sector", "Fixture sector"),
     )
     connection.execute(
-        "INSERT INTO profiles (profile_id, layer_id, name) VALUES (?, ?, ?)",
-        ("PRO.TEST", "professional", "Profile"),
+        "INSERT INTO activities (activity_id, sector_id, layer_id, default_unit, name) VALUES (?, ?, ?, ?, ?)",
+        ("ACT.TEST", sector_id, "professional", "unit", "Test Activity"),
+    )
+    connection.execute(
+        "INSERT INTO profiles (profile_id, sector_id, layer_id, name) VALUES (?, ?, ?, ?)",
+        ("PRO.TEST", sector_id, "professional", "Profile"),
     )
 
     # Valid fixed emission factor
     connection.execute(
         """
         INSERT INTO emission_factors (
-            ef_id, activity_id, unit, value_g_per_unit, is_grid_indexed, vintage_year, source_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            ef_id, sector_id, activity_id, unit, value_g_per_unit, is_grid_indexed, vintage_year, source_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        ("EF.FIXED", "ACT.TEST", "unit", 1.5, 0, current_year, "SRC.TEST"),
+        ("EF.FIXED", sector_id, "ACT.TEST", "unit", 1.5, 0, current_year, "SRC.TEST"),
     )
 
     # Invalid: grid fields cannot mix with fixed value
@@ -58,10 +63,10 @@ def test_schema_constraints(connection: sqlite3.Connection) -> None:
         connection.execute(
             """
             INSERT INTO emission_factors (
-                ef_id, activity_id, unit, value_g_per_unit, is_grid_indexed, electricity_kwh_per_unit
-            ) VALUES (?, ?, ?, ?, ?, ?)
+                ef_id, sector_id, activity_id, unit, value_g_per_unit, is_grid_indexed, electricity_kwh_per_unit
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
-            ("EF.INVALID.MIX", "ACT.TEST", "unit", 1.0, 1, 0.5),
+            ("EF.INVALID.MIX", sector_id, "ACT.TEST", "unit", 1.0, 1, 0.5),
         )
 
     # Invalid: future vintage year
@@ -69,10 +74,10 @@ def test_schema_constraints(connection: sqlite3.Connection) -> None:
         connection.execute(
             """
             INSERT INTO emission_factors (
-                ef_id, activity_id, unit, value_g_per_unit, is_grid_indexed, vintage_year
-            ) VALUES (?, ?, ?, ?, ?, ?)
+                ef_id, sector_id, activity_id, unit, value_g_per_unit, is_grid_indexed, vintage_year
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
-            ("EF.INVALID.YEAR", "ACT.TEST", "unit", 1.0, 0, current_year + 1),
+            ("EF.INVALID.YEAR", sector_id, "ACT.TEST", "unit", 1.0, 0, current_year + 1),
         )
 
     # Invalid: region must match Canadian codes
@@ -80,37 +85,37 @@ def test_schema_constraints(connection: sqlite3.Connection) -> None:
         connection.execute(
             """
             INSERT INTO emission_factors (
-                ef_id, activity_id, unit, is_grid_indexed, electricity_kwh_per_unit, region
-            ) VALUES (?, ?, ?, ?, ?, ?)
+                ef_id, sector_id, activity_id, unit, is_grid_indexed, electricity_kwh_per_unit, region
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
-            ("EF.INVALID.REGION", "ACT.TEST", "unit", 1, 1.0, "US-CA"),
+            ("EF.INVALID.REGION", sector_id, "ACT.TEST", "unit", 1, 1.0, "US-CA"),
         )
 
     # Valid grid-indexed factor
     connection.execute(
         """
         INSERT INTO emission_factors (
-            ef_id, activity_id, unit, is_grid_indexed, electricity_kwh_per_unit, region, vintage_year, source_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ef_id, sector_id, activity_id, unit, is_grid_indexed, electricity_kwh_per_unit, region, vintage_year, source_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        ("EF.GRID", "ACT.TEST", "unit", 1, 1.0, "CA-ON", current_year, "SRC.TEST"),
+        ("EF.GRID", sector_id, "ACT.TEST", "unit", 1, 1.0, "CA-ON", current_year, "SRC.TEST"),
     )
 
     # Invalid profile region code
     with pytest.raises(sqlite3.IntegrityError):
         connection.execute(
-            "INSERT INTO profiles (profile_id, layer_id, region_code_default) VALUES (?, ?, ?)",
-            ("PRO.BAD", "professional", "USA"),
+            "INSERT INTO profiles (profile_id, sector_id, layer_id, region_code_default) VALUES (?, ?, ?, ?)",
+            ("PRO.BAD", sector_id, "professional", "USA"),
         )
 
     # Valid activity schedule row
     connection.execute(
         """
         INSERT INTO activity_schedule (
-            profile_id, activity_id, layer_id, freq_per_day, office_days_only, region_override
-        ) VALUES (?, ?, ?, ?, ?, ?)
+            profile_id, sector_id, activity_id, layer_id, freq_per_day, office_days_only, region_override
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)
         """,
-        ("PRO.TEST", "ACT.TEST", "professional", 1.0, 1, "CA-ON"),
+        ("PRO.TEST", sector_id, "ACT.TEST", "professional", 1.0, 1, "CA-ON"),
     )
 
     # Invalid schedule: both frequencies provided
@@ -118,10 +123,10 @@ def test_schema_constraints(connection: sqlite3.Connection) -> None:
         connection.execute(
             """
             INSERT INTO activity_schedule (
-                profile_id, activity_id, layer_id, freq_per_day, freq_per_week
-            ) VALUES (?, ?, ?, ?, ?)
+                profile_id, sector_id, activity_id, layer_id, freq_per_day, freq_per_week
+            ) VALUES (?, ?, ?, ?, ?, ?)
             """,
-            ("PRO.TEST", "ACT.TEST", "professional", 1.0, 3.0),
+            ("PRO.TEST", sector_id, "ACT.TEST", "professional", 1.0, 3.0),
         )
 
     # Invalid schedule region override
@@ -129,10 +134,10 @@ def test_schema_constraints(connection: sqlite3.Connection) -> None:
         connection.execute(
             """
             INSERT INTO activity_schedule (
-                profile_id, activity_id, layer_id, region_override
-            ) VALUES (?, ?, ?, ?)
+                profile_id, sector_id, activity_id, layer_id, region_override
+            ) VALUES (?, ?, ?, ?, ?)
             """,
-            ("PRO.TEST", "ACT.TEST", "professional", "USA"),
+            ("PRO.TEST", sector_id, "ACT.TEST", "professional", "USA"),
         )
 
     # Valid grid intensity row
