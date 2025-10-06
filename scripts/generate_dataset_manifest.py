@@ -158,9 +158,7 @@ def _iter_entries(payload: Mapping[str, object], figure_id: str) -> Iterable[Map
                 yield entry
 
 
-def _numeric_invariance_from_bytes(
-    source_bytes: bytes, copied_bytes: bytes
-) -> dict[str, object]:
+def _numeric_invariance_from_bytes(source_bytes: bytes, copied_bytes: bytes) -> dict[str, object]:
     if source_bytes == copied_bytes:
         max_delta = 0.0
         passed = True
@@ -300,7 +298,9 @@ def main() -> None:
 
         manifest_src_path = manifests_src / f"{figure_id}.json"
         manifest_payload = (
-            _read_json(manifest_src_path) if manifest_src_path.exists() else {"figure_id": figure_id}
+            _read_json(manifest_src_path)
+            if manifest_src_path.exists()
+            else {"figure_id": figure_id}
         )
 
         figure_type = _figure_method(figure_payload) or manifest_payload.get("figure_type")
@@ -338,7 +338,9 @@ def main() -> None:
                 manifest_payload["render"] = {"layer": layer_id}
 
         manifest_dest_path = dist_manifests / f"{figure_id}.json"
-        manifest_dest_path.write_text(json.dumps(manifest_payload, indent=2) + "\n", encoding="utf-8")
+        manifest_dest_path.write_text(
+            json.dumps(manifest_payload, indent=2) + "\n", encoding="utf-8"
+        )
 
         dataset_entry = {
             "figure_id": figure_id,
