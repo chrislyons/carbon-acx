@@ -25,7 +25,7 @@ jobs:
           poetry-version: '1.8.3'
 
       - name: Install dependencies
-        run: poetry install --no-interaction --with dev
+        run: poetry install --no-interaction --with dev --extras "db"
 
       - name: Run make validate
         run: make validate
