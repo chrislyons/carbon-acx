@@ -19,6 +19,7 @@ from .schema import (
     EmissionFactor,
     Entity,
     GridIntensity,
+    Layer,
     Operation,
     Profile,
     Site,
@@ -161,6 +162,9 @@ class SqlStore:
             """
         )
         return [GridIntensity(**row) for row in rows]
+
+    def load_layers(self) -> Sequence[Layer]:
+        return []
 
     def load_entities(self) -> Sequence[Entity]:
         return []

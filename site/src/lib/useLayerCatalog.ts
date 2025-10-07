@@ -42,6 +42,7 @@ export interface LayerAuditSummary {
   summary?: string;
   optional?: boolean;
   icon?: string | null;
+  layer_type?: string | null;
   ui_configured?: boolean;
   activities?: number;
   operations?: number;
@@ -57,7 +58,7 @@ export interface LayerAuditReport {
   ef_coverage?: Record<string, LayerAuditCoverage>;
   missing_icons?: { layer: string; expected_path: string }[];
   missing_refs?: string[];
-  seeded_not_configured?: string[];
+  hidden_in_ui?: string[];
 }
 
 interface LayerCatalogState {

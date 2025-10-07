@@ -691,7 +691,8 @@
       "with_emission_factors": 19
     }
   },
-  "generated_at": "2025-10-05T07:58:17.042359+00:00",
+  "generated_at": "2025-10-07T09:58:43.487201+00:00",
+  "hidden_in_ui": [],
   "layers_present": [
     {
       "activities": 5,
@@ -704,11 +705,12 @@
       "has_references": false,
       "icon": "online.svg",
       "id": "biosphere_feedbacks",
+      "layer_type": "crosscut",
       "operations": 5,
       "optional": true,
       "summary": "Ocean, cryosphere, and permafrost feedback pathways with sink attenuation context.",
       "title": "Earth system feedbacks",
-      "ui_configured": false
+      "ui_configured": true
     },
     {
       "activities": 2,
@@ -721,11 +723,12 @@
       "has_references": false,
       "icon": "defense_building.svg",
       "id": "buildings_defense",
+      "layer_type": "industry",
       "operations": 0,
       "optional": true,
       "summary": "Operational footprints for bases, depots, and secure facilities.",
       "title": "Defence installations",
-      "ui_configured": false
+      "ui_configured": true
     },
     {
       "activities": 3,
@@ -738,11 +741,12 @@
       "has_references": false,
       "icon": "industrial_heavy.svg",
       "id": "industrial_externalities",
+      "layer_type": "crosscut",
       "operations": 3,
       "optional": true,
       "summary": "Tailings, acid drainage, and hypoxic knock-on effects linked to industrial operations.",
       "title": "Industrial externalities",
-      "ui_configured": false
+      "ui_configured": true
     },
     {
       "activities": 15,
@@ -760,6 +764,7 @@
       "has_references": false,
       "icon": "industrial_heavy.svg",
       "id": "industrial_heavy",
+      "layer_type": "industry",
       "operations": 9,
       "optional": true,
       "summary": "Full-scale manufacturing and heavy industry references for R&D insight.",
@@ -777,11 +782,12 @@
       "has_references": false,
       "icon": "defense_embodied.svg",
       "id": "industrial_heavy_embodied",
+      "layer_type": "industry",
       "operations": 0,
       "optional": true,
       "summary": "Embodied emissions from armaments, aircraft, and vehicle production lines.",
       "title": "Weapons manufacturing",
-      "ui_configured": false
+      "ui_configured": true
     },
     {
       "activities": 4,
@@ -796,11 +802,12 @@
       "has_references": false,
       "icon": "military_ops.svg",
       "id": "industrial_heavy_military",
+      "layer_type": "industry",
       "operations": 0,
       "optional": true,
       "summary": "Fuel-intensive air, land, and naval missions for defence and peacekeeping scenarios.",
       "title": "Military operations",
-      "ui_configured": false
+      "ui_configured": true
     },
     {
       "activities": 19,
@@ -817,6 +824,7 @@
       "has_references": false,
       "icon": "industrial_light.svg",
       "id": "industrial_light",
+      "layer_type": "industry",
       "operations": 13,
       "optional": true,
       "summary": "Lab, prototyping, and light fabrication scenarios for innovation hubs.",
@@ -834,11 +842,12 @@
       "has_references": false,
       "icon": "chemicals_defense.svg",
       "id": "materials_chemicals",
+      "layer_type": "industry",
       "operations": 0,
       "optional": true,
       "summary": "Energetic materials and upstream explosives manufacturing pathways.",
       "title": "Defence supply chain",
-      "ui_configured": false
+      "ui_configured": true
     },
     {
       "activities": 4,
@@ -855,11 +864,12 @@
       "has_references": false,
       "icon": "conflict_modeled.svg",
       "id": "modeled_events",
+      "layer_type": "crosscut",
       "operations": 0,
       "optional": true,
       "summary": "Modeled warfighting and natural hazard scenarios with aggregated operational intensity.",
       "title": "Scenario simulations",
-      "ui_configured": false
+      "ui_configured": true
     },
     {
       "activities": 27,
@@ -883,6 +893,7 @@
       "has_references": false,
       "icon": "online.svg",
       "id": "online",
+      "layer_type": "civilian",
       "operations": 7,
       "optional": true,
       "summary": "SaaS, meetings, and streaming workloads for remote-first teams.",
@@ -900,11 +911,12 @@
       "has_references": false,
       "icon": "personal_security.svg",
       "id": "personal_security_layer",
+      "layer_type": "industry",
       "operations": 0,
       "optional": true,
       "summary": "High-net-worth security operations spanning convoys, guards, and aerial patrols.",
       "title": "Private security",
-      "ui_configured": false
+      "ui_configured": true
     },
     {
       "activities": 19,
@@ -917,6 +929,7 @@
       "has_references": false,
       "icon": "professional.svg",
       "id": "professional",
+      "layer_type": "civilian",
       "operations": 2,
       "optional": false,
       "summary": "Baseline knowledge worker footprint anchored to hybrid office routines.",
@@ -924,32 +937,7 @@
       "ui_configured": true
     }
   ],
-  "missing_icons": [
-    {
-      "expected_path": "site/public/assets/layers/military_ops.svg",
-      "layer": "industrial_heavy_military"
-    },
-    {
-      "expected_path": "site/public/assets/layers/defense_embodied.svg",
-      "layer": "industrial_heavy_embodied"
-    },
-    {
-      "expected_path": "site/public/assets/layers/defense_building.svg",
-      "layer": "buildings_defense"
-    },
-    {
-      "expected_path": "site/public/assets/layers/conflict_modeled.svg",
-      "layer": "modeled_events"
-    },
-    {
-      "expected_path": "site/public/assets/layers/chemicals_defense.svg",
-      "layer": "materials_chemicals"
-    },
-    {
-      "expected_path": "site/public/assets/layers/personal_security.svg",
-      "layer": "personal_security_layer"
-    }
-  ],
+  "missing_icons": [],
   "missing_refs": [
     "biosphere_feedbacks",
     "buildings_defense",
@@ -1020,15 +1008,5 @@
         "REFR.APPL.FRIDGE.OP.YEAR"
       ]
     }
-  },
-  "seeded_not_configured": [
-    "biosphere_feedbacks",
-    "buildings_defense",
-    "industrial_externalities",
-    "industrial_heavy_embodied",
-    "industrial_heavy_military",
-    "materials_chemicals",
-    "modeled_events",
-    "personal_security_layer"
-  ]
+  }
 }

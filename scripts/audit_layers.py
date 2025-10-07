@@ -58,12 +58,13 @@ def _load_layer_catalog() -> list[dict[str, object]]:
         catalog.append(
             {
                 "id": layer_id,
-                "title": row.get("title", layer_id.replace("_", " ")).strip(),
-                "summary": (row.get("summary") or "").strip(),
+                "title": (row.get("layer_name") or row.get("title") or layer_id.replace("_", " ")).strip(),
+                "summary": (row.get("description") or row.get("summary") or "").strip(),
                 "optional": (row.get("ui_optional") or "false").strip().lower()
                 in {"true", "1", "yes"},
                 "icon": (row.get("icon_slug") or "").strip() or None,
                 "examples": _extract_examples(row.get("example_activities")),
+                "layer_type": (row.get("layer_type") or "").strip() or None,
             }
         )
     return catalog
@@ -104,7 +105,9 @@ def _map_operations_by_layer(
     unresolved: list[str] = []
     for row in operations:
         activity_id = (row.get("activity_id") or "").strip()
-        layer_id = _normalise_layer_id(activity_lookup.get(activity_id))
+        layer_id = _normalise_layer_id(row.get("layer_id"))
+        if not layer_id:
+            layer_id = _normalise_layer_id(activity_lookup.get(activity_id))
         if not layer_id:
             unresolved.append(activity_id)
             continue
@@ -240,6 +243,7 @@ def main() -> int:
             "summary": entry.get("summary"),
             "optional": entry.get("optional"),
             "icon": icon_slug,
+            "layer_type": entry.get("layer_type"),
             "ui_configured": layer_id in ui_layers,
             "activities": activities_by_layer.get(layer_id, {}).get("count", 0),
             "operations": ops_by_layer.get(layer_id, {}).get("count", 0),
@@ -249,7 +253,7 @@ def main() -> int:
         layers_present.append(layer_summary)
 
     seeded_ids = {entry["id"] for entry in catalog}
-    seeded_not_configured = sorted(seeded_ids - ui_layers)
+    hidden_in_ui = sorted(seeded_ids - ui_layers)
 
     report = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -259,7 +263,7 @@ def main() -> int:
         "ef_coverage": ef_coverage,
         "missing_icons": missing_icons,
         "missing_refs": sorted(missing_refs),
-        "seeded_not_configured": seeded_not_configured,
+        "hidden_in_ui": hidden_in_ui,
     }
 
     ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)

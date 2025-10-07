@@ -13,6 +13,7 @@ from ..schema import (
     EmissionFactor,
     Entity,
     GridIntensity,
+    Layer,
     Operation,
     Profile,
     Site,
@@ -33,6 +34,7 @@ __all__ = [
     "EmissionFactor",
     "Entity",
     "GridIntensity",
+    "Layer",
     "Operation",
     "Profile",
     "Site",
@@ -42,6 +44,8 @@ __all__ = [
 
 
 class DataStore(Protocol):
+    def load_layers(self) -> Sequence[Layer]: ...
+
     def load_entities(self) -> Sequence[Entity]: ...
 
     def load_sites(self) -> Sequence[Site]: ...

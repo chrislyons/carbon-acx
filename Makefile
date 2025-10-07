@@ -12,7 +12,7 @@ PACKAGED_ARTIFACTS_DIR := $(DIST_DIR)/packaged-artifacts
 PACKAGED_MANIFEST := $(PACKAGED_ARTIFACTS_DIR)/manifest.json
 DEFAULT_GENERATED_AT ?= 1970-01-01T00:00:00+00:00
 
-.PHONY: install lint test ci_build_pages app format validate release build-backend build site package sbom build-static \
+.PHONY: install lint test audit ci_build_pages app format validate release build-backend build site package sbom build-static \
         db_init db_import db_export build_csv build_db citations-scan refs-check refs-fetch refs-normalize refs-audit \
         verify_manifests
 
@@ -84,6 +84,11 @@ format:
 	PYTHONPATH=. poetry run black .
 
 validate: lint test
+
+audit:
+	PYTHONPATH=. poetry run python scripts/audit_layers.py
+	test -s artifacts/audit_report.json
+	PYTHONPATH=. python -c "from pathlib import Path; import json, sys; payload = json.loads(Path('artifacts/audit_report.json').read_text()); layers = payload.get('layers_present') or []; sys.exit(0 if layers else 'Layer audit report must list at least one layer')"
 
 release:
 	@echo "release placeholder"
