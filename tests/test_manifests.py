@@ -105,4 +105,6 @@ def test_manifest_index_matches_files() -> None:
         for entry in figures_payload:
             figures = entry.get("figures")
             assert isinstance(figures, list)
-            assert any(bool(item.get("preferred")) for item in figures), "expected preferred figure artefact"
+            assert any(
+                bool(item.get("preferred")) for item in figures
+            ), "expected preferred figure artefact"

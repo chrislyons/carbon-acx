@@ -34,9 +34,7 @@ class ManifestReferences(BaseModel):
     @model_validator(mode="after")
     def _validate_order(self) -> "ManifestReferences":
         if len(self.order) != self.line_count:
-            msg = (
-                "references.order length must equal references.line_count"
-            )
+            msg = "references.order length must equal references.line_count"
             raise ValueError(msg)
         return self
 

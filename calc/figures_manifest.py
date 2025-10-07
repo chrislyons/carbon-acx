@@ -39,7 +39,10 @@ def _normalise_path(path: Path, root: Path) -> str:
 
 
 def _order_entries(citation_keys: Sequence[str]) -> list[ReferenceOrder]:
-    return [ReferenceOrder(index=idx, source_id=str(key)) for idx, key in enumerate(citation_keys, start=1)]
+    return [
+        ReferenceOrder(index=idx, source_id=str(key))
+        for idx, key in enumerate(citation_keys, start=1)
+    ]
 
 
 def build_figure_manifest(
@@ -59,9 +62,7 @@ def build_figure_manifest(
     artifact_root: Path,
 ) -> FigureManifest:
     if len(citation_keys) != len(references):
-        msg = (
-            "citation key count does not match reference line count for figure"
-        )
+        msg = "citation key count does not match reference line count for figure"
         raise ValueError(msg)
 
     references_model = ManifestReferences(
@@ -139,16 +140,34 @@ def build_collection_index(
                 figure_method=bundle.manifest.figure_method,
                 hash_prefix=bundle.manifest.hash_prefix,
                 manifests=[
-                    _artifact_entry(bundle.legacy_manifest_path, bundle.manifest_sha256, preferred=not preferred_flag),
-                    _artifact_entry(bundle.manifest_path, bundle.manifest_sha256, preferred=preferred_flag),
+                    _artifact_entry(
+                        bundle.legacy_manifest_path,
+                        bundle.manifest_sha256,
+                        preferred=not preferred_flag,
+                    ),
+                    _artifact_entry(
+                        bundle.manifest_path, bundle.manifest_sha256, preferred=preferred_flag
+                    ),
                 ],
                 figures=[
-                    _artifact_entry(bundle.legacy_figure_path, bundle.manifest.figure_sha256, preferred=not preferred_flag),
-                    _artifact_entry(bundle.figure_path, bundle.manifest.figure_sha256, preferred=preferred_flag),
+                    _artifact_entry(
+                        bundle.legacy_figure_path,
+                        bundle.manifest.figure_sha256,
+                        preferred=not preferred_flag,
+                    ),
+                    _artifact_entry(
+                        bundle.figure_path, bundle.manifest.figure_sha256, preferred=preferred_flag
+                    ),
                 ],
                 references=[
-                    _artifact_entry(bundle.legacy_references_path, bundle.references_sha256, preferred=not preferred_flag),
-                    _artifact_entry(bundle.references_path, bundle.references_sha256, preferred=preferred_flag),
+                    _artifact_entry(
+                        bundle.legacy_references_path,
+                        bundle.references_sha256,
+                        preferred=not preferred_flag,
+                    ),
+                    _artifact_entry(
+                        bundle.references_path, bundle.references_sha256, preferred=preferred_flag
+                    ),
                 ],
             )
         )
