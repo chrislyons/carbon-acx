@@ -17,6 +17,7 @@ from ..schema import (
     EmissionFactor,
     Entity,
     GridIntensity,
+    Layer,
     Operation,
     Profile,
     Site,
@@ -66,6 +67,10 @@ class DuckDbStore:
             payload.append(record)
         return payload
 
+    def load_layers(self) -> Sequence[Layer]:
+        rows = self._load("layers.csv")
+        return [Layer(**row) for row in rows]
+
     def load_entities(self) -> Sequence[Entity]:
         rows = self._load("entities.csv")
         return [Entity(**row) for row in rows]
@@ -80,11 +85,37 @@ class DuckDbStore:
 
     def load_operations(self) -> Sequence[Operation]:
         rows = self._load("operations.csv")
-        return [Operation(**row) for row in rows]
+        operations = [Operation(**row) for row in rows]
+        if not operations:
+            return operations
+
+        valid_layers = {layer.layer_id for layer in self.load_layers()}
+        missing = sorted(
+            {
+                operation.layer_id
+                for operation in operations
+                if operation.layer_id not in valid_layers
+            }
+        )
+        if missing:
+            missing_labels = ", ".join(layer.value for layer in missing)
+            raise ValueError(f"Unknown layer_id referenced by operations: {missing_labels}")
+        return operations
 
     def load_activities(self) -> Sequence[Activity]:
         rows = self._load("activities.csv")
-        return [Activity(**row) for row in rows]
+        activities = [Activity(**row) for row in rows]
+        if not activities:
+            return activities
+
+        valid_layers = {layer.layer_id for layer in self.load_layers()}
+        missing = sorted(
+            {activity.layer_id for activity in activities if activity.layer_id not in valid_layers}
+        )
+        if missing:
+            missing_labels = ", ".join(layer.value for layer in missing)
+            raise ValueError(f"Unknown layer_id referenced by activities: {missing_labels}")
+        return activities
 
     def load_emission_factors(self) -> Sequence[EmissionFactor]:
         rows = self._load("emission_factors.csv")

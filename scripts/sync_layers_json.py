@@ -44,8 +44,8 @@ def build_layer_entries(path: Path) -> list[dict[str, object]]:
         layer_id = (row.get("layer_id") or "").strip()
         if not layer_id:
             continue
-        title = (row.get("title") or layer_id.replace("_", " ")).strip()
-        summary = (row.get("summary") or "").strip()
+        title = (row.get("layer_name") or row.get("title") or layer_id.replace("_", " ")).strip()
+        summary = (row.get("description") or row.get("summary") or "").strip()
         optional = _normalise_boolean(row.get("ui_optional"))
         icon = (row.get("icon_slug") or "").strip() or None
         examples = _extract_examples(row.get("example_activities"))

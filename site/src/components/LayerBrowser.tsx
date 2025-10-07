@@ -104,7 +104,7 @@ export function SectorBrowser(): JSX.Element {
   const activitiesByLayer = audit?.activities_by_layer ?? {};
   const coverageByLayer = audit?.ef_coverage ?? {};
   const opsByLayer = audit?.ops_by_layer ?? {};
-  const seededHidden = useMemo(() => new Set(audit?.seeded_not_configured ?? []), [audit?.seeded_not_configured]);
+  const seededHidden = useMemo(() => new Set(audit?.hidden_in_ui ?? []), [audit?.hidden_in_ui]);
 
   const orderLayers = useCallback(
     (input: Set<string>): string[] => {

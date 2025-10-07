@@ -120,6 +120,18 @@ class LayerId(str, Enum):
         return self.value.title()
 
 
+LayerType = Literal["industry", "civilian", "crosscut"]
+
+
+class Layer(BaseModel):
+    layer_id: LayerId
+    layer_name: str
+    layer_type: LayerType
+    description: Optional[str] = None
+
+    model_config = BASE_MODEL_CONFIG
+
+
 class EntityType(str, Enum):
     CORPORATE = "corporate"
     MUNICIPAL = "municipal"
@@ -339,6 +351,7 @@ class Operation(BaseModel):
     operation_id: str
     asset_id: str
     activity_id: str
+    layer_id: LayerId
     functional_unit_id: Optional[str] = None
     utilization_basis: Optional[UtilizationBasis] = None
     period_start: Optional[str] = None
@@ -471,6 +484,17 @@ def load_operations(
     if not operations:
         return operations
 
+    layer_records = load_layers()
+    layer_ids = {layer.layer_id for layer in layer_records}
+    missing_layers = sorted(
+        {operation.layer_id for operation in operations if operation.layer_id not in layer_ids}
+    )
+    if missing_layers:
+        raise ValueError(
+            "Unknown layer_id referenced by operations: "
+            + ", ".join(layer.value for layer in missing_layers)
+        )
+
     asset_records = assets if assets is not None else load_assets()
     asset_ids: Set[str] = {asset.asset_id for asset in asset_records}
     missing_assets = sorted(
@@ -581,8 +605,42 @@ def load_profiles() -> List[Profile]:
     return _load_csv_list(DATA_DIR / "profiles.csv", Profile)
 
 
+def load_layers() -> List[Layer]:
+    layers = _load_csv_list(DATA_DIR / "layers.csv", Layer)
+    if not layers:
+        return layers
+
+    seen: set[LayerId] = set()
+    duplicates: set[str] = set()
+    for layer in layers:
+        if layer.layer_id in seen:
+            duplicates.add(layer.layer_id.value)
+        else:
+            seen.add(layer.layer_id)
+    if duplicates:
+        raise ValueError(
+            "Duplicate layer_id entries in layers.csv: " + ", ".join(sorted(duplicates))
+        )
+    return layers
+
+
 def load_activities() -> List[Activity]:
-    return _load_csv_list(DATA_DIR / "activities.csv", Activity)
+    activities = _load_csv_list(DATA_DIR / "activities.csv", Activity)
+    if not activities:
+        return activities
+
+    layer_records = load_layers()
+    layer_ids = {layer.layer_id for layer in layer_records}
+    missing_layers = sorted(
+        {activity.layer_id for activity in activities if activity.layer_id not in layer_ids}
+    )
+    if missing_layers:
+        raise ValueError(
+            "Unknown layer_id referenced by activities: "
+            + ", ".join(layer.value for layer in missing_layers)
+        )
+
+    return activities
 
 
 def load_functional_units() -> List[FunctionalUnit]:

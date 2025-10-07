@@ -1,13 +1,13 @@
-layer_id,title,summary,ui_optional,icon_slug,example_activities
-professional,Professional services,Baseline knowledge worker footprint anchored to hybrid office routines.,false,professional.svg,Coffee—12 oz hot; Toronto subway—per passenger-kilometre
-online,Online services,"SaaS, meetings, and streaming workloads for remote-first teams.",true,online.svg,Video conferencing hour; SaaS productivity suite seat
-industrial_light,Industrial (Light),"Lab, prototyping, and light fabrication scenarios for innovation hubs.",true,industrial_light.svg,Lab bench operation; Prototyping print run
-industrial_heavy,Industrial (Heavy),Full-scale manufacturing and heavy industry references for R&D insight.,true,industrial_heavy.svg,Steel batch furnace; Heavy equipment runtime
-industrial_heavy_military,Military operations,"Fuel-intensive air, land, and naval missions for defence and peacekeeping scenarios.",true,military_ops.svg,Military aviation (pkm); Armoured convoy patrol
-industrial_heavy_embodied,Weapons manufacturing,"Embodied emissions from armaments, aircraft, and vehicle production lines.",true,defense_embodied.svg,Fighter aircraft production; Armoured vehicle build
-buildings_defense,Defence installations,"Operational footprints for bases, depots, and secure facilities.",true,defense_building.svg,Military base (m²-year); Munitions depot (m²-year)
-modeled_events,Scenario simulations,Modeled warfighting and natural hazard scenarios with aggregated operational intensity.,true,conflict_modeled.svg,Armed conflict (month); Wildfire burned area—per hectare
-materials_chemicals,Defence supply chain,Energetic materials and upstream explosives manufacturing pathways.,true,chemicals_defense.svg,TNT explosive production; RDX explosive production
-personal_security_layer,Private security,"High-net-worth security operations spanning convoys, guards, and aerial patrols.",true,personal_security.svg,Private security convoy (km); Security helicopter (hour)
-biosphere_feedbacks,Earth system feedbacks,"Ocean, cryosphere, and permafrost feedback pathways with sink attenuation context.",true,online.svg,Ocean CO₂ uptake; Cryosphere albedo loss
-industrial_externalities,Industrial externalities,"Tailings, acid drainage, and hypoxic knock-on effects linked to industrial operations.",true,industrial_heavy.svg,Tailings pond footprint; Acid mine drainage
+layer_id,layer_name,layer_type,description,ui_optional,icon_slug,example_activities
+professional,Professional services,civilian,"Baseline knowledge worker footprint anchored to hybrid office routines.",false,professional.svg,"Coffee—12 oz hot; Toronto subway—per passenger-kilometre"
+online,Online services,civilian,"SaaS, meetings, and streaming workloads for remote-first teams.",true,online.svg,"Video conferencing hour; SaaS productivity suite seat"
+industrial_light,Industrial (Light),industry,"Lab, prototyping, and light fabrication scenarios for innovation hubs.",true,industrial_light.svg,"Lab bench operation; Prototyping print run"
+industrial_heavy,Industrial (Heavy),industry,"Full-scale manufacturing and heavy industry references for R&D insight.",true,industrial_heavy.svg,"Steel batch furnace; Heavy equipment runtime"
+industrial_heavy_military,Military operations,industry,"Fuel-intensive air, land, and naval missions for defence and peacekeeping scenarios.",true,military_ops.svg,"Military aviation (pkm); Armoured convoy patrol"
+industrial_heavy_embodied,Weapons manufacturing,industry,"Embodied emissions from armaments, aircraft, and vehicle production lines.",true,defense_embodied.svg,"Fighter aircraft production; Armoured vehicle build"
+buildings_defense,Defence installations,industry,"Operational footprints for bases, depots, and secure facilities.",true,defense_building.svg,"Military base (m²-year); Munitions depot (m²-year)"
+modeled_events,Scenario simulations,crosscut,"Modeled warfighting and natural hazard scenarios with aggregated operational intensity.",true,conflict_modeled.svg,"Armed conflict (month); Wildfire burned area—per hectare"
+materials_chemicals,Defence supply chain,industry,"Energetic materials and upstream explosives manufacturing pathways.",true,chemicals_defense.svg,"TNT explosive production; RDX explosive production"
+personal_security_layer,Private security,industry,"High-net-worth security operations spanning convoys, guards, and aerial patrols.",true,personal_security.svg,"Private security convoy (km); Security helicopter (hour)"
+biosphere_feedbacks,Earth system feedbacks,crosscut,"Ocean, cryosphere, and permafrost feedback pathways with sink attenuation context.",true,online.svg,"Ocean CO₂ uptake; Cryosphere albedo loss"
+industrial_externalities,Industrial externalities,crosscut,"Tailings, acid drainage, and hypoxic knock-on effects linked to industrial operations.",true,industrial_heavy.svg,"Tailings pond footprint; Acid mine drainage"
