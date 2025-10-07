@@ -11,10 +11,11 @@ SBOM_PATH := $(SBOM_DIR)/cyclonedx.json
 PACKAGED_ARTIFACTS_DIR := $(DIST_DIR)/packaged-artifacts
 PACKAGED_MANIFEST := $(PACKAGED_ARTIFACTS_DIR)/manifest.json
 DEFAULT_GENERATED_AT ?= 1970-01-01T00:00:00+00:00
+CATALOG_PATH := artifacts/catalog.json
 
 .PHONY: install lint test audit ci_build_pages app format validate release build-backend build site package sbom build-static \
         db_init db_import db_export build_csv build_db citations-scan refs-check refs-fetch refs-normalize refs-audit \
-        verify_manifests
+        verify_manifests catalog
 
 install:
 	poetry install --with dev --no-root
@@ -33,6 +34,7 @@ verify_manifests:
 
 $(LATEST_BUILD):
 	@mkdir -p $(DIST_ARTIFACTS_DIR)
+	$(MAKE) catalog
 	ACX_GENERATED_AT=$(DEFAULT_GENERATED_AT) ACX_DATA_BACKEND=$(ACX_DATA_BACKEND) ACX_OUTPUT_ROOT=$(DIST_ARTIFACTS_DIR) PYTHONPATH=. poetry run python -m calc.derive --output-root $(OUTPUT_BASE)
 	ACX_GENERATED_AT=$(DEFAULT_GENERATED_AT) ACX_DATA_BACKEND=$(ACX_DATA_BACKEND) PYTHONPATH=. poetry run python -m calc.derive intensity --fu all --output-dir $(DIST_ARTIFACTS_DIR)
 
@@ -71,6 +73,11 @@ package: $(PACKAGED_MANIFEST) site sbom
 	PYTHONPATH=. poetry run python -m scripts.prepare_pages_bundle --site $(DIST_SITE_DIR) --artifacts $(PACKAGED_ARTIFACTS_DIR)
 	@test -f $(SITE_LAYERS_JSON) || (echo "Missing site layer catalog: $(SITE_LAYERS_JSON)" >&2; exit 1)
 	@test -f $(DIST_SITE_DIR)/artifacts/layers.json || (echo "Missing packaged layer catalog: $(DIST_SITE_DIR)/artifacts/layers.json" >&2; exit 1)
+
+catalog: $(CATALOG_PATH)
+
+$(CATALOG_PATH): calc/make_catalog.py data/activities.csv data/emission_factors.csv data/profiles.csv data/activity_schedule.csv data/grid_intensity.csv
+	PYTHONPATH=. poetry run python -m calc.make_catalog --output $@
 
 ci_build_pages: install lint test package
 

@@ -1,0 +1,2376 @@
+{
+  "activities": [
+    {
+      "activity_id": "AGRI.BEEF.CARCASS.KG",
+      "label": "Beef carcass throughput\u2014per kg",
+      "category": "food_processing",
+      "layer_id": "industrial_heavy",
+      "default_unit": "kg"
+    },
+    {
+      "activity_id": "AGRI.POULTRY.READY.KG",
+      "label": "Poultry ready-to-cook throughput\u2014per kg",
+      "category": "food_processing",
+      "layer_id": "industrial_light",
+      "default_unit": "kg"
+    },
+    {
+      "activity_id": "AI.IMAGE.GENERATION.PROMPT",
+      "label": "Generative image inference per prompt",
+      "category": "ai",
+      "layer_id": "online",
+      "default_unit": "prompt"
+    },
+    {
+      "activity_id": "AI.LLM.INFER.1K_TOKENS.GENERIC",
+      "label": "LLM inference\u20141K token response",
+      "category": "ai",
+      "layer_id": "online",
+      "default_unit": "1k_tokens"
+    },
+    {
+      "activity_id": "AI.USAGE.ANTHROPIC.QUERY",
+      "label": "LLM usage\u2014Anthropic Claude query",
+      "category": "ai",
+      "layer_id": "online",
+      "default_unit": "1k_tokens"
+    },
+    {
+      "activity_id": "AI.USAGE.GOOGLE.QUERY",
+      "label": "LLM usage\u2014Google Gemini query",
+      "category": "ai",
+      "layer_id": "online",
+      "default_unit": "1k_tokens"
+    },
+    {
+      "activity_id": "AI.USAGE.GPT.QUERY",
+      "label": "LLM usage\u2014OpenAI GPT query",
+      "category": "ai",
+      "layer_id": "online",
+      "default_unit": "1k_tokens"
+    },
+    {
+      "activity_id": "AMD.ACID.DRAINAGE.M3.YEAR",
+      "label": "Acid mine drainage (m\u00b3\u00b7yr)",
+      "category": "industrial_external",
+      "layer_id": "industrial_externalities",
+      "default_unit": "cubic_metre_year"
+    },
+    {
+      "activity_id": "BUILDING.HOSPITAL.M2.YEAR",
+      "label": "Hospital energy use (m\u00b2-year)",
+      "category": "buildings",
+      "layer_id": "professional",
+      "default_unit": "square_metre_year"
+    },
+    {
+      "activity_id": "BUILDING.OFFICE.M2.YEAR",
+      "label": "Office building energy use (m\u00b2-year)",
+      "category": "buildings",
+      "layer_id": "professional",
+      "default_unit": "square_metre_year"
+    },
+    {
+      "activity_id": "BUILDING.RESIDENTIAL.M2.YEAR",
+      "label": "Residential building energy use (m\u00b2-year)",
+      "category": "buildings",
+      "layer_id": "professional",
+      "default_unit": "square_metre_year"
+    },
+    {
+      "activity_id": "CHEM.RDX.TONNE",
+      "label": "RDX explosive production (t)",
+      "category": "defense_supply_chain",
+      "layer_id": "materials_chemicals",
+      "default_unit": "tonne"
+    },
+    {
+      "activity_id": "CHEM.TNT.TONNE",
+      "label": "TNT explosive production (t)",
+      "category": "defense_supply_chain",
+      "layer_id": "materials_chemicals",
+      "default_unit": "tonne"
+    },
+    {
+      "activity_id": "CLOTHING.JACKET.SYNTH",
+      "label": "Synthetic jacket",
+      "category": "clothing",
+      "layer_id": "professional",
+      "default_unit": "garment"
+    },
+    {
+      "activity_id": "CLOTHING.JEANS.DENIM",
+      "label": "Denim jeans",
+      "category": "clothing",
+      "layer_id": "professional",
+      "default_unit": "garment"
+    },
+    {
+      "activity_id": "CLOTHING.SHOES.SNEAKERS",
+      "label": "Sneakers",
+      "category": "clothing",
+      "layer_id": "professional",
+      "default_unit": "garment"
+    },
+    {
+      "activity_id": "CLOTHING.TSHIRT.COTTON",
+      "label": "Cotton T-shirt",
+      "category": "clothing",
+      "layer_id": "professional",
+      "default_unit": "garment"
+    },
+    {
+      "activity_id": "CLOUD.DOWNLOAD.GB",
+      "label": "Cloud data download\u2014per GB",
+      "category": "downloads",
+      "layer_id": "online",
+      "default_unit": "GB"
+    },
+    {
+      "activity_id": "CLOUD.STORAGE.SYNC.GB_MONTH",
+      "label": "Cloud storage sync per GB-month",
+      "category": "cloud",
+      "layer_id": "online",
+      "default_unit": "gb_month"
+    },
+    {
+      "activity_id": "CONF.AUDIO.PER_PARTICIPANT_HOUR",
+      "label": "Audio-only conference per participant-hour",
+      "category": "conferencing",
+      "layer_id": "online",
+      "default_unit": "hour"
+    },
+    {
+      "activity_id": "CONF.HD.PARTICIPANT_HOUR",
+      "label": "HD video conference per participant-hour",
+      "category": "conferencing",
+      "layer_id": "online",
+      "default_unit": "hour"
+    },
+    {
+      "activity_id": "CRYO.ALBEDO.LOSS.WM2",
+      "label": "Cryosphere albedo forcing (W/m\u00b2)",
+      "category": "earth_system",
+      "layer_id": "biosphere_feedbacks",
+      "default_unit": "watt_per_square_metre"
+    },
+    {
+      "activity_id": "DEVICE.LAPTOP.UNIT",
+      "label": "Laptop unit produced",
+      "category": "electronics",
+      "layer_id": "industrial_light",
+      "default_unit": "unit"
+    },
+    {
+      "activity_id": "DEVICE.SMARTPHONE.UNIT",
+      "label": "Smartphone unit produced",
+      "category": "electronics",
+      "layer_id": "industrial_light",
+      "default_unit": "unit"
+    },
+    {
+      "activity_id": "DEVICE.TV.UNIT",
+      "label": "Television unit produced",
+      "category": "electronics",
+      "layer_id": "industrial_light",
+      "default_unit": "unit"
+    },
+    {
+      "activity_id": "DOWNLOAD.GAME.CONSOLE.50GB",
+      "label": "Download 50 GB console game",
+      "category": "downloads",
+      "layer_id": "online",
+      "default_unit": "download"
+    },
+    {
+      "activity_id": "ENERGY.CA-ON.GRID.KWH",
+      "label": "Ontario grid electricity\u2014per kWh",
+      "category": "energy",
+      "layer_id": "professional",
+      "default_unit": "kWh"
+    },
+    {
+      "activity_id": "ENERGY.GASOLINE.LITRE",
+      "label": "Gasoline refined & delivered (L)",
+      "category": "energy",
+      "layer_id": "industrial_heavy",
+      "default_unit": "L"
+    },
+    {
+      "activity_id": "ENERGY.KWH.DELIVERED",
+      "label": "Electricity delivered (kWh)",
+      "category": "energy",
+      "layer_id": "industrial_heavy",
+      "default_unit": "kWh"
+    },
+    {
+      "activity_id": "ENERGY.NATGAS.M3",
+      "label": "Natural gas delivered (m3)",
+      "category": "energy",
+      "layer_id": "industrial_heavy",
+      "default_unit": "m3"
+    },
+    {
+      "activity_id": "FOOD.COFFEE.CUP.HOT",
+      "label": "Coffee\u201412 oz hot",
+      "category": "food",
+      "layer_id": "professional",
+      "default_unit": "cup"
+    },
+    {
+      "activity_id": "FOOD.COFFEE.ROASTED.KG",
+      "label": "Roasted coffee throughput\u2014per kg",
+      "category": "food_processing",
+      "layer_id": "industrial_light",
+      "default_unit": "kg"
+    },
+    {
+      "activity_id": "FOOD.MEAL.BEEF.SERVING",
+      "label": "Meal with beef\u2014per serving",
+      "category": "food",
+      "layer_id": "professional",
+      "default_unit": "serving"
+    },
+    {
+      "activity_id": "FOOD.MEAL.CHICKEN.SERVING",
+      "label": "Meal with chicken\u2014per serving",
+      "category": "food",
+      "layer_id": "professional",
+      "default_unit": "serving"
+    },
+    {
+      "activity_id": "FOOD.MEAL.VEG.SERVING",
+      "label": "Vegetarian meal\u2014per serving",
+      "category": "food",
+      "layer_id": "professional",
+      "default_unit": "serving"
+    },
+    {
+      "activity_id": "IND_HEAVY.CEMENT.CLINKER.TONNE",
+      "label": "Cement clinker production\u2014per tonne",
+      "category": "cement",
+      "layer_id": "industrial_heavy",
+      "default_unit": "tonne"
+    },
+    {
+      "activity_id": "IND_HEAVY.MINING.HAUL.TRUCK.HOUR",
+      "label": "Mining haul truck operation\u2014per hour",
+      "category": "mining",
+      "layer_id": "industrial_heavy",
+      "default_unit": "hour"
+    },
+    {
+      "activity_id": "IND_HEAVY.REFINING.FIRED_UNIT.MMBTU",
+      "label": "Refinery fired heaters\u2014per MMBtu fired",
+      "category": "refining",
+      "layer_id": "industrial_heavy",
+      "default_unit": "mmbtu"
+    },
+    {
+      "activity_id": "IND_HEAVY.STEEL.EAF.TONNE",
+      "label": "EAF steelmaking\u2014per tonne",
+      "category": "steel",
+      "layer_id": "industrial_heavy",
+      "default_unit": "tonne"
+    },
+    {
+      "activity_id": "IND_LIGHT.CONSTRUCTION.SITE_DAY",
+      "label": "Light-industrial construction site\u2014per workday",
+      "category": "construction",
+      "layer_id": "industrial_light",
+      "default_unit": "site_day"
+    },
+    {
+      "activity_id": "IND_LIGHT.LOGISTICS.FORKLIFT.HOUR",
+      "label": "Forklift material handling\u2014per operating hour",
+      "category": "logistics",
+      "layer_id": "industrial_light",
+      "default_unit": "hour"
+    },
+    {
+      "activity_id": "IND_LIGHT.WAREHOUSE.BASE_LOAD.SQFT_MONTH",
+      "label": "Warehouse base building load\u2014per ft\u00b2-month",
+      "category": "warehousing",
+      "layer_id": "industrial_light",
+      "default_unit": "ft2_month"
+    },
+    {
+      "activity_id": "LOGI.AIR.TONNEKM",
+      "label": "Air freight linehaul\u2014per tonne-kilometre",
+      "category": "freight",
+      "layer_id": "industrial_heavy",
+      "default_unit": "tonne_km"
+    },
+    {
+      "activity_id": "LOGI.PARCEL.URBAN",
+      "label": "Urban parcel delivery\u2014per parcel",
+      "category": "logistics",
+      "layer_id": "industrial_light",
+      "default_unit": "parcel"
+    },
+    {
+      "activity_id": "LOGI.SHIPPING.BULK.TONNEKM",
+      "label": "Bulk carrier freight (tonne-km)",
+      "category": "logistics",
+      "layer_id": "industrial_heavy",
+      "default_unit": "tonne_km"
+    },
+    {
+      "activity_id": "LOGI.SHIPPING.CONTAINER.TONNEKM",
+      "label": "Container ship freight (tonne-km)",
+      "category": "logistics",
+      "layer_id": "industrial_heavy",
+      "default_unit": "tonne_km"
+    },
+    {
+      "activity_id": "LOGI.TRUCK.TONNEKM",
+      "label": "Truck freight linehaul\u2014per tonne-kilometre",
+      "category": "freight",
+      "layer_id": "industrial_heavy",
+      "default_unit": "tonne_km"
+    },
+    {
+      "activity_id": "MATERIAL.CEMENT.CLINKER.TONNE",
+      "label": "Clinker production\u2014per tonne",
+      "category": "materials",
+      "layer_id": "industrial_heavy",
+      "default_unit": "tonne"
+    },
+    {
+      "activity_id": "MATERIAL.PET.VIRGIN.TONNE",
+      "label": "Virgin PET polymer production\u2014per tonne",
+      "category": "materials",
+      "layer_id": "industrial_heavy",
+      "default_unit": "tonne"
+    },
+    {
+      "activity_id": "MATERIAL.STEEL.CRUDESLAB.TONNE",
+      "label": "Crude steel slab production\u2014per tonne",
+      "category": "materials",
+      "layer_id": "industrial_heavy",
+      "default_unit": "tonne"
+    },
+    {
+      "activity_id": "MEDIA.STREAM.HD.HOUR",
+      "label": "HD video streaming\u2014per hour",
+      "category": "media",
+      "layer_id": "online",
+      "default_unit": "hour"
+    },
+    {
+      "activity_id": "MEDIA.STREAM.HD.HOUR.TV",
+      "label": "HD video streaming on TV\u2014per hour",
+      "category": "media",
+      "layer_id": "online",
+      "default_unit": "hour"
+    },
+    {
+      "activity_id": "MEDIA.STREAM.SD.HOUR.MOBILE",
+      "label": "SD video streaming on mobile\u2014per hour",
+      "category": "media",
+      "layer_id": "online",
+      "default_unit": "hour"
+    },
+    {
+      "activity_id": "MEDIA.STREAM.UHD.HOUR",
+      "label": "UHD video streaming\u2014per hour",
+      "category": "media",
+      "layer_id": "online",
+      "default_unit": "hour"
+    },
+    {
+      "activity_id": "MEDIA.STREAM.UHD.HOUR.TV",
+      "label": "Ultra HD (4K) video streaming on TV\u2014per hour",
+      "category": "media",
+      "layer_id": "online",
+      "default_unit": "hour"
+    },
+    {
+      "activity_id": "MIL.AIRCRAFT.UNIT",
+      "label": "Fighter aircraft production (unit)",
+      "category": "weapons_production",
+      "layer_id": "industrial_heavy_embodied",
+      "default_unit": "unit"
+    },
+    {
+      "activity_id": "MIL.BASE.M2.YEAR",
+      "label": "Military base (m\u00b2-year)",
+      "category": "bases_infrastructure",
+      "layer_id": "buildings_defense",
+      "default_unit": "square_metre_year"
+    },
+    {
+      "activity_id": "MIL.CONFLICT.MONTH",
+      "label": "Armed conflict (month)",
+      "category": "conflict_scenarios",
+      "layer_id": "modeled_events",
+      "default_unit": "month"
+    },
+    {
+      "activity_id": "MIL.DEPOT.M2.YEAR",
+      "label": "Munitions depot (m\u00b2-year)",
+      "category": "bases_infrastructure",
+      "layer_id": "buildings_defense",
+      "default_unit": "square_metre_year"
+    },
+    {
+      "activity_id": "MIL.FLIGHT.PKM",
+      "label": "Military aviation (pkm)",
+      "category": "military_mobility",
+      "layer_id": "industrial_heavy_military",
+      "default_unit": "pkm"
+    },
+    {
+      "activity_id": "MIL.MUNITIONS.DETONATED.TONNE",
+      "label": "Munitions detonated\u2014per tonne",
+      "category": "military_operations",
+      "layer_id": "industrial_heavy_military",
+      "default_unit": "tonne"
+    },
+    {
+      "activity_id": "MIL.MUNITIONS.DETONATION.EVENT",
+      "label": "Munitions detonation event",
+      "category": "weapons_effects",
+      "layer_id": "modeled_events",
+      "default_unit": "event"
+    },
+    {
+      "activity_id": "MIL.MUNITIONS.TONNE",
+      "label": "Ammunition production (t)",
+      "category": "weapons_production",
+      "layer_id": "industrial_heavy_embodied",
+      "default_unit": "tonne"
+    },
+    {
+      "activity_id": "MIL.NAVAL.TONNEKM",
+      "label": "Military naval shipping (tonne-km)",
+      "category": "military_mobility",
+      "layer_id": "industrial_heavy_military",
+      "default_unit": "tonne_km"
+    },
+    {
+      "activity_id": "MIL.TANK.UNIT",
+      "label": "Armoured vehicle production (unit)",
+      "category": "weapons_production",
+      "layer_id": "industrial_heavy_embodied",
+      "default_unit": "unit"
+    },
+    {
+      "activity_id": "MIL.VEHICLE.KM",
+      "label": "Military ground vehicles (km)",
+      "category": "military_mobility",
+      "layer_id": "industrial_heavy_military",
+      "default_unit": "km"
+    },
+    {
+      "activity_id": "MODELED.WILDFIRE.EVENT",
+      "label": "Wildfire incident\u2014per event",
+      "category": "natural_hazards",
+      "layer_id": "modeled_events",
+      "default_unit": "event"
+    },
+    {
+      "activity_id": "MODELED.WILDFIRE.HECTARE",
+      "label": "Wildfire burned area\u2014per hectare",
+      "category": "natural_hazards",
+      "layer_id": "modeled_events",
+      "default_unit": "hectare"
+    },
+    {
+      "activity_id": "MUNI.WASTE.INCINERATION.KG",
+      "label": "Mixed MSW sent to energy-from-waste\u2014per kg",
+      "category": "municipal_services",
+      "layer_id": "industrial_light",
+      "default_unit": "kg"
+    },
+    {
+      "activity_id": "MUNI.WASTE.LANDFILL.KG",
+      "label": "Mixed MSW managed via landfill\u2014per kg",
+      "category": "municipal_services",
+      "layer_id": "industrial_light",
+      "default_unit": "kg"
+    },
+    {
+      "activity_id": "MUNI.WATER.POTABLE.M3",
+      "label": "Potable water treatment & delivery\u2014per m\u00b3",
+      "category": "municipal_services",
+      "layer_id": "industrial_light",
+      "default_unit": "m3"
+    },
+    {
+      "activity_id": "MUSIC.STREAM.STANDARD.HOUR",
+      "label": "Music streaming\u2014standard quality per hour",
+      "category": "media",
+      "layer_id": "online",
+      "default_unit": "hour"
+    },
+    {
+      "activity_id": "OCEAN.ACIDIFICATION.PH.DEC",
+      "label": "Surface-ocean pH decline (\u0394pH/decade)",
+      "category": "earth_system",
+      "layer_id": "biosphere_feedbacks",
+      "default_unit": "ph_decade"
+    },
+    {
+      "activity_id": "OCEAN.CO2.UPTAKE.PGCO2",
+      "label": "Ocean CO\u2082 absorption (Pg CO\u2082/yr)",
+      "category": "earth_system",
+      "layer_id": "biosphere_feedbacks",
+      "default_unit": "carbon_dioxide_pg_per_year"
+    },
+    {
+      "activity_id": "ONLINE.CDN.EDGE.GB",
+      "label": "CDN edge delivery\u2014per GB",
+      "category": "online_services",
+      "layer_id": "online",
+      "default_unit": "gb"
+    },
+    {
+      "activity_id": "ONLINE.DC.CLOUD.SERVER.HOUR",
+      "label": "Hyperscale cloud server\u2014per hour",
+      "category": "online_services",
+      "layer_id": "online",
+      "default_unit": "server_hour"
+    },
+    {
+      "activity_id": "ONLINE.DC.COLOCATION.RACK.MONTH",
+      "label": "Colocation rack footprint\u2014per month",
+      "category": "online_services",
+      "layer_id": "online",
+      "default_unit": "rack_month"
+    },
+    {
+      "activity_id": "PERMAFROST.EMISSIONS.PGCO2E",
+      "label": "Permafrost carbon release (Pg CO\u2082e/yr)",
+      "category": "earth_system",
+      "layer_id": "biosphere_feedbacks",
+      "default_unit": "carbon_dioxide_equivalent_pg_per_year"
+    },
+    {
+      "activity_id": "REFR.APPL.FRIDGE.OP.YEAR",
+      "label": "Refrigerator operation (year)",
+      "category": "appliance_domestic",
+      "layer_id": "professional",
+      "default_unit": "year"
+    },
+    {
+      "activity_id": "REFR.APPL.FRIDGE.UNIT",
+      "label": "Refrigerator unit produced",
+      "category": "appliance_domestic",
+      "layer_id": "industrial_light",
+      "default_unit": "unit"
+    },
+    {
+      "activity_id": "REFR.COLDCHAIN.SUPERMARKET.KG",
+      "label": "Supermarket cold storage (kg food-year)",
+      "category": "industrial_light",
+      "layer_id": "industrial_light",
+      "default_unit": "kg_foodyear"
+    },
+    {
+      "activity_id": "REFR.HVAC.AC.OP.YEAR",
+      "label": "Air-conditioner operation (year)",
+      "category": "building_services",
+      "layer_id": "industrial_light",
+      "default_unit": "year"
+    },
+    {
+      "activity_id": "REFR.HVAC.AC.UNIT",
+      "label": "Air-conditioner unit produced",
+      "category": "building_services",
+      "layer_id": "industrial_light",
+      "default_unit": "unit"
+    },
+    {
+      "activity_id": "RIVER.HYPOXIA.KM2.YEAR",
+      "label": "River/ocean hypoxia (km\u00b2\u00b7yr)",
+      "category": "water_quality_cycles",
+      "layer_id": "biosphere_feedbacks",
+      "default_unit": "square_kilometre_year"
+    },
+    {
+      "activity_id": "SEC.CONVOY.KM",
+      "label": "Private security convoy (km)",
+      "category": "private_security",
+      "layer_id": "personal_security_layer",
+      "default_unit": "km"
+    },
+    {
+      "activity_id": "SEC.GUARD.HOUR",
+      "label": "Security guard presence (hour)",
+      "category": "private_security",
+      "layer_id": "personal_security_layer",
+      "default_unit": "hour"
+    },
+    {
+      "activity_id": "SEC.HELI.HOUR",
+      "label": "Security helicopter (hour)",
+      "category": "private_security",
+      "layer_id": "personal_security_layer",
+      "default_unit": "hour"
+    },
+    {
+      "activity_id": "SOCIAL.FACEBOOK.HOUR",
+      "label": "Facebook usage\u2014per hour",
+      "category": "social",
+      "layer_id": "online",
+      "default_unit": "hour"
+    },
+    {
+      "activity_id": "SOCIAL.INSTAGRAM.HOUR",
+      "label": "Instagram usage\u2014per hour",
+      "category": "social",
+      "layer_id": "online",
+      "default_unit": "hour"
+    },
+    {
+      "activity_id": "SOCIAL.LINKEDIN.HOUR",
+      "label": "LinkedIn usage\u2014per hour",
+      "category": "social",
+      "layer_id": "online",
+      "default_unit": "hour"
+    },
+    {
+      "activity_id": "SOCIAL.SCROLL.HOUR.MOBILE",
+      "label": "Mobile social media browsing\u2014per hour",
+      "category": "social",
+      "layer_id": "online",
+      "default_unit": "hour"
+    },
+    {
+      "activity_id": "SOCIAL.SNAPCHAT.HOUR",
+      "label": "Snapchat usage\u2014per hour",
+      "category": "social",
+      "layer_id": "online",
+      "default_unit": "hour"
+    },
+    {
+      "activity_id": "SOCIAL.TIKTOK.HOUR",
+      "label": "TikTok usage\u2014per hour",
+      "category": "social",
+      "layer_id": "online",
+      "default_unit": "hour"
+    },
+    {
+      "activity_id": "SOCIAL.TWITTER.HOUR",
+      "label": "Twitter/X usage\u2014per hour",
+      "category": "social",
+      "layer_id": "online",
+      "default_unit": "hour"
+    },
+    {
+      "activity_id": "SOCIAL.YOUTUBE.HOUR",
+      "label": "YouTube usage\u2014per hour",
+      "category": "social",
+      "layer_id": "online",
+      "default_unit": "hour"
+    },
+    {
+      "activity_id": "TAILINGS.DEGASS.EVENT",
+      "label": "Tailings degassing (event)",
+      "category": "industrial_external",
+      "layer_id": "industrial_externalities",
+      "default_unit": "event"
+    },
+    {
+      "activity_id": "TAILINGS.POND.M2.YEAR",
+      "label": "Tailings pond (m\u00b2\u00b7yr)",
+      "category": "industrial_external",
+      "layer_id": "industrial_externalities",
+      "default_unit": "square_metre_year"
+    },
+    {
+      "activity_id": "TRAN.DELIVERY.TRUCK.CLASS6.KM",
+      "label": "Class-6 beverage delivery\u2014per kilometre",
+      "category": "logistics",
+      "layer_id": "industrial_light",
+      "default_unit": "km"
+    },
+    {
+      "activity_id": "TRAN.FLIGHT.LONGHAUL.PKM",
+      "label": "Long-haul passenger flight (pkm)",
+      "category": "aviation",
+      "layer_id": "industrial_light",
+      "default_unit": "pkm"
+    },
+    {
+      "activity_id": "TRAN.FLIGHT.PRIVATE.PKM",
+      "label": "Private jet flight (pkm)",
+      "category": "aviation",
+      "layer_id": "professional",
+      "default_unit": "pkm"
+    },
+    {
+      "activity_id": "TRAN.FLIGHT.SHORTHAUL.PKM",
+      "label": "Short-haul passenger flight (pkm)",
+      "category": "aviation",
+      "layer_id": "industrial_light",
+      "default_unit": "pkm"
+    },
+    {
+      "activity_id": "TRAN.SCHOOLRUN.BIKE.KM",
+      "label": "School run by bike\u2014per kilometre",
+      "category": "mobility",
+      "layer_id": "professional",
+      "default_unit": "km"
+    },
+    {
+      "activity_id": "TRAN.SCHOOLRUN.CAR.KM",
+      "label": "School run by car\u2014per kilometre",
+      "category": "mobility",
+      "layer_id": "professional",
+      "default_unit": "km"
+    },
+    {
+      "activity_id": "TRAN.TTC.BUS.KM",
+      "label": "Toronto bus\u2014per passenger-kilometre",
+      "category": "mobility",
+      "layer_id": "professional",
+      "default_unit": "km"
+    },
+    {
+      "activity_id": "TRAN.TTC.SUBWAY.KM",
+      "label": "Toronto subway\u2014per passenger-kilometre",
+      "category": "mobility",
+      "layer_id": "professional",
+      "default_unit": "km"
+    },
+    {
+      "activity_id": "stream",
+      "label": "stream",
+      "category": null,
+      "layer_id": "professional",
+      "default_unit": null
+    }
+  ],
+  "emission_factors": [
+    {
+      "activity_id": "AGRI.BEEF.CARCASS.KG",
+      "unit": "kg",
+      "ef_value_central": 60000.0,
+      "ef_lo": 36000.0,
+      "ef_hi": 82000.0,
+      "scope_boundary": "cradle-to-farmgate",
+      "region": "GLOBAL",
+      "vintage_year": 2018,
+      "source_id": "SRC.POORE2018"
+    },
+    {
+      "activity_id": "AGRI.POULTRY.READY.KG",
+      "unit": "kg",
+      "ef_value_central": 6000.0,
+      "ef_lo": 4000.0,
+      "ef_hi": 7000.0,
+      "scope_boundary": "cradle-to-farmgate",
+      "region": "GLOBAL",
+      "vintage_year": 2018,
+      "source_id": "SRC.POORE2018"
+    },
+    {
+      "activity_id": "AI.LLM.INFER.1K_TOKENS.GENERIC",
+      "unit": "1k_tokens",
+      "ef_value_central": null,
+      "ef_lo": null,
+      "ef_hi": null,
+      "scope_boundary": "Electricity LCA",
+      "region": "CA-ON",
+      "vintage_year": 2025,
+      "source_id": "SRC.LBNL.DC.2024"
+    },
+    {
+      "activity_id": "AI.USAGE.ANTHROPIC.QUERY",
+      "unit": "1k_tokens",
+      "ef_value_central": 250.0,
+      "ef_lo": 180.0,
+      "ef_hi": 350.0,
+      "scope_boundary": "Electricity LCA",
+      "region": "CA",
+      "vintage_year": 2023,
+      "source_id": "SRC.LUCCIONI.2023"
+    },
+    {
+      "activity_id": "AI.USAGE.GOOGLE.QUERY",
+      "unit": "1k_tokens",
+      "ef_value_central": 200.0,
+      "ef_lo": 150.0,
+      "ef_hi": 300.0,
+      "scope_boundary": "Electricity LCA",
+      "region": "CA",
+      "vintage_year": 2021,
+      "source_id": "SRC.PATTERSON.2022"
+    },
+    {
+      "activity_id": "AI.USAGE.GPT.QUERY",
+      "unit": "1k_tokens",
+      "ef_value_central": 280.0,
+      "ef_lo": 200.0,
+      "ef_hi": 400.0,
+      "scope_boundary": "Electricity LCA",
+      "region": "CA",
+      "vintage_year": 2023,
+      "source_id": "SRC.LUCCIONI.2023"
+    },
+    {
+      "activity_id": "AMD.ACID.DRAINAGE.M3.YEAR",
+      "unit": "cubic_metre_year",
+      "ef_value_central": 275.0,
+      "ef_lo": 50.0,
+      "ef_hi": 500.0,
+      "scope_boundary": "Modeled operations",
+      "region": "GLOBAL",
+      "vintage_year": 2023,
+      "source_id": "SRC.INTL.MINING.2022"
+    },
+    {
+      "activity_id": "BUILDING.HOSPITAL.M2.YEAR",
+      "unit": "square_metre_year",
+      "ef_value_central": 250000.0,
+      "ef_lo": null,
+      "ef_hi": null,
+      "scope_boundary": "Operational electricity",
+      "region": "CA-ON",
+      "vintage_year": 2024,
+      "source_id": "SRC.IEA.NRCAN.BUILDINGS.2024"
+    },
+    {
+      "activity_id": "BUILDING.OFFICE.M2.YEAR",
+      "unit": "square_metre_year",
+      "ef_value_central": 80000.0,
+      "ef_lo": null,
+      "ef_hi": null,
+      "scope_boundary": "Operational electricity",
+      "region": "CA-ON",
+      "vintage_year": 2024,
+      "source_id": "SRC.IEA.NRCAN.BUILDINGS.2024"
+    },
+    {
+      "activity_id": "BUILDING.RESIDENTIAL.M2.YEAR",
+      "unit": "square_metre_year",
+      "ef_value_central": 50000.0,
+      "ef_lo": null,
+      "ef_hi": null,
+      "scope_boundary": "Operational electricity",
+      "region": "CA-ON",
+      "vintage_year": 2024,
+      "source_id": "SRC.IEA.NRCAN.BUILDINGS.2024"
+    },
+    {
+      "activity_id": "CHEM.RDX.TONNE",
+      "unit": "tonne",
+      "ef_value_central": 6000000.0,
+      "ef_lo": 5000000.0,
+      "ef_hi": 7000000.0,
+      "scope_boundary": "cradle-to-gate",
+      "region": "GLOBAL",
+      "vintage_year": 2023,
+      "source_id": "SRC.CEOBS.2023"
+    },
+    {
+      "activity_id": "CHEM.TNT.TONNE",
+      "unit": "tonne",
+      "ef_value_central": 6000000.0,
+      "ef_lo": 5000000.0,
+      "ef_hi": 7000000.0,
+      "scope_boundary": "cradle-to-gate",
+      "region": "GLOBAL",
+      "vintage_year": 2023,
+      "source_id": "SRC.CEOBS.2023"
+    },
+    {
+      "activity_id": "CLOTHING.JACKET.SYNTH",
+      "unit": "garment",
+      "ef_value_central": 25000.0,
+      "ef_lo": 15000.0,
+      "ef_hi": 40000.0,
+      "scope_boundary": "cradle-to-grave",
+      "region": "GLOBAL",
+      "vintage_year": 2020,
+      "source_id": "SRC.NIINIMAKI2020"
+    },
+    {
+      "activity_id": "CLOTHING.JEANS.DENIM",
+      "unit": "garment",
+      "ef_value_central": 33000.0,
+      "ef_lo": 20000.0,
+      "ef_hi": 50000.0,
+      "scope_boundary": "cradle-to-grave",
+      "region": "GLOBAL",
+      "vintage_year": 2018,
+      "source_id": "SRC.QUANTIS2018"
+    },
+    {
+      "activity_id": "CLOTHING.SHOES.SNEAKERS",
+      "unit": "garment",
+      "ef_value_central": 14000.0,
+      "ef_lo": 10000.0,
+      "ef_hi": 20000.0,
+      "scope_boundary": "cradle-to-grave",
+      "region": "GLOBAL",
+      "vintage_year": 2018,
+      "source_id": "SRC.QUANTIS2018"
+    },
+    {
+      "activity_id": "CLOTHING.TSHIRT.COTTON",
+      "unit": "garment",
+      "ef_value_central": 4000.0,
+      "ef_lo": 3000.0,
+      "ef_hi": 6000.0,
+      "scope_boundary": "cradle-to-grave",
+      "region": "GLOBAL",
+      "vintage_year": 2017,
+      "source_id": "SRC.WRAP2017"
+    },
+    {
+      "activity_id": "CLOUD.DOWNLOAD.GB",
+      "unit": "GB",
+      "ef_value_central": null,
+      "ef_lo": null,
+      "ef_hi": null,
+      "scope_boundary": "Electricity LCA",
+      "region": "CA-ON",
+      "vintage_year": 2024,
+      "source_id": "SRC.SCOPE3.DATA_TRANSFER.2024"
+    },
+    {
+      "activity_id": "CONF.HD.PARTICIPANT_HOUR",
+      "unit": "hour",
+      "ef_value_central": null,
+      "ef_lo": null,
+      "ef_hi": null,
+      "scope_boundary": "Electricity LCA",
+      "region": "CA-ON",
+      "vintage_year": 2024,
+      "source_id": "SRC.NETFLIX.SR.2023"
+    },
+    {
+      "activity_id": "CRYO.ALBEDO.LOSS.WM2",
+      "unit": "watt_per_square_metre",
+      "ef_value_central": 0.11,
+      "ef_lo": 0.07,
+      "ef_hi": 0.15,
+      "scope_boundary": "Modeled operations",
+      "region": "GLOBAL",
+      "vintage_year": 2023,
+      "source_id": "SRC.NASA.CRYO.2023"
+    },
+    {
+      "activity_id": "DEVICE.LAPTOP.UNIT",
+      "unit": "unit",
+      "ef_value_central": 200000.0,
+      "ef_lo": null,
+      "ef_hi": null,
+      "scope_boundary": "cradle-to-grave",
+      "region": "CA-ON",
+      "vintage_year": 2024,
+      "source_id": "SRC.APPLE.MALMODIN.2024"
+    },
+    {
+      "activity_id": "DEVICE.SMARTPHONE.UNIT",
+      "unit": "unit",
+      "ef_value_central": 70000.0,
+      "ef_lo": null,
+      "ef_hi": null,
+      "scope_boundary": "cradle-to-grave",
+      "region": "CA-ON",
+      "vintage_year": 2024,
+      "source_id": "SRC.APPLE.MALMODIN.2024"
+    },
+    {
+      "activity_id": "DEVICE.TV.UNIT",
+      "unit": "unit",
+      "ef_value_central": 300000.0,
+      "ef_lo": null,
+      "ef_hi": null,
+      "scope_boundary": "cradle-to-grave",
+      "region": "CA-ON",
+      "vintage_year": 2024,
+      "source_id": "SRC.APPLE.MALMODIN.2024"
+    },
+    {
+      "activity_id": "ENERGY.CA-ON.GRID.KWH",
+      "unit": "kWh",
+      "ef_value_central": 28.0,
+      "ef_lo": null,
+      "ef_hi": null,
+      "scope_boundary": "Electricity LCA",
+      "region": "CA-ON",
+      "vintage_year": 2024,
+      "source_id": "SRC.IESO.POWERDATA.2025"
+    },
+    {
+      "activity_id": "ENERGY.GASOLINE.LITRE",
+      "unit": "L",
+      "ef_value_central": 2300.0,
+      "ef_lo": 2100.0,
+      "ef_hi": 2600.0,
+      "scope_boundary": "WTT+TTW",
+      "region": "CA",
+      "vintage_year": 2024,
+      "source_id": "SRC.NRCAN.FUEL_LCA.2024"
+    },
+    {
+      "activity_id": "ENERGY.KWH.DELIVERED",
+      "unit": "kWh",
+      "ef_value_central": 35.0,
+      "ef_lo": 25.0,
+      "ef_hi": 60.0,
+      "scope_boundary": "Electricity LCA",
+      "region": "CA-ON",
+      "vintage_year": 2024,
+      "source_id": "SRC.IESO.POWERDATA.2025"
+    },
+    {
+      "activity_id": "ENERGY.NATGAS.M3",
+      "unit": "m3",
+      "ef_value_central": 1900.0,
+      "ef_lo": 1750.0,
+      "ef_hi": 2100.0,
+      "scope_boundary": "WTT+TTW",
+      "region": "CA",
+      "vintage_year": 2024,
+      "source_id": "SRC.ECCC.NIR.2025"
+    },
+    {
+      "activity_id": "FOOD.COFFEE.CUP.HOT",
+      "unit": "cup",
+      "ef_value_central": 1.0,
+      "ef_lo": null,
+      "ef_hi": null,
+      "scope_boundary": "cradle-to-grave",
+      "region": "CA-ON",
+      "vintage_year": 2025,
+      "source_id": "SRC.DEMO"
+    },
+    {
+      "activity_id": "FOOD.COFFEE.ROASTED.KG",
+      "unit": "kg",
+      "ef_value_central": 15000.0,
+      "ef_lo": 10000.0,
+      "ef_hi": 21000.0,
+      "scope_boundary": "cradle-to-grave",
+      "region": "GLOBAL",
+      "vintage_year": 2018,
+      "source_id": "SRC.POORE2018"
+    },
+    {
+      "activity_id": "FOOD.MEAL.BEEF.SERVING",
+      "unit": "serving",
+      "ef_value_central": 9000.0,
+      "ef_lo": 5400.0,
+      "ef_hi": 12300.0,
+      "scope_boundary": "cradle-to-grave",
+      "region": "CA",
+      "vintage_year": 2018,
+      "source_id": "SRC.POORE2018"
+    },
+    {
+      "activity_id": "FOOD.MEAL.CHICKEN.SERVING",
+      "unit": "serving",
+      "ef_value_central": 900.0,
+      "ef_lo": 600.0,
+      "ef_hi": 1050.0,
+      "scope_boundary": "cradle-to-grave",
+      "region": "CA",
+      "vintage_year": 2018,
+      "source_id": "SRC.POORE2018"
+    },
+    {
+      "activity_id": "FOOD.MEAL.VEG.SERVING",
+      "unit": "serving",
+      "ef_value_central": 300.0,
+      "ef_lo": 180.0,
+      "ef_hi": 480.0,
+      "scope_boundary": "cradle-to-grave",
+      "region": "CA",
+      "vintage_year": 2018,
+      "source_id": "SRC.POORE2018"
+    },
+    {
+      "activity_id": "LOGI.AIR.TONNEKM",
+      "unit": "tonne_km",
+      "ef_value_central": 500.0,
+      "ef_lo": 350.0,
+      "ef_hi": 650.0,
+      "scope_boundary": "WTT+TTW",
+      "region": "GLOBAL",
+      "vintage_year": 2024,
+      "source_id": "SRC.ICAO.CORSIA.2024"
+    },
+    {
+      "activity_id": "LOGI.PARCEL.URBAN",
+      "unit": "parcel",
+      "ef_value_central": 400.0,
+      "ef_lo": 300.0,
+      "ef_hi": 520.0,
+      "scope_boundary": "WTT+TTW",
+      "region": "CA-ON",
+      "vintage_year": 2023,
+      "source_id": "SRC.EPA.SMARTWAY.2023"
+    },
+    {
+      "activity_id": "LOGI.SHIPPING.BULK.TONNEKM",
+      "unit": "tonne_km",
+      "ef_value_central": 6.5,
+      "ef_lo": 5.0,
+      "ef_hi": 8.0,
+      "scope_boundary": "WTT+TTW",
+      "region": "CA-ON",
+      "vintage_year": 2023,
+      "source_id": "SRC.IMO.ICCT.SHIPPING.2023"
+    },
+    {
+      "activity_id": "LOGI.SHIPPING.CONTAINER.TONNEKM",
+      "unit": "tonne_km",
+      "ef_value_central": 12.5,
+      "ef_lo": 10.0,
+      "ef_hi": 15.0,
+      "scope_boundary": "WTT+TTW",
+      "region": "CA-ON",
+      "vintage_year": 2023,
+      "source_id": "SRC.IMO.ICCT.SHIPPING.2023"
+    },
+    {
+      "activity_id": "LOGI.TRUCK.TONNEKM",
+      "unit": "tonne_km",
+      "ef_value_central": 60.0,
+      "ef_lo": 48.0,
+      "ef_hi": 72.0,
+      "scope_boundary": "WTT+TTW",
+      "region": "CA",
+      "vintage_year": 2024,
+      "source_id": "SRC.NRCAN.FREIGHT.2024"
+    },
+    {
+      "activity_id": "MATERIAL.CEMENT.CLINKER.TONNE",
+      "unit": "tonne",
+      "ef_value_central": 850000.0,
+      "ef_lo": 800000.0,
+      "ef_hi": 900000.0,
+      "scope_boundary": "cradle-to-gate",
+      "region": "CA",
+      "vintage_year": 2023,
+      "source_id": "SRC.GNR.2023"
+    },
+    {
+      "activity_id": "MATERIAL.PET.VIRGIN.TONNE",
+      "unit": "tonne",
+      "ef_value_central": 2700000.0,
+      "ef_lo": 2400000.0,
+      "ef_hi": 3000000.0,
+      "scope_boundary": "cradle-to-gate",
+      "region": "CA",
+      "vintage_year": 2022,
+      "source_id": "SRC.PLASTICSEUROPE.2022"
+    },
+    {
+      "activity_id": "MATERIAL.STEEL.CRUDESLAB.TONNE",
+      "unit": "tonne",
+      "ef_value_central": 2000000.0,
+      "ef_lo": 1800000.0,
+      "ef_hi": 2200000.0,
+      "scope_boundary": "cradle-to-gate",
+      "region": "CA",
+      "vintage_year": 2023,
+      "source_id": "SRC.WORLDSTEEL.2023"
+    },
+    {
+      "activity_id": "MEDIA.STREAM.HD.HOUR",
+      "unit": "hour",
+      "ef_value_central": null,
+      "ef_lo": null,
+      "ef_hi": null,
+      "scope_boundary": "Electricity LCA",
+      "region": "CA-ON",
+      "vintage_year": 2024,
+      "source_id": "SRC.DIMPACT.STREAMING.2022"
+    },
+    {
+      "activity_id": "MEDIA.STREAM.HD.HOUR.TV",
+      "unit": "hour",
+      "ef_value_central": null,
+      "ef_lo": null,
+      "ef_hi": null,
+      "scope_boundary": "Electricity LCA",
+      "region": "CA-ON",
+      "vintage_year": 2024,
+      "source_id": "SRC.DIMPACT.2021"
+    },
+    {
+      "activity_id": "MEDIA.STREAM.UHD.HOUR",
+      "unit": "hour",
+      "ef_value_central": null,
+      "ef_lo": null,
+      "ef_hi": null,
+      "scope_boundary": "Electricity LCA",
+      "region": "CA-ON",
+      "vintage_year": 2024,
+      "source_id": "SRC.DIMPACT.STREAMING.2022"
+    },
+    {
+      "activity_id": "MIL.AIRCRAFT.UNIT",
+      "unit": "unit",
+      "ef_value_central": 250000000.0,
+      "ef_lo": 200000000.0,
+      "ef_hi": 300000000.0,
+      "scope_boundary": "cradle-to-gate",
+      "region": "GLOBAL",
+      "vintage_year": 2024,
+      "source_id": "SRC.SIPRI.2024"
+    },
+    {
+      "activity_id": "MIL.BASE.M2.YEAR",
+      "unit": "square_metre_year",
+      "ef_value_central": 150000.0,
+      "ef_lo": 120000.0,
+      "ef_hi": 180000.0,
+      "scope_boundary": "Operational energy",
+      "region": "CA-ON",
+      "vintage_year": 2023,
+      "source_id": "SRC.DND.2024"
+    },
+    {
+      "activity_id": "MIL.CONFLICT.MONTH",
+      "unit": "month",
+      "ef_value_central": 1500000000000.0,
+      "ef_lo": 1000000000000.0,
+      "ef_hi": 2000000000000.0,
+      "scope_boundary": "Modeled operations",
+      "region": "GLOBAL",
+      "vintage_year": 2024,
+      "source_id": "SRC.UNEP.2022"
+    },
+    {
+      "activity_id": "MIL.DEPOT.M2.YEAR",
+      "unit": "square_metre_year",
+      "ef_value_central": 225000.0,
+      "ef_lo": 200000.0,
+      "ef_hi": 250000.0,
+      "scope_boundary": "Operational energy",
+      "region": "CA-ON",
+      "vintage_year": 2023,
+      "source_id": "SRC.DND.2024"
+    },
+    {
+      "activity_id": "MIL.FLIGHT.PKM",
+      "unit": "pkm",
+      "ef_value_central": 340.0,
+      "ef_lo": 330.0,
+      "ef_hi": 350.0,
+      "scope_boundary": "WTT+TTW",
+      "region": "GLOBAL",
+      "vintage_year": 2023,
+      "source_id": "SRC.NATO.2023"
+    },
+    {
+      "activity_id": "MIL.MUNITIONS.TONNE",
+      "unit": "tonne",
+      "ef_value_central": 2500000.0,
+      "ef_lo": 2000000.0,
+      "ef_hi": 3000000.0,
+      "scope_boundary": "cradle-to-gate",
+      "region": "GLOBAL",
+      "vintage_year": 2024,
+      "source_id": "SRC.SIPRI.2024"
+    },
+    {
+      "activity_id": "MIL.NAVAL.TONNEKM",
+      "unit": "tonne_km",
+      "ef_value_central": 30.0,
+      "ef_lo": 20.0,
+      "ef_hi": 40.0,
+      "scope_boundary": "WTT+TTW",
+      "region": "GLOBAL",
+      "vintage_year": 2023,
+      "source_id": "SRC.NATO.2023"
+    },
+    {
+      "activity_id": "MIL.TANK.UNIT",
+      "unit": "unit",
+      "ef_value_central": 135000000.0,
+      "ef_lo": 120000000.0,
+      "ef_hi": 150000000.0,
+      "scope_boundary": "cradle-to-gate",
+      "region": "GLOBAL",
+      "vintage_year": 2024,
+      "source_id": "SRC.SIPRI.2024"
+    },
+    {
+      "activity_id": "MIL.VEHICLE.KM",
+      "unit": "km",
+      "ef_value_central": 1600.0,
+      "ef_lo": 1200.0,
+      "ef_hi": 2000.0,
+      "scope_boundary": "WTT+TTW",
+      "region": "GLOBAL",
+      "vintage_year": 2023,
+      "source_id": "SRC.NATO.2023"
+    },
+    {
+      "activity_id": "MUNI.WASTE.INCINERATION.KG",
+      "unit": "kg",
+      "ef_value_central": 295.0,
+      "ef_lo": 190.0,
+      "ef_hi": 400.0,
+      "scope_boundary": "gate-to-gate",
+      "region": "CA-ON",
+      "vintage_year": 2023,
+      "source_id": "SRC.EPA.WARM15.2023"
+    },
+    {
+      "activity_id": "MUNI.WASTE.LANDFILL.KG",
+      "unit": "kg",
+      "ef_value_central": 482.8,
+      "ef_lo": 360.0,
+      "ef_hi": 605.0,
+      "scope_boundary": "gate-to-gate",
+      "region": "CA-ON",
+      "vintage_year": 2023,
+      "source_id": "SRC.EPA.WARM15.2023"
+    },
+    {
+      "activity_id": "MUNI.WATER.POTABLE.M3",
+      "unit": "m3",
+      "ef_value_central": 180.0,
+      "ef_lo": 125.0,
+      "ef_hi": 235.0,
+      "scope_boundary": "gate-to-gate",
+      "region": "CA-ON",
+      "vintage_year": 2023,
+      "source_id": "SRC.TORONTO.WATER.AR2023"
+    },
+    {
+      "activity_id": "OCEAN.ACIDIFICATION.PH.DEC",
+      "unit": "ph_decade",
+      "ef_value_central": -0.02,
+      "ef_lo": -0.03,
+      "ef_hi": -0.01,
+      "scope_boundary": "Modeled operations",
+      "region": "GLOBAL",
+      "vintage_year": 2023,
+      "source_id": "SRC.NOAA.OCEAN.2023"
+    },
+    {
+      "activity_id": "OCEAN.CO2.UPTAKE.PGCO2",
+      "unit": "carbon_dioxide_pg_per_year",
+      "ef_value_central": -2500000000000000.0,
+      "ef_lo": -3000000000000000.0,
+      "ef_hi": -2000000000000000.0,
+      "scope_boundary": "Modeled operations",
+      "region": "GLOBAL",
+      "vintage_year": 2023,
+      "source_id": "SRC.NOAA.OCEAN.2023"
+    },
+    {
+      "activity_id": "PERMAFROST.EMISSIONS.PGCO2E",
+      "unit": "carbon_dioxide_equivalent_pg_per_year",
+      "ef_value_central": 300000000000000.0,
+      "ef_lo": 200000000000000.0,
+      "ef_hi": 400000000000000.0,
+      "scope_boundary": "Modeled operations",
+      "region": "GLOBAL",
+      "vintage_year": 2023,
+      "source_id": "SRC.ECCC.PERMAFROST.2023"
+    },
+    {
+      "activity_id": "REFR.APPL.FRIDGE.OP.YEAR",
+      "unit": "year",
+      "ef_value_central": 150000.0,
+      "ef_lo": null,
+      "ef_hi": null,
+      "scope_boundary": "Electricity LCA",
+      "region": "CA-ON",
+      "vintage_year": 2024,
+      "source_id": "SRC.IEA.COOLING.2024"
+    },
+    {
+      "activity_id": "REFR.APPL.FRIDGE.UNIT",
+      "unit": "unit",
+      "ef_value_central": 400000.0,
+      "ef_lo": null,
+      "ef_hi": null,
+      "scope_boundary": "cradle-to-gate",
+      "region": "CA-ON",
+      "vintage_year": 2023,
+      "source_id": "SRC.WRAP.2023"
+    },
+    {
+      "activity_id": "REFR.COLDCHAIN.SUPERMARKET.KG",
+      "unit": "kg_foodyear",
+      "ef_value_central": 500.0,
+      "ef_lo": null,
+      "ef_hi": null,
+      "scope_boundary": "Electricity LCA",
+      "region": "CA-ON",
+      "vintage_year": 2024,
+      "source_id": "SRC.FAO.IEA.COLDCHAIN.2024"
+    },
+    {
+      "activity_id": "REFR.HVAC.AC.OP.YEAR",
+      "unit": "year",
+      "ef_value_central": 400000.0,
+      "ef_lo": null,
+      "ef_hi": null,
+      "scope_boundary": "Electricity LCA",
+      "region": "CA-ON",
+      "vintage_year": 2024,
+      "source_id": "SRC.IEA.COOLCOALITION.2024"
+    },
+    {
+      "activity_id": "REFR.HVAC.AC.UNIT",
+      "unit": "unit",
+      "ef_value_central": 700000.0,
+      "ef_lo": null,
+      "ef_hi": null,
+      "scope_boundary": "cradle-to-gate",
+      "region": "CA-ON",
+      "vintage_year": 2023,
+      "source_id": "SRC.UNEP.TEAP.2023"
+    },
+    {
+      "activity_id": "RIVER.HYPOXIA.KM2.YEAR",
+      "unit": "square_kilometre_year",
+      "ef_value_central": 275000000.0,
+      "ef_lo": 50000000.0,
+      "ef_hi": 500000000.0,
+      "scope_boundary": "Modeled operations",
+      "region": "GLOBAL",
+      "vintage_year": 2023,
+      "source_id": "SRC.RIVER.HYPOXIA.2020"
+    },
+    {
+      "activity_id": "SEC.CONVOY.KM",
+      "unit": "km",
+      "ef_value_central": 1500.0,
+      "ef_lo": 1000.0,
+      "ef_hi": 2100.0,
+      "scope_boundary": "WTT+TTW",
+      "region": "GLOBAL",
+      "vintage_year": 2024,
+      "source_id": "SRC.PRIVSEC.2024"
+    },
+    {
+      "activity_id": "SEC.GUARD.HOUR",
+      "unit": "hour",
+      "ef_value_central": 2500.0,
+      "ef_lo": 2000.0,
+      "ef_hi": 3000.0,
+      "scope_boundary": "Operational energy",
+      "region": "CA-ON",
+      "vintage_year": 2024,
+      "source_id": "SRC.PRIVSEC.2024"
+    },
+    {
+      "activity_id": "SEC.HELI.HOUR",
+      "unit": "hour",
+      "ef_value_central": 325000.0,
+      "ef_lo": 250000.0,
+      "ef_hi": 400000.0,
+      "scope_boundary": "WTT+TTW",
+      "region": "GLOBAL",
+      "vintage_year": 2024,
+      "source_id": "SRC.PRIVSEC.2024"
+    },
+    {
+      "activity_id": "SOCIAL.FACEBOOK.HOUR",
+      "unit": "hour",
+      "ef_value_central": 60.0,
+      "ef_lo": 30.0,
+      "ef_hi": 120.0,
+      "scope_boundary": "Electricity LCA",
+      "region": "CA-ON",
+      "vintage_year": 2022,
+      "source_id": "SRC.HINTEMANN.2022"
+    },
+    {
+      "activity_id": "SOCIAL.INSTAGRAM.HOUR",
+      "unit": "hour",
+      "ef_value_central": 85.0,
+      "ef_lo": 50.0,
+      "ef_hi": 150.0,
+      "scope_boundary": "Electricity LCA",
+      "region": "CA-ON",
+      "vintage_year": 2022,
+      "source_id": "SRC.HINTEMANN.2022"
+    },
+    {
+      "activity_id": "SOCIAL.LINKEDIN.HOUR",
+      "unit": "hour",
+      "ef_value_central": 50.0,
+      "ef_lo": 20.0,
+      "ef_hi": 90.0,
+      "scope_boundary": "Electricity LCA",
+      "region": "CA-ON",
+      "vintage_year": 2022,
+      "source_id": "SRC.HINTEMANN.2022"
+    },
+    {
+      "activity_id": "SOCIAL.SCROLL.HOUR.MOBILE",
+      "unit": "hour",
+      "ef_value_central": null,
+      "ef_lo": null,
+      "ef_hi": null,
+      "scope_boundary": "Electricity LCA",
+      "region": "CA-ON",
+      "vintage_year": 2024,
+      "source_id": "SRC.DIMPACT.2021"
+    },
+    {
+      "activity_id": "SOCIAL.SNAPCHAT.HOUR",
+      "unit": "hour",
+      "ef_value_central": 70.0,
+      "ef_lo": 40.0,
+      "ef_hi": 120.0,
+      "scope_boundary": "Electricity LCA",
+      "region": "CA-ON",
+      "vintage_year": 2022,
+      "source_id": "SRC.HINTEMANN.2022"
+    },
+    {
+      "activity_id": "SOCIAL.TIKTOK.HOUR",
+      "unit": "hour",
+      "ef_value_central": 150.0,
+      "ef_lo": 80.0,
+      "ef_hi": 250.0,
+      "scope_boundary": "Electricity LCA",
+      "region": "CA-ON",
+      "vintage_year": 2022,
+      "source_id": "SRC.HINTEMANN.2022"
+    },
+    {
+      "activity_id": "SOCIAL.TWITTER.HOUR",
+      "unit": "hour",
+      "ef_value_central": 55.0,
+      "ef_lo": 25.0,
+      "ef_hi": 100.0,
+      "scope_boundary": "Electricity LCA",
+      "region": "CA-ON",
+      "vintage_year": 2022,
+      "source_id": "SRC.HINTEMANN.2022"
+    },
+    {
+      "activity_id": "SOCIAL.YOUTUBE.HOUR",
+      "unit": "hour",
+      "ef_value_central": 230.0,
+      "ef_lo": 150.0,
+      "ef_hi": 400.0,
+      "scope_boundary": "Electricity LCA",
+      "region": "CA-ON",
+      "vintage_year": 2022,
+      "source_id": "SRC.HINTEMANN.2022"
+    },
+    {
+      "activity_id": "TAILINGS.DEGASS.EVENT",
+      "unit": "event",
+      "ef_value_central": 105000000.0,
+      "ef_lo": 10000000.0,
+      "ef_hi": 200000000.0,
+      "scope_boundary": "Modeled operations",
+      "region": "CA-AB",
+      "vintage_year": 2023,
+      "source_id": "SRC.AB.TAILINGS.2023"
+    },
+    {
+      "activity_id": "TAILINGS.POND.M2.YEAR",
+      "unit": "square_metre_year",
+      "ef_value_central": 850.0,
+      "ef_lo": 200.0,
+      "ef_hi": 1500.0,
+      "scope_boundary": "Modeled operations",
+      "region": "CA-AB",
+      "vintage_year": 2023,
+      "source_id": "SRC.AB.TAILINGS.2023"
+    },
+    {
+      "activity_id": "TRAN.DELIVERY.TRUCK.CLASS6.KM",
+      "unit": "km",
+      "ef_value_central": 860.79,
+      "ef_lo": 774.71,
+      "ef_hi": 946.87,
+      "scope_boundary": "WTT+TTW",
+      "region": "CA",
+      "vintage_year": 2025,
+      "source_id": "SRC.EPA.MOVES.HDV.2021"
+    },
+    {
+      "activity_id": "TRAN.FLIGHT.LONGHAUL.PKM",
+      "unit": "pkm",
+      "ef_value_central": 190.0,
+      "ef_lo": 150.0,
+      "ef_hi": 260.0,
+      "scope_boundary": "WTT+TTW",
+      "region": "GLOBAL",
+      "vintage_year": 2024,
+      "source_id": "SRC.DEFRA.AVIATION.2024"
+    },
+    {
+      "activity_id": "TRAN.FLIGHT.PRIVATE.PKM",
+      "unit": "pkm",
+      "ef_value_central": 900.0,
+      "ef_lo": 600.0,
+      "ef_hi": 1200.0,
+      "scope_boundary": "WTT+TTW",
+      "region": "GLOBAL",
+      "vintage_year": 2023,
+      "source_id": "SRC.IEA.AVIATION.2023"
+    },
+    {
+      "activity_id": "TRAN.FLIGHT.SHORTHAUL.PKM",
+      "unit": "pkm",
+      "ef_value_central": 250.0,
+      "ef_lo": 200.0,
+      "ef_hi": 320.0,
+      "scope_boundary": "WTT+TTW",
+      "region": "CA",
+      "vintage_year": 2023,
+      "source_id": "SRC.ICAO.CORSIA.2023"
+    },
+    {
+      "activity_id": "TRAN.SCHOOLRUN.BIKE.KM",
+      "unit": "km",
+      "ef_value_central": 0.0,
+      "ef_lo": null,
+      "ef_hi": null,
+      "scope_boundary": "WTT+TTW",
+      "region": "CA",
+      "vintage_year": 2023,
+      "source_id": "SRC.ECCC.NIR.2025"
+    },
+    {
+      "activity_id": "TRAN.SCHOOLRUN.CAR.KM",
+      "unit": "km",
+      "ef_value_central": 180.0,
+      "ef_lo": null,
+      "ef_hi": null,
+      "scope_boundary": "WTT+TTW",
+      "region": "CA-ON",
+      "vintage_year": 2023,
+      "source_id": "SRC.ECCC.NIR.2025"
+    },
+    {
+      "activity_id": "TRAN.TTC.BUS.KM",
+      "unit": "km",
+      "ef_value_central": 86.62,
+      "ef_lo": 78.74,
+      "ef_hi": 96.24,
+      "scope_boundary": "WTT+TTW",
+      "region": "CA-ON",
+      "vintage_year": 2023,
+      "source_id": "SRC.UK.BEIS.GHGFACTORS.2023"
+    },
+    {
+      "activity_id": "TRAN.TTC.SUBWAY.KM",
+      "unit": "km",
+      "ef_value_central": null,
+      "ef_lo": null,
+      "ef_hi": null,
+      "scope_boundary": "WTT+TTW",
+      "region": "CA-ON",
+      "vintage_year": 2024,
+      "source_id": "SRC.CUTA.TTC.2017"
+    },
+    {
+      "activity_id": "stream",
+      "unit": null,
+      "ef_value_central": null,
+      "ef_lo": null,
+      "ef_hi": null,
+      "scope_boundary": "Electricity LCA",
+      "region": "CA-ON",
+      "vintage_year": 2025,
+      "source_id": "SRC.DIMPACT.2021"
+    }
+  ],
+  "profiles": [
+    {
+      "profile_id": "BASE.TO.PROF.HYBRID.2025",
+      "label": "Toronto professional baseline hybrid (2025)",
+      "region": "CA-ON"
+    },
+    {
+      "profile_id": "DEF.CA.GARRISON.2025",
+      "label": "Canadian defense garrison baseline (2025)",
+      "region": "CA"
+    },
+    {
+      "profile_id": "DEF.CA.INFRASTRUCTURE.2025",
+      "label": "National defense infrastructure baseline (2025)",
+      "region": "CA"
+    },
+    {
+      "profile_id": "EARTH.CA.BIOSPHERE.2025",
+      "label": "Canadian earth system baseline (2025)",
+      "region": "CA"
+    },
+    {
+      "profile_id": "IND.TO.HEAVY.2025",
+      "label": "Ontario heavy-industrial baseline (2025)",
+      "region": "CA-ON"
+    },
+    {
+      "profile_id": "IND_EXT.CA.BASELINE.2025",
+      "label": "Canadian industrial externalities baseline (2025)",
+      "region": "CA"
+    },
+    {
+      "profile_id": "IND_LIGHT.ON.CONSTRUCTION.2025",
+      "label": "Ontario light-industrial construction (2025)",
+      "region": "CA-ON"
+    },
+    {
+      "profile_id": "IND_LIGHT.ON.LOGISTICS.2025",
+      "label": "Ontario light-industrial logistics & warehousing (2025)",
+      "region": "CA-ON"
+    },
+    {
+      "profile_id": "MAT.CA.LABS.2025",
+      "label": "Canadian materials R&D labs (2025)",
+      "region": "CA"
+    },
+    {
+      "profile_id": "ONLINE.AB.CONSUMER.2025",
+      "label": "Online Services \u2014 Alberta consumer (2025)",
+      "region": "CA-AB"
+    },
+    {
+      "profile_id": "ONLINE.BC.CONSUMER.2025",
+      "label": "Online Services \u2014 British Columbia consumer (2025)",
+      "region": "CA-BC"
+    },
+    {
+      "profile_id": "ONLINE.QC.CONSUMER.2025",
+      "label": "Online Services \u2014 Quebec consumer (2025)",
+      "region": "CA-QC"
+    },
+    {
+      "profile_id": "ONLINE.TO.CONSUMER.2025",
+      "label": "Online Services \u2014 Toronto consumer (2025)",
+      "region": "CA-ON"
+    },
+    {
+      "profile_id": "PRO.AB.24_39.HYBRID.2025",
+      "label": "Alberta Pros 24\u201339 \u2014 Hybrid (2025)",
+      "region": "CA-AB"
+    },
+    {
+      "profile_id": "PRO.AB.40_56.HYBRID.2025",
+      "label": "Alberta Pros 40\u201356 \u2014 Hybrid (2025)",
+      "region": "CA-AB"
+    },
+    {
+      "profile_id": "PRO.BC.24_39.HYBRID.2025",
+      "label": "British Columbia Pros 24\u201339 \u2014 Hybrid (2025)",
+      "region": "CA-BC"
+    },
+    {
+      "profile_id": "PRO.BC.40_56.HYBRID.2025",
+      "label": "British Columbia Pros 40\u201356 \u2014 Hybrid (2025)",
+      "region": "CA-BC"
+    },
+    {
+      "profile_id": "PRO.QC.24_39.HYBRID.2025",
+      "label": "Quebec Pros 24\u201339 \u2014 Hybrid (2025)",
+      "region": "CA-QC"
+    },
+    {
+      "profile_id": "PRO.QC.40_56.HYBRID.2025",
+      "label": "Quebec Pros 40\u201356 \u2014 Hybrid (2025)",
+      "region": "CA-QC"
+    },
+    {
+      "profile_id": "PRO.TO.24_39.HYBRID.2025",
+      "label": "Toronto Pros 24\u201339 \u2014 Hybrid (2025)",
+      "region": "CA-ON"
+    },
+    {
+      "profile_id": "PRO.TO.40_56.HYBRID.2025",
+      "label": "Toronto Pros 40\u201356 \u2014 Hybrid (2025)",
+      "region": "CA-ON"
+    },
+    {
+      "profile_id": "PROFILE.ADULT.CLOTHING.2025",
+      "label": "Adult clothing consumption (2025)",
+      "region": null
+    },
+    {
+      "profile_id": "PROFILE.CHILD.CLOTHING.2025",
+      "label": "Child clothing consumption (2025)",
+      "region": null
+    },
+    {
+      "profile_id": "PROFILE.ELITE.SECURITY.2025",
+      "label": "Elite private security program (2025)",
+      "region": "CA-ON"
+    },
+    {
+      "profile_id": "PROFILE.SENIOR.CLOTHING.2025",
+      "label": "Senior clothing consumption (2025)",
+      "region": null
+    },
+    {
+      "profile_id": "PROFILE.WAR.UKRAINE.2022",
+      "label": "Ukraine conflict operations (2022)",
+      "region": null
+    }
+  ],
+  "activity_schedule": [
+    {
+      "profile_id": "BASE.TO.PROF.HYBRID.2025",
+      "activity_id": "AI.USAGE.GPT.QUERY",
+      "basis": "daily",
+      "value": 10.0,
+      "office_days_only": true
+    },
+    {
+      "profile_id": "BASE.TO.PROF.HYBRID.2025",
+      "activity_id": "FOOD.MEAL.BEEF.SERVING",
+      "basis": "weekly",
+      "value": 4.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "BASE.TO.PROF.HYBRID.2025",
+      "activity_id": "MEDIA.STREAM.HD.HOUR",
+      "basis": "daily",
+      "value": 1.5,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "BASE.TO.PROF.HYBRID.2025",
+      "activity_id": "REFR.APPL.FRIDGE.OP.YEAR",
+      "basis": "daily",
+      "value": 1.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "BASE.TO.PROF.HYBRID.2025",
+      "activity_id": "SOCIAL.INSTAGRAM.HOUR",
+      "basis": "daily",
+      "value": 0.5,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "BASE.TO.PROF.HYBRID.2025",
+      "activity_id": "SOCIAL.LINKEDIN.HOUR",
+      "basis": "daily",
+      "value": 0.2,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "BASE.TO.PROF.HYBRID.2025",
+      "activity_id": "SOCIAL.TWITTER.HOUR",
+      "basis": "daily",
+      "value": 0.5,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "BASE.TO.PROF.HYBRID.2025",
+      "activity_id": "SOCIAL.YOUTUBE.HOUR",
+      "basis": "daily",
+      "value": 1.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "BASE.TO.PROF.HYBRID.2025",
+      "activity_id": "TRAN.SCHOOLRUN.BIKE.KM",
+      "basis": "weekly",
+      "value": 0.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "BASE.TO.PROF.HYBRID.2025",
+      "activity_id": "TRAN.SCHOOLRUN.CAR.KM",
+      "basis": "weekly",
+      "value": 5.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "BASE.TO.PROF.HYBRID.2025",
+      "activity_id": "TRAN.TTC.SUBWAY.KM",
+      "basis": "daily",
+      "value": 1.0,
+      "office_days_only": true
+    },
+    {
+      "profile_id": "EARTH.CA.BIOSPHERE.2025",
+      "activity_id": "CRYO.ALBEDO.LOSS.WM2",
+      "basis": "weekly",
+      "value": 1.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "EARTH.CA.BIOSPHERE.2025",
+      "activity_id": "OCEAN.ACIDIFICATION.PH.DEC",
+      "basis": "weekly",
+      "value": 1.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "EARTH.CA.BIOSPHERE.2025",
+      "activity_id": "OCEAN.CO2.UPTAKE.PGCO2",
+      "basis": "weekly",
+      "value": 1.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "EARTH.CA.BIOSPHERE.2025",
+      "activity_id": "PERMAFROST.EMISSIONS.PGCO2E",
+      "basis": "weekly",
+      "value": 1.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "EARTH.CA.BIOSPHERE.2025",
+      "activity_id": "RIVER.HYPOXIA.KM2.YEAR",
+      "basis": "weekly",
+      "value": 1.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "IND.TO.HEAVY.2025",
+      "activity_id": "AGRI.BEEF.CARCASS.KG",
+      "basis": "weekly",
+      "value": 5.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "IND.TO.HEAVY.2025",
+      "activity_id": "ENERGY.GASOLINE.LITRE",
+      "basis": "weekly",
+      "value": 5.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "IND.TO.HEAVY.2025",
+      "activity_id": "ENERGY.KWH.DELIVERED",
+      "basis": "weekly",
+      "value": 7.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "IND.TO.HEAVY.2025",
+      "activity_id": "ENERGY.NATGAS.M3",
+      "basis": "weekly",
+      "value": 7.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "IND.TO.HEAVY.2025",
+      "activity_id": "LOGI.AIR.TONNEKM",
+      "basis": "weekly",
+      "value": 7.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "IND.TO.HEAVY.2025",
+      "activity_id": "LOGI.TRUCK.TONNEKM",
+      "basis": "weekly",
+      "value": 7.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "IND.TO.HEAVY.2025",
+      "activity_id": "MATERIAL.CEMENT.CLINKER.TONNE",
+      "basis": "weekly",
+      "value": 5.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "IND.TO.HEAVY.2025",
+      "activity_id": "MATERIAL.PET.VIRGIN.TONNE",
+      "basis": "weekly",
+      "value": 5.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "IND.TO.HEAVY.2025",
+      "activity_id": "MATERIAL.STEEL.CRUDESLAB.TONNE",
+      "basis": "weekly",
+      "value": 5.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "IND_EXT.CA.BASELINE.2025",
+      "activity_id": "AMD.ACID.DRAINAGE.M3.YEAR",
+      "basis": "weekly",
+      "value": 1.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "IND_EXT.CA.BASELINE.2025",
+      "activity_id": "TAILINGS.DEGASS.EVENT",
+      "basis": "weekly",
+      "value": 0.25,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "IND_EXT.CA.BASELINE.2025",
+      "activity_id": "TAILINGS.POND.M2.YEAR",
+      "basis": "weekly",
+      "value": 1.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "IND_LIGHT.ON.LOGISTICS.2025",
+      "activity_id": "AGRI.POULTRY.READY.KG",
+      "basis": "weekly",
+      "value": 5.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "IND_LIGHT.ON.LOGISTICS.2025",
+      "activity_id": "FOOD.COFFEE.ROASTED.KG",
+      "basis": "weekly",
+      "value": 5.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "IND_LIGHT.ON.LOGISTICS.2025",
+      "activity_id": "LOGI.PARCEL.URBAN",
+      "basis": "weekly",
+      "value": 7.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "IND_LIGHT.ON.LOGISTICS.2025",
+      "activity_id": "MUNI.WASTE.INCINERATION.KG",
+      "basis": "weekly",
+      "value": 7.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "IND_LIGHT.ON.LOGISTICS.2025",
+      "activity_id": "MUNI.WASTE.LANDFILL.KG",
+      "basis": "weekly",
+      "value": 7.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "IND_LIGHT.ON.LOGISTICS.2025",
+      "activity_id": "MUNI.WATER.POTABLE.M3",
+      "basis": "weekly",
+      "value": 7.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "IND_LIGHT.ON.LOGISTICS.2025",
+      "activity_id": "REFR.APPL.FRIDGE.UNIT",
+      "basis": "weekly",
+      "value": 1.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "IND_LIGHT.ON.LOGISTICS.2025",
+      "activity_id": "REFR.COLDCHAIN.SUPERMARKET.KG",
+      "basis": "weekly",
+      "value": 7.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "IND_LIGHT.ON.LOGISTICS.2025",
+      "activity_id": "REFR.HVAC.AC.OP.YEAR",
+      "basis": "weekly",
+      "value": 7.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "IND_LIGHT.ON.LOGISTICS.2025",
+      "activity_id": "REFR.HVAC.AC.UNIT",
+      "basis": "weekly",
+      "value": 1.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "IND_LIGHT.ON.LOGISTICS.2025",
+      "activity_id": "TRAN.DELIVERY.TRUCK.CLASS6.KM",
+      "basis": "weekly",
+      "value": 7.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "IND_LIGHT.ON.LOGISTICS.2025",
+      "activity_id": "TRAN.FLIGHT.LONGHAUL.PKM",
+      "basis": "weekly",
+      "value": 0.5,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "IND_LIGHT.ON.LOGISTICS.2025",
+      "activity_id": "TRAN.FLIGHT.SHORTHAUL.PKM",
+      "basis": "weekly",
+      "value": 2.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "ONLINE.TO.CONSUMER.2025",
+      "activity_id": "AI.LLM.INFER.1K_TOKENS.GENERIC",
+      "basis": "daily",
+      "value": 1.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "ONLINE.TO.CONSUMER.2025",
+      "activity_id": "AI.USAGE.ANTHROPIC.QUERY",
+      "basis": "daily",
+      "value": 3.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "ONLINE.TO.CONSUMER.2025",
+      "activity_id": "AI.USAGE.GOOGLE.QUERY",
+      "basis": "daily",
+      "value": 2.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "ONLINE.TO.CONSUMER.2025",
+      "activity_id": "CLOUD.STORAGE.SYNC.GB_MONTH",
+      "basis": "weekly",
+      "value": 1.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "ONLINE.TO.CONSUMER.2025",
+      "activity_id": "CONF.HD.PARTICIPANT_HOUR",
+      "basis": "weekly",
+      "value": 2.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "ONLINE.TO.CONSUMER.2025",
+      "activity_id": "MEDIA.STREAM.HD.HOUR.TV",
+      "basis": "weekly",
+      "value": 7.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "ONLINE.TO.CONSUMER.2025",
+      "activity_id": "MUSIC.STREAM.STANDARD.HOUR",
+      "basis": "weekly",
+      "value": 14.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "ONLINE.TO.CONSUMER.2025",
+      "activity_id": "SOCIAL.TIKTOK.HOUR",
+      "basis": "daily",
+      "value": 1.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "PRO.TO.24_39.HYBRID.2025",
+      "activity_id": "FOOD.COFFEE.CUP.HOT",
+      "basis": "weekly",
+      "value": 5.0,
+      "office_days_only": true
+    },
+    {
+      "profile_id": "PROFILE.ADULT.CLOTHING.2025",
+      "activity_id": "CLOTHING.JACKET.SYNTH",
+      "basis": "weekly",
+      "value": 0.0192307692307692,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "PROFILE.ADULT.CLOTHING.2025",
+      "activity_id": "CLOTHING.JEANS.DENIM",
+      "basis": "weekly",
+      "value": 0.0576923076923076,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "PROFILE.ADULT.CLOTHING.2025",
+      "activity_id": "CLOTHING.SHOES.SNEAKERS",
+      "basis": "weekly",
+      "value": 0.0384615384615384,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "PROFILE.ADULT.CLOTHING.2025",
+      "activity_id": "CLOTHING.TSHIRT.COTTON",
+      "basis": "weekly",
+      "value": 0.1346153846153846,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "PROFILE.CHILD.CLOTHING.2025",
+      "activity_id": "CLOTHING.JEANS.DENIM",
+      "basis": "weekly",
+      "value": 0.0384615384615384,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "PROFILE.CHILD.CLOTHING.2025",
+      "activity_id": "CLOTHING.SHOES.SNEAKERS",
+      "basis": "weekly",
+      "value": 0.0384615384615384,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "PROFILE.CHILD.CLOTHING.2025",
+      "activity_id": "CLOTHING.TSHIRT.COTTON",
+      "basis": "weekly",
+      "value": 0.0961538461538461,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "PROFILE.ELITE.SECURITY.2025",
+      "activity_id": "SEC.CONVOY.KM",
+      "basis": "daily",
+      "value": 1.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "PROFILE.ELITE.SECURITY.2025",
+      "activity_id": "SEC.GUARD.HOUR",
+      "basis": "daily",
+      "value": 1.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "PROFILE.ELITE.SECURITY.2025",
+      "activity_id": "SEC.HELI.HOUR",
+      "basis": "weekly",
+      "value": 1.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "PROFILE.ELITE.SECURITY.2025",
+      "activity_id": "TRAN.FLIGHT.PRIVATE.PKM",
+      "basis": "weekly",
+      "value": 0.25,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "PROFILE.SENIOR.CLOTHING.2025",
+      "activity_id": "CLOTHING.JACKET.SYNTH",
+      "basis": "weekly",
+      "value": 0.0096153846153846,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "PROFILE.SENIOR.CLOTHING.2025",
+      "activity_id": "CLOTHING.JEANS.DENIM",
+      "basis": "weekly",
+      "value": 0.0192307692307692,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "PROFILE.SENIOR.CLOTHING.2025",
+      "activity_id": "CLOTHING.SHOES.SNEAKERS",
+      "basis": "weekly",
+      "value": 0.0192307692307692,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "PROFILE.SENIOR.CLOTHING.2025",
+      "activity_id": "CLOTHING.TSHIRT.COTTON",
+      "basis": "weekly",
+      "value": 0.0576923076923076,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "PROFILE.WAR.UKRAINE.2022",
+      "activity_id": "MIL.CONFLICT.MONTH",
+      "basis": "weekly",
+      "value": 0.2307692307692307,
+      "office_days_only": false
+    }
+  ],
+  "grid_intensity": [
+    {
+      "region": "CA",
+      "g_co2e_per_kwh": null,
+      "year": 2024
+    },
+    {
+      "region": "CA-AB",
+      "g_co2e_per_kwh": 610.0,
+      "year": 2021
+    },
+    {
+      "region": "CA-AB",
+      "g_co2e_per_kwh": 600.0,
+      "year": 2022
+    },
+    {
+      "region": "CA-AB",
+      "g_co2e_per_kwh": 580.0,
+      "year": 2023
+    },
+    {
+      "region": "CA-AB",
+      "g_co2e_per_kwh": 550.0,
+      "year": 2024
+    },
+    {
+      "region": "CA-AB",
+      "g_co2e_per_kwh": 540.0,
+      "year": 2025
+    },
+    {
+      "region": "CA-BC",
+      "g_co2e_per_kwh": 12.0,
+      "year": 2021
+    },
+    {
+      "region": "CA-BC",
+      "g_co2e_per_kwh": 11.0,
+      "year": 2022
+    },
+    {
+      "region": "CA-BC",
+      "g_co2e_per_kwh": 10.0,
+      "year": 2023
+    },
+    {
+      "region": "CA-BC",
+      "g_co2e_per_kwh": 9.0,
+      "year": 2024
+    },
+    {
+      "region": "CA-BC",
+      "g_co2e_per_kwh": 8.0,
+      "year": 2025
+    },
+    {
+      "region": "CA-ON",
+      "g_co2e_per_kwh": 28.0,
+      "year": 2024
+    },
+    {
+      "region": "CA-ON",
+      "g_co2e_per_kwh": 27.0,
+      "year": 2025
+    },
+    {
+      "region": "CA-QC",
+      "g_co2e_per_kwh": 1.5,
+      "year": 2021
+    },
+    {
+      "region": "CA-QC",
+      "g_co2e_per_kwh": 1.4,
+      "year": 2022
+    },
+    {
+      "region": "CA-QC",
+      "g_co2e_per_kwh": 1.3,
+      "year": 2023
+    },
+    {
+      "region": "CA-QC",
+      "g_co2e_per_kwh": 1.2,
+      "year": 2024
+    },
+    {
+      "region": "CA-QC",
+      "g_co2e_per_kwh": 1.1,
+      "year": 2025
+    }
+  ],
+  "manifest": {
+    "reference_year": 2025,
+    "region_policy": "region_default",
+    "gwp_horizon": "GWP100 (AR6)"
+  }
+}
