@@ -58,7 +58,9 @@ def _load_layer_catalog() -> list[dict[str, object]]:
         catalog.append(
             {
                 "id": layer_id,
-                "title": (row.get("layer_name") or row.get("title") or layer_id.replace("_", " ")).strip(),
+                "title": (
+                    row.get("layer_name") or row.get("title") or layer_id.replace("_", " ")
+                ).strip(),
                 "summary": (row.get("description") or row.get("summary") or "").strip(),
                 "optional": (row.get("ui_optional") or "false").strip().lower()
                 in {"true", "1", "yes"},

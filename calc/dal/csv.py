@@ -57,7 +57,11 @@ class CsvStore:
 
         valid_layers = {layer.layer_id for layer in self.load_layers()}
         missing = sorted(
-            {operation.layer_id for operation in operations if operation.layer_id not in valid_layers}
+            {
+                operation.layer_id
+                for operation in operations
+                if operation.layer_id not in valid_layers
+            }
         )
         if missing:
             missing_labels = ", ".join(layer.value for layer in missing)

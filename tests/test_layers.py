@@ -23,7 +23,9 @@ def test_layers_exist_and_are_referenced() -> None:
     layers = _read_csv("layers.csv")
     assert layers, "layers.csv must not be empty"
 
-    layer_ids = {_normalise(row.get("layer_id")) for row in layers if _normalise(row.get("layer_id"))}
+    layer_ids = {
+        _normalise(row.get("layer_id")) for row in layers if _normalise(row.get("layer_id"))
+    }
     assert layer_ids, "layers.csv must define at least one layer_id"
 
     datasets = (

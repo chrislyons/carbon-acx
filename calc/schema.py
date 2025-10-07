@@ -491,7 +491,8 @@ def load_operations(
     )
     if missing_layers:
         raise ValueError(
-            "Unknown layer_id referenced by operations: " + ", ".join(layer.value for layer in missing_layers)
+            "Unknown layer_id referenced by operations: "
+            + ", ".join(layer.value for layer in missing_layers)
         )
 
     asset_records = assets if assets is not None else load_assets()
@@ -635,7 +636,8 @@ def load_activities() -> List[Activity]:
     )
     if missing_layers:
         raise ValueError(
-            "Unknown layer_id referenced by activities: " + ", ".join(layer.value for layer in missing_layers)
+            "Unknown layer_id referenced by activities: "
+            + ", ".join(layer.value for layer in missing_layers)
         )
 
     return activities
