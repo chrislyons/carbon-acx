@@ -38,7 +38,9 @@ def test_layout_contains_expected_sections(monkeypatch) -> None:
     figures_store = {
         name: app_module._load_figure_payload(fixture_dir, name) for name in app_module.FIGURE_NAMES
     }
-    available_layers = app_module._collect_layers(figures_store)
+    available_layers = app_module._collect_layers(
+        figures_store, fallback=app_module.LAYER_ORDER
+    )
     selected_layers = (
         available_layers[:1] if available_layers else [app_module.LayerId.PROFESSIONAL.value]
     )
@@ -47,7 +49,14 @@ def test_layout_contains_expected_sections(monkeypatch) -> None:
         info for key, info in dash_app.callback_map.items() if "layer-panels.children" in key
     )
     callback = panel_callback_info["callback"].__wrapped__
-    panels_children, _ = callback(selected_layers, "single", figures_store)
+    panels_children, _ = callback(
+        selected_layers,
+        "single",
+        None,
+        None,
+        figures_store,
+        available_layers,
+    )
 
     panel_ids: set[str] = set()
     for child in panels_children:
