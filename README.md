@@ -24,6 +24,7 @@ Carbon ACX is an open reference stack for building trustworthy carbon accounting
    - [Intensity matrix CLI](#intensity-matrix-cli)
    - [Dash exploration client](#dash-exploration-client)
    - [Static site bundle](#static-site-bundle)
+   - [Manifest-first discovery](#manifest-first-discovery)
    - [Programmatic aggregates](#programmatic-aggregates)
    - [On-demand compute service](#on-demand-compute-service)
    - [Diagnostics & utilities](#diagnostics--utilities)
@@ -225,6 +226,10 @@ python -m http.server --directory dist/site 8001
 ```
 
 The packaged bundle embeds pre-rendered Plotly HTML, disclosure panels, manifest summaries, and download links pointing to the bundled artefacts. `_headers` and `_redirects` files configure caching and canonical routing for Cloudflare Pages deployments.【F:scripts/build_site.py†L1-L160】【F:functions/carbon-acx/[[path]].ts†L1-L200】
+
+### Manifest-first discovery
+
+`make build` now dual-writes each figure payload, reference list, and manifest into `dist/artifacts`, producing both legacy filenames and content-hashed variants while constructing a collection index at `dist/artifacts/manifest.json`.【F:calc/derive.py†L1667-L1741】 The index records preferred artefact paths, dataset manifest metadata, and per-figure manifest hashes so clients can resolve figures without guessing filenames.【F:calc/manifest_model.py†L1-L88】【F:calc/figures_manifest.py†L1-L109】 The site and Dash loaders honour the preferred entries (set via `ACX040_HASHED=1` in CI) but gracefully fall back to the static `figures/<name>.json` and `references/<name>_refs.txt` assets when the index is unavailable, preserving backwards compatibility.【F:site/src/lib/api.ts†L1-L258】【F:app/app.py†L1-L140】
 
 ### Programmatic aggregates
 

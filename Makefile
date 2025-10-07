@@ -13,7 +13,8 @@ PACKAGED_MANIFEST := $(PACKAGED_ARTIFACTS_DIR)/manifest.json
 DEFAULT_GENERATED_AT ?= 1970-01-01T00:00:00+00:00
 
 .PHONY: install lint test ci_build_pages app format validate release build-backend build site package sbom build-static \
-        db_init db_import db_export build_csv build_db citations-scan refs-check refs-fetch refs-normalize refs-audit
+        db_init db_import db_export build_csv build_db citations-scan refs-check refs-fetch refs-normalize refs-audit \
+        verify_manifests
 
 install:
 	poetry install --with dev --no-root
@@ -24,8 +25,11 @@ lint:
 	PYTHONPATH=. poetry run python -m scripts.lint_docs README.md docs
 
 test:
-	PYTHONPATH=. poetry run pytest
-	PYTHONPATH=. python tools/validate_assets.py
+        PYTHONPATH=. poetry run pytest
+        PYTHONPATH=. python tools/validate_assets.py
+
+verify_manifests:
+        PYTHONPATH=. poetry run pytest tests/test_manifests.py
 
 $(LATEST_BUILD):
 	@mkdir -p $(DIST_ARTIFACTS_DIR)
