@@ -209,7 +209,11 @@ def _manifest_payload() -> dict[str, Any]:
         str(DATA_DIR / "grid_intensity.csv"),
     )
     record = _to_records(df)
-    return record[0] if record else {"reference_year": None, "region_policy": None, "gwp_horizon": None}
+    return (
+        record[0]
+        if record
+        else {"reference_year": None, "region_policy": None, "gwp_horizon": None}
+    )
 
 
 def build_catalog() -> dict[str, Any]:
