@@ -38,9 +38,7 @@ def test_layout_contains_expected_sections(monkeypatch) -> None:
     figures_store = {
         name: app_module._load_figure_payload(fixture_dir, name) for name in app_module.FIGURE_NAMES
     }
-    available_layers = app_module._collect_layers(
-        figures_store, fallback=app_module.LAYER_ORDER
-    )
+    available_layers = app_module._collect_layers(figures_store, fallback=app_module.LAYER_ORDER)
     selected_layers = (
         available_layers[:1] if available_layers else [app_module.LayerId.PROFESSIONAL.value]
     )
