@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import json
 import os
 import sys
@@ -9,17 +10,7 @@ from typing import Dict, Iterable, Mapping, Sequence
 from urllib.parse import parse_qs, urlencode, quote
 
 import dash
-
-import copy
 from dash import ALL, MATCH, Dash, Input, Output, State, dcc, html, no_update
-
-REPO_ROOT = Path(__file__).resolve().parents[1]
-if __package__ in {None, ""}:
-    if str(REPO_ROOT) not in sys.path:
-        sys.path.insert(0, str(REPO_ROOT))
-
-from calc import citations
-from calc.schema import LayerId
 
 from app.components import (
     agency_strip,
@@ -34,6 +25,18 @@ from app.components import (
 from app.lib import narratives
 from app.lib.agency import breakdown_for_activity
 from app.components._helpers import extend_unique
+
+try:
+    from calc import citations
+    from calc.schema import LayerId
+except ModuleNotFoundError:
+    REPO_ROOT = Path(__file__).resolve().parents[1]
+    if str(REPO_ROOT) not in sys.path:
+        sys.path.insert(0, str(REPO_ROOT))
+    from calc import citations
+    from calc.schema import LayerId
+else:
+    REPO_ROOT = Path(__file__).resolve().parents[1]
 
 ARTIFACT_ROOT = REPO_ROOT / "dist" / "artifacts"
 
