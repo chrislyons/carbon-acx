@@ -6,6 +6,12 @@ Carbon ACX is an open reference stack for trustworthy carbon accounting. It turn
 
 ---
 
+## Manifest-first
+
+Every chart, layer catalogue, and disclosure ships from a manifest that records byte hashes, schema versions, and provenance so downstream clients can trust figure lineage before rendering. The primary manifest schema lives at [`site/public/schemas/figure-manifest.schema.json`](site/public/schemas/figure-manifest.schema.json) and is enforced by the derivation pipeline so browser experiences, Dash, and Workers all consume the same contract.【F:site/public/schemas/figure-manifest.schema.json†L1-L140】【F:calc/derive.py†L52-L92】
+
+---
+
 ## Product vision
 
 Carbon ACX is designed as a product-quality example of carbon accounting operations:
@@ -28,6 +34,25 @@ Together these pieces model how organisations can move from raw operational acti
 | **Static React site** | `site/` contains a Vite + Tailwind build that mirrors the Dash workflow for marketing or investor portals while reading the same manifest catalogue.【F:site/src/App.tsx†L1-L160】 |
 | **Edge delivery surfaces** | `functions/` provides the Cloudflare Pages function that hardens artefact serving, and `workers/` exposes a JSON API for compute scenarios and health checks.【F:functions/carbon-acx/[[path]].ts†L1-L160】【F:workers/compute/index.ts†L1-L123】 |
 | **Packaging automation** | Make targets and helper scripts assemble reproducible releases, sync layer catalogues, and prepare static bundles with deployment metadata.【F:Makefile†L1-L120】【F:scripts/prepare_pages_bundle.py†L1-L100】 |
+
+## At-a-glance layers
+
+| Layer | Type | Example activities |
+| --- | --- | --- |
+| Professional services | Civilian | Coffee—12 oz hot; Toronto subway—per passenger-kilometre |
+| Online services | Civilian | Video conferencing hour; SaaS productivity suite seat |
+| Industrial (Light) | Industry | Lab bench operation; Prototyping print run |
+| Industrial (Heavy) | Industry | Steel batch furnace; Heavy equipment runtime |
+| Military operations | Industry | Military aviation (pkm); Armoured convoy patrol |
+| Weapons manufacturing | Industry | Fighter aircraft production; Armoured vehicle build |
+| Defence installations | Industry | Military base (m²-year); Munitions depot (m²-year) |
+| Scenario simulations | Crosscut | Armed conflict (month); Wildfire burned area—per hectare |
+| Defence supply chain | Industry | TNT explosive production; RDX explosive production |
+| Private security | Industry | Private security convoy (km); Security helicopter (hour) |
+| Earth system feedbacks | Crosscut | Ocean CO₂ uptake; Cryosphere albedo loss |
+| Industrial externalities | Crosscut | Tailings pond footprint; Acid mine drainage |
+
+Layer descriptions, types, and activities are sourced directly from `data/layers.csv` so the table stays aligned with the seeded catalogue.【F:data/layers.csv†L1-L16】
 
 ---
 
@@ -85,6 +110,17 @@ make build
 - **Static site:** `npm run dev -- --host 0.0.0.0` inside `site/` starts the Vite dev server mirroring the same catalogue for UX validation.【F:site/package.json†L1-L20】【F:site/src/App.tsx†L1-L160】
 - **Worker API:** Use `wrangler dev` to exercise `/api/compute` and `/api/health`, verifying payload validation before deploying to Cloudflare.【F:workers/compute/index.ts†L1-L123】【F:wrangler.toml†L1-L12】
 
+### Local Chat (WebGPU)
+
+1. Use a Chromium-based browser with WebGPU enabled (Chrome 123+ or Edge) so the local worker can initialise GPU execution.
+2. Download a compact model into `site/public/models/`—for example:
+
+   ```bash
+   pnpm dlx @mlc-ai/web-llm download qwen2.5-1.5b-instruct-q4f16_1 -o site/public/models/
+   ```
+
+3. Run `npm run dev -- --host 0.0.0.0` inside `site/` and open `/chat` to warm the model via `@mlc-ai/web-llm`; all prompts stay in-browser because inference executes through the local worker bridge.【F:site/public/models/README.md†L1-L4】【F:site/src/lib/chat/LocalLLMWorker.ts†L1-L120】【F:site/src/lib/chat/LocalLLMAdapter.ts†L1-L360】
+
 ---
 
 ## Data & modelling workflows
@@ -92,6 +128,7 @@ make build
 - Update activity, factor, schedule, and grid CSVs in `data/` as the primary source of truth; keep provenance in sync with references and commit history.【F:data/activities.csv†L1-L10】
 - Extend the schema or validation behaviour through the `calc` package so new data inherits manifest integrity and figure generation without bespoke glue code.【F:calc/derive.py†L52-L92】
 - When you need intensity tables or exports for downstream models, run `python -m calc.derive intensity --fu all` or use the Make targets that wrap it for consistency.【F:Makefile†L1-L54】【F:calc/derive.py†L1080-L1151】
+- Keep UI icon assignments in sync via `data/icons.csv` so layer and activity surfaces stay backed by committed assets.【F:data/icons.csv†L1-L12】
 
 ---
 

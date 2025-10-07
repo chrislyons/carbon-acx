@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { ASSETS } from '../basePath';
 import { useLayerCatalog, LayerAuditActivity } from '../lib/useLayerCatalog';
 import { FetchJSONDiagnostics, FetchJSONError } from '../lib/fetchJSON';
 import { PRIMARY_LAYER_ID, useProfile } from '../state/profile';
+import { Icon } from './Icon';
 
 interface StatusMeta {
   label: string;
@@ -57,13 +57,6 @@ function resolveStatus(
     return 'seeded_hidden';
   }
   return 'seeded_hidden';
-}
-
-function resolveIconPath(icon: string | undefined): string | null {
-  if (!icon) {
-    return null;
-  }
-  return `${ASSETS()}/layers/${icon}`;
 }
 
 function resolveTargetView(activity: LayerAuditActivity | undefined): ViewTarget {
@@ -336,7 +329,6 @@ export function SectorBrowser(): JSX.Element {
             seededHidden: seededHidden.has(layer.id)
           });
           const statusMeta = STATUS_META[status];
-          const iconPath = resolveIconPath(layer.icon ?? undefined);
           const activities = activityBucket.activities ?? [];
           const coverageLabel =
             coverage && typeof coverage.with_emission_factors === 'number' && typeof coverage.activities === 'number'
@@ -346,13 +338,12 @@ export function SectorBrowser(): JSX.Element {
             <details key={layer.id} className="group rounded-xl border border-slate-800/70 bg-slate-950/40" open={isActive}>
               <summary className="flex cursor-pointer flex-col gap-[calc(var(--gap-0)*0.75)] px-[var(--gap-1)] py-[6px] text-left outline-none transition hover:bg-slate-900/50">
                 <div className="flex items-start gap-[calc(var(--gap-0)*0.8)]">
-                  {iconPath ? (
-                    <img
-                      src={iconPath}
-                      alt=""
-                      className="h-9 w-9 flex-shrink-0 rounded-lg border border-slate-800/70 bg-slate-950/80 object-contain"
-                    />
-                  ) : null}
+                  <Icon
+                    id={layer.icon ?? undefined}
+                    layerId={layer.id}
+                    alt=""
+                    className="h-9 w-9 flex-shrink-0 rounded-lg border border-slate-800/70 bg-slate-950/80 object-contain"
+                  />
                   <div className="flex-1">
                     <div className="flex flex-wrap items-start gap-[calc(var(--gap-0)*0.6)]">
                       <div className="min-w-0 flex-1 space-y-[calc(var(--gap-0)*0.4)]">
