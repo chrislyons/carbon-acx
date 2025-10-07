@@ -6,6 +6,7 @@ export interface CatalogActivity extends Record<string, unknown> {
   activity_id?: string;
   title?: string;
   name?: string;
+  label?: string;
   summary?: string;
   description?: string;
   schedule_id?: string;
@@ -17,8 +18,10 @@ export interface CatalogProfile extends Record<string, unknown> {
   profile_id?: string;
   title?: string;
   name?: string;
+  label?: string;
   summary?: string;
   description?: string;
+  region?: string;
 }
 
 export interface CatalogPayload {
@@ -36,18 +39,27 @@ const catalogUrl = artifactUrl('catalog.json');
 
 let catalogPromise: Promise<Catalog> | null = null;
 
-function normaliseRecordArray<T extends Record<string, unknown>>(value: unknown): T[] {
+function normaliseRecordArray<T extends Record<string, unknown>>(
+  value: unknown,
+  predicate?: (entry: T) => boolean,
+): T[] {
   if (!Array.isArray(value)) {
     return [];
   }
 
-  return value.filter((entry): entry is T => entry !== null && typeof entry === 'object');
+  return value
+    .filter((entry): entry is T => entry !== null && typeof entry === 'object')
+    .filter((entry) => (predicate ? predicate(entry) : true));
 }
 
 async function requestCatalog(signal?: AbortSignal): Promise<Catalog> {
   const payload = await fetchJSON<CatalogPayload>(catalogUrl, { signal });
-  const activities = normaliseRecordArray<CatalogActivity>(payload.activities);
-  const profiles = normaliseRecordArray<CatalogProfile>(payload.profiles);
+  const activities = normaliseRecordArray<CatalogActivity>(payload.activities, (entry) =>
+    'activity_id' in entry || 'id' in entry,
+  );
+  const profiles = normaliseRecordArray<CatalogProfile>(payload.profiles, (entry) =>
+    'profile_id' in entry || 'id' in entry,
+  );
   return { activities, profiles } satisfies Catalog;
 }
 
