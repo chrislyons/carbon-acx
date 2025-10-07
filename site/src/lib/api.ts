@@ -32,11 +32,6 @@ export function parseReferenceList(text: string): string[] {
     return [];
   }
 
-  const lowerCasedStart = trimmed.slice(0, 32).toLowerCase();
-  if (lowerCasedStart.startsWith('<!doctype html') || lowerCasedStart.startsWith('<html')) {
-    return [];
-  }
-
   const fallback = trimmed
     .split('\n')
     .map((entry) => entry.trim())
