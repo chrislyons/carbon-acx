@@ -1,6 +1,5 @@
 import {
-  CreateMLCEngine,
-  prebuiltAppConfig,
+  CreateWebWorkerMLCEngine,
   type AppConfig,
   type ChatCompletionAssistantMessageParam,
   type ChatCompletionContentPart,
@@ -9,13 +8,86 @@ import {
   type ChatCompletionMessageToolCall,
   type ChatCompletionTool,
   type ChatCompletionToolMessageParam,
-  type MLCEngine,
-  type ModelRecord,
+  type MLCEngineInterface,
 } from '@mlc-ai/web-llm';
+
+import LocalLLMWorker from './LocalLLMWorker?worker';
 
 import type { CatalogActivity, CatalogProfile } from '../catalog';
 import { loadCatalog } from '../catalog';
 import type { Intent, IntentEdit, Interpreter, Msg, MsgToolCall } from './Interpreter';
+
+export async function safeJoin(base: string, sub: string): Promise<string> {
+  const baseUrl = new URL(base, location.origin);
+  const resolvedUrl = new URL(sub, baseUrl);
+  if (!resolvedUrl.pathname.startsWith(baseUrl.pathname)) {
+    throw new Error('Unsafe model path');
+  }
+  return resolvedUrl.pathname;
+}
+
+export async function loadModel(modelId: string): Promise<MLCEngineInterface> {
+  const { engine } = await initialiseEngine(modelId);
+  return engine;
+}
+
+async function fetchModelMetadata(modelId: string, baseUrl: URL): Promise<ModelConfigMetadata> {
+  const metadataUrl = new URL('mlc-model-config.json', baseUrl).toString();
+  try {
+    const response = await fetch(metadataUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to read metadata (${response.status})`);
+    }
+
+    const payload = (await response.json()) as Partial<ModelConfigMetadata>;
+    const modelLib = payload.model_lib;
+    if (!modelLib || typeof modelLib !== 'string') {
+      throw new Error('Missing model_lib reference');
+    }
+
+    return {
+      model_id: typeof payload.model_id === 'string' ? payload.model_id : undefined,
+      model_lib: modelLib,
+    } satisfies ModelConfigMetadata;
+  } catch (error) {
+    console.error(`[LocalLLMAdapter] Unable to load mlc-model-config.json for ${modelId}`, error);
+    throw new Error(`Local model ${modelId} is missing required metadata.`);
+  }
+}
+
+async function initialiseEngine(
+  modelFolderId: string,
+): Promise<{ engine: MLCEngineInterface; resolvedModelId: string }> {
+  const base = `/models/${modelFolderId}/`;
+  const baseUrl = new URL(base, location.origin);
+  const files = ['mlc-model-config.json', 'tokenizer.json', 'params-shard1.bin'];
+  for (const file of files) {
+    await safeJoin(base, file);
+  }
+
+  const metadata = await fetchModelMetadata(modelFolderId, baseUrl);
+  const resolvedModelId = metadata.model_id ?? modelFolderId;
+  const modelLibPath = await safeJoin(base, metadata.model_lib);
+  const modelLibUrl = new URL(modelLibPath, location.origin).toString();
+
+  const appConfig: AppConfig = {
+    model_list: [
+      {
+        model: baseUrl.toString(),
+        model_id: resolvedModelId,
+        model_lib: modelLibUrl,
+      },
+    ],
+    useIndexedDBCache: true,
+  };
+
+  const worker = new LocalLLMWorker();
+  const engine = await CreateWebWorkerMLCEngine(worker, resolvedModelId, {
+    appConfig,
+  });
+
+  return { engine, resolvedModelId };
+}
 
 const DEFAULT_MODEL_FOLDER = 'qwen2.5-1.5b-instruct-q4f16_1';
 const MAX_TOOL_RESULTS = 8;
@@ -31,7 +103,7 @@ const SYSTEM_PROMPT = [
 
 interface ModelConfigMetadata {
   readonly model_id?: string;
-  readonly model_lib?: string;
+  readonly model_lib: string;
 }
 
 interface CatalogMatch<T extends Record<string, unknown>> {
@@ -60,11 +132,9 @@ interface SearchOptions<T extends Record<string, unknown>> {
 }
 
 export class LocalLLMAdapter implements Interpreter {
-  private enginePromise: Promise<MLCEngine> | null = null;
+  private enginePromise: Promise<MLCEngineInterface> | null = null;
   private readonly modelFolderId: string;
-  private readonly modelBaseUrl: string;
   private engineModelId: string | null = null;
-  private modelRecord: ModelRecord | null = null;
   private readonly systemMessage: ChatCompletionMessageParam;
   private readonly tools: ChatCompletionTool[];
 
@@ -74,7 +144,6 @@ export class LocalLLMAdapter implements Interpreter {
     }
 
     this.modelFolderId = resolveModelFolderId();
-    this.modelBaseUrl = buildModelBaseUrl(this.modelFolderId);
     this.systemMessage = { role: 'system', content: SYSTEM_PROMPT } satisfies ChatCompletionMessageParam;
     this.tools = buildToolDefinitions();
   }
@@ -90,7 +159,7 @@ export class LocalLLMAdapter implements Interpreter {
     return this.runCompletion(engine, modelId, conversation);
   }
 
-  private async getEngine(): Promise<MLCEngine> {
+  private async getEngine(): Promise<MLCEngineInterface> {
     if (!this.enginePromise) {
       this.enginePromise = this.createEngine().catch((error) => {
         this.enginePromise = null;
@@ -101,29 +170,10 @@ export class LocalLLMAdapter implements Interpreter {
     return this.enginePromise;
   }
 
-  private async createEngine(): Promise<MLCEngine> {
-    const { appConfig, modelId, modelRecord } = await this.prepareAppConfig();
-    this.engineModelId = modelId;
-    this.modelRecord = modelRecord;
-
-    const engine = await CreateMLCEngine(modelId, {
-      appConfig,
-      initProgressCallback: (report) => {
-        const pct = report.progress !== undefined ? Math.round(report.progress * 100) : null;
-        const prefix = '[LocalLLMAdapter] Model initialisation';
-        if (pct !== null) {
-          console.info(`${prefix}: ${report.text ?? 'loading'} (${pct}%)`);
-        } else {
-          console.info(`${prefix}: ${report.text ?? 'loading'}`);
-        }
-      },
-    });
-
-    if (modelRecord?.vram_required_MB) {
-      console.info(
-        `[LocalLLMAdapter] ${modelRecord.model_id} estimated VRAM requirement: ${modelRecord.vram_required_MB.toFixed(2)} MB`,
-      );
-    }
+  private async createEngine(): Promise<MLCEngineInterface> {
+    const modelId = this.modelFolderId;
+    const { engine, resolvedModelId } = await initialiseEngine(modelId);
+    this.engineModelId = resolvedModelId;
 
     try {
       const vendor = await engine.getGPUVendor();
@@ -137,85 +187,8 @@ export class LocalLLMAdapter implements Interpreter {
     return engine;
   }
 
-  private async prepareAppConfig(): Promise<{ appConfig: AppConfig; modelId: string; modelRecord: ModelRecord | null }> {
-    const metadata = await this.fetchModelMetadata();
-    const candidateIds = new Set<string>();
-    candidateIds.add(this.modelFolderId);
-    if (metadata?.model_id) {
-      candidateIds.add(metadata.model_id);
-    }
-
-    const record = findMatchingModelRecord(candidateIds);
-    const modelId = record?.model_id ?? metadata?.model_id ?? this.modelFolderId;
-    const modelLibUrl = this.resolveModelLib(record, metadata);
-
-    const entry: ModelRecord = {
-      model: this.modelBaseUrl,
-      model_id: modelId,
-      model_lib: modelLibUrl,
-    };
-
-    if (record?.overrides) {
-      entry.overrides = record.overrides;
-    }
-    if (record?.vram_required_MB) {
-      entry.vram_required_MB = record.vram_required_MB;
-    }
-    if (record?.low_resource_required !== undefined) {
-      entry.low_resource_required = record.low_resource_required;
-    }
-    if (record?.buffer_size_required_bytes) {
-      entry.buffer_size_required_bytes = record.buffer_size_required_bytes;
-    }
-    if (record?.required_features) {
-      entry.required_features = record.required_features;
-    }
-
-    const appConfig: AppConfig = {
-      model_list: [entry],
-      useIndexedDBCache: true,
-    };
-
-    return { appConfig, modelId, modelRecord: record ?? null };
-  }
-
-  private async fetchModelMetadata(): Promise<ModelConfigMetadata | null> {
-    const configUrl = new URL('mlc-chat-config.json', this.modelBaseUrl).toString();
-    try {
-      const response = await fetch(configUrl);
-      if (!response.ok) {
-        return null;
-      }
-
-      const data = (await response.json()) as ModelConfigMetadata;
-      return data;
-    } catch (error) {
-      console.warn('[LocalLLMAdapter] Unable to read mlc-chat-config.json', error);
-      return null;
-    }
-  }
-
-  private resolveModelLib(record: ModelRecord | null, metadata: ModelConfigMetadata | null): string {
-    const candidates: string[] = [];
-    if (metadata?.model_lib) {
-      candidates.push(metadata.model_lib);
-    }
-    if (record?.model_lib) {
-      candidates.push(record.model_lib);
-    }
-
-    for (const candidate of candidates) {
-      const resolved = resolveModelLibUrl(candidate, this.modelBaseUrl);
-      if (resolved) {
-        return resolved;
-      }
-    }
-
-    throw new Error(`Unable to resolve model wasm library for ${this.modelFolderId}`);
-  }
-
   private async runCompletion(
-    engine: MLCEngine,
+    engine: MLCEngineInterface,
     modelId: string,
     initialMessages: ChatCompletionMessageParam[],
   ): Promise<Intent> {
@@ -429,12 +402,6 @@ function sanitiseModelId(input: string): string {
   return trimmed;
 }
 
-function buildModelBaseUrl(modelFolderId: string): string {
-  const basePath = (import.meta.env.BASE_URL ?? '/').toString();
-  const normalised = basePath.endsWith('/') ? basePath : `${basePath}/`;
-  return new URL(`${normalised}models/${modelFolderId}/`, window.location.origin).toString();
-}
-
 function buildToolDefinitions(): ChatCompletionTool[] {
   return [
     {
@@ -497,52 +464,6 @@ function convertToolCalls(toolCalls: readonly MsgToolCall[]): ChatCompletionMess
       arguments: toolCall.function.arguments,
     },
   } satisfies ChatCompletionMessageToolCall));
-}
-
-function findMatchingModelRecord(candidateIds: Set<string>): ModelRecord | null {
-  const normalisedCandidates = new Set<string>(
-    Array.from(candidateIds)
-      .map((id) => normaliseModelId(id))
-      .filter((id) => id.length > 0),
-  );
-
-  for (const record of prebuiltAppConfig.model_list) {
-    if (normalisedCandidates.has(normaliseModelId(record.model_id))) {
-      return record;
-    }
-  }
-
-  return null;
-}
-
-function normaliseModelId(value: string): string {
-  return value.replace(/[^A-Za-z0-9]+/g, '').toLowerCase();
-}
-
-function resolveModelLibUrl(candidate: string, baseUrl: string): string | null {
-  if (!candidate) {
-    return null;
-  }
-
-  const trimmed = candidate.trim();
-  if (!trimmed) {
-    return null;
-  }
-
-  if (/^https?:\/\//i.test(trimmed)) {
-    const url = new URL(trimmed);
-    const fileName = url.pathname.split('/').pop();
-    if (!fileName || !fileName.endsWith('.wasm')) {
-      return null;
-    }
-    return new URL(fileName, baseUrl).toString();
-  }
-
-  try {
-    return new URL(trimmed, baseUrl).toString();
-  } catch {
-    return null;
-  }
 }
 
 function extractAssistantContent(message: ChatCompletionAssistantMessageParam): string {
