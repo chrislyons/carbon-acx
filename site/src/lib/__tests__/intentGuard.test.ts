@@ -12,7 +12,7 @@ const catalog = {
     { profile_id: 'PROFILE.CA.2025', label: 'Profile CA 2025', region: 'CA' },
     { profile_id: 'PROFILE.US.2025', label: 'Profile US 2025', region: 'US' },
   ],
-} as const;
+};
 
 describe('guardIntent', () => {
   it('blocks region drift and suggests keeping region', () => {
