@@ -17,7 +17,7 @@ from typing import Dict, List, Optional, Literal, Sequence, Set, Tuple
 import pandas as pd
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from .dal.aliases import remap_record
+from functools import lru_cache
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
@@ -38,6 +38,13 @@ UNIT_REGISTRY = set(_units_df[_unit_column].dropna().astype(str))
 _csv_cache: Dict[Path, Tuple[int, pd.DataFrame]] = {}
 
 
+@lru_cache(maxsize=1)
+def _remap_record_func():
+    from .dal.aliases import remap_record as _remap_record
+
+    return _remap_record
+
+
 BASE_MODEL_CONFIG = ConfigDict(populate_by_name=True, extra="ignore")
 
 
@@ -51,7 +58,8 @@ def _load_csv(path: Path, model: type[BaseModel]) -> tuple[BaseModel, ...]:
         df = df.where(pd.notnull(df), None)
         _csv_cache[path] = (mtime_ns, df)
         df = df.copy(deep=True)
-    records = (remap_record(row) for row in df.to_dict(orient="records"))
+    remap = _remap_record_func()
+    records = (remap(row) for row in df.to_dict(orient="records"))
     return tuple(model(**row) for row in records)
 
 

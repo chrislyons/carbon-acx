@@ -184,38 +184,45 @@ def _layer_label(layer_id: str) -> str:
         return layer_id.replace("_", " ").title()
 
 
-def _collect_layers(figures: Dict[str, dict | None]) -> list[str]:
+def _collect_layers(
+    figures: Mapping[str, dict | None] | None, *, fallback: Iterable[str] | None = None
+) -> list[str]:
     layers: set[str] = set()
-    for payload in figures.values():
-        if not payload:
-            continue
-        data = payload.get("data")
-        if isinstance(data, list):
-            for row in data:
-                if not isinstance(row, dict):
-                    continue
-                value = row.get("layer_id")
-                if value:
-                    layers.add(str(value))
-        elif isinstance(data, dict):
-            links = data.get("links", [])
-            for link in links:
-                if not isinstance(link, dict):
-                    continue
-                value = link.get("layer_id")
-                if value:
-                    layers.add(str(value))
-            modes = data.get("modes")
-            if isinstance(modes, Mapping):
-                for mode_payload in modes.values():
-                    if not isinstance(mode_payload, Mapping):
+    if isinstance(figures, Mapping):
+        for payload in figures.values():
+            if not payload:
+                continue
+            data = payload.get("data")
+            if isinstance(data, list):
+                for row in data:
+                    if not isinstance(row, dict):
                         continue
-                    for link in mode_payload.get("links", []):
-                        if not isinstance(link, dict):
+                    value = row.get("layer_id")
+                    if value:
+                        layers.add(str(value))
+            elif isinstance(data, dict):
+                links = data.get("links", [])
+                for link in links:
+                    if not isinstance(link, dict):
+                        continue
+                    value = link.get("layer_id")
+                    if value:
+                        layers.add(str(value))
+                modes = data.get("modes")
+                if isinstance(modes, Mapping):
+                    for mode_payload in modes.values():
+                        if not isinstance(mode_payload, Mapping):
                             continue
-                        value = link.get("layer_id")
-                        if value:
-                            layers.add(str(value))
+                        for link in mode_payload.get("links", []):
+                            if not isinstance(link, dict):
+                                continue
+                            value = link.get("layer_id")
+                            if value:
+                                layers.add(str(value))
+    if fallback:
+        for value in fallback:
+            if value:
+                layers.add(str(value))
     return sorted(layers, key=_layer_order_index)
 
 
@@ -506,7 +513,7 @@ def create_app() -> Dash:
                 if isinstance(keys, list)
             }
 
-    available_layers = _collect_layers(figures)
+    available_layers = _collect_layers(figures, fallback=LAYER_ORDER)
     default_layers = [available_layers[0]] if available_layers else [LayerId.PROFESSIONAL.value]
 
     def _resolve_reference_keys(
@@ -525,8 +532,6 @@ def create_app() -> Dash:
     layer_options: list[dict] = []
     for layer in LayerId:
         option = {"label": layer.label, "value": layer.value}
-        if available_layers and layer.value not in available_layers:
-            option["disabled"] = True
         layer_options.append(option)
 
     def _coerce_layer_values(value) -> list[str]:
@@ -1102,6 +1107,7 @@ def create_app() -> Dash:
         Input("theme-mode", "data"),
         Input("acx-active-activity", "data"),
         State("figures-store", "data"),
+        State("available-layers", "data"),
     )
     def _update_panels(
         selected_layers,
@@ -1109,6 +1115,7 @@ def create_app() -> Dash:
         theme_mode=None,
         active_activity=None,
         figures_store=None,
+        available_layers_state=None,
     ):
         panels_class = "layer-panels"
         if figures_store is None and not isinstance(theme_mode, (str, type(None))):
@@ -1119,7 +1126,7 @@ def create_app() -> Dash:
             empty = html.Div(className="layer-empty", children=html.P("No charts available."))
             return [empty], panels_class
 
-        available = _collect_layers(figures_store)
+        available = _collect_layers(figures_store, fallback=available_layers_state)
         ordered_layers = _active_layers_for(selected_layers, view_mode, available)
 
         if not ordered_layers:

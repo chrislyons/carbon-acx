@@ -2,22 +2,23 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import Protocol, Sequence
+from typing import Any, Protocol, Sequence, TYPE_CHECKING
 
-from ..schema import (
-    Activity,
-    ActivityDependency,
-    ActivitySchedule,
-    Asset,
-    FeedbackLoop,
-    EmissionFactor,
-    Entity,
-    GridIntensity,
-    Layer,
-    Operation,
-    Profile,
-    Site,
-)
+if TYPE_CHECKING:  # pragma: no cover - imported for static type checking
+    from ..schema import (
+        Activity,
+        ActivityDependency,
+        ActivitySchedule,
+        Asset,
+        EmissionFactor,
+        Entity,
+        FeedbackLoop,
+        GridIntensity,
+        Layer,
+        Operation,
+        Profile,
+        Site,
+    )
 from .csv import CsvStore
 from .duckdb import DuckDbStore
 from ..dal_sql import SqlStore
@@ -41,6 +42,21 @@ __all__ = [
     "SqlStore",
     "choose_backend",
 ]
+
+_SCHEMA_EXPORTS = {
+    "Activity",
+    "ActivityDependency",
+    "ActivitySchedule",
+    "Asset",
+    "EmissionFactor",
+    "Entity",
+    "FeedbackLoop",
+    "GridIntensity",
+    "Layer",
+    "Operation",
+    "Profile",
+    "Site",
+}
 
 
 class DataStore(Protocol):
@@ -67,6 +83,42 @@ class DataStore(Protocol):
     def load_activity_dependencies(self) -> Sequence[ActivityDependency]: ...
 
     def load_feedback_loops(self) -> Sequence[FeedbackLoop]: ...
+
+
+def __getattr__(name: str) -> Any:
+    if name in _SCHEMA_EXPORTS:
+        from ..schema import (
+            Activity,
+            ActivityDependency,
+            ActivitySchedule,
+            Asset,
+            EmissionFactor,
+            Entity,
+            FeedbackLoop,
+            GridIntensity,
+            Layer,
+            Operation,
+            Profile,
+            Site,
+        )
+
+        namespace = {
+            "Activity": Activity,
+            "ActivityDependency": ActivityDependency,
+            "ActivitySchedule": ActivitySchedule,
+            "Asset": Asset,
+            "EmissionFactor": EmissionFactor,
+            "Entity": Entity,
+            "FeedbackLoop": FeedbackLoop,
+            "GridIntensity": GridIntensity,
+            "Layer": Layer,
+            "Operation": Operation,
+            "Profile": Profile,
+            "Site": Site,
+        }
+        globals().update(namespace)
+        return namespace[name]
+    raise AttributeError(f"module 'calc.dal' has no attribute {name!r}")
 
 
 def _resolve_db_path(candidate: str | os.PathLike[str] | None) -> Path:
