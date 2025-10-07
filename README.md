@@ -61,12 +61,14 @@ Together these pieces model how organisations can move from raw operational acti
 - Python 3.11+ with Poetry for dependency management.【F:pyproject.toml†L1-L12】
 - Node.js ≥ 18 for the Vite-powered static site build (see `site/package.json`).【F:site/package.json†L1-L34】
 - Make, Git, and a Cloudflare account (optional) if you plan to deploy Functions or Workers.
+- Hugging Face access (token optional) to download the WebLLM chat model bundle.【F:site/public/models/README.md†L32-L48】
 
 ### Install dependencies
 
 ```bash
 poetry install --with dev --no-root
 make site_install
+pnpm --prefix site download-model --optional
 ```
 
 These commands install Python tooling, JavaScript dependencies, and doc linters referenced by the Make targets.【F:Makefile†L1-L120】

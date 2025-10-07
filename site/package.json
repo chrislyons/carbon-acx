@@ -4,7 +4,10 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
+    "download-model": "node ./scripts/download-web-llm-model.mjs",
+    "predev": "pnpm download-model --optional",
     "dev": "vite",
+    "prebuild": "pnpm download-model",
     "build": "tsc --noEmit --project tsconfig.json && tsc --noEmit --project tsconfig.node.json && vite build",
     "preview": "vite preview --host",
     "lint": "echo 'No lint configured'",

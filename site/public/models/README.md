@@ -34,9 +34,18 @@ folder. The adapter rewrites the download URL so that the runtime is served from
 
 ## Obtaining weights
 
-Download the model package from [mlc-ai/web-llm prebuilt models](https://mlc.ai/models)
-or from the corresponding Hugging Face repository. The easiest approach is to
-use `git lfs`:
+Run the helper script to download the official package from Hugging Face:
+
+```bash
+pnpm download-model
+```
+
+Set `HF_TOKEN` (or `HUGGING_FACE_HUB_TOKEN`) if your environment requires an
+authenticated request. To skip the automatic download during `pnpm dev`/`pnpm
+build`, export `SKIP_WEBLLM_DOWNLOAD=true`.
+
+If you prefer a manual workflow, clone the repository with `git lfs` and copy
+the files into the model directory:
 
 ```bash
 git lfs install
