@@ -1,0 +1,13 @@
+icon_id,slug,layer_id,activity_id,description
+professional,professional.svg,professional,,Professional services baseline icon anchoring hybrid office activity sets.
+online,online.svg,online,,Online services workloads for remote-first teams and biosphere feedback pathways.
+industrial_light,industrial_light.svg,industrial_light,,Light industrial lab, prototyping, and fabrication iconography.
+industrial_heavy,industrial_heavy.svg,industrial_heavy,,Heavy industrial and externalities coverage icon.
+military_ops,military_ops.svg,industrial_heavy_military,,Military operations emissions icon used for defence missions.
+defense_embodied,defense_embodied.svg,industrial_heavy_embodied,,Weapons manufacturing and embodied defence asset icon.
+defense_building,defense_building.svg,buildings_defense,,Defence installation operations iconography.
+conflict_modeled,conflict_modeled.svg,modeled_events,,Scenario simulation icon used for conflict and hazard modelling.
+chemicals_defense,chemicals_defense.svg,materials_chemicals,,Defence supply chain energetic materials icon.
+personal_security,personal_security.svg,personal_security_layer,,Private security convoy and aerial patrol icon.
+biosphere_feedbacks,online.svg,biosphere_feedbacks,,Earth system feedback pathways sharing the online services iconography.
+industrial_externalities,industrial_heavy.svg,industrial_externalities,,Industrial externalities icon reused from heavy industry.
