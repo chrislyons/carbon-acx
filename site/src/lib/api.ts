@@ -99,6 +99,64 @@ interface LatestBuildPointer {
   artifact_dir?: string;
 }
 
+interface FigureManifestReferenceOrderEntry {
+  index?: number;
+  source_id?: string;
+}
+
+interface FigureManifestReferences {
+  path?: string;
+  legacy_path?: string;
+  order?: FigureManifestReferenceOrderEntry[];
+  line_count?: number;
+}
+
+interface FigureManifestPayload {
+  schema_version?: string;
+  figure_id?: string;
+  figure_method?: string;
+  generated_at?: string;
+  hash_prefix?: string;
+  figure_path?: string;
+  legacy_figure_path?: string;
+  figure_sha256?: string;
+  citation_keys?: string[];
+  references?: FigureManifestReferences;
+  numeric_invariance?: {
+    passed?: boolean;
+    tolerance_percent?: number;
+  };
+  [key: string]: unknown;
+}
+
+interface ManifestArtifactEntry {
+  path?: string;
+  sha256?: string;
+  preferred?: boolean;
+}
+
+interface ManifestIndexFigureEntry {
+  figure_id?: string;
+  figure_method?: string;
+  hash_prefix?: string;
+  manifests?: ManifestArtifactEntry[];
+  figures?: ManifestArtifactEntry[];
+  references?: ManifestArtifactEntry[];
+}
+
+interface ManifestIndexPayload {
+  schema_version?: string;
+  generated_at?: string;
+  build_hash?: string;
+  dataset_version?: string;
+  hashed_preferred?: boolean;
+  dataset_manifest?: {
+    path?: string;
+    sha256?: string;
+  };
+  figures?: ManifestIndexFigureEntry[];
+}
+
 type ArtifactOverrideMap = Map<string, string>;
 
 let artifactOverrides: ArtifactOverrideMap | null = null;
@@ -157,6 +215,68 @@ function extractHashFromPointer(pointer: LatestBuildPointer | null): string | nu
     }
   }
   return null;
+}
+
+function selectPreferredArtifactPath(
+  entries: ManifestArtifactEntry[] | null | undefined
+): string | null {
+  if (!Array.isArray(entries)) {
+    return null;
+  }
+  let fallback: string | null = null;
+  for (const entry of entries) {
+    if (!entry || typeof entry.path !== 'string') {
+      continue;
+    }
+    const candidate = normalisePath(entry.path);
+    if (fallback === null) {
+      fallback = candidate;
+    }
+    if (entry.preferred) {
+      return candidate;
+    }
+  }
+  return fallback;
+}
+
+function findFigureIndexEntry(
+  indexPayload: ManifestIndexPayload | null,
+  figureId: string
+): ManifestIndexFigureEntry | null {
+  if (!indexPayload || !Array.isArray(indexPayload.figures)) {
+    return null;
+  }
+  for (const entry of indexPayload.figures) {
+    if (!entry || typeof entry.figure_id !== 'string') {
+      continue;
+    }
+    if (entry.figure_id === figureId) {
+      return entry;
+    }
+  }
+  return null;
+}
+
+function rebuildReferencesWithManifest(
+  references: string[],
+  manifest: FigureManifestPayload | null | undefined
+): string[] {
+  if (!manifest || typeof manifest !== 'object' || !manifest.references) {
+    return references;
+  }
+  const order = manifest.references.order;
+  if (!Array.isArray(order) || order.length !== references.length) {
+    return references;
+  }
+  return references.map((entry, index) => {
+    const orderEntry = order[index];
+    const indexValue =
+      orderEntry && typeof orderEntry.index === 'number' && Number.isFinite(orderEntry.index)
+        ? Math.trunc(orderEntry.index)
+        : index + 1;
+    const stripped = entry.replace(/^\s*\[[0-9]+\]\s*/, '').trim();
+    return `[${indexValue}] ${stripped}`;
+  });
 }
 
 async function loadArtifactOverrides(signal?: AbortSignal): Promise<ArtifactOverrideMap> {
@@ -326,46 +446,154 @@ async function loadArtifactText(path: string, signal?: AbortSignal): Promise<str
   return data;
 }
 
+async function fetchManifestIndex(signal?: AbortSignal): Promise<ManifestIndexPayload | null> {
+  try {
+    return await fetchJSON<ManifestIndexPayload>(resolveArtifactUrl('manifest.json'), {
+      signal,
+      headers: { Accept: 'application/json' },
+      cache: 'no-store'
+    });
+  } catch (error) {
+    if (error instanceof FetchJSONError) {
+      return null;
+    }
+    if (error instanceof Error && /Unable to parse JSON/.test(error.message)) {
+      return null;
+    }
+    throw error;
+  }
+}
+
 async function loadComputeArtifacts(signal?: AbortSignal): Promise<ComputeResult> {
-  const referencesPath = 'references/export_view_refs.txt';
-  const [
-    manifestJson,
-    stackedJson,
-    bubbleJson,
-    sankeyJson,
-    feedbackJson,
-    referencesText
-  ] = await Promise.all([
-    loadArtifactJson('manifest.json', signal),
-    loadArtifactJson('figures/stacked.json', signal),
-    loadArtifactJson('figures/bubble.json', signal),
-    loadArtifactJson('figures/sankey.json', signal),
-    loadArtifactJson('figures/feedback.json', signal),
-    loadArtifactText(referencesPath, signal)
-  ]);
+  const fallbackReferencesPath = 'references/export_view_refs.txt';
+  const figureOrder = ['stacked', 'bubble', 'sankey', 'feedback'] as const;
+  const manifestIndex = await fetchManifestIndex(signal);
 
-  const references = referenceListCache.get(referencesPath) ?? parseReferenceList(referencesText);
+  const figurePaths = new Map<string, string>();
+  const manifestPaths = new Map<string, string>();
+  const referencePaths = new Map<string, string>();
 
-  if (!referenceListCache.has(referencesPath)) {
-    referenceListCache.set(referencesPath, references);
+  const datasetManifestCandidates: string[] = [];
+  if (manifestIndex?.dataset_manifest?.path) {
+    datasetManifestCandidates.push(normalisePath(manifestIndex.dataset_manifest.path));
+  }
+  datasetManifestCandidates.push('calc/outputs/manifest.json');
+  datasetManifestCandidates.push('manifest.json');
+
+  for (const name of figureOrder) {
+    const entry = findFigureIndexEntry(manifestIndex, name);
+    const preferredFigurePath = selectPreferredArtifactPath(entry?.figures);
+    if (preferredFigurePath) {
+      figurePaths.set(name, preferredFigurePath);
+    }
+    const preferredManifestPath = selectPreferredArtifactPath(entry?.manifests);
+    if (preferredManifestPath) {
+      manifestPaths.set(name, preferredManifestPath);
+    }
+    const preferredReferencePath = selectPreferredArtifactPath(entry?.references);
+    if (preferredReferencePath) {
+      referencePaths.set(name, preferredReferencePath);
+    }
   }
 
+  for (const name of figureOrder) {
+    if (!figurePaths.has(name)) {
+      figurePaths.set(name, `figures/${name}.json`);
+    }
+  }
+
+  const selectedReferenceFigure = figureOrder.find((name) => referencePaths.has(name)) ?? null;
+  const initialReferencePath = selectedReferenceFigure
+    ? referencePaths.get(selectedReferenceFigure)!
+    : fallbackReferencesPath;
+
+  let datasetManifest: unknown = null;
+  let datasetManifestPathUsed: string | null = null;
+  for (const candidate of datasetManifestCandidates) {
+    const normalised = normalisePath(candidate);
+    try {
+      datasetManifest = await loadArtifactJson(normalised, signal);
+      datasetManifestPathUsed = normalised;
+      break;
+    } catch (error) {
+      const shouldContinue =
+        error instanceof FetchJSONError ||
+        (error instanceof Error && /Unable to parse JSON/.test(error.message));
+      if (!shouldContinue) {
+        throw error;
+      }
+    }
+  }
+  if (!datasetManifest) {
+    datasetManifest = {};
+  }
+  if (datasetManifestPathUsed) {
+    jsonArtifactCache.set(datasetManifestPathUsed, datasetManifest);
+  }
+
+  const figureManifests = new Map<string, FigureManifestPayload>();
+  const figuresPayload: Record<string, unknown> = {};
+
+  for (const name of figureOrder) {
+    const figurePath = figurePaths.get(name)!;
+    const figureJson = await loadArtifactJson(figurePath, signal);
+    figuresPayload[name] = figureJson;
+    const manifestPath = manifestPaths.get(name);
+    if (manifestPath) {
+      try {
+        const manifestJson = await loadArtifactJson(manifestPath, signal);
+        if (manifestJson && typeof manifestJson === 'object') {
+          figureManifests.set(name, manifestJson as FigureManifestPayload);
+        }
+      } catch (error) {
+        const shouldIgnore =
+          error instanceof FetchJSONError ||
+          (error instanceof Error && /Unable to parse JSON/.test(error.message));
+        if (!shouldIgnore) {
+          throw error;
+        }
+      }
+    }
+  }
+
+  let referencesPathUsed = initialReferencePath;
+  let referencesText: string;
+  try {
+    referencesText = await loadArtifactText(referencesPathUsed, signal);
+  } catch (error) {
+    if (referencesPathUsed !== fallbackReferencesPath) {
+      referencesPathUsed = fallbackReferencesPath;
+      referencesText = await loadArtifactText(referencesPathUsed, signal);
+    } else {
+      throw error;
+    }
+  }
+
+  let references = referenceListCache.get(referencesPathUsed) ?? parseReferenceList(referencesText);
+  if (!referenceListCache.has(referencesPathUsed)) {
+    referenceListCache.set(referencesPathUsed, references);
+  }
+
+  const manifestForReferences =
+    (selectedReferenceFigure && figureManifests.get(selectedReferenceFigure)) ||
+    Array.from(figureManifests.values())[0];
+  references = rebuildReferencesWithManifest(references, manifestForReferences);
+
   const result = {
-    manifest: manifestJson,
-    figures: {
-      stacked: stackedJson,
-      bubble: bubbleJson,
-      sankey: sankeyJson,
-      feedback: feedbackJson
-    },
+    manifest: datasetManifest,
+    figures: figuresPayload,
     references
   } as ComputeResult;
 
-  const manifestRecord = manifestJson as { [key: string]: unknown };
-  if (typeof manifestRecord.dataset_version === 'string') {
+  const manifestRecord = datasetManifest as { [key: string]: unknown };
+  if (manifestRecord && typeof manifestRecord.dataset_version === 'string') {
     result.datasetId = manifestRecord.dataset_version;
-  } else if (typeof manifestRecord.build_hash === 'string') {
+  } else if (manifestRecord && typeof manifestRecord.build_hash === 'string') {
     result.datasetId = manifestRecord.build_hash;
+  } else if (manifestIndex && typeof manifestIndex.dataset_version === 'string') {
+    result.datasetId = manifestIndex.dataset_version;
+  } else if (manifestIndex && typeof manifestIndex.build_hash === 'string') {
+    result.datasetId = manifestIndex.build_hash;
   }
 
   return result;

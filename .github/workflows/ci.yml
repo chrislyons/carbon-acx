@@ -43,8 +43,12 @@ jobs:
           ACX_GENERATED_AT: "1970-01-01T00:00:00+00:00"
           ACX_DATA_BACKEND: "csv"
           ACX_OUTPUT_ROOT: "dist/artifacts"
+          ACX040_HASHED: "1"
           PYTHONPATH: "."
-        run: make build-static
+        run: |
+          make build
+          make verify_manifests
+          make build-static
 
       - name: Upload data artifacts
         uses: actions/upload-artifact@v4

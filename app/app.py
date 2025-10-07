@@ -1,25 +1,16 @@
 from __future__ import annotations
 
+import copy
 import json
 import os
 import sys
 from functools import lru_cache
 from pathlib import Path
-from typing import Dict, Iterable, Mapping
+from typing import Dict, Iterable, Mapping, Sequence
 from urllib.parse import parse_qs, urlencode, quote
 
 import dash
-
-import copy
 from dash import ALL, MATCH, Dash, Input, Output, State, dcc, html, no_update
-
-if __package__ in {None, ""}:
-    repo_root = Path(__file__).resolve().parents[1]
-    if str(repo_root) not in sys.path:
-        sys.path.insert(0, str(repo_root))
-
-from calc import citations
-from calc.schema import LayerId
 
 from app.components import (
     agency_strip,
@@ -34,6 +25,20 @@ from app.components import (
 from app.lib import narratives
 from app.lib.agency import breakdown_for_activity
 from app.components._helpers import extend_unique
+
+try:
+    from calc import citations
+    from calc.schema import LayerId
+except ModuleNotFoundError:
+    REPO_ROOT = Path(__file__).resolve().parents[1]
+    if str(REPO_ROOT) not in sys.path:
+        sys.path.insert(0, str(REPO_ROOT))
+    from calc import citations
+    from calc.schema import LayerId
+else:
+    REPO_ROOT = Path(__file__).resolve().parents[1]
+
+ARTIFACT_ROOT = REPO_ROOT / "dist" / "artifacts"
 
 ARTIFACT_ENV = "ACX_ARTIFACT_DIR"
 DEFAULT_ARTIFACT_DIR = Path(__file__).resolve().parent.parent / "calc" / "outputs"
@@ -62,7 +67,68 @@ def _cached_json_payload(path: str) -> dict | None:
         return None
 
 
+@lru_cache(maxsize=None)
+def _manifest_index_payload() -> Mapping[str, object] | None:
+    path = ARTIFACT_ROOT / "manifest.json"
+    if not path.exists():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return None
+    return payload if isinstance(payload, Mapping) else None
+
+
+def _resolve_artifact_path(path: str | None) -> Path | None:
+    if not path or not path.strip():
+        return None
+    candidate = Path(path.strip())
+    if not candidate.is_absolute():
+        candidate = ARTIFACT_ROOT / path.strip().lstrip("/\\")
+    return candidate
+
+
+def _preferred_entry_path(entries: Sequence[Mapping[str, object]] | None) -> Path | None:
+    if not entries:
+        return None
+    fallback: Path | None = None
+    for entry in entries:
+        if not isinstance(entry, Mapping):
+            continue
+        path_value = entry.get("path")
+        resolved = _resolve_artifact_path(path_value if isinstance(path_value, str) else None)
+        if resolved is None or not resolved.exists():
+            continue
+        if fallback is None:
+            fallback = resolved
+        if bool(entry.get("preferred")):
+            return resolved
+    return fallback
+
+
+def _manifest_index_entry(name: str) -> Mapping[str, object] | None:
+    payload = _manifest_index_payload()
+    if not payload:
+        return None
+    figures = payload.get("figures")
+    if not isinstance(figures, Sequence):
+        return None
+    for entry in figures:
+        if isinstance(entry, Mapping) and entry.get("figure_id") == name:
+            return entry
+    return None
+
+
 def _load_figure_payload(base_dir: Path, name: str) -> dict | None:
+    index_entry = _manifest_index_entry(name)
+    if index_entry:
+        figures = index_entry.get("figures")
+        if isinstance(figures, Sequence):
+            preferred_path = _preferred_entry_path(figures) if figures else None
+            if preferred_path:
+                payload = _cached_json_payload(str(preferred_path))
+                if payload is not None:
+                    return payload
     path = base_dir / "figures" / f"{name}.json"
     return _cached_json_payload(str(path))
 
@@ -73,6 +139,16 @@ def _load_export_payload(base_dir: Path) -> dict | None:
 
 
 def _load_manifest_payload(base_dir: Path) -> dict | None:
+    index_payload = _manifest_index_payload()
+    if index_payload:
+        dataset_entry = index_payload.get("dataset_manifest")
+        if isinstance(dataset_entry, Mapping):
+            path_value = dataset_entry.get("path")
+            resolved = _resolve_artifact_path(path_value if isinstance(path_value, str) else None)
+            if resolved:
+                payload = _cached_json_payload(str(resolved))
+                if payload is not None:
+                    return payload
     path = base_dir / "manifest.json"
     return _cached_json_payload(str(path))
 

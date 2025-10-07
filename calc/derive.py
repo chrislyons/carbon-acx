@@ -17,6 +17,12 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence
 import pandas as pd
 
 from . import citations, figures, manifest as manifest_module
+from .figures_manifest import (
+    build_collection_index,
+    build_figure_manifest,
+    bundle_manifest_artifacts,
+    FigureManifestArtifacts,
+)
 from .upstream import dependency_metadata
 from .api import collect_activity_source_keys
 from .dal import DataStore, choose_backend
@@ -383,6 +389,17 @@ def _write_json(path: Path, payload: Any) -> None:
     path.write_text(json.dumps(normalised, indent=2, sort_keys=True), encoding="utf-8")
 
 
+def _stable_json_dumps(payload: Any) -> str:
+    normalised = _normalise_value(payload)
+    return json.dumps(normalised, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+
+
+def _is_truthy_env(value: str | None) -> bool:
+    if value is None:
+        return False
+    return value.strip().lower() not in {"0", "false", "no", "off"}
+
+
 def _resolve_generated_at() -> str:
     env_value = os.getenv(GENERATED_AT_ENV)
     if env_value:
@@ -632,12 +649,13 @@ def _format_references(citation_keys: List[str]) -> List[str]:
     return [citations.format_ieee(ref.numbered(idx)) for idx, ref in enumerate(references, start=1)]
 
 
-def _write_reference_file(directory: Path, stem: str, references: List[str]) -> None:
+def _write_reference_file(directory: Path, stem: str, references: List[str]) -> str:
     directory.mkdir(parents=True, exist_ok=True)
     text = "\n".join(references)
     if references:
         text += "\n"
     (directory / f"{stem}_refs.txt").write_text(text, encoding="utf-8")
+    return text
 
 
 def _schedule_variable_map(sched: ActivitySchedule) -> dict[str, float]:
@@ -1567,6 +1585,15 @@ def export_view(
 
     _write_reference_file(reference_dir, "export_view", references)
 
+    artifact_figure_dir = ARTIFACT_ROOT / "figures"
+    artifact_reference_dir = ARTIFACT_ROOT / "references"
+    artifact_manifest_dir = ARTIFACT_ROOT / "manifests"
+    for path in (artifact_figure_dir, artifact_reference_dir, artifact_manifest_dir):
+        path.mkdir(parents=True, exist_ok=True)
+
+    figure_manifests: list[FigureManifestArtifacts] = []
+    hashed_preferred = _is_truthy_env(os.getenv("ACX040_HASHED"))
+
     build_intensity_matrix(
         ds=datastore,
         output_dir=out_dir,
@@ -1669,8 +1696,63 @@ def export_view(
         meta["references"] = references
         meta["data"] = data
         trimmed_meta = figures.trim_figure_payload(meta)
-        _write_json(figure_dir / f"{name}.json", trimmed_meta)
-        _write_reference_file(reference_dir, name, references)
+        legacy_figure_path = figure_dir / f"{name}.json"
+        _write_json(legacy_figure_path, trimmed_meta)
+
+        stable_payload = _stable_json_dumps(trimmed_meta)
+        figure_sha256 = hashlib.sha256(stable_payload.encode("utf-8")).hexdigest()
+        hash_prefix = figure_sha256[:8]
+
+        artifact_legacy_figure = artifact_figure_dir / f"{name}.json"
+        artifact_hashed_figure = artifact_figure_dir / f"{name}.{hash_prefix}.json"
+        artifact_legacy_figure.write_text(stable_payload, encoding="utf-8")
+        artifact_hashed_figure.write_text(stable_payload, encoding="utf-8")
+
+        reference_text = _write_reference_file(reference_dir, name, references)
+        references_bytes = reference_text.encode("utf-8")
+        references_sha256 = hashlib.sha256(references_bytes).hexdigest()
+        artifact_legacy_reference = artifact_reference_dir / f"{name}_refs.txt"
+        artifact_hashed_reference = artifact_reference_dir / f"{name}_refs.{hash_prefix}.txt"
+        artifact_legacy_reference.write_text(reference_text, encoding="utf-8")
+        artifact_hashed_reference.write_text(reference_text, encoding="utf-8")
+
+        manifest_generated_at = meta.get("generated_at")
+        if not isinstance(manifest_generated_at, str):
+            manifest_generated_at = generated_at
+
+        figure_manifest = build_figure_manifest(
+            figure_id=name,
+            figure_method=method,
+            generated_at=manifest_generated_at,
+            hash_prefix=hash_prefix,
+            figure_sha256=figure_sha256,
+            figure_path=artifact_hashed_figure,
+            legacy_figure_path=artifact_legacy_figure,
+            citation_keys=[str(key) for key in meta.get("citation_keys", [])],
+            references=[str(entry) for entry in references],
+            references_sha256=references_sha256,
+            references_path=artifact_hashed_reference,
+            legacy_references_path=artifact_legacy_reference,
+            artifact_root=ARTIFACT_ROOT,
+        )
+        manifest_payload = figure_manifest.model_dump(mode="json")
+        manifest_json = _stable_json_dumps(manifest_payload)
+        manifest_sha256 = hashlib.sha256(manifest_json.encode("utf-8")).hexdigest()
+        legacy_manifest_path = artifact_manifest_dir / f"{name}.manifest.json"
+        hashed_manifest_path = artifact_manifest_dir / f"{name}.{hash_prefix}.manifest.json"
+        legacy_manifest_path.write_text(manifest_json, encoding="utf-8")
+        hashed_manifest_path.write_text(manifest_json, encoding="utf-8")
+
+        figure_manifests.append(
+            bundle_manifest_artifacts(
+                figure_manifest,
+                manifest_path=hashed_manifest_path,
+                legacy_manifest_path=legacy_manifest_path,
+                manifest_sha256=manifest_sha256,
+                references_sha256=references_sha256,
+                artifact_root=ARTIFACT_ROOT,
+            )
+        )
 
     _write_figure("stacked", "figures.stacked", stacked)
     _write_figure("bubble", "figures.bubble", bubble_points)
@@ -1682,6 +1764,25 @@ def export_view(
     manifest = dict(manifest_payload)
     manifest["build_hash"] = build_hash
     _write_json(out_dir / "manifest.json", manifest)
+
+    dataset_manifest_path = out_dir / "manifest.json"
+    dataset_manifest_sha256 = hashlib.sha256(dataset_manifest_path.read_bytes()).hexdigest()
+    dataset_version_value = manifest.get("dataset_version")
+    dataset_version = str(dataset_version_value) if isinstance(dataset_version_value, str) else None
+
+    if figure_manifests:
+        index_model = build_collection_index(
+            figure_manifests,
+            generated_at=str(metadata.get("generated_at", generated_at)),
+            build_hash=build_hash,
+            dataset_version=dataset_version,
+            hashed_preferred=hashed_preferred,
+            dataset_manifest_path=dataset_manifest_path,
+            dataset_manifest_sha256=dataset_manifest_sha256,
+            artifact_root=ARTIFACT_ROOT,
+        )
+        index_json = _stable_json_dumps(index_model.model_dump(mode="json"))
+        (ARTIFACT_ROOT / "manifest.json").write_text(index_json, encoding="utf-8")
 
     try:
         output_root_path.resolve().relative_to(ARTIFACT_ROOT.resolve())
