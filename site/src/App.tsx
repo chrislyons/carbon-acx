@@ -286,7 +286,13 @@ function AppShell(): JSX.Element {
     <div className="acx-condensed flex min-h-screen w-screen flex-col bg-background/95 text-foreground">
       <a
         href="#main"
-        className="absolute left-4 top-4 z-50 -translate-y-20 rounded-lg bg-primary px-3 py-2 font-semibold text-primary-foreground transition focus:translate-y-0 focus:outline-none"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-3 focus:py-2 focus:text-primary-foreground focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background"
+        onClick={() => {
+          const main = document.getElementById('main');
+          if (main instanceof HTMLElement) {
+            main.focus();
+          }
+        }}
       >
         Skip to main content
       </a>
@@ -336,6 +342,9 @@ function AppShell(): JSX.Element {
       </header>
       <main
         id="main"
+        role="main"
+        aria-label="Emissions analysis workspace"
+        tabIndex={-1}
         className="flex min-h-0 flex-1 flex-col gap-4 px-6 py-6"
       >
         <Layout
