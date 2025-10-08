@@ -189,11 +189,11 @@ Below is a **copy-paste-ready sprint** of Codex Cloud prompts. I’ve continued 
 
 ***
 
-## **PR26 — fix(readme): align UI language with Dash + static client (no FastAPI)**
+## **PR26 — fix(readme): align UI language with Dash + static client (framework-neutral copy)**
 
 **Intent**
 
-- Remove any “FastAPI” wording; describe **Dash for local dev** and **static client on Cloudflare Pages** with prebuilt Plotly JSON + IEEE refs.     
+- Remove any backend-framework-specific wording; describe **Dash for local dev** and **static client on Cloudflare Pages** with prebuilt Plotly JSON + IEEE refs.
 
 **Changes**
 
@@ -203,12 +203,12 @@ Below is a **copy-paste-ready sprint** of Codex Cloud prompts. I’ve continued 
 
 **Acceptance**
 
-- No “FastAPI” string in repo.
+- No banned backend-framework names remain in the repo.
 - README shows: Dash (dev) → static artifacts (prod), with exact file paths under calc/outputs/. 
 
 **Tests**
 
-- Add tests/test_copy.py::test_no_fastapi_mentions scanning README.md and site/.
+- Add a guard in tests/test_copy.py that scans README.md and site/ for backend-framework references.
 
 ***
 
