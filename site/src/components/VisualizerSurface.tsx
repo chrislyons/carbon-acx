@@ -230,14 +230,6 @@ export function VisualizerSurface({
     };
   }, [exitFocus, view]);
 
-  const handleFocusToggle = useCallback(() => {
-    if (view === 'focus') {
-      exitFocus();
-    } else {
-      setView('focus');
-    }
-  }, [exitFocus, setView, view]);
-
   const topLevelColumns = useMemo(() => {
     return view === 'focus' ? 'minmax(0, 1fr) 0px' : 'minmax(0, 1fr) 340px';
   }, [view]);
@@ -318,17 +310,6 @@ export function VisualizerSurface({
           <p className="text-2xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">Visualizer</p>
           <p className="text-xs text-muted-foreground">Inspect your scenario and supporting context.</p>
         </div>
-        <button
-          type="button"
-          className={cn(
-            'rounded-full border border-border/60 px-4 py-1 text-xs font-semibold uppercase tracking-[0.28em] transition',
-            focusActive ? 'bg-primary/20 text-primary hover:bg-primary/30' : 'bg-muted/40 text-muted-foreground hover:bg-muted/60 hover:text-foreground'
-          )}
-          onClick={handleFocusToggle}
-          data-testid="visualizer-focus-toggle"
-        >
-          {focusActive ? 'Exit focus' : 'Focus mode'}
-        </button>
       </header>
       <div
         className="grid min-h-0 flex-1 gap-0"

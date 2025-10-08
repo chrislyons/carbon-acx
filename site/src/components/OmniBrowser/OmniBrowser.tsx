@@ -1,8 +1,19 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type KeyboardEvent
+} from 'react';
 import { ChevronRight, Search } from 'lucide-react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 
 import { cn } from '@/lib/utils';
+
+import { density } from '@/theme/tokens';
+import BrandHeader from '../BrandHeader';
 
 import { useOmniNavigation, type OmniScope } from './useOmniNavigation';
 import type { OmniNodeDescriptor } from './types';
@@ -195,9 +206,12 @@ export function OmniBrowser({ selectedNodeId, onSelectionChange }: OmniBrowserPr
     [activeIndex, expanded, focusNode, handleToggle, openNode, rowVirtualizer, setSelection, visibleNodes]
   );
 
+  const paddingStyle = { padding: `${density.padY}px ${density.padX}px` } satisfies CSSProperties;
+
   return (
     <section className="flex h-full flex-col" aria-label="Omni browser">
-      <header className="flex items-center gap-2 border-b border-border/60 px-3 py-2">
+      <BrandHeader landmark="heading" level={2} />
+      <header className="flex items-center gap-2 border-b border-border/60" style={paddingStyle}>
         <div className="flex flex-1 items-center gap-2 rounded-md border border-border/60 bg-background/80 px-2 py-1">
           <Search className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
           <input
@@ -230,7 +244,8 @@ export function OmniBrowser({ selectedNodeId, onSelectionChange }: OmniBrowserPr
         role="tree"
         aria-label="Navigation results"
         tabIndex={0}
-        className="relative flex-1 overflow-auto px-1 py-2 focus:outline-none"
+        className="relative flex-1 overflow-auto focus:outline-none"
+        style={paddingStyle}
         onKeyDown={handleKeyDown}
       >
         <div

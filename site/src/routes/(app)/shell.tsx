@@ -8,12 +8,15 @@ import type {
 
 import { useShellLayout } from '@/hooks/useShellLayout';
 import {
-  SHELL_HEADER_MAX_HEIGHT,
   SHELL_MAX_LEFT_FRACTION,
   SHELL_MAX_RIGHT_FRACTION,
   SHELL_MIN_LEFT_FRACTION,
-  SHELL_MIN_RIGHT_FRACTION
+  SHELL_MIN_RIGHT_FRACTION,
+  density
 } from '@/theme/tokens';
+import { useACXStore } from '@/store/useACXStore';
+import BrandHeader from '@/components/BrandHeader';
+import FocusButton from '@/components/FocusButton';
 
 const KPI_ITEMS = [
   { label: 'Net emissions', value: '18.4 tCO₂e', helper: '−12% vs plan' },
@@ -85,6 +88,8 @@ export default function ShellRoute(): JSX.Element {
     reset,
     keyboardStep
   } = useShellLayout();
+  const focusMode = useACXStore((state) => state.focusMode);
+  const setFocusMode = useACXStore((state) => state.setFocusMode);
 
   const leftPaneId = useId();
   const mainPaneId = useId();
@@ -92,6 +97,11 @@ export default function ShellRoute(): JSX.Element {
   const leftPaneDomId = `${leftPaneId}-panel`;
   const mainPaneDomId = `${mainPaneId}-panel`;
   const rightPaneDomId = `${rightPaneId}-panel`;
+
+  const railStyle = {
+    gap: `${density.gap}px`,
+    padding: `${density.padY}px ${density.padX}px`
+  } satisfies CSSProperties;
 
   const layoutStyle = useMemo(() => {
     return {
@@ -239,70 +249,53 @@ export default function ShellRoute(): JSX.Element {
       >
         Skip to workspace content
       </a>
-      <div className="grid min-h-screen grid-rows-[auto_minmax(0,1fr)_auto]">
-        <header
-          className="flex h-16 min-h-[3.5rem] items-center justify-between gap-4 border-b border-slate-800/70 bg-slate-950/80 px-6"
-          style={{ maxHeight: SHELL_HEADER_MAX_HEIGHT }}
-          role="banner"
-        >
-          <div className="flex items-center gap-4">
-            <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-sky-500/20 text-base font-semibold text-sky-300">
-              ACX
-            </span>
-            <div>
-              <p className="text-sm font-semibold tracking-wide text-slate-50">Carbon Navigator</p>
-              <p className="text-xs text-slate-400">Split-pane workspace shell</p>
-            </div>
-          </div>
-          <nav className="hidden items-center gap-6 text-sm font-medium text-slate-300 md:flex">
-            <span className="text-slate-100">Overview</span>
-            <span className="text-slate-400">Playbooks</span>
-            <span className="text-slate-400">Insights</span>
-            <span className="text-slate-400">History</span>
-          </nav>
-          <div className="flex items-center gap-3">
-            <span className="text-xs uppercase tracking-[0.2em] text-slate-500">
-              L {leftPercentage.toFixed(0)}% · R {rightPercentage.toFixed(0)}%
-            </span>
-            <button
-              type="button"
-              onClick={reset}
-              className="rounded border border-slate-700/70 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-slate-200 transition hover:border-sky-500/70 hover:text-sky-300"
-            >
-              Reset layout
-            </button>
-          </div>
-        </header>
-
+      <div className="grid min-h-screen grid-rows-[minmax(0,1fr)_auto]">
         <div
           ref={containerRef}
           className="relative grid min-h-0 grid-cols-[var(--rail-left)_minmax(0,1fr)_var(--rail-right)] overflow-hidden"
           style={layoutStyle}
         >
-          <aside
-            id={leftPaneDomId}
-            aria-label="Planning rail"
-            className="flex h-full flex-col gap-6 border-r border-slate-800/70 bg-slate-950/70 px-6 py-6"
+          <div
+            className="flex h-full min-h-0 flex-col border-r border-slate-800/70 bg-slate-950/70"
+            style={railStyle}
           >
-            {PLAYBOOKS.map((section) => (
-              <section key={section.title} className="space-y-3">
-                <header className="space-y-1">
-                  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">
-                    {section.title}
-                  </p>
-                  <div className="h-px w-full bg-slate-800/70" />
-                </header>
-                <ul className="space-y-2 text-sm text-slate-200">
-                  {section.items.map((item) => (
-                    <li key={item} className="flex items-start gap-2">
-                      <span className="mt-1 h-1.5 w-1.5 rounded-full bg-sky-500/80" aria-hidden="true" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            ))}
-          </aside>
+            <BrandHeader landmark="heading" level={1} />
+            <aside
+              id={leftPaneDomId}
+              aria-label="Navigation"
+              className="flex flex-1 flex-col"
+              style={{ gap: `${density.gap}px` }}
+            >
+              {PLAYBOOKS.map((section) => (
+                <section key={section.title} className="space-y-3">
+                  <header className="space-y-1">
+                    <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">
+                      {section.title}
+                    </p>
+                    <div className="h-px w-full bg-slate-800/70" />
+                  </header>
+                  <ul className="space-y-2 text-sm text-slate-200">
+                    {section.items.map((item) => (
+                      <li key={item} className="flex items-start gap-2">
+                        <span className="mt-1 h-1.5 w-1.5 rounded-full bg-sky-500/80" aria-hidden="true" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              ))}
+              <div className="mt-auto rounded border border-slate-800/70 bg-slate-900/60 p-3 text-xs text-slate-400">
+                Layout · L {leftPercentage.toFixed(0)}% · R {rightPercentage.toFixed(0)}%
+              </div>
+              <button
+                type="button"
+                onClick={reset}
+                className="rounded border border-slate-700/70 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-slate-200 transition hover:border-sky-500/70 hover:text-sky-300"
+              >
+                Reset layout
+              </button>
+            </aside>
+          </div>
 
           <main
             id={mainPaneDomId}
@@ -385,17 +378,24 @@ export default function ShellRoute(): JSX.Element {
 
           <aside
             id={rightPaneDomId}
-            aria-label="Reference rail"
-            className="flex h-full flex-col gap-5 border-l border-slate-800/70 bg-slate-950/70 px-6 py-6"
+            aria-label="Context"
+            className="relative flex h-full min-h-0 flex-col border-l border-slate-800/70 bg-slate-950/70"
+            style={railStyle}
           >
-            {REFERENCE_NOTES.map((entry) => (
-              <article key={entry.heading} className="space-y-2 rounded-lg border border-slate-800/60 bg-slate-900/60 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">
-                  {entry.heading}
-                </p>
-                <p className="text-sm leading-relaxed text-slate-200">{entry.detail}</p>
-              </article>
-            ))}
+            <FocusButton pressed={focusMode} onToggle={() => setFocusMode(!focusMode)} />
+            <header className="pt-6">
+              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">Reference notes</p>
+            </header>
+            <div className="flex-1 overflow-y-auto space-y-3 pt-2">
+              {REFERENCE_NOTES.map((entry) => (
+                <article key={entry.heading} className="space-y-2 rounded-lg border border-slate-800/60 bg-slate-900/60 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">
+                    {entry.heading}
+                  </p>
+                  <p className="text-sm leading-relaxed text-slate-200">{entry.detail}</p>
+                </article>
+              ))}
+            </div>
           </aside>
 
           <div
