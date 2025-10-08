@@ -9,6 +9,8 @@ import { ProfileProvider, useProfile } from './state/profile';
 import { ActivityPlanner } from './components/ActivityPlanner';
 import { ScopeBar, type ScopePin, type ScopeSectorDescriptor } from './components/ScopeBar';
 import { useLayerCatalog } from './lib/useLayerCatalog';
+import { Button } from './components/ui/button';
+import { Toolbar } from './components/ui/toolbar';
 
 export default function App(): JSX.Element {
   return (
@@ -187,22 +189,24 @@ function AppShell(): JSX.Element {
   );
 
   return (
-    <div className="acx-condensed flex min-h-screen w-screen flex-col bg-slate-950/95 text-slate-100">
+    <div className="acx-condensed flex min-h-screen w-screen flex-col bg-background/95 text-foreground">
       <a
         href="#main"
-        className="absolute left-4 top-4 z-50 -translate-y-20 rounded-lg bg-sky-500 px-3 py-2 font-semibold text-slate-900 transition focus:translate-y-0 focus:outline-none"
+        className="absolute left-4 top-4 z-50 -translate-y-20 rounded-lg bg-primary px-3 py-2 font-semibold text-primary-foreground transition focus:translate-y-0 focus:outline-none"
       >
         Skip to main content
       </a>
-      <header className="border-b border-slate-800/60 bg-slate-950/70 backdrop-blur">
-        <div className="flex items-center justify-between px-[var(--gap-2)] py-[var(--gap-1)] sm:px-[var(--gap-2)] lg:px-[var(--gap-2)]">
+      <header className="border-b border-border/60 bg-background/80 backdrop-blur">
+        <Toolbar className="mx-auto flex w-full max-w-6xl items-center justify-between rounded-none border-0 bg-transparent px-6 py-4">
           <div>
-            <p className="text-[10px] uppercase tracking-[0.35em] text-sky-400">Carbon</p>
-            <h1 className="text-[15px] font-semibold">Analysis Console</h1>
+            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-primary">Carbon</p>
+            <h1 className="text-base font-semibold text-foreground">Analysis Console</h1>
           </div>
-          <button
+          <Button
             type="button"
-            className="inline-flex min-h-[32px] items-center gap-1 rounded-lg border border-slate-700 px-[var(--gap-1)] py-[var(--gap-0)] text-[10px] font-semibold uppercase tracking-[0.25em] text-slate-100 shadow-sm transition hover:border-slate-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 lg:hidden"
+            variant="outline"
+            size="sm"
+            className="hidden min-h-[2.5rem] items-center gap-2 rounded-md border-border/70 bg-background/80 text-2xs font-semibold uppercase tracking-[0.25em] text-foreground shadow-sm hover:bg-muted/40 focus-visible:ring-primary lg:flex"
             aria-expanded={isDrawerOpen}
             aria-controls="references-panel"
             onClick={() => setIsDrawerOpen((open) => !open)}
@@ -213,14 +217,32 @@ function AppShell(): JSX.Element {
               }
             }}
           >
-            <span className="h-2 w-2 rounded-full bg-sky-400" aria-hidden="true" />
+            <span className="h-2 w-2 rounded-full bg-primary" aria-hidden="true" />
             References
-          </button>
-        </div>
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="inline-flex min-h-[2.25rem] items-center gap-2 rounded-md border-border/70 bg-background/80 text-2xs font-semibold uppercase tracking-[0.25em] text-foreground shadow-sm hover:bg-muted/40 focus-visible:ring-primary lg:hidden"
+            aria-expanded={isDrawerOpen}
+            aria-controls="references-panel"
+            onClick={() => setIsDrawerOpen((open) => !open)}
+            onKeyDown={(event) => {
+              if (event.key.toLowerCase() === 'r') {
+                event.preventDefault();
+                setIsDrawerOpen((open) => !open);
+              }
+            }}
+          >
+            <span className="h-2 w-2 rounded-full bg-primary" aria-hidden="true" />
+            References
+          </Button>
+        </Toolbar>
       </header>
       <main
         id="main"
-        className="flex min-h-0 flex-1 flex-col gap-[var(--gap-1)] px-[var(--gap-2)] py-[var(--gap-2)] sm:px-[var(--gap-2)] lg:px-[var(--gap-2)]"
+        className="flex min-h-0 flex-1 flex-col gap-4 px-6 py-6"
       >
         <Layout
           layerBrowser={<SectorBrowser />}
