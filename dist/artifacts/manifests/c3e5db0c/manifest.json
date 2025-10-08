@@ -1,0 +1,28 @@
+{
+  "schema_version": "acx.figure-manifest/1-0-0",
+  "figure_id": "FIG.DIFF.COMPARE",
+  "figure_method": "test",
+  "generated_at": "2024-01-02T00:00:00Z",
+  "hash_prefix": "c3e5db0c",
+  "figure_path": "tools/validator/fixtures/sample_figure.txt",
+  "legacy_figure_path": "legacy/sample_compare.svg",
+  "figure_sha256": "62ecfcf6e65c56a550f4e72ab3f608862e16d282e4eaf40bb50f6fa0af2e2106",
+  "citation_keys": [
+    "SRC.BETA",
+    "SRC.GAMMA"
+  ],
+  "references": {
+    "path": "tools/validator/fixtures/sample_references.txt",
+    "legacy_path": "legacy/sample_compare.txt",
+    "sha256": "43b37f76d6986e53803465a9bec59d2be3705274beccb1b1958944ce015c403a",
+    "line_count": 1,
+    "order": [
+      {"index": 1, "source_id": "SRC.BETA"},
+      {"index": 2, "source_id": "SRC.GAMMA"}
+    ]
+  },
+  "numeric_invariance": {
+    "passed": true,
+    "tolerance_percent": 0.0001
+  }
+}
