@@ -11,6 +11,8 @@ export interface CatalogActivity extends Record<string, unknown> {
   description?: string;
   schedule_id?: string;
   ef_id?: string;
+  category?: string;
+  layer_id?: string;
 }
 
 export interface CatalogProfile extends Record<string, unknown> {
@@ -72,4 +74,72 @@ export function loadCatalog(signal?: AbortSignal): Promise<Catalog> {
   }
 
   return catalogPromise;
+}
+
+function resolveActivityId(activity: CatalogActivity | null | undefined): string | null {
+  if (!activity) {
+    return null;
+  }
+  const idCandidate = activity.activity_id ?? activity.id;
+  if (typeof idCandidate === 'string' && idCandidate.trim().length > 0) {
+    return idCandidate.trim();
+  }
+  return null;
+}
+
+function formatIdentifier(value: string | null | undefined, fallback: string): string {
+  const resolved = typeof value === 'string' ? value.trim() : '';
+  if (!resolved) {
+    return fallback;
+  }
+  return resolved
+    .split(/[_\-.\s]+/g)
+    .filter((part) => part.length > 0)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
+
+export function getActivityById(catalog: Catalog, id: string | null | undefined): CatalogActivity | undefined {
+  if (!id) {
+    return undefined;
+  }
+  const needle = id.trim();
+  if (!needle) {
+    return undefined;
+  }
+  return catalog.activities.find((activity) => resolveActivityId(activity) === needle);
+}
+
+export function getCategoryLabel(catalog: Catalog, id: string | null | undefined): string {
+  const fallback = 'Uncategorized';
+  const resolved = typeof id === 'string' ? id.trim() : '';
+  if (!resolved) {
+    return fallback;
+  }
+  const canonical = resolved.toLowerCase();
+  const match = catalog.activities.find((activity) => {
+    const category = typeof activity?.category === 'string' ? activity.category.trim().toLowerCase() : '';
+    return category === canonical;
+  });
+  if (match?.category && typeof match.category === 'string') {
+    return formatIdentifier(match.category, fallback);
+  }
+  return formatIdentifier(resolved, fallback);
+}
+
+export function getLayerLabel(catalog: Catalog, id: string | null | undefined): string {
+  const fallback = 'Unassigned';
+  const resolved = typeof id === 'string' ? id.trim() : '';
+  if (!resolved) {
+    return fallback;
+  }
+  const canonical = resolved.toLowerCase();
+  const match = catalog.activities.find((activity) => {
+    const layer = typeof activity?.layer_id === 'string' ? activity.layer_id.trim().toLowerCase() : '';
+    return layer === canonical;
+  });
+  if (match?.layer_id && typeof match.layer_id === 'string') {
+    return formatIdentifier(match.layer_id, fallback);
+  }
+  return formatIdentifier(resolved, fallback);
 }
