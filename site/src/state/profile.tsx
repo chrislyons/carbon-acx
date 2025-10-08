@@ -9,6 +9,10 @@ import {
 } from 'react';
 
 import { compute } from '../lib/api';
+import { useACXStore } from '../store/useACXStore';
+import { PRIMARY_LAYER_ID } from './constants';
+
+export { PRIMARY_LAYER_ID } from './constants';
 
 export type DietOption = 'omnivore' | 'vegetarian' | 'vegan';
 
@@ -101,7 +105,6 @@ const STORAGE_KEY = 'acx:profile-controls';
 const DEFAULT_PROFILE_ID = 'PRO.TO.24_39.HYBRID.2025';
 const DEBOUNCE_MS = 250;
 const DAYS_PER_WEEK = 7;
-export const PRIMARY_LAYER_ID = 'professional';
 
 const COMMUTE_ACTIVITY_IDS: Record<keyof ModeSplit, string> = {
   car: 'TRAVEL.COMMUTE.CAR.WORKDAY',
@@ -241,37 +244,6 @@ function cleanReferenceText(value: string): string {
   return value.replace(/^\[[0-9]+\]\s*/, '').trim();
 }
 
-function parseLayersFromSearch(search: string, available: readonly string[]): string[] {
-  if (typeof search !== 'string' || search.length === 0) {
-    return [];
-  }
-  const params = new URLSearchParams(search.startsWith('?') ? search : `?${search}`);
-  const values = params.getAll('layer');
-  if (values.length === 0) {
-    return [];
-  }
-  const availableSet = new Set(available);
-  const seen = new Set<string>();
-  const ordered: string[] = [];
-  values.forEach((value) => {
-    value
-      .split(',')
-      .map((part) => part.trim())
-      .filter((part) => part.length > 0)
-      .forEach((layer) => {
-        if (seen.has(layer)) {
-          return;
-        }
-        if (availableSet.size > 0 && !availableSet.has(layer)) {
-          return;
-        }
-        seen.add(layer);
-        ordered.push(layer);
-      });
-  });
-  return ordered;
-}
-
 export function rebalanceSplit(current: ModeSplit, mode: keyof ModeSplit, value: number): ModeSplit {
   const target = clampPercentage(value);
   const otherKeys = (Object.keys(current) as (keyof ModeSplit)[]).filter((key) => key !== mode);
@@ -368,7 +340,8 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
   const [error, setError] = useState<string | null>(null);
   const [profileIdState, setProfileIdState] = useState<string>(DEFAULT_PROFILE_ID);
   const [refreshToken, setRefreshToken] = useState(0);
-  const [activeLayers, setActiveLayersState] = useState<string[]>([PRIMARY_LAYER_ID]);
+  const selectedLayerSet = useACXStore((state) => state.selectedLayers);
+  const setSelectedLayers = useACXStore((state) => state.setSelectedLayers);
 
   const profileId = profileIdState;
   const overrides = useMemo(() => buildOverrides(controls), [controls]);
@@ -393,6 +366,49 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
     }
     return Array.from(unique);
   }, [result]);
+
+  const selectedLayers = useMemo(() => Array.from(selectedLayerSet), [selectedLayerSet]);
+
+  const activeLayers = useMemo(() => {
+    const fallback = availableLayers.includes(PRIMARY_LAYER_ID)
+      ? PRIMARY_LAYER_ID
+      : availableLayers[0] ?? PRIMARY_LAYER_ID;
+    const availableSet = new Set(availableLayers);
+    const nextSet = new Set<string>();
+    selectedLayers.forEach((layer) => {
+      if (availableSet.size > 0 && !availableSet.has(layer)) {
+        return;
+      }
+      nextSet.add(layer);
+    });
+    if (nextSet.size === 0) {
+      nextSet.add(fallback);
+    } else {
+      nextSet.add(fallback);
+    }
+    const ordered: string[] = [];
+    availableLayers.forEach((layer) => {
+      if (nextSet.has(layer)) {
+        ordered.push(layer);
+        nextSet.delete(layer);
+      }
+    });
+    nextSet.forEach((layer) => ordered.push(layer));
+    return ordered;
+  }, [availableLayers, selectedLayers]);
+
+  useEffect(() => {
+    if (activeLayers.length === 0) {
+      return;
+    }
+    const fallback = activeLayers[0];
+    if (selectedLayerSet.has(fallback)) {
+      return;
+    }
+    const nextSet = new Set(selectedLayerSet);
+    nextSet.add(fallback);
+    setSelectedLayers(nextSet);
+  }, [activeLayers, selectedLayerSet, setSelectedLayers]);
 
   const layerCitationKeys = useMemo(() => {
     const combined: Record<string, string[]> = {};
@@ -531,114 +547,33 @@ export function ProfileProvider({ children }: { children: React.ReactNode }): JS
     referenceTexts
   ]);
 
-  useEffect(() => {
-    setActiveLayersState((previous) => {
-      const fallback = availableLayers.includes(PRIMARY_LAYER_ID)
-        ? PRIMARY_LAYER_ID
-        : availableLayers[0] ?? PRIMARY_LAYER_ID;
-      const availableSet = new Set(availableLayers);
-      const fromUrl =
-        typeof window !== 'undefined'
-          ? parseLayersFromSearch(window.location.search, availableLayers)
-          : [];
-      const nextSet = new Set<string>();
-
-      if (fromUrl.length > 0) {
-        fromUrl.forEach((layer) => {
-          if (availableSet.size === 0 || availableSet.has(layer)) {
-            nextSet.add(layer);
-          }
-        });
-      } else {
-        previous.forEach((layer) => {
-          if (typeof layer === 'string' && availableSet.has(layer)) {
-            nextSet.add(layer);
-          }
-        });
-      }
-
-      if (availableSet.size === 0) {
-        return [fallback];
-      }
-
-      nextSet.add(fallback);
-      const ordered: string[] = [];
-      availableLayers.forEach((layer) => {
-        if (nextSet.has(layer)) {
-          ordered.push(layer);
-          nextSet.delete(layer);
-        }
-      });
-      nextSet.forEach((layer) => ordered.push(layer));
-      return ordered;
-    });
-  }, [availableLayers]);
-
   const setActiveLayers = useCallback(
     (layers: string[]) => {
-      setActiveLayersState(() => {
-        const fallback = availableLayers.includes(PRIMARY_LAYER_ID)
-          ? PRIMARY_LAYER_ID
-          : availableLayers[0] ?? PRIMARY_LAYER_ID;
-        const nextSet = new Set<string>();
-        if (Array.isArray(layers)) {
-          layers.forEach((layer) => {
-            if (typeof layer === 'string' && availableLayers.includes(layer)) {
-              nextSet.add(layer);
-            }
-          });
-        }
-        nextSet.add(fallback);
-        const ordered: string[] = [];
-        availableLayers.forEach((layer) => {
-          if (nextSet.has(layer)) {
-            ordered.push(layer);
-            nextSet.delete(layer);
+      const nextSet = new Set<string>();
+      const availableSet = new Set(availableLayers);
+      if (Array.isArray(layers)) {
+        layers.forEach((layer) => {
+          if (typeof layer !== 'string') {
+            return;
           }
+          const trimmed = layer.trim();
+          if (!trimmed) {
+            return;
+          }
+          if (availableSet.size > 0 && !availableSet.has(trimmed)) {
+            return;
+          }
+          nextSet.add(trimmed);
         });
-        nextSet.forEach((layer) => ordered.push(layer));
-      return ordered;
-    });
-  },
-  [availableLayers]
-);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-    const optional = activeLayers.filter((layer) => layer !== PRIMARY_LAYER_ID);
-    const existing = parseLayersFromSearch(window.location.search, []);
-    const existingOptional = existing.filter((layer) => layer !== PRIMARY_LAYER_ID);
-    const nextValue = optional.join(',');
-    const existingValue = existingOptional.join(',');
-    if (nextValue === existingValue) {
-      return;
-    }
-    const params = new URLSearchParams(window.location.search);
-    if (optional.length > 0) {
-      params.set('layer', nextValue);
-    } else {
-      params.delete('layer');
-    }
-    const nextSearch = params.toString();
-    const nextUrl = `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ''}${window.location.hash}`;
-    window.history.replaceState({}, '', nextUrl);
-  }, [activeLayers]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-    const handlePopState = () => {
-      const layersFromUrl = parseLayersFromSearch(window.location.search, availableLayers);
-      setActiveLayers(layersFromUrl);
-    };
-    window.addEventListener('popstate', handlePopState);
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-    };
-  }, [availableLayers, setActiveLayers]);
+      }
+      const fallback = availableSet.has(PRIMARY_LAYER_ID)
+        ? PRIMARY_LAYER_ID
+        : availableLayers[0] ?? PRIMARY_LAYER_ID;
+      nextSet.add(fallback);
+      setSelectedLayers(nextSet);
+    },
+    [availableLayers, setSelectedLayers]
+  );
 
   const hasHydrated = useRef(false);
   useEffect(() => {

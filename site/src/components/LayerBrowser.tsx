@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useLayerCatalog, LayerAuditActivity } from '../lib/useLayerCatalog';
 import { FetchJSONDiagnostics, FetchJSONError } from '../lib/fetchJSON';
-import { PRIMARY_LAYER_ID, useProfile } from '../state/profile';
+import { useProfile } from '../state/profile';
+import { PRIMARY_LAYER_ID } from '../state/constants';
 import { Icon } from './Icon';
 
 interface StatusMeta {

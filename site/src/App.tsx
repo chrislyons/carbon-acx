@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Layout, type StageId, type StageStateMap } from './components/Layout';
 import { SectorBrowser } from './components/LayerBrowser';
@@ -6,6 +6,8 @@ import { ProfileControls } from './components/ProfileControls';
 import { ReferencesDrawer } from './components/ReferencesDrawer';
 import { VizCanvas } from './components/VizCanvas';
 import { ProfileProvider, useProfile } from './state/profile';
+import { useACXStore, setACXStoreState } from './store/useACXStore';
+import { buildSearchFromState, parseACXStateFromSearch } from './utils/url';
 import { ActivityPlanner } from './components/ActivityPlanner';
 import { ScopeBar, type ScopePin, type ScopeSectorDescriptor } from './components/ScopeBar';
 import { useLayerCatalog } from './lib/useLayerCatalog';
@@ -13,11 +15,78 @@ import { Button } from './components/ui/button';
 import { Toolbar } from './components/ui/toolbar';
 
 export default function App(): JSX.Element {
+  useUrlStateSync();
   return (
     <ProfileProvider>
       <AppShell />
     </ProfileProvider>
   );
+}
+
+function useUrlStateSync(): void {
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    const applySearch = (search: string) => {
+      const parsed = parseACXStateFromSearch(search);
+      setACXStoreState({
+        figureId: parsed.figureId,
+        selectedLayers: new Set(parsed.layers),
+        scale: parsed.scale,
+        period: parsed.period
+      });
+    };
+    applySearch(window.location.search);
+    const handlePopState = () => {
+      applySearch(window.location.search);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    const unsubscribe = useACXStore.subscribe((state, previous) => {
+      const nextSnapshot = {
+        figureId: state.figureId,
+        layers: Array.from(state.selectedLayers),
+        scale: state.scale,
+        period: state.period
+      };
+      const previousSnapshot = previous
+        ? {
+            figureId: previous.figureId,
+            layers: Array.from(previous.selectedLayers),
+            scale: previous.scale,
+            period: previous.period
+          }
+        : null;
+      if (
+        previousSnapshot &&
+        previousSnapshot.figureId === nextSnapshot.figureId &&
+        previousSnapshot.scale === nextSnapshot.scale &&
+        previousSnapshot.period === nextSnapshot.period &&
+        previousSnapshot.layers.length === nextSnapshot.layers.length &&
+        previousSnapshot.layers.every((layer, index) => layer === nextSnapshot.layers[index])
+      ) {
+        return;
+      }
+      const search = buildSearchFromState(nextSnapshot, window.location.search);
+      if (search === window.location.search) {
+        return;
+      }
+      const nextUrl = `${window.location.pathname}${search}${window.location.hash}`;
+      window.history.replaceState({}, '', nextUrl);
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 }
 
 const STAGE_SEQUENCE: StageId[] = ['sector', 'profile', 'activity'];
