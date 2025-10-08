@@ -8,6 +8,12 @@ export const SHELL_MIN_MAIN_FRACTION = 0.36;
 
 export const SHELL_KEYBOARD_RESIZE_STEP = 0.02;
 
+export const SHELL_MIN_DOCK_FRACTION = 0.2;
+export const SHELL_MAX_DOCK_FRACTION = 0.6;
+export const SHELL_DEFAULT_DOCK_FRACTION = 0.33;
+export const SHELL_DEFAULT_DOCK_POSITION = 'side' as const;
+export type ShellDockPosition = typeof SHELL_DEFAULT_DOCK_POSITION | 'bottom';
+
 export interface ShellLayoutPreset {
   query: string;
   left: number;
