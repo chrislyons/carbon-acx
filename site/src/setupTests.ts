@@ -4,14 +4,17 @@ import { afterEach, beforeAll, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 
 beforeAll(() => {
-  class ResizeObserverMock {
-    observe(): void {}
-    unobserve(): void {}
+  class ResizeObserverMock implements ResizeObserver {
+    constructor(_callback: ResizeObserverCallback) {}
     disconnect(): void {}
+    observe(_target: Element, _options?: ResizeObserverOptions): void {}
+    unobserve(_target: Element): void {}
+    takeRecords(): ResizeObserverEntry[] {
+      return [];
+    }
   }
 
   if (typeof window.ResizeObserver === 'undefined') {
-    // @ts-expect-error jsdom shim
     window.ResizeObserver = ResizeObserverMock;
   }
 
