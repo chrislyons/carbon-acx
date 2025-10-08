@@ -396,9 +396,12 @@ async function fetchArtifact(
   throw new Error(message || `Artifact request failed with status ${response.status}`);
 }
 
-async function loadArtifactJson(path: string, signal?: AbortSignal): Promise<unknown> {
+export async function loadArtifactJson<T = unknown>(
+  path: string,
+  signal?: AbortSignal
+): Promise<T> {
   if (jsonArtifactCache.has(path)) {
-    return jsonArtifactCache.get(path)!;
+    return jsonArtifactCache.get(path)! as T;
   }
 
   const normalised = normalisePath(path);
@@ -409,7 +412,7 @@ async function loadArtifactJson(path: string, signal?: AbortSignal): Promise<unk
       cache: 'no-store',
     });
     jsonArtifactCache.set(path, data);
-    return data;
+    return data as T;
   } catch (error) {
     const shouldRetry =
       error instanceof FetchJSONError ||
@@ -427,11 +430,11 @@ async function loadArtifactJson(path: string, signal?: AbortSignal): Promise<unk
       cache: 'no-store',
     });
     jsonArtifactCache.set(path, data);
-    return data;
+    return data as T;
   }
 }
 
-async function loadArtifactText(path: string, signal?: AbortSignal): Promise<string> {
+export async function loadArtifactText(path: string, signal?: AbortSignal): Promise<string> {
   if (textArtifactCache.has(path)) {
     return textArtifactCache.get(path)!;
   }
