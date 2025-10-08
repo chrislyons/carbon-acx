@@ -1,14 +1,15 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 
 import type { FigureDataUpdate } from './components/ChartContainer';
 import { Layout, type StageId, type StageStateMap } from './components/Layout';
+import { OmniBrowser } from './components/OmniBrowser';
 import { SectorBrowser } from './components/LayerBrowser';
 import { ProfileControls } from './components/ProfileControls';
 import { ReferencesDrawer } from './components/ReferencesDrawer';
 import { VizCanvas } from './components/VizCanvas';
 import { ProfileProvider, useProfile } from './state/profile';
-import { useACXStore, setACXStoreState } from './store/useACXStore';
-import { buildSearchFromState, parseACXStateFromSearch } from './utils/url';
+import { useACXStore } from './store/useACXStore';
+import { useDeepLink } from './hooks/useDeepLink';
 import { ActivityPlanner } from './components/ActivityPlanner';
 import { ScopeBar, type ScopePin, type ScopeSectorDescriptor } from './components/ScopeBar';
 import type { FigureDataStatus } from './lib/DataLoader';
@@ -17,7 +18,6 @@ import { Button } from './components/ui/button';
 import { Toolbar } from './components/ui/toolbar';
 
 export default function App(): JSX.Element {
-  useUrlStateSync();
   return (
     <ProfileProvider>
       <AppShell />
@@ -25,73 +25,11 @@ export default function App(): JSX.Element {
   );
 }
 
-function useUrlStateSync(): void {
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-    const applySearch = (search: string) => {
-      const parsed = parseACXStateFromSearch(search);
-      setACXStoreState({
-        figureId: parsed.figureId,
-        selectedLayers: new Set(parsed.layers),
-        scale: parsed.scale,
-        period: parsed.period
-      });
-    };
-    applySearch(window.location.search);
-    const handlePopState = () => {
-      applySearch(window.location.search);
-    };
-    window.addEventListener('popstate', handlePopState);
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-    const unsubscribe = useACXStore.subscribe((state, previous) => {
-      const nextSnapshot = {
-        figureId: state.figureId,
-        layers: Array.from(state.selectedLayers),
-        scale: state.scale,
-        period: state.period
-      };
-      const previousSnapshot = previous
-        ? {
-            figureId: previous.figureId,
-            layers: Array.from(previous.selectedLayers),
-            scale: previous.scale,
-            period: previous.period
-          }
-        : null;
-      if (
-        previousSnapshot &&
-        previousSnapshot.figureId === nextSnapshot.figureId &&
-        previousSnapshot.scale === nextSnapshot.scale &&
-        previousSnapshot.period === nextSnapshot.period &&
-        previousSnapshot.layers.length === nextSnapshot.layers.length &&
-        previousSnapshot.layers.every((layer, index) => layer === nextSnapshot.layers[index])
-      ) {
-        return;
-      }
-      const search = buildSearchFromState(nextSnapshot, window.location.search);
-      if (search === window.location.search) {
-        return;
-      }
-      const nextUrl = `${window.location.pathname}${search}${window.location.hash}`;
-      window.history.replaceState({}, '', nextUrl);
-    });
-    return () => {
-      unsubscribe();
-    };
-  }, []);
-}
-
 const STAGE_SEQUENCE: StageId[] = ['sector', 'profile', 'activity'];
+
+const LazyCommandPalette = lazy(async () => ({
+  default: (await import('./components/CommandPalette')).default,
+}));
 
 function AppShell(): JSX.Element {
   const { activeLayers, primaryLayer, hasLifestyleOverrides } = useProfile();
@@ -103,11 +41,27 @@ function AppShell(): JSX.Element {
     return window.matchMedia('(min-width: 1280px)').matches;
   });
   const [stage, setStage] = useState<StageId>('sector');
+  const [omniSelection, setOmniSelection] = useState<string[]>([]);
+  const [paletteOpen, setPaletteOpen] = useState(false);
   const [unlockedStages, setUnlockedStages] = useState<Set<StageId>>(
     () => new Set(['sector'])
   );
   const focusMode = useACXStore((state) => state.focusMode);
   const setFocusMode = useACXStore((state) => state.setFocusMode);
+
+  useDeepLink({
+    stage,
+    onStageChange: setStage,
+    selectedOmniNodes: omniSelection,
+    onOmniSelectionChange: (nodes) =>
+      setOmniSelection((previous) => {
+        const next = Array.from(nodes);
+        if (previous.length === next.length && previous.every((id, index) => id === next[index])) {
+          return previous;
+        }
+        return next;
+      }),
+  });
 
   const [figureReferences, setFigureReferences] = useState<string[] | null>(null);
   const [figureReferenceStatus, setFigureReferenceStatus] = useState<FigureDataStatus | null>(null);
@@ -348,7 +302,21 @@ function AppShell(): JSX.Element {
         className="flex min-h-0 flex-1 flex-col gap-4 px-6 py-6"
       >
         <Layout
-          layerBrowser={<SectorBrowser />}
+          layerBrowser={
+            <div className="flex h-full flex-col gap-4">
+              <div className="flex-1 overflow-hidden">
+                <OmniBrowser
+                  selectedNodeId={omniSelection[0] ?? null}
+                  onSelectionChange={(nodeId) =>
+                    setOmniSelection(nodeId ? [nodeId] : [])
+                  }
+                />
+              </div>
+              <div className="hidden min-h-[260px] overflow-auto rounded-xl border border-border/60 bg-background/80 px-2 py-2 lg:block">
+                <SectorBrowser />
+              </div>
+            </div>
+          }
           controls={<ProfileControls />}
           activity={<ActivityPlanner />}
           canvas={<VizCanvas stage={stage} onFigureDataChange={handleFigureDataChange} />}
@@ -385,6 +353,20 @@ function AppShell(): JSX.Element {
           onToggleReferences={() => setIsDrawerOpen((open) => !open)}
         />
       </main>
+      <Suspense fallback={null}>
+        <LazyCommandPalette
+          open={paletteOpen}
+          onOpenChange={setPaletteOpen}
+          focusMode={focusMode}
+          onFocusModeChange={setFocusMode}
+          onToggleReferences={() => setIsDrawerOpen((open) => !open)}
+          stage={stage}
+          onStageChange={setStage}
+          onNavigateToNode={(nodeId) =>
+            setOmniSelection(nodeId ? [nodeId] : [])
+          }
+        />
+      </Suspense>
     </div>
   );
 }
