@@ -24,6 +24,13 @@ export interface OmniNodeMetadata {
   referenceId?: string | null;
 }
 
+export type OmniNodeStatus = 'rendered' | 'missing';
+
+export interface OmniNodeCounts {
+  acx: number;
+  ops: number;
+}
+
 export interface OmniNodeDescriptor {
   id: string;
   parentId: string | null;
@@ -38,6 +45,8 @@ export interface OmniNodeDescriptor {
   children?: string[];
   metadata?: OmniNodeMetadata;
   loadChildren?: () => Promise<void> | void;
+  state?: OmniNodeStatus;
+  counts?: OmniNodeCounts;
 }
 
 export interface OmniNavigationState {

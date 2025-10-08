@@ -6,7 +6,12 @@ import { listFigures, type FigureManifestEntry } from '@/lib/DataLoader';
 import { useACXStore } from '@/store/useACXStore';
 
 import { OmniRegistry, resetRegistryOrder } from './registry';
-import type { OmniNavigationState, OmniNodeDescriptor, OmniNodeType } from './types';
+import type {
+  OmniNavigationState,
+  OmniNodeDescriptor,
+  OmniNodeStatus,
+  OmniNodeType,
+} from './types';
 
 interface ReferenceMeta {
   id: string;
@@ -61,6 +66,8 @@ function buildLayerChildren(
     layerLookup: Map<string, string>;
     activityLookup: Map<string, string[]>;
     referenceCounts: Map<string, number>;
+    layerCounts: Map<string, { acx: number; ops: number }>;
+    layerStates: Map<string, OmniNodeStatus>;
   }
 ): void {
   layerIds.forEach((layerId) => {
@@ -69,6 +76,8 @@ function buildLayerChildren(
     const nodeId = `layer:${layerId}`;
     const activities = options.activityLookup.get(layerId) ?? [];
     const description = activities.length > 0 ? `${activities.length} activities` : null;
+    const counts = options.layerCounts.get(layerId) ?? { acx: 0, ops: 0 };
+    const state = options.layerStates.get(layerId) ?? 'missing';
     registry.registerNode(nodeId, GROUP_IDS.layers, 'layer', label, {
       searchableText: `${label} ${layerId}`.toLowerCase(),
       description,
@@ -76,6 +85,8 @@ function buildLayerChildren(
       hasChildren: activities.length > 0,
       isLoaded: activities.length > 0,
       metadata: { layerId },
+      counts,
+      state,
     });
     if (activities.length > 0) {
       const children = activities.map((activityId) => {
@@ -176,6 +187,8 @@ interface BuildStateOptions {
   layerLookup: Map<string, string>;
   activityLookup: Map<string, string[]>;
   referenceCounts: Map<string, number>;
+  layerCounts: Map<string, { acx: number; ops: number }>;
+  layerStates: Map<string, OmniNodeStatus>;
   scenarioMeta: ScenarioMeta[];
   referenceMeta: ReferenceMeta[];
   figures: FigureManifestEntry[] | null;
@@ -187,10 +200,15 @@ function createNavigationState(options: BuildStateOptions): OmniNavigationState 
   registry.ensureRoot(ROOT_ID, 'Navigation');
 
   (Object.keys(GROUP_IDS) as (keyof typeof GROUP_IDS)[]).forEach((key) => {
-    const label = key.charAt(0).toUpperCase() + key.slice(1);
+    const label = key === 'activities' ? 'ACX' : key.charAt(0).toUpperCase() + key.slice(1);
     registry.registerNode(GROUP_IDS[key], ROOT_ID, 'group', label, {
       hasChildren: true,
-      isLoaded: key !== 'figures' && key !== 'references' ? true : (key === 'figures' ? Boolean(options.figures) : options.referenceMeta.length > 0),
+      isLoaded:
+        key !== 'figures' && key !== 'references'
+          ? true
+          : key === 'figures'
+          ? Boolean(options.figures)
+          : options.referenceMeta.length > 0,
     });
   });
 
@@ -198,6 +216,8 @@ function createNavigationState(options: BuildStateOptions): OmniNavigationState 
     layerLookup: options.layerLookup,
     activityLookup: options.activityLookup,
     referenceCounts: options.referenceCounts,
+    layerCounts: options.layerCounts,
+    layerStates: options.layerStates,
   });
 
   const allActivities = Array.from(options.activityLookup.values()).flat();
@@ -296,6 +316,119 @@ export function useOmniNavigation(): UseOmniNavigationResult {
   const scenarioMeta = useMemo(() => buildScenarioMeta(profile.result), [profile.result]);
   const referenceMeta = useMemo(() => buildReferenceMeta(profile.result), [profile.result]);
 
+  const layerCounts = useMemo(() => {
+    const counts = new Map<string, { acx: number; ops: number }>();
+    const activitiesByLayer = audit?.activities_by_layer ?? {};
+    Object.entries(activitiesByLayer).forEach(([layerId, payload]) => {
+      if (typeof layerId !== 'string') {
+        return;
+      }
+      const trimmed = layerId.trim();
+      if (!trimmed) {
+        return;
+      }
+      const count =
+        typeof payload?.count === 'number'
+          ? payload.count
+          : Array.isArray(payload?.activities)
+          ? payload.activities.length
+          : 0;
+      const existing = counts.get(trimmed);
+      counts.set(trimmed, { acx: count, ops: existing?.ops ?? 0 });
+    });
+    const opsByLayer = audit?.ops_by_layer ?? {};
+    Object.entries(opsByLayer).forEach(([layerId, payload]) => {
+      if (typeof layerId !== 'string') {
+        return;
+      }
+      const trimmed = layerId.trim();
+      if (!trimmed) {
+        return;
+      }
+      const count =
+        typeof payload?.count === 'number'
+          ? payload.count
+          : Array.isArray(payload?.examples)
+          ? payload.examples.length
+          : 0;
+      const existing = counts.get(trimmed);
+      counts.set(trimmed, { acx: existing?.acx ?? 0, ops: count });
+    });
+    layerLabelLookup.forEach((_, layerId) => {
+      if (!counts.has(layerId)) {
+        counts.set(layerId, { acx: 0, ops: 0 });
+      }
+    });
+    return counts;
+  }, [audit, layerLabelLookup]);
+
+  const layerStates = useMemo(() => {
+    const states = new Map<string, OmniNodeStatus>();
+    const availableLayers = Array.isArray(profile.availableLayers)
+      ? profile.availableLayers
+      : [];
+    availableLayers.forEach((layerId) => {
+      if (typeof layerId !== 'string') {
+        return;
+      }
+      const trimmed = layerId.trim();
+      if (trimmed) {
+        states.set(trimmed, 'rendered');
+      }
+    });
+
+    const coverageEntries = audit?.ef_coverage ?? {};
+    Object.entries(coverageEntries).forEach(([layerId, coverage]) => {
+      if (typeof layerId !== 'string') {
+        return;
+      }
+      const trimmed = layerId.trim();
+      if (!trimmed) {
+        return;
+      }
+      const ratio =
+        typeof coverage?.coverage_ratio === 'number' ? coverage.coverage_ratio : 0;
+      const withEmissionFactors =
+        typeof coverage?.with_emission_factors === 'number'
+          ? coverage.with_emission_factors
+          : 0;
+      if (ratio > 0 || withEmissionFactors > 0) {
+        states.set(trimmed, 'rendered');
+      }
+    });
+
+    const summaries = audit?.layers_present ?? [];
+    summaries?.forEach((summary) => {
+      const layerId = typeof summary?.id === 'string' ? summary.id.trim() : '';
+      if (!layerId) {
+        return;
+      }
+      const activities = typeof summary?.activities === 'number' ? summary.activities : 0;
+      const operations = typeof summary?.operations === 'number' ? summary.operations : 0;
+      const coverageRatio =
+        typeof summary?.emission_factor_coverage?.coverage_ratio === 'number'
+          ? summary.emission_factor_coverage.coverage_ratio
+          : 0;
+      if (activities > 0 || operations > 0 || coverageRatio > 0) {
+        states.set(layerId, 'rendered');
+      }
+    });
+
+    layerCounts.forEach((counts, layerId) => {
+      if (counts.acx > 0 || counts.ops > 0) {
+        states.set(layerId, 'rendered');
+      }
+    });
+
+    layerLabelLookup.forEach((_, layerId) => {
+      if (!states.has(layerId)) {
+        states.set(layerId, 'missing');
+      }
+    });
+
+    return states;
+  }, [audit, layerCounts, layerLabelLookup, profile.availableLayers]);
+
   const [figures, setFigures] = useState<FigureManifestEntry[] | null>(null);
   const [figureError, setFigureError] = useState<Error | null>(null);
   const [figureLoading, setFigureLoading] = useState(false);
@@ -305,6 +438,8 @@ export function useOmniNavigation(): UseOmniNavigationResult {
       layerLookup: layerLabelLookup,
       activityLookup,
       referenceCounts,
+      layerCounts,
+      layerStates,
       scenarioMeta,
       referenceMeta,
       figures: null,
@@ -317,12 +452,23 @@ export function useOmniNavigation(): UseOmniNavigationResult {
         layerLookup: layerLabelLookup,
         activityLookup,
         referenceCounts,
+        layerCounts,
+        layerStates,
         scenarioMeta,
         referenceMeta,
         figures,
       })
     );
-  }, [activityLookup, layerLabelLookup, referenceCounts, scenarioMeta, referenceMeta, figures]);
+  }, [
+    activityLookup,
+    layerLabelLookup,
+    layerCounts,
+    layerStates,
+    referenceCounts,
+    scenarioMeta,
+    referenceMeta,
+    figures,
+  ]);
 
   const pendingLoads = useRef(new Map<string, Promise<void>>());
 

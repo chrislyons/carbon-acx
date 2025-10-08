@@ -69,13 +69,48 @@ exports[`ReferencesDrawer > renders references and closes on escape 1`] = `
         >
           Scenario manifest
         </p>
-        <button
-          class="justify-center whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 border shadow-sm hover:text-accent-foreground h-9 px-3 inline-flex items-center gap-2 rounded-md border-primary/40 bg-primary/10 text-xs font-semibold uppercase tracking-[0.28em] text-primary hover:bg-primary/20"
-          data-testid="scenario-manifest-copy"
-          type="button"
+        <div
+          class="flex items-center gap-2"
         >
-          Copy JSON
-        </button>
+          <button
+            aria-label="Copy manifest JSON"
+            class="icon-btn"
+            data-testid="scenario-manifest-copy"
+            title="Copy JSON"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-copy"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <rect
+                height="14"
+                rx="2"
+                ry="2"
+                width="14"
+                x="8"
+                y="8"
+              />
+              <path
+                d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"
+              />
+            </svg>
+          </button>
+          <span
+            aria-live="polite"
+            class="sr-only"
+            role="status"
+          />
+        </div>
       </header>
       <p
         class="mt-3 text-xs text-muted-foreground"

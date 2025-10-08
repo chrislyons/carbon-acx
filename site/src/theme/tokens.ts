@@ -20,6 +20,10 @@ export const density = {
   gap: 6
 } as const;
 
+export const typography = {
+  numeric: 'tabular-nums',
+} as const;
+
 export interface ShellLayoutPreset {
   query: string;
   left: number;

@@ -7,16 +7,15 @@ import {
   type CSSProperties,
   type KeyboardEvent
 } from 'react';
-import { ChevronRight, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useVirtualizer } from '@tanstack/react-virtual';
-
-import { cn } from '@/lib/utils';
 
 import { density } from '@/theme/tokens';
 import BrandHeader from '../BrandHeader';
 
 import { useOmniNavigation, type OmniScope } from './useOmniNavigation';
 import type { OmniNodeDescriptor } from './types';
+import { OmniBrowserRow } from './OmniBrowserRow';
 
 interface OmniBrowserProps {
   selectedNodeId: string | null;
@@ -206,12 +205,13 @@ export function OmniBrowser({ selectedNodeId, onSelectionChange }: OmniBrowserPr
     [activeIndex, expanded, focusNode, handleToggle, openNode, rowVirtualizer, setSelection, visibleNodes]
   );
 
-  const paddingStyle = { padding: `${density.padY}px ${density.padX}px` } satisfies CSSProperties;
+  const headerPaddingStyle = { padding: `${density.padY}px ${density.padX}px` } satisfies CSSProperties;
+  const listPaddingStyle = { padding: `${density.padY}px 0` } satisfies CSSProperties;
 
   return (
     <section className="flex h-full flex-col" aria-label="Omni browser">
       <BrandHeader landmark="heading" level={2} />
-      <header className="flex items-center gap-2 border-b border-border/60" style={paddingStyle}>
+      <header className="flex items-center gap-2 border-b border-border/60" style={headerPaddingStyle}>
         <div className="flex flex-1 items-center gap-2 rounded-md border border-border/60 bg-background/80 px-2 py-1">
           <Search className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
           <input
@@ -232,11 +232,19 @@ export function OmniBrowser({ selectedNodeId, onSelectionChange }: OmniBrowserPr
           onChange={(event) => setScope(event.target.value as OmniScope)}
           className="rounded-md border border-border/60 bg-background/80 px-2 py-1 text-xs"
         >
-          {scopes.map((entry) => (
-            <option key={entry} value={entry}>
-              {entry.charAt(0).toUpperCase() + entry.slice(1)}
-            </option>
-          ))}
+          {scopes.map((entry) => {
+            const isActivities = entry === 'activities';
+            const label = isActivities ? 'ACX' : entry.charAt(0).toUpperCase() + entry.slice(1);
+            return (
+              <option
+                key={entry}
+                value={entry}
+                aria-label={isActivities ? 'ACX (activities)' : undefined}
+              >
+                {label}
+              </option>
+            );
+          })}
         </select>
       </header>
       <div
@@ -245,11 +253,13 @@ export function OmniBrowser({ selectedNodeId, onSelectionChange }: OmniBrowserPr
         aria-label="Navigation results"
         tabIndex={0}
         className="relative flex-1 overflow-auto focus:outline-none"
-        style={paddingStyle}
+        style={listPaddingStyle}
         onKeyDown={handleKeyDown}
       >
-        <div
-          style={{ height: `${rowVirtualizer.getTotalSize()}px`, position: 'relative' }}
+        <ul
+          role="presentation"
+          className="relative m-0 list-none p-0"
+          style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
         >
           {rowVirtualizer.getVirtualItems().map((virtualRow) => {
             const item = visibleNodes[virtualRow.index];
@@ -259,60 +269,21 @@ export function OmniBrowser({ selectedNodeId, onSelectionChange }: OmniBrowserPr
             const { node, depth } = item;
             const isExpanded = expanded.has(node.id);
             const isSelected = node.id === activeId;
-            const showToggle = node.hasChildren;
-            const left = depth * 12;
             return (
-              <div
+              <OmniBrowserRow
                 key={node.id}
-                role="treeitem"
-                aria-selected={isSelected}
-                aria-level={depth + 1}
-                aria-expanded={node.hasChildren ? isExpanded : undefined}
-                className={cn(
-                  'absolute flex h-9 w-full items-center gap-2 rounded-md px-2 text-xs',
-                  isSelected ? 'bg-primary/20 text-foreground' : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground'
-                )}
-                style={{ transform: `translateY(${virtualRow.start}px)`, paddingLeft: `${left + 12}px` }}
-                onClick={() => {
-                  setSelection(node.id);
-                }}
-                onDoubleClick={() => {
-                  if (node.hasChildren) {
-                    handleToggle(node);
-                  } else {
-                    openNode(node.id);
-                  }
-                }}
-              >
-                {showToggle ? (
-                  <button
-                    type="button"
-                    className={cn(
-                      'mr-1 flex h-5 w-5 items-center justify-center rounded border border-border/40 bg-background/60 transition-transform',
-                      isExpanded && 'rotate-90'
-                    )}
-                    aria-label={isExpanded ? 'Collapse' : 'Expand'}
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      handleToggle(node);
-                    }}
-                  >
-                    <ChevronRight className="h-3 w-3" aria-hidden="true" />
-                  </button>
-                ) : (
-                  <span className="ml-4" aria-hidden="true" />
-                )}
-                <span className="text-[10px] text-muted-foreground">[{node.order}]</span>
-                <span className="truncate text-xs text-foreground">{node.label}</span>
-                {typeof node.refCount === 'number' && node.refCount > 0 ? (
-                  <span className="ml-auto rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-semibold text-primary">
-                    {node.refCount}
-                  </span>
-                ) : null}
-              </div>
+                node={node}
+                depth={depth}
+                offset={virtualRow.start}
+                isExpanded={isExpanded}
+                isSelected={isSelected}
+                onSelect={setSelection}
+                onToggle={handleToggle}
+                onOpen={(target) => openNode(target.id)}
+              />
             );
           })}
-        </div>
+        </ul>
       </div>
     </section>
   );
