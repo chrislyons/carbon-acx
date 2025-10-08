@@ -1,5 +1,21 @@
 {
   "dataset_id": "DATASET.VALIDATOR.SAMPLE",
   "generated_at": "2024-01-01T00:00:00Z",
-  "figure_count": 1
+  "figure_count": 1,
+  "layer_citation_keys": {
+    "professional": [
+      "coffee"
+    ],
+    "online": [
+      "streaming"
+    ]
+  },
+  "layer_references": {
+    "professional": [
+      "[1] Coffee reference."
+    ],
+    "online": [
+      "[1] Streaming reference."
+    ]
+  }
 }
