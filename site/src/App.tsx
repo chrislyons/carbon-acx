@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import type { FigureDataUpdate } from './components/ChartContainer';
 import { Layout, type StageId, type StageStateMap } from './components/Layout';
 import { SectorBrowser } from './components/LayerBrowser';
 import { ProfileControls } from './components/ProfileControls';
@@ -10,6 +11,7 @@ import { useACXStore, setACXStoreState } from './store/useACXStore';
 import { buildSearchFromState, parseACXStateFromSearch } from './utils/url';
 import { ActivityPlanner } from './components/ActivityPlanner';
 import { ScopeBar, type ScopePin, type ScopeSectorDescriptor } from './components/ScopeBar';
+import type { FigureDataStatus } from './lib/DataLoader';
 import { useLayerCatalog } from './lib/useLayerCatalog';
 import { Button } from './components/ui/button';
 import { Toolbar } from './components/ui/toolbar';
@@ -106,6 +108,27 @@ function AppShell(): JSX.Element {
   );
   const focusMode = useACXStore((state) => state.focusMode);
   const setFocusMode = useACXStore((state) => state.setFocusMode);
+
+  const [figureReferences, setFigureReferences] = useState<string[] | null>(null);
+  const [figureReferenceStatus, setFigureReferenceStatus] = useState<FigureDataStatus | null>(null);
+  const [figureReferenceError, setFigureReferenceError] = useState<string | null>(null);
+
+  const handleFigureDataChange = useCallback((update: FigureDataUpdate) => {
+    if (
+      update.figureId == null &&
+      update.status === 'idle' &&
+      update.references.length === 0 &&
+      !update.error
+    ) {
+      setFigureReferences(null);
+      setFigureReferenceStatus(null);
+      setFigureReferenceError(null);
+      return;
+    }
+    setFigureReferences(update.references);
+    setFigureReferenceStatus(update.status);
+    setFigureReferenceError(update.error ?? null);
+  }, []);
 
   const optionalSectors = useMemo(
     () => activeLayers.filter((layer) => layer !== primaryLayer),
@@ -319,7 +342,7 @@ function AppShell(): JSX.Element {
           layerBrowser={<SectorBrowser />}
           controls={<ProfileControls />}
           activity={<ActivityPlanner />}
-          canvas={<VizCanvas stage={stage} />}
+          canvas={<VizCanvas stage={stage} onFigureDataChange={handleFigureDataChange} />}
           scopeIndicator={
             <ScopeBar
               stage={stage}
@@ -337,6 +360,9 @@ function AppShell(): JSX.Element {
               id="references-panel"
               open={isDrawerOpen && !focusMode}
               onToggle={() => setIsDrawerOpen((open) => !open)}
+              referencesOverride={figureReferences}
+              referencesStatus={figureReferenceStatus}
+              referencesError={figureReferenceError}
             />
           }
           stage={stage}

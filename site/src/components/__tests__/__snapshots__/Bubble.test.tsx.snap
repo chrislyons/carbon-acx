@@ -6,7 +6,7 @@ exports[`Bubble > renders bubble chart with pulsing circles 1`] = `
   class="w-full text-slate-400"
   data-testid="bubble-svg"
   role="img"
-  viewBox="0 0 640 360"
+  viewBox="0 0 640 480"
 >
   <defs>
     <radialgradient
@@ -30,7 +30,7 @@ exports[`Bubble > renders bubble chart with pulsing circles 1`] = `
   <rect
     fill="url(#bubble-fill)"
     fill-opacity="0.08"
-    height="260"
+    height="380"
     rx="24"
     stroke="rgba(148, 163, 184, 0.25)"
     width="480"
@@ -56,7 +56,7 @@ exports[`Bubble > renders bubble chart with pulsing circles 1`] = `
   <g
     class="group"
     data-testid="bubble-point-1"
-    transform="translate(440, 185.2)"
+    transform="translate(440, 247.6)"
   >
     <circle
       class="fill-sky-400/80 transition-transform duration-300 ease-out group-hover:scale-110 group-focus-within:scale-110"
@@ -74,7 +74,7 @@ exports[`Bubble > renders bubble chart with pulsing circles 1`] = `
     style="font-size: 10px;"
     text-anchor="middle"
     x="200"
-    y="348"
+    y="468"
   >
     HVAC
   </text>
@@ -83,7 +83,7 @@ exports[`Bubble > renders bubble chart with pulsing circles 1`] = `
     style="font-size: 10px;"
     text-anchor="middle"
     x="440"
-    y="348"
+    y="468"
   >
     Facilities
   </text>
@@ -92,15 +92,15 @@ exports[`Bubble > renders bubble chart with pulsing circles 1`] = `
       stroke="rgba(148, 163, 184, 0.4)"
       x1="72"
       x2="80"
-      y1="310"
-      y2="310"
+      y1="430"
+      y2="430"
     />
     <text
       class="fill-slate-400"
       style="font-size: 10px;"
       text-anchor="end"
       x="68"
-      y="314"
+      y="434"
     >
       0.0 kg
     </text>
@@ -110,15 +110,15 @@ exports[`Bubble > renders bubble chart with pulsing circles 1`] = `
       stroke="rgba(148, 163, 184, 0.4)"
       x1="72"
       x2="80"
-      y1="180"
-      y2="180"
+      y1="240"
+      y2="240"
     />
     <text
       class="fill-slate-400"
       style="font-size: 10px;"
       text-anchor="end"
       x="68"
-      y="184"
+      y="244"
     >
       1.3 kg
     </text>
@@ -146,9 +146,9 @@ exports[`Bubble > renders bubble chart with pulsing circles 1`] = `
     id="bubble-axis-description"
     style="font-size: 11px;"
     text-anchor="middle"
-    transform="rotate(-90 32 180)"
+    transform="rotate(-90 32 240)"
     x="32"
-    y="180"
+    y="240"
   >
     Annual emissions (kg CO₂e)
   </text>
@@ -157,7 +157,7 @@ exports[`Bubble > renders bubble chart with pulsing circles 1`] = `
     style="font-size: 11px;"
     text-anchor="middle"
     x="320"
-    y="356"
+    y="476"
   >
     Activity category
   </text>
