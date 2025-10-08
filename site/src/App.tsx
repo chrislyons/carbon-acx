@@ -32,7 +32,7 @@ function useUrlStateSync(): void {
       const parsed = parseACXStateFromSearch(search);
       setACXStoreState({
         figureId: parsed.figureId,
-        selectedLayers: parsed.layers,
+        selectedLayers: new Set(parsed.layers),
         scale: parsed.scale,
         period: parsed.period
       });
@@ -51,30 +51,38 @@ function useUrlStateSync(): void {
     if (typeof window === 'undefined') {
       return;
     }
-    const unsubscribe = useACXStore.subscribe(
-      (state) => ({
+    const unsubscribe = useACXStore.subscribe((state, previous) => {
+      const nextSnapshot = {
         figureId: state.figureId,
         layers: Array.from(state.selectedLayers),
         scale: state.scale,
         period: state.period
-      }),
-      (next) => {
-        const search = buildSearchFromState(
-          {
-            figureId: next.figureId,
-            layers: next.layers,
-            scale: next.scale,
-            period: next.period
-          },
-          window.location.search
-        );
-        if (search === window.location.search) {
-          return;
-        }
-        const nextUrl = `${window.location.pathname}${search}${window.location.hash}`;
-        window.history.replaceState({}, '', nextUrl);
+      };
+      const previousSnapshot = previous
+        ? {
+            figureId: previous.figureId,
+            layers: Array.from(previous.selectedLayers),
+            scale: previous.scale,
+            period: previous.period
+          }
+        : null;
+      if (
+        previousSnapshot &&
+        previousSnapshot.figureId === nextSnapshot.figureId &&
+        previousSnapshot.scale === nextSnapshot.scale &&
+        previousSnapshot.period === nextSnapshot.period &&
+        previousSnapshot.layers.length === nextSnapshot.layers.length &&
+        previousSnapshot.layers.every((layer, index) => layer === nextSnapshot.layers[index])
+      ) {
+        return;
       }
-    );
+      const search = buildSearchFromState(nextSnapshot, window.location.search);
+      if (search === window.location.search) {
+        return;
+      }
+      const nextUrl = `${window.location.pathname}${search}${window.location.hash}`;
+      window.history.replaceState({}, '', nextUrl);
+    });
     return () => {
       unsubscribe();
     };
