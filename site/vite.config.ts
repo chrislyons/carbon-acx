@@ -1,3 +1,5 @@
+import path from 'node:path';
+
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react-swc';
 
@@ -7,6 +9,11 @@ const base = rawBase.startsWith('/') ? (rawBase.endsWith('/') ? rawBase : `${raw
 export default defineConfig({
   base,
   plugins: [react()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src')
+    }
+  },
   server: {
     host: '0.0.0.0'
   },

@@ -7,6 +7,7 @@ import {
   useRef,
   useState
 } from 'react';
+import { ChevronDown } from 'lucide-react';
 
 import {
   VariableSizeList as VirtualizedList,
@@ -14,8 +15,11 @@ import {
   type VariableSizeList as VariableSizeListComponent
 } from 'react-window';
 
+import { cn } from '@/lib/utils';
 import { useProfile } from '../state/profile';
 import { ScenarioManifest } from './ScenarioManifest';
+import { Button } from './ui/button';
+import { ScrollArea } from './ui/scroll-area';
 
 type ReferencesDrawerProps = {
   id?: string;
@@ -65,9 +69,9 @@ function ReferenceRow({ index, style, data }: ListChildComponentProps<ReferenceI
         paddingBottom: ITEM_VERTICAL_PADDING / 2
       }}
     >
-      <div className="h-full rounded-lg border border-slate-800/70 bg-slate-950/60 pad-compact text-left shadow-inner shadow-slate-900/30">
-        <span className="block text-[11px] uppercase tracking-[0.3em] text-sky-400">[{index + 1}]</span>
-        <p className="mt-1 text-compact text-slate-200">{reference.replace(/^\[[0-9]+\]\s*/, '')}</p>
+      <div className="h-full rounded-lg border border-border/70 bg-card/70 pad-compact text-left shadow-inner shadow-black/30">
+        <span className="block text-2xs font-semibold uppercase tracking-[0.3em] text-primary">[{index + 1}]</span>
+        <p className="mt-1 text-compact text-foreground/90">{reference.replace(/^\[[0-9]+\]\s*/, '')}</p>
       </div>
     </li>
   );
@@ -155,14 +159,16 @@ export function ReferencesDrawer({ id = 'references', open, onToggle }: Referenc
       id={id}
       aria-labelledby="references-heading"
       aria-live="polite"
-      className="acx-card flex h-full flex-col gap-[var(--gap-1)] bg-slate-950/60 shadow-lg shadow-slate-900/40"
+      className="acx-card flex h-full flex-col gap-4 bg-card/70 shadow-lg shadow-black/40"
     >
-      <div className="flex items-center justify-between gap-[var(--gap-0)]">
-        <p id="references-heading" className="text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-300">
+      <div className="flex items-center justify-between gap-3">
+        <p id="references-heading" className="text-2xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">
           References
         </p>
-        <button
+        <Button
           type="button"
+          variant="outline"
+          size="icon"
           aria-expanded={open}
           aria-controls={`${id}-content`}
           onClick={onToggle}
@@ -172,31 +178,28 @@ export function ReferencesDrawer({ id = 'references', open, onToggle }: Referenc
               onToggle();
             }
           }}
-          className="inline-flex h-9 w-9 min-h-[32px] min-w-[32px] items-center justify-center rounded-full border border-slate-600 text-slate-100 transition hover:border-slate-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
+          className="h-9 w-9 rounded-full border-border/60 bg-background/80 text-muted-foreground hover:bg-muted/40"
         >
           <span className="sr-only">{open ? 'Collapse references' : 'Expand references'}</span>
-          <svg
+          <ChevronDown
             aria-hidden="true"
-            className={`h-3 w-3 transition-transform ${open ? 'rotate-180 text-sky-300' : 'text-slate-400'}`}
-            viewBox="0 0 12 12"
-            fill="currentColor"
-          >
-            <path d="M6 8.5a1 1 0 0 1-.707-.293l-4-4A1 1 0 0 1 2.707 3.793L6 7.086l3.293-3.293a1 1 0 0 1 1.414 1.414l-4 4A1 1 0 0 1 6 8.5Z" />
-          </svg>
-        </button>
+            className={cn('h-4 w-4 transition-transform', open ? 'rotate-180 text-primary' : 'text-muted-foreground')}
+          />
+        </Button>
       </div>
-      <p className="text-compact text-slate-400">
-        Primary sources supporting the figures. Press <kbd className="rounded bg-slate-800 px-1">Esc</kbd> to close.
+      <p className="text-compact text-muted-foreground">
+        Primary sources supporting the figures. Press <kbd className="rounded bg-muted px-1">Esc</kbd> to close.
       </p>
       <ScenarioManifest />
-      <div
+      <ScrollArea
         id={`${id}-content`}
         hidden={!open}
-        ref={containerRef}
-        className="flex-1 overflow-y-auto rounded-xl border border-slate-800/60 bg-slate-950/30 p-[var(--gap-1)] text-compact text-slate-300"
+        viewportRef={containerRef}
+        className="flex-1 rounded-xl border border-border/60 bg-background/40"
+        viewportClassName="p-4"
       >
         {references.length === 0 ? (
-          <p className="text-compact text-slate-400">No references available for the current selection.</p>
+          <p className="text-compact text-muted-foreground">No references available for the current selection.</p>
         ) : shouldVirtualize ? (
           viewportHeight > 0 ? (
             <VirtualizedList
@@ -214,19 +217,21 @@ export function ReferencesDrawer({ id = 'references', open, onToggle }: Referenc
             </VirtualizedList>
           ) : null
         ) : (
-          <ol className="space-y-[var(--gap-1)]" aria-label="Reference list">
+          <ol className="space-y-4" aria-label="Reference list">
             {references.map((reference, index) => (
               <li
                 key={reference}
-                className="rounded-lg border border-slate-800/70 bg-slate-950/60 pad-compact text-left shadow-inner shadow-slate-900/30"
+                className="rounded-lg border border-border/70 bg-card/70 pad-compact text-left shadow-inner shadow-black/30"
               >
-                <span className="block text-[11px] uppercase tracking-[0.3em] text-sky-400">[{index + 1}]</span>
-                <p className="mt-1 text-compact text-slate-200">{reference.replace(/^\[[0-9]+\]\s*/, '')}</p>
+                <span className="block text-2xs font-semibold uppercase tracking-[0.3em] text-primary">
+                  [{index + 1}]
+                </span>
+                <p className="mt-1 text-compact text-foreground/90">{reference.replace(/^\[[0-9]+\]\s*/, '')}</p>
               </li>
             ))}
           </ol>
         )}
-      </div>
+      </ScrollArea>
     </aside>
   );
 }

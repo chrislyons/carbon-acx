@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { hashManifest } from '../lib/hash';
 import { DEFAULT_CONTROLS, type DietOption, type ModeSplit, useProfile } from '../state/profile';
+import { Button } from './ui/button';
 
 const MODE_LABELS: Record<keyof ModeSplit, string> = {
   car: 'Drive',
@@ -181,26 +182,25 @@ export function ScenarioManifest(): JSX.Element {
   const copyLabel = copyState === 'copied' ? 'Copied' : copyState === 'error' ? 'Copy failed' : 'Copy JSON';
 
   return (
-    <section className="rounded-xl border border-slate-800/70 bg-slate-950/50 p-[calc(var(--gap-1)*0.8)] shadow-inner shadow-slate-950/40">
-      <header className="flex items-center justify-between gap-[var(--gap-0)]">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-300">Scenario manifest</p>
-        <button
+    <section className="rounded-xl border border-border/70 bg-card/70 p-5 shadow-inner shadow-black/40">
+      <header className="flex items-center justify-between gap-3">
+        <p className="text-2xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">Scenario manifest</p>
+        <Button
           type="button"
+          variant="outline"
+          size="sm"
           onClick={handleCopy}
-          className="inline-flex items-center gap-2 rounded-md border border-sky-500/50 bg-sky-500/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.28em] text-sky-100 transition hover:bg-sky-500/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
+          className="inline-flex items-center gap-2 rounded-md border-primary/40 bg-primary/10 text-xs font-semibold uppercase tracking-[0.28em] text-primary hover:bg-primary/20"
           data-testid="scenario-manifest-copy"
         >
           {copyLabel}
-        </button>
+        </Button>
       </header>
-      <p
-        className="mt-[calc(var(--gap-0)*0.6)] text-[11px] text-slate-400"
-        data-testid="scenario-manifest-summary"
-      >
-        <span className="font-semibold text-slate-200">What changed:</span> {changeSummary}
+      <p className="mt-3 text-xs text-muted-foreground" data-testid="scenario-manifest-summary">
+        <span className="font-semibold text-foreground">What changed:</span> {changeSummary}
       </p>
-      <div className="mt-[calc(var(--gap-0)*0.8)] rounded-lg border border-slate-800/60 bg-slate-950/70 p-[calc(var(--gap-0)*0.8)]">
-        <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-words text-[11px] leading-relaxed text-slate-200">
+      <div className="mt-4 rounded-lg border border-border/70 bg-background/70 p-4">
+        <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-words text-2xs leading-relaxed text-foreground">
           <code data-testid="scenario-manifest-json">{manifestJson}</code>
         </pre>
       </div>
