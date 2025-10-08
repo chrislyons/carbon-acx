@@ -128,17 +128,19 @@ function normaliseManifestEntry(entry: unknown): FigureManifestEntry | null {
     }
     if (Array.isArray(referencesRecord.order)) {
       references.order = (referencesRecord.order as unknown[])
-        .map((item) => {
+        .map((item): ManifestReferenceOrderEntry | null => {
           if (!item || typeof item !== 'object') {
             return null;
           }
           const row = item as Record<string, unknown>;
-          const index = typeof row.index === 'number' ? row.index : null;
-          const sourceId = typeof row.source_id === 'string' ? row.source_id : null;
-          if (!index || !sourceId) {
+          if (typeof row.source_id !== 'string') {
             return null;
           }
-          return { index, source_id: sourceId } satisfies ManifestReferenceOrderEntry;
+          const entry: ManifestReferenceOrderEntry = { source_id: row.source_id };
+          if (typeof row.index === 'number') {
+            entry.index = row.index;
+          }
+          return entry;
         })
         .filter((value): value is ManifestReferenceOrderEntry => value !== null);
     }
