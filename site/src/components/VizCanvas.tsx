@@ -9,6 +9,7 @@ import { buildReferenceLookup } from '../lib/references';
 import { useProfile } from '../state/profile';
 
 import { Bubble, BubbleDatum } from './Bubble';
+import { ChartContainer, type FigureDataUpdate } from './ChartContainer';
 import { ExportMenu } from './ExportMenu';
 import { Sankey, SankeyData, SankeyLink, SankeyNode } from './Sankey';
 import { Stacked, StackedDatum } from './Stacked';
@@ -672,9 +673,10 @@ const STATUS_LABEL: Record<string, string> = {
 
 interface VizCanvasProps {
   stage: StageId;
+  onFigureDataChange?: (update: FigureDataUpdate) => void;
 }
 
-export function VizCanvas({ stage }: VizCanvasProps): JSX.Element {
+export function VizCanvas({ stage, onFigureDataChange }: VizCanvasProps): JSX.Element {
   const {
     status,
     result,
@@ -1061,6 +1063,9 @@ export function VizCanvas({ stage }: VizCanvasProps): JSX.Element {
               </p>
             </div>
           ) : null}
+          <div className="mb-[var(--gap-1)] shrink-0">
+            <ChartContainer onFigureDataChange={onFigureDataChange} />
+          </div>
           {status !== 'error' && result === null ? (
             <div className="grid min-h-[200px] flex-1 place-items-center text-center text-compact text-slate-400">
               <div className="space-y-[var(--gap-0)]">

@@ -5,7 +5,7 @@ exports[`Sankey > renders gradient links with reference hints 1`] = `
   class="mt-4 w-full text-slate-400"
   data-testid="sankey-svg"
   role="img"
-  viewBox="0 0 640 360"
+  viewBox="0 0 640 480"
 >
   <defs>
     <lineargradient

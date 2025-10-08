@@ -107,55 +107,64 @@ exports[`ReferencesDrawer > renders references and closes on escape 1`] = `
       </div>
     </section>
     <div
-      class="relative overflow-hidden flex-1 rounded-xl border border-border/60 bg-background/40"
-      dir="ltr"
-      id="references-content"
-      style="position: relative; --radix-scroll-area-corner-width: 0px; --radix-scroll-area-corner-height: 0px;"
+      class="flex-1 rounded-xl border border-border/60 bg-background/40 p-4"
     >
-      <style>
-        [data-radix-scroll-area-viewport]{scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;}[data-radix-scroll-area-viewport]::-webkit-scrollbar{display:none}
-      </style>
       <div
-        class="h-full w-full rounded-[inherit] p-4"
-        data-radix-scroll-area-viewport=""
-        style="overflow-x: scroll; overflow-y: scroll;"
+        aria-labelledby="references-heading"
+        class="overflow-hidden relative h-full"
+        dir="ltr"
+        id="references-content"
+        style="position: relative; --radix-scroll-area-corner-width: 0px; --radix-scroll-area-corner-height: 0px;"
       >
+        <style>
+          [data-radix-scroll-area-viewport]{scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;}[data-radix-scroll-area-viewport]::-webkit-scrollbar{display:none}
+        </style>
         <div
-          style="min-width: 100%; display: table;"
+          class="h-full w-full rounded-[inherit]"
+          data-radix-scroll-area-viewport=""
+          style="overflow-x: scroll; overflow-y: scroll;"
         >
-          <ol
-            aria-label="Reference list"
-            class="space-y-4"
+          <div
+            style="min-width: 100%; display: table;"
           >
-            <li
-              class="rounded-lg border border-border/70 bg-card/70 pad-compact text-left shadow-inner shadow-black/30"
+            <ol
+              aria-label="Reference list"
+              class="space-y-3 pr-4"
             >
-              <span
-                class="block text-2xs font-semibold uppercase tracking-[0.3em] text-primary"
-              >
-                [1]
-              </span>
-              <p
-                class="mt-1 text-compact text-foreground/90"
-              >
-                First reference.
-              </p>
-            </li>
-            <li
-              class="rounded-lg border border-border/70 bg-card/70 pad-compact text-left shadow-inner shadow-black/30"
-            >
-              <span
-                class="block text-2xs font-semibold uppercase tracking-[0.3em] text-primary"
-              >
-                [2]
-              </span>
-              <p
-                class="mt-1 text-compact text-foreground/90"
-              >
-                Second reference.
-              </p>
-            </li>
-          </ol>
+              <li>
+                <div
+                  class="h-full rounded-lg border border-border/70 bg-card/70 pad-compact text-left shadow-inner shadow-black/30"
+                >
+                  <span
+                    class="block text-2xs font-semibold uppercase tracking-[0.3em] text-primary"
+                  >
+                    [1]
+                  </span>
+                  <p
+                    class="mt-1 text-compact text-foreground/90"
+                  >
+                    First reference.
+                  </p>
+                </div>
+              </li>
+              <li>
+                <div
+                  class="h-full rounded-lg border border-border/70 bg-card/70 pad-compact text-left shadow-inner shadow-black/30"
+                >
+                  <span
+                    class="block text-2xs font-semibold uppercase tracking-[0.3em] text-primary"
+                  >
+                    [2]
+                  </span>
+                  <p
+                    class="mt-1 text-compact text-foreground/90"
+                  >
+                    Second reference.
+                  </p>
+                </div>
+              </li>
+            </ol>
+          </div>
         </div>
       </div>
     </div>
