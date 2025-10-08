@@ -38,7 +38,12 @@ function normaliseReferences(value: unknown): string[] {
 
 const VIRTUALIZATION_THRESHOLD = 30;
 const ESTIMATED_CHARACTERS_PER_LINE = 90;
-const ITEM_BASE_HEIGHT = 64;
+// Base height covers the card content plus the padding applied by the
+// `.pad-compact` utility (`p-4`, i.e. 16px on the top and bottom). This was
+// increased during the design-system refresh, so the virtualization constants
+// need to reflect the additional padding to avoid clipping rows once the list
+// virtualizes.
+const ITEM_BASE_HEIGHT = 80;
 const ITEM_LINE_HEIGHT = 20;
 const ITEM_VERTICAL_PADDING = 12;
 
