@@ -3,6 +3,7 @@ __pycache__/
 .venv/
 .poetry/
 build/
+docs/acx/
 dist/*
 !dist/artifacts/
 dist/artifacts/*
