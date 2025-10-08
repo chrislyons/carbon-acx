@@ -37,7 +37,7 @@ interface BubblePoint {
 }
 
 const SVG_WIDTH = 640;
-const SVG_HEIGHT = 360;
+const SVG_HEIGHT = 480;
 const PADDING_X = 80;
 const PADDING_Y = 50;
 const MAX_RADIUS = 42;

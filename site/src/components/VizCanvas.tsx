@@ -1037,12 +1037,12 @@ export function VizCanvas({ stage }: VizCanvasProps): JSX.Element {
           <ExportMenu canvasRef={canvasRef} />
         </div>
       </div>
-      <div className="mt-[var(--gap-1)] flex-1 overflow-hidden rounded-xl border border-slate-800/60 bg-slate-950/50">
-        <div className="flex h-full flex-col overflow-y-auto p-[var(--gap-1)] sm:p-[var(--gap-2)]">
+      <div className="mt-[var(--gap-1)] flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-slate-800/60 bg-slate-950/50">
+        <div className="flex h-full flex-col overflow-hidden p-[var(--gap-1)] sm:p-[var(--gap-2)]">
           {status === 'error' ? (
             <div
               role="alert"
-              className="mb-[var(--gap-1)] space-y-[var(--gap-0)] rounded-xl border border-rose-500/40 bg-rose-500/10 p-[var(--gap-1)] text-compact text-rose-100 shadow-inner shadow-rose-900/30"
+              className="mb-[var(--gap-1)] shrink-0 space-y-[var(--gap-0)] rounded-xl border border-rose-500/40 bg-rose-500/10 p-[var(--gap-1)] text-compact text-rose-100 shadow-inner shadow-rose-900/30"
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="text-[13px] font-semibold uppercase tracking-[0.2em] text-rose-100">
@@ -1070,8 +1070,8 @@ export function VizCanvas({ stage }: VizCanvasProps): JSX.Element {
             </div>
           ) : null}
           {status !== 'error' && result !== null ? (
-            <div className="space-y-[var(--gap-2)]">
-              <div className="grid gap-[var(--gap-1)] sm:grid-cols-3">
+            <div className="flex min-h-0 flex-1 flex-col gap-[var(--gap-2)]">
+              <div className="grid shrink-0 gap-[var(--gap-1)] sm:grid-cols-3">
                 <div className="acx-card bg-slate-900/60">
                   <p className="text-[10px] uppercase tracking-[0.35em] text-slate-300">Total emissions</p>
                   <p className="mt-[var(--gap-0)] text-lg font-semibold text-slate-50">{formatEmission(resolvedTotal)}</p>
@@ -1095,56 +1095,58 @@ export function VizCanvas({ stage }: VizCanvasProps): JSX.Element {
                 </div>
               </div>
               {/* Optional layer toggles hidden temporarily to keep the canvas focused. */}
-              <div className="flex flex-col gap-[var(--gap-1)]">
-                <VisualizerPanel
-                  id="stacked"
-                  title={stackedPanelTitle}
-                  summary={
-                    <SummaryList items={stackedSummary.items} emptyMessage={stackedEmptyMessage} />
-                  }
-                  expanded={expandedViz.has('stacked')}
-                  onToggle={handleToggleVisualizer}
-                >
-                  <Stacked
-                    data={stageStackedData}
-                    referenceLookup={referenceLookup}
-                    variant="embedded"
-                    totalOverride={resolvedTotal}
-                  />
-                </VisualizerPanel>
-                <VisualizerPanel
-                  id="bubble"
-                  title={bubblePanelTitle}
-                  summary={
-                    <SummaryList items={bubbleSummary.items} emptyMessage={bubbleEmptyMessage} />
-                  }
-                  expanded={expandedViz.has('bubble')}
-                  onToggle={handleToggleVisualizer}
-                >
-                  <Bubble data={stageBubbleData} referenceLookup={referenceLookup} variant="embedded" />
-                </VisualizerPanel>
-                <VisualizerPanel
-                  id="sankey"
-                  title={sankeyPanelTitle}
-                  summary={
-                    <SummaryList items={sankeySummary.items} emptyMessage={sankeyEmptyMessage} />
-                  }
-                  expanded={expandedViz.has('sankey')}
-                  onToggle={handleToggleVisualizer}
-                >
-                  <Sankey data={stageSankeyData} referenceLookup={referenceLookup} variant="embedded" />
-                </VisualizerPanel>
-                <VisualizerPanel
-                  id="feedback"
-                  title={feedbackPanelTitle}
-                  summary={
-                    <SummaryList items={feedbackSummary.items} emptyMessage={feedbackEmptyMessage} />
-                  }
-                  expanded={expandedViz.has('feedback')}
-                  onToggle={handleToggleVisualizer}
-                >
-                  <Sankey data={feedbackData} referenceLookup={referenceLookup} variant="embedded" />
-                </VisualizerPanel>
+              <div className="min-h-0 flex-1 overflow-hidden">
+                <div className="grid h-full auto-rows-[minmax(380px,1fr)] gap-[var(--gap-1)] overflow-y-auto pr-1 sm:pr-2">
+                  <VisualizerPanel
+                    id="stacked"
+                    title={stackedPanelTitle}
+                    summary={
+                      <SummaryList items={stackedSummary.items} emptyMessage={stackedEmptyMessage} />
+                    }
+                    expanded={expandedViz.has('stacked')}
+                    onToggle={handleToggleVisualizer}
+                  >
+                    <Stacked
+                      data={stageStackedData}
+                      referenceLookup={referenceLookup}
+                      variant="embedded"
+                      totalOverride={resolvedTotal}
+                    />
+                  </VisualizerPanel>
+                  <VisualizerPanel
+                    id="bubble"
+                    title={bubblePanelTitle}
+                    summary={
+                      <SummaryList items={bubbleSummary.items} emptyMessage={bubbleEmptyMessage} />
+                    }
+                    expanded={expandedViz.has('bubble')}
+                    onToggle={handleToggleVisualizer}
+                  >
+                    <Bubble data={stageBubbleData} referenceLookup={referenceLookup} variant="embedded" />
+                  </VisualizerPanel>
+                  <VisualizerPanel
+                    id="sankey"
+                    title={sankeyPanelTitle}
+                    summary={
+                      <SummaryList items={sankeySummary.items} emptyMessage={sankeyEmptyMessage} />
+                    }
+                    expanded={expandedViz.has('sankey')}
+                    onToggle={handleToggleVisualizer}
+                  >
+                    <Sankey data={stageSankeyData} referenceLookup={referenceLookup} variant="embedded" />
+                  </VisualizerPanel>
+                  <VisualizerPanel
+                    id="feedback"
+                    title={feedbackPanelTitle}
+                    summary={
+                      <SummaryList items={feedbackSummary.items} emptyMessage={feedbackEmptyMessage} />
+                    }
+                    expanded={expandedViz.has('feedback')}
+                    onToggle={handleToggleVisualizer}
+                  >
+                    <Sankey data={feedbackData} referenceLookup={referenceLookup} variant="embedded" />
+                  </VisualizerPanel>
+                </div>
               </div>
             </div>
           ) : null}
@@ -1212,7 +1214,7 @@ function VisualizerPanel({ id, title, summary, children, expanded, onToggle }: V
       id={id}
       aria-labelledby={`${id}-heading`}
       tabIndex={-1}
-      className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-[var(--gap-1)] shadow-inner shadow-slate-900/40 sm:p-[var(--gap-2)]"
+      className="flex h-full flex-col rounded-2xl border border-slate-800/80 bg-slate-950/60 p-[var(--gap-1)] shadow-inner shadow-slate-900/40 sm:p-[var(--gap-2)]"
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h3 id={`${id}-heading`} className="text-base font-semibold text-slate-100">
@@ -1228,11 +1230,11 @@ function VisualizerPanel({ id, title, summary, children, expanded, onToggle }: V
           {expanded ? 'Collapse' : 'Expand'}
         </button>
       </div>
-      <div className="mt-4 space-y-4">
-        {summary}
+      <div className="mt-4 flex min-h-0 flex-1 flex-col gap-4">
+        <div className="shrink-0">{summary}</div>
         {expanded ? (
-          <div id={`${id}-content`} className="border-t border-slate-800/70 pt-4">
-            {children}
+          <div id={`${id}-content`} className="flex-1 overflow-auto border-t border-slate-800/70 pt-4">
+            <div className="min-h-full">{children}</div>
           </div>
         ) : null}
       </div>

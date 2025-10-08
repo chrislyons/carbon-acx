@@ -62,7 +62,7 @@ interface PreparedLink {
 }
 
 const SVG_WIDTH = 640;
-const SVG_HEIGHT = 360;
+const SVG_HEIGHT = 480;
 const NODE_WIDTH = 140;
 const NODE_HEIGHT = 36;
 const PADDING_X = 90;

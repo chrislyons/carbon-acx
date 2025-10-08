@@ -104,6 +104,8 @@ function AppShell(): JSX.Element {
   const [unlockedStages, setUnlockedStages] = useState<Set<StageId>>(
     () => new Set(['sector'])
   );
+  const focusMode = useACXStore((state) => state.focusMode);
+  const setFocusMode = useACXStore((state) => state.setFocusMode);
 
   const optionalSectors = useMemo(
     () => activeLayers.filter((layer) => layer !== primaryLayer),
@@ -276,7 +278,7 @@ function AppShell(): JSX.Element {
             variant="outline"
             size="sm"
             className="hidden min-h-[2.5rem] items-center gap-2 rounded-md border-border/70 bg-background/80 text-2xs font-semibold uppercase tracking-[0.25em] text-foreground shadow-sm hover:bg-muted/40 focus-visible:ring-primary lg:flex"
-            aria-expanded={isDrawerOpen}
+            aria-expanded={isDrawerOpen && !focusMode}
             aria-controls="references-panel"
             onClick={() => setIsDrawerOpen((open) => !open)}
             onKeyDown={(event) => {
@@ -294,7 +296,7 @@ function AppShell(): JSX.Element {
             variant="outline"
             size="sm"
             className="inline-flex min-h-[2.25rem] items-center gap-2 rounded-md border-border/70 bg-background/80 text-2xs font-semibold uppercase tracking-[0.25em] text-foreground shadow-sm hover:bg-muted/40 focus-visible:ring-primary lg:hidden"
-            aria-expanded={isDrawerOpen}
+            aria-expanded={isDrawerOpen && !focusMode}
             aria-controls="references-panel"
             onClick={() => setIsDrawerOpen((open) => !open)}
             onKeyDown={(event) => {
@@ -333,7 +335,7 @@ function AppShell(): JSX.Element {
           references={
             <ReferencesDrawer
               id="references-panel"
-              open={isDrawerOpen}
+              open={isDrawerOpen && !focusMode}
               onToggle={() => setIsDrawerOpen((open) => !open)}
             />
           }
@@ -342,6 +344,10 @@ function AppShell(): JSX.Element {
           stageSummaries={stageSummaries}
           onStageChange={handleStageChange}
           onStageAdvance={handleAdvanceStage}
+          focusMode={focusMode}
+          onFocusModeChange={setFocusMode}
+          referencesOpen={isDrawerOpen}
+          onToggleReferences={() => setIsDrawerOpen((open) => !open)}
         />
       </main>
     </div>
