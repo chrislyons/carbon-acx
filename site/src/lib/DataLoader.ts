@@ -300,34 +300,21 @@ function buildLookupFromOrder(
   citationKeys: readonly string[]
 ): Map<string, number> {
   const orderEntries = entry.references?.order;
+  const lookup = buildReferenceLookup(citationKeys);
   if (!Array.isArray(orderEntries) || orderEntries.length === 0) {
-    return buildReferenceLookup(citationKeys);
+    return lookup;
   }
-  const orderMap = new Map<string, number>();
   orderEntries.forEach((item) => {
     if (!item) {
       return;
     }
     const sourceId = typeof item.source_id === 'string' ? item.source_id : null;
     const index = typeof item.index === 'number' ? item.index : null;
-    if (!sourceId || !index) {
+    if (!sourceId || !index || index <= 0 || !Number.isFinite(index)) {
       return;
     }
-    orderMap.set(sourceId, index);
+    lookup.set(sourceId, index);
   });
-  if (orderMap.size === 0) {
-    return buildReferenceLookup(citationKeys);
-  }
-  const lookup = new Map<string, number>();
-  citationKeys.forEach((key) => {
-    const index = orderMap.get(key);
-    if (typeof index === 'number') {
-      lookup.set(key, index);
-    }
-  });
-  if (lookup.size === 0) {
-    return buildReferenceLookup(citationKeys);
-  }
   return lookup;
 }
 
