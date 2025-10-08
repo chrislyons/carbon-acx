@@ -21,7 +21,7 @@ export class OmniRegistry {
     parentId: string | null,
     type: OmniNodeType,
     label: string,
-    options: Partial<Omit<OmniNodeDescriptor, 'id' | 'parentId' | 'type' | 'label' | 'order'>> = {}
+    options: Partial<Omit<OmniNodeDescriptor, 'id' | 'parentId' | 'type' | 'label'>> = {}
   ): OmniNodeDescriptor {
     const descriptor: OmniNodeDescriptor = {
       id,

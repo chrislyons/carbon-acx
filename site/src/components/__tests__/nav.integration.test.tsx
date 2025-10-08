@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
 import { OmniBrowser } from '../OmniBrowser/OmniBrowser';
 import type { OmniNavigationState, OmniNodeDescriptor } from '../OmniBrowser/types';
@@ -140,8 +140,11 @@ beforeAll(() => {
     unobserve() {}
     disconnect() {}
   }
-  // @ts-expect-error jsdom global
-  global.ResizeObserver = ResizeObserverMock;
+  Object.defineProperty(globalThis, 'ResizeObserver', {
+    configurable: true,
+    writable: true,
+    value: ResizeObserverMock,
+  });
 });
 
 beforeEach(() => {
@@ -207,7 +210,7 @@ describe('CommandPalette', () => {
 describe('useDeepLink', () => {
   function createHarness() {
     let stageSetter: ((stage: StageId) => void) | null = null;
-    let omniSetter: ((nodes: string[]) => void) | null = null;
+    let omniSetter: ((nodes: readonly string[]) => void) | null = null;
     let latestStage: StageId = 'sector';
     let latestSelection: string[] = [];
     function Harness() {
@@ -216,12 +219,18 @@ describe('useDeepLink', () => {
       latestStage = stage;
       latestSelection = selection;
       stageSetter = setStage;
-      omniSetter = setSelection;
+      const applySelection = useCallback(
+        (nodes: readonly string[]) => {
+          setSelection(Array.from(nodes));
+        },
+        [setSelection]
+      );
+      omniSetter = applySelection;
       useDeepLink({
         stage,
         onStageChange: setStage,
         selectedOmniNodes: selection,
-        onOmniSelectionChange: setSelection,
+        onOmniSelectionChange: applySelection,
       });
       return null;
     }
@@ -230,7 +239,7 @@ describe('useDeepLink', () => {
       getStage: () => latestStage,
       getSelection: () => latestSelection,
       setStage: (next: StageId) => stageSetter?.(next),
-      setSelection: (nodes: string[]) => omniSetter?.(nodes ?? []),
+      setSelection: (nodes: string[]) => omniSetter?.([...nodes]),
     };
   }
 
