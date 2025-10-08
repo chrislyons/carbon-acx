@@ -97,25 +97,26 @@ describe('Visualizer focus mode', () => {
     renderSurface();
     const user = userEvent.setup();
 
-    const focusToggle = screen.getByTestId('visualizer-focus-toggle');
     await screen.findByTestId('context-rail-tabs');
     const railWrapper = screen.getByTestId('context-rail-container');
 
     expect(screen.getByTestId('visualizer-surface')).not.toBeNull();
 
-    await user.click(focusToggle);
+    act(() => {
+      window.history.replaceState({}, '', '?view=focus');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
 
     await waitFor(() => {
-      expect(railWrapper).toHaveAttribute('aria-hidden', 'true');
+      expect(document.querySelector('[data-visualizer-view="focus"]')).not.toBeNull();
     });
-    expect(focusToggle).toHaveTextContent(/Exit focus/i);
-    expect(document.querySelector('[data-visualizer-view="focus"]')).not.toBeNull();
+    expect(railWrapper).toHaveAttribute('aria-hidden', 'true');
 
     await user.keyboard('{Escape}');
     await waitFor(() => {
-      expect(railWrapper).not.toHaveAttribute('aria-hidden', 'true');
+      expect(document.querySelector('[data-visualizer-view="focus"]')).toBeNull();
     });
-    expect(focusToggle).toHaveTextContent(/Focus mode/i);
+    expect(railWrapper).not.toHaveAttribute('aria-hidden', 'true');
   });
 });
 

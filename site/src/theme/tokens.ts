@@ -14,6 +14,12 @@ export const SHELL_DEFAULT_DOCK_FRACTION = 0.33;
 export const SHELL_DEFAULT_DOCK_POSITION = 'side' as const;
 export type ShellDockPosition = typeof SHELL_DEFAULT_DOCK_POSITION | 'bottom';
 
+export const density = {
+  padX: 8,
+  padY: 6,
+  gap: 6
+} as const;
+
 export interface ShellLayoutPreset {
   query: string;
   left: number;

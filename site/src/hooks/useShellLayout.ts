@@ -25,12 +25,14 @@ interface ShellLayoutState {
     fraction: number;
     position: ShellDockPosition;
   };
+  rightCollapsed: boolean;
 }
 
 const FALLBACK_LAYOUT: ShellLayoutState = {
   left: 0.28,
   right: 0.24,
-  dock: { fraction: SHELL_DEFAULT_DOCK_FRACTION, position: SHELL_DEFAULT_DOCK_POSITION }
+  dock: { fraction: SHELL_DEFAULT_DOCK_FRACTION, position: SHELL_DEFAULT_DOCK_POSITION },
+  rightCollapsed: false
 };
 const EPSILON = 0.0001;
 
@@ -53,14 +55,16 @@ function resolvePreset(presets: ShellLayoutPreset[]): ShellLayoutState {
       return {
         left: preset.left,
         right: preset.right,
-        dock: { fraction: SHELL_DEFAULT_DOCK_FRACTION, position: SHELL_DEFAULT_DOCK_POSITION }
+        dock: { fraction: SHELL_DEFAULT_DOCK_FRACTION, position: SHELL_DEFAULT_DOCK_POSITION },
+        rightCollapsed: false
       };
     }
     if (window.matchMedia(preset.query).matches) {
       return {
         left: preset.left,
         right: preset.right,
-        dock: { fraction: SHELL_DEFAULT_DOCK_FRACTION, position: SHELL_DEFAULT_DOCK_POSITION }
+        dock: { fraction: SHELL_DEFAULT_DOCK_FRACTION, position: SHELL_DEFAULT_DOCK_POSITION },
+        rightCollapsed: false
       };
     }
   }
@@ -85,6 +89,7 @@ function readStoredLayout(): ShellLayoutState | null {
     const dockFraction = Number((parsed as Record<string, unknown>).dockFraction);
     const dockPositionRaw = (parsed as Record<string, unknown>).dockPosition;
     const dockPosition = dockPositionRaw === 'bottom' ? 'bottom' : SHELL_DEFAULT_DOCK_POSITION;
+    const rightCollapsed = Boolean((parsed as Record<string, unknown>).rightCollapsed);
     if (!Number.isFinite(left) || !Number.isFinite(right)) {
       return null;
     }
@@ -92,7 +97,8 @@ function readStoredLayout(): ShellLayoutState | null {
     return {
       left,
       right,
-      dock: { fraction, position: dockPosition }
+      dock: { fraction, position: dockPosition },
+      rightCollapsed
     };
   } catch (error) {
     console.warn('Failed to read stored shell layout', error);
@@ -109,12 +115,14 @@ function serialiseLayout(layout: ShellLayoutState): void {
       left: layout.left,
       right: layout.right,
       dockFraction: layout.dock.fraction,
-      dockPosition: layout.dock.position
+      dockPosition: layout.dock.position,
+      rightCollapsed: layout.rightCollapsed
     } satisfies {
       left: number;
       right: number;
       dockFraction: number;
       dockPosition: ShellDockPosition;
+      rightCollapsed: boolean;
     };
     window.localStorage.setItem(SHELL_LAYOUT_STORAGE_KEY, JSON.stringify(payload));
   } catch (error) {
@@ -152,7 +160,8 @@ function normaliseLayout(candidate: ShellLayoutState): ShellLayoutState {
   return {
     left,
     right,
-    dock: { fraction, position }
+    dock: { fraction, position },
+    rightCollapsed: Boolean(candidate.rightCollapsed)
   };
 }
 
@@ -176,6 +185,8 @@ export interface ShellLayout {
   shiftDockFraction: (delta: number) => void;
   setDockPosition: (position: ShellDockPosition) => void;
   toggleDockPosition: () => void;
+  rightCollapsed: boolean;
+  setRightCollapsed: (value: boolean | ((previous: boolean) => boolean)) => void;
 }
 
 export function useShellLayout(): ShellLayout {
@@ -290,6 +301,17 @@ export function useShellLayout(): ShellLayout {
     });
   }, []);
 
+  const setRightCollapsed = useCallback((value: boolean | ((previous: boolean) => boolean)) => {
+    setLayout((previous) => {
+      const next = typeof value === 'function' ? value(previous.rightCollapsed) : value;
+      const resolved = Boolean(next);
+      if (previous.rightCollapsed === resolved) {
+        return previous;
+      }
+      return { ...previous, rightCollapsed: resolved };
+    });
+  }, []);
+
   const reset = useCallback(() => {
     setLayout(() => resolvePreset(SHELL_LAYOUT_PRESETS));
   }, []);
@@ -320,6 +342,8 @@ export function useShellLayout(): ShellLayout {
     setDockFraction,
     shiftDockFraction,
     setDockPosition,
-    toggleDockPosition
+    toggleDockPosition,
+    rightCollapsed: layout.rightCollapsed,
+    setRightCollapsed
   };
 }

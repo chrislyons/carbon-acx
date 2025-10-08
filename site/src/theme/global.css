@@ -23,6 +23,39 @@
   transform: translateY(0);
 }
 
+:root {
+  --icon-btn-bg: rgba(15, 23, 42, 0.6);
+  --icon-btn-border: rgba(100, 116, 139, 0.5);
+  --icon-btn-color: rgba(148, 163, 184, 0.9);
+  --icon-btn-hover-bg: rgba(30, 41, 59, 0.8);
+  --icon-btn-hover-color: rgba(226, 232, 240, 1);
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--icon-btn-border);
+  background: var(--icon-btn-bg);
+  color: var(--icon-btn-color);
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.icon-btn:hover,
+.icon-btn:focus-visible {
+  background: var(--icon-btn-hover-bg);
+  color: var(--icon-btn-hover-color);
+  border-color: rgba(56, 189, 248, 0.6);
+}
+
+.icon-btn svg {
+  width: 1rem;
+  height: 1rem;
+}
+
 :where(a, button, input, textarea, select, summary, [role='button']):focus-visible {
   outline: 2px solid hsl(var(--focus-ring-color));
   outline-offset: 3px;
