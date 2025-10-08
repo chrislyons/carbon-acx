@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import type { Catalog } from '../../lib/catalog';
+import type { ScenarioManifest } from '../../lib/exportDiff';
 import { ScenarioCompare } from '../ScenarioCompare';
 
 const catalog: Catalog = {
@@ -79,13 +80,32 @@ const diff = {
   ]
 };
 
+const baseManifest: ScenarioManifest = {
+  profile_id: 'baseline',
+  sources: ['SRC.BASE.ONE', 'SRC.BASE.TWO']
+};
+
+const compareManifest: ScenarioManifest = {
+  profile_id: 'compare',
+  sources: ['SRC.COMPARE.ONE']
+};
+
 describe('ScenarioCompare', () => {
   beforeEach(() => {
     window.history.replaceState(null, '', '/compare?base=baseline&compare=alt');
   });
 
   it('renders category deltas by default with summary cards', () => {
-    render(<ScenarioCompare diff={diff} catalog={catalog} baseHash="baseline" compareHash="alt" />);
+    render(
+      <ScenarioCompare
+        diff={diff}
+        catalog={catalog}
+        baseManifest={baseManifest}
+        compareManifest={compareManifest}
+        baseHash="baseline"
+        compareHash="alt"
+      />
+    );
 
     expect(screen.getByTestId('scenario-compare-chart')).toBeInTheDocument();
     const summaryNet = screen.getByTestId('scenario-compare-summary-net');
@@ -106,7 +126,16 @@ describe('ScenarioCompare', () => {
   });
 
   it('switches to activity view and updates the URL parameter', () => {
-    render(<ScenarioCompare diff={diff} catalog={catalog} baseHash="baseline" compareHash="alt" />);
+    render(
+      <ScenarioCompare
+        diff={diff}
+        catalog={catalog}
+        baseManifest={baseManifest}
+        compareManifest={compareManifest}
+        baseHash="baseline"
+        compareHash="alt"
+      />
+    );
 
     const activityButton = screen.getByTestId('scenario-compare-toggle-activity');
     fireEvent.click(activityButton);
