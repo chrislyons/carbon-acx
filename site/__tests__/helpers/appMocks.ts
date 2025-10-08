@@ -1,8 +1,13 @@
 import { act } from 'react';
 import { vi } from 'vitest';
 
+import type * as DataLoaderNamespace from '../../src/lib/DataLoader';
+import type * as UseLayerCatalogNamespace from '../../src/lib/useLayerCatalog';
 import type { LayerAuditReport, LayerDescriptor } from '../../src/lib/useLayerCatalog';
 import type { LoadedFigureData, FigureManifestEntry } from '../../src/lib/DataLoader';
+
+type UseLayerCatalogModule = typeof UseLayerCatalogNamespace;
+type DataLoaderModule = typeof DataLoaderNamespace;
 
 export const mockLayers: LayerDescriptor[] = [
   {
@@ -91,7 +96,7 @@ export const listFiguresMock = vi.fn(async () => [manifestEntry]);
 export const loadFigureMock = vi.fn(async () => loadedFigure);
 
 vi.mock('../../src/lib/useLayerCatalog', async () => {
-  const actual = await vi.importActual<typeof import('../../src/lib/useLayerCatalog')>(
+  const actual = await vi.importActual<UseLayerCatalogModule>(
     '../../src/lib/useLayerCatalog'
   );
   return {
@@ -111,7 +116,7 @@ vi.mock('../../src/lib/api', () => ({
 }));
 
 vi.mock('../../src/lib/DataLoader', async () => {
-  const actual = await vi.importActual<typeof import('../../src/lib/DataLoader')>(
+  const actual = await vi.importActual<DataLoaderModule>(
     '../../src/lib/DataLoader'
   );
   return {

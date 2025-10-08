@@ -5,6 +5,7 @@ import { installFetchLogger } from './lib/fetchLogger';
 import { purgeStaleServiceWorkersOnce } from './lib/purgeServiceWorkers';
 import App from './App';
 import './styles/density.css';
+import './theme/global.css';
 import './index.css';
 
 installFetchLogger();

@@ -133,18 +133,20 @@ function filterStackedByLayers(
       bucket.high += high;
       bucket.hasHigh = true;
     }
-    const keys = Array.isArray(row?.citation_keys) ? row.citation_keys : [];
-    keys.forEach((keyValue) => {
-      if (typeof keyValue === 'string' && keyValue.trim()) {
-        bucket?.citationKeys.add(keyValue);
+    const citationCandidates: unknown[] = Array.isArray(row?.citation_keys) ? row.citation_keys : [];
+    for (const candidate of citationCandidates) {
+      if (typeof candidate === 'string' && candidate.trim()) {
+        bucket?.citationKeys.add(candidate);
       }
-    });
-    const indices = Array.isArray(row?.hover_reference_indices) ? row.hover_reference_indices : [];
-    indices.forEach((index) => {
-      if (typeof index === 'number' && Number.isFinite(index)) {
-        bucket?.hoverIndices.add(Math.trunc(index));
+    }
+    const hoverCandidates: unknown[] = Array.isArray(row?.hover_reference_indices)
+      ? row.hover_reference_indices
+      : [];
+    for (const candidate of hoverCandidates) {
+      if (typeof candidate === 'number' && Number.isFinite(candidate)) {
+        bucket?.hoverIndices.add(Math.trunc(candidate));
       }
-    });
+    }
     if (!bucket.units && row?.units) {
       bucket.units = row.units;
     }
@@ -285,18 +287,20 @@ function aggregateStackedByLayer(
     if (!bucket.units && row?.units) {
       bucket.units = row.units;
     }
-    const keys = Array.isArray(row?.citation_keys) ? row.citation_keys : [];
-    keys.forEach((value) => {
-      if (typeof value === 'string' && value.trim()) {
-        bucket?.citationKeys.add(value);
+    const citationCandidates: unknown[] = Array.isArray(row?.citation_keys) ? row.citation_keys : [];
+    for (const candidate of citationCandidates) {
+      if (typeof candidate === 'string' && candidate.trim()) {
+        bucket?.citationKeys.add(candidate);
       }
-    });
-    const indices = Array.isArray(row?.hover_reference_indices) ? row.hover_reference_indices : [];
-    indices.forEach((value) => {
-      if (typeof value === 'number' && Number.isFinite(value)) {
-        bucket?.hoverIndices.add(Math.trunc(value));
+    }
+    const hoverCandidates: unknown[] = Array.isArray(row?.hover_reference_indices)
+      ? row.hover_reference_indices
+      : [];
+    for (const candidate of hoverCandidates) {
+      if (typeof candidate === 'number' && Number.isFinite(candidate)) {
+        bucket?.hoverIndices.add(Math.trunc(candidate));
       }
-    });
+    }
   });
   const entries = Array.from(buckets.values()).filter((bucket) => bucket.mean > 0);
   entries.sort((a, b) => b.mean - a.mean);
@@ -361,18 +365,20 @@ function aggregateBubbleByCategory(data: readonly BubbleDatum[]): BubbleDatum[] 
     if (!bucket.units && row?.units) {
       bucket.units = row.units;
     }
-    const keys = Array.isArray(row?.citation_keys) ? row.citation_keys : [];
-    keys.forEach((value) => {
-      if (typeof value === 'string' && value.trim()) {
-        bucket?.citationKeys.add(value);
+    const citationCandidates: unknown[] = Array.isArray(row?.citation_keys) ? row.citation_keys : [];
+    for (const candidate of citationCandidates) {
+      if (typeof candidate === 'string' && candidate.trim()) {
+        bucket?.citationKeys.add(candidate);
       }
-    });
-    const indices = Array.isArray(row?.hover_reference_indices) ? row.hover_reference_indices : [];
-    indices.forEach((value) => {
-      if (typeof value === 'number' && Number.isFinite(value)) {
-        bucket?.hoverIndices.add(Math.trunc(value));
+    }
+    const hoverCandidates: unknown[] = Array.isArray(row?.hover_reference_indices)
+      ? row.hover_reference_indices
+      : [];
+    for (const candidate of hoverCandidates) {
+      if (typeof candidate === 'number' && Number.isFinite(candidate)) {
+        bucket?.hoverIndices.add(Math.trunc(candidate));
       }
-    });
+    }
   });
   const entries = Array.from(buckets.entries());
   entries.sort((a, b) => b[1].total - a[1].total);
@@ -443,18 +449,20 @@ function aggregateBubbleByLayer(
     if (!bucket.units && row?.units) {
       bucket.units = row.units;
     }
-    const keys = Array.isArray(row?.citation_keys) ? row.citation_keys : [];
-    keys.forEach((value) => {
-      if (typeof value === 'string' && value.trim()) {
-        bucket?.citationKeys.add(value);
+    const citationCandidates: unknown[] = Array.isArray(row?.citation_keys) ? row.citation_keys : [];
+    for (const candidate of citationCandidates) {
+      if (typeof candidate === 'string' && candidate.trim()) {
+        bucket?.citationKeys.add(candidate);
       }
-    });
-    const indices = Array.isArray(row?.hover_reference_indices) ? row.hover_reference_indices : [];
-    indices.forEach((value) => {
-      if (typeof value === 'number' && Number.isFinite(value)) {
-        bucket?.hoverIndices.add(Math.trunc(value));
+    }
+    const hoverCandidates: unknown[] = Array.isArray(row?.hover_reference_indices)
+      ? row.hover_reference_indices
+      : [];
+    for (const candidate of hoverCandidates) {
+      if (typeof candidate === 'number' && Number.isFinite(candidate)) {
+        bucket?.hoverIndices.add(Math.trunc(candidate));
       }
-    });
+    }
   });
   const entries = Array.from(buckets.values()).filter((bucket) => bucket.total > 0);
   entries.sort((a, b) => b.total - a.total);
@@ -520,20 +528,20 @@ function buildLayerSankey(
       buckets.set(key, bucket);
     }
     bucket.total += mean;
-    const keys = Array.isArray(link?.citation_keys) ? link.citation_keys : [];
-    keys.forEach((value) => {
-      if (typeof value === 'string' && value.trim()) {
-        bucket?.citationKeys.add(value);
+    const citationCandidates: unknown[] = Array.isArray(link?.citation_keys) ? link.citation_keys : [];
+    for (const candidate of citationCandidates) {
+      if (typeof candidate === 'string' && candidate.trim()) {
+        bucket?.citationKeys.add(candidate);
       }
-    });
-    const indices = Array.isArray(link?.hover_reference_indices)
+    }
+    const hoverCandidates: unknown[] = Array.isArray(link?.hover_reference_indices)
       ? link.hover_reference_indices
       : [];
-    indices.forEach((value) => {
-      if (typeof value === 'number' && Number.isFinite(value)) {
-        bucket?.hoverIndices.add(Math.trunc(value));
+    for (const candidate of hoverCandidates) {
+      if (typeof candidate === 'number' && Number.isFinite(candidate)) {
+        bucket?.hoverIndices.add(Math.trunc(candidate));
       }
-    });
+    }
   });
   const entries = Array.from(buckets.values()).filter((bucket) => bucket.total > 0);
   if (entries.length === 0) {

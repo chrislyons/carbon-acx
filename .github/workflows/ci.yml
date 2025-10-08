@@ -29,10 +29,12 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: '20.19.4'
 
-      - name: Install pnpm
-        run: npm install -g pnpm@9
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.5.2
+          run_install: false
 
       - uses: actions/setup-python@v5
         with:
@@ -105,9 +107,11 @@ jobs:
           fi
       - uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
-      - name: Install pnpm
-        run: npm install -g pnpm@9
+          node-version: '20.19.4'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.5.2
+          run_install: false
       - name: Install site dependencies
         working-directory: site
         run: pnpm install --frozen-lockfile

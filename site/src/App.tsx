@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useMemo, useState } from 'react';
 
 import type { FigureDataUpdate } from './components/ChartContainer';
 import { Layout, type StageId, type StageStateMap } from './components/Layout';
@@ -190,7 +190,10 @@ function AppShell(): JSX.Element {
     setPinnedScopes((previous) => previous.filter((pin) => pin.id !== id));
   }, []);
 
-  const visiblePinnedScopes = useMemo<ScopePin[]>(() => pinnedScopes.map(({ fingerprint, ...pin }) => pin), [pinnedScopes]);
+  const visiblePinnedScopes = useMemo<ScopePin[]>(
+    () => pinnedScopes.map(({ fingerprint: _fingerprint, ...pin }) => pin),
+    [pinnedScopes]
+  );
 
   const isStageUnlocked = useCallback(
     (stageId: StageId) => stageId === 'sector' || unlockedStages.has(stageId),
@@ -239,22 +242,24 @@ function AppShell(): JSX.Element {
   return (
     <div className="acx-condensed flex min-h-screen w-screen flex-col bg-background/95 text-foreground">
       <a
-        href="#main"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-3 focus:py-2 focus:text-primary-foreground focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background"
+        href="#workspace-main"
+        className="skip-link"
         onClick={() => {
-          const main = document.getElementById('main');
+          const main = document.getElementById('workspace-main');
           if (main instanceof HTMLElement) {
-            main.focus();
+            main.focus({ preventScroll: true });
           }
         }}
       >
         Skip to main content
       </a>
-      <header className="border-b border-border/60 bg-background/80 backdrop-blur">
+      <header className="border-b border-border/60 bg-background/80 backdrop-blur" role="banner">
         <Toolbar className="mx-auto flex w-full max-w-6xl items-center justify-between rounded-none border-0 bg-transparent px-6 py-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.35em] text-primary">Carbon</p>
-            <h1 className="text-base font-semibold text-foreground">Analysis Console</h1>
+            <h1 id="console-title" className="text-base font-semibold text-foreground">
+              Analysis Console
+            </h1>
           </div>
           <Button
             type="button"
@@ -295,7 +300,7 @@ function AppShell(): JSX.Element {
         </Toolbar>
       </header>
       <main
-        id="main"
+        id="workspace-main"
         role="main"
         aria-label="Emissions analysis workspace"
         tabIndex={-1}

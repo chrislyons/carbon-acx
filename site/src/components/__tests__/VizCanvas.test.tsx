@@ -5,7 +5,7 @@ import type { BubbleDatum } from '../Bubble';
 import type { SankeyData } from '../Sankey';
 import type { StackedDatum } from '../Stacked';
 import { VizCanvas } from '../VizCanvas';
-import type { ProfileStatus } from '../../state/profile';
+import type { ComputeResult, ProfileStatus } from '../../state/profile';
 
 const profileState = {
   profileId: 'mock-profile',
@@ -17,7 +17,7 @@ const profileState = {
   },
   overrides: {},
   status: 'idle' as ProfileStatus,
-  result: null,
+  result: null as ComputeResult | null,
   error: null,
   refresh: () => {},
   primaryLayer: 'professional',

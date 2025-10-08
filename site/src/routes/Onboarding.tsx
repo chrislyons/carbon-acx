@@ -344,11 +344,25 @@ export default function Onboarding(): JSX.Element {
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-950 text-slate-100">
-      <header className="border-b border-slate-900/60 bg-slate-950/80">
+      <a
+        href="#onboarding-main"
+        className="skip-link"
+        onClick={() => {
+          const main = document.getElementById('onboarding-main');
+          if (main instanceof HTMLElement) {
+            main.focus({ preventScroll: true });
+          }
+        }}
+      >
+        Skip to onboarding wizard
+      </a>
+      <header className="border-b border-slate-900/60 bg-slate-950/80" role="banner">
         <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-5 py-6">
           <div>
             <p className="text-[11px] uppercase tracking-[0.35em] text-sky-400">Carbon</p>
-            <h1 className="mt-1 text-xl font-semibold">Welcome to the Analysis Console</h1>
+            <h1 id="onboarding-heading" className="mt-1 text-xl font-semibold">
+              Welcome to the Analysis Console
+            </h1>
             <p className="mt-2 max-w-xl text-sm text-slate-400">
               We'll start with a quick three-step wizard to set a baseline profile. It takes under a minute.
             </p>
@@ -361,7 +375,12 @@ export default function Onboarding(): JSX.Element {
           </a>
         </div>
       </header>
-      <main className="mx-auto flex w-full max-w-4xl flex-1 items-center px-5 py-10 sm:py-14">
+      <main
+        id="onboarding-main"
+        className="mx-auto flex w-full max-w-4xl flex-1 items-center px-5 py-10 sm:py-14"
+        aria-labelledby="onboarding-heading"
+        tabIndex={-1}
+      >
         <Wizard steps={steps} onComplete={handleComplete} onSkip={handleSkip} finishLabel="Create profile" />
       </main>
     </div>

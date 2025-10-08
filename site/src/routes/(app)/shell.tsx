@@ -89,6 +89,9 @@ export default function ShellRoute(): JSX.Element {
   const leftPaneId = useId();
   const mainPaneId = useId();
   const rightPaneId = useId();
+  const leftPaneDomId = `${leftPaneId}-panel`;
+  const mainPaneDomId = `${mainPaneId}-panel`;
+  const rightPaneDomId = `${rightPaneId}-panel`;
 
   const layoutStyle = useMemo(() => {
     return {
@@ -224,10 +227,23 @@ export default function ShellRoute(): JSX.Element {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
+      <a
+        href={`#${mainPaneDomId}`}
+        className="skip-link"
+        onClick={() => {
+          const main = document.getElementById(mainPaneDomId);
+          if (main instanceof HTMLElement) {
+            main.focus({ preventScroll: true });
+          }
+        }}
+      >
+        Skip to workspace content
+      </a>
       <div className="grid min-h-screen grid-rows-[auto_minmax(0,1fr)_auto]">
         <header
           className="flex h-16 min-h-[3.5rem] items-center justify-between gap-4 border-b border-slate-800/70 bg-slate-950/80 px-6"
           style={{ maxHeight: SHELL_HEADER_MAX_HEIGHT }}
+          role="banner"
         >
           <div className="flex items-center gap-4">
             <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-sky-500/20 text-base font-semibold text-sky-300">
@@ -264,7 +280,7 @@ export default function ShellRoute(): JSX.Element {
           style={layoutStyle}
         >
           <aside
-            id={leftPaneId}
+            id={leftPaneDomId}
             aria-label="Planning rail"
             className="flex h-full flex-col gap-6 border-r border-slate-800/70 bg-slate-950/70 px-6 py-6"
           >
@@ -289,9 +305,10 @@ export default function ShellRoute(): JSX.Element {
           </aside>
 
           <main
-            id={mainPaneId}
+            id={mainPaneDomId}
             className="flex min-h-0 flex-col overflow-hidden bg-slate-950/40"
             aria-labelledby="workspace-title"
+            tabIndex={-1}
           >
             <div className="flex flex-wrap items-end justify-between gap-4 border-b border-slate-800/70 px-6 pb-4 pt-6">
               <div>
@@ -367,7 +384,7 @@ export default function ShellRoute(): JSX.Element {
           </main>
 
           <aside
-            id={rightPaneId}
+            id={rightPaneDomId}
             aria-label="Reference rail"
             className="flex h-full flex-col gap-5 border-l border-slate-800/70 bg-slate-950/70 px-6 py-6"
           >
@@ -385,7 +402,7 @@ export default function ShellRoute(): JSX.Element {
             role="separator"
             aria-orientation="vertical"
             tabIndex={0}
-            aria-controls={`${leftPaneId} ${mainPaneId}`}
+            aria-controls={`${leftPaneDomId} ${mainPaneDomId}`}
             aria-valuemin={Math.round(SHELL_MIN_LEFT_FRACTION * 100)}
             aria-valuemax={Math.round(SHELL_MAX_LEFT_FRACTION * 100)}
             aria-valuenow={Math.round(leftFraction * 100)}
@@ -407,7 +424,7 @@ export default function ShellRoute(): JSX.Element {
             role="separator"
             aria-orientation="vertical"
             tabIndex={0}
-            aria-controls={`${mainPaneId} ${rightPaneId}`}
+            aria-controls={`${mainPaneDomId} ${rightPaneDomId}`}
             aria-valuemin={Math.round(SHELL_MIN_RIGHT_FRACTION * 100)}
             aria-valuemax={Math.round(SHELL_MAX_RIGHT_FRACTION * 100)}
             aria-valuenow={Math.round(rightFraction * 100)}

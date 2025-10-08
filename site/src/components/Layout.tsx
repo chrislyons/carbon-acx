@@ -1,12 +1,5 @@
-import {
-  KeyboardEvent,
-  ReactNode,
-  useCallback,
-  useEffect,
-  useId,
-  useRef,
-  useState
-} from 'react';
+import type { KeyboardEvent, ReactNode } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, Maximize2, Minimize2 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -208,11 +201,17 @@ export function Layout({
         return clamp(candidate, MIN_LEFT_WIDTH, MAX_LEFT_WIDTH);
       }
       const containerWidth = container.getBoundingClientRect().width;
+      if (!Number.isFinite(containerWidth) || containerWidth <= 0) {
+        return clamp(candidate, MIN_LEFT_WIDTH, MAX_LEFT_WIDTH);
+      }
       const visibleRight = !rightHidden;
       const resizerSpace = RESIZER_ALLOWANCE + (visibleRight ? RESIZER_ALLOWANCE : 0);
       const available = containerWidth - (visibleRight ? rightWidthRef.current : 0) - resizerSpace;
       const availableForPane = Math.max(0, available - MIN_MAIN_WIDTH);
       const upperBound = Math.min(MAX_LEFT_WIDTH, availableForPane);
+      if (upperBound < MIN_LEFT_WIDTH) {
+        return clamp(candidate, MIN_LEFT_WIDTH, MAX_LEFT_WIDTH);
+      }
       const lowerBound = Math.min(MIN_LEFT_WIDTH, upperBound);
       return clamp(candidate, lowerBound, upperBound);
     },
@@ -226,11 +225,17 @@ export function Layout({
         return clamp(candidate, MIN_RIGHT_WIDTH, MAX_RIGHT_WIDTH);
       }
       const containerWidth = container.getBoundingClientRect().width;
+      if (!Number.isFinite(containerWidth) || containerWidth <= 0) {
+        return clamp(candidate, MIN_RIGHT_WIDTH, MAX_RIGHT_WIDTH);
+      }
       const visibleLeft = !leftHidden;
       const resizerSpace = RESIZER_ALLOWANCE + (visibleLeft ? RESIZER_ALLOWANCE : 0);
       const available = containerWidth - (visibleLeft ? leftWidthRef.current : 0) - resizerSpace;
       const availableForPane = Math.max(0, available - MIN_MAIN_WIDTH);
       const upperBound = Math.min(MAX_RIGHT_WIDTH, availableForPane);
+      if (upperBound < MIN_RIGHT_WIDTH) {
+        return clamp(candidate, MIN_RIGHT_WIDTH, MAX_RIGHT_WIDTH);
+      }
       const lowerBound = Math.min(MIN_RIGHT_WIDTH, upperBound);
       return clamp(candidate, lowerBound, upperBound);
     },
@@ -456,8 +461,12 @@ export function Layout({
               </Button>
             </div>
           </div>
-          <div className="flex-1 overflow-y-auto px-5 py-6">
-            <ol role="list" aria-labelledby={workflowLabelId} className="flex flex-col gap-5">
+          <nav
+            className="flex-1 overflow-y-auto px-5 py-6"
+            aria-labelledby={workflowLabelId}
+            aria-label="Workflow stages"
+          >
+            <ol role="list" className="flex flex-col gap-5">
               {STAGES.map((meta) => {
                 const state = stageStates[meta.id] ?? { unlocked: meta.id === 'sector', ready: false };
                 const unlocked = isStageUnlocked(meta.id);
@@ -485,6 +494,7 @@ export function Layout({
                 const summary = stageSummaries?.[meta.id] ?? meta.summary;
                 const panelId = `${workflowId}-${meta.id}-panel`;
                 const controlId = `${workflowId}-${meta.id}-control`;
+                const summaryId = `${controlId}-summary`;
                 return (
                   <li key={meta.id} className="list-none">
                     <section
@@ -507,6 +517,8 @@ export function Layout({
                           aria-controls={panelId}
                           aria-expanded={isActive}
                           aria-disabled={!unlocked}
+                          aria-label={meta.label}
+                          aria-describedby={summary ? summaryId : undefined}
                           data-focus-target="workflow"
                           className={cn(
                             'flex flex-1 flex-col items-start text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
@@ -518,7 +530,7 @@ export function Layout({
                           <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-foreground">
                             {meta.label}
                           </span>
-                          <span className="mt-2 text-[12px] text-muted-foreground">
+                          <span id={summaryId} className="mt-2 text-[12px] text-muted-foreground">
                             {isActive ? meta.summary : summary}
                           </span>
                         </button>
@@ -560,7 +572,7 @@ export function Layout({
                 );
               })}
             </ol>
-          </div>
+          </nav>
         </div>
       </aside>
       {!leftHidden ? (
