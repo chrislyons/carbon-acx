@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it } from 'vitest';
+import userEvent from '@testing-library/user-event';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Catalog } from '../../lib/catalog';
 import { ScenarioCompare } from '../ScenarioCompare';
@@ -79,13 +80,34 @@ const diff = {
   ]
 };
 
+const baseManifest = {
+  scenario_hash: 'baseline',
+  manifest_hash: 'manifest-base',
+  sources: ['SRC.ONE', 'SRC.TWO']
+};
+
+const compareManifest = {
+  scenario_hash: 'alt',
+  manifest_hash: 'manifest-alt',
+  sources: ['SRC.TWO', 'SRC.THREE']
+};
+
 describe('ScenarioCompare', () => {
   beforeEach(() => {
     window.history.replaceState(null, '', '/compare?base=baseline&compare=alt');
   });
 
   it('renders category deltas by default with summary cards', () => {
-    render(<ScenarioCompare diff={diff} catalog={catalog} baseHash="baseline" compareHash="alt" />);
+    render(
+      <ScenarioCompare
+        diff={diff}
+        catalog={catalog}
+        baseHash="baseline"
+        compareHash="alt"
+        baseManifest={baseManifest}
+        compareManifest={compareManifest}
+      />
+    );
 
     expect(screen.getByTestId('scenario-compare-chart')).toBeInTheDocument();
     const summaryNet = screen.getByTestId('scenario-compare-summary-net');
@@ -106,7 +128,16 @@ describe('ScenarioCompare', () => {
   });
 
   it('switches to activity view and updates the URL parameter', () => {
-    render(<ScenarioCompare diff={diff} catalog={catalog} baseHash="baseline" compareHash="alt" />);
+    render(
+      <ScenarioCompare
+        diff={diff}
+        catalog={catalog}
+        baseHash="baseline"
+        compareHash="alt"
+        baseManifest={baseManifest}
+        compareManifest={compareManifest}
+      />
+    );
 
     const activityButton = screen.getByTestId('scenario-compare-toggle-activity');
     fireEvent.click(activityButton);
@@ -114,5 +145,57 @@ describe('ScenarioCompare', () => {
     expect(screen.getByTestId('scenario-compare-activity')).toBeInTheDocument();
     expect(screen.queryByTestId('scenario-compare-category')).not.toBeInTheDocument();
     expect(new URLSearchParams(window.location.search).get('view')).toBe('activity');
+  });
+});
+
+describe('ScenarioCompare export', () => {
+  it('falls back to blob download when filesystem export is unavailable', async () => {
+    const user = userEvent.setup();
+    const createObjectURL = vi.fn().mockReturnValue('blob:scenario');
+    const revokeObjectURL = vi.fn();
+    const originalCreateObjectURL = URL.createObjectURL;
+    const originalRevokeObjectURL = URL.revokeObjectURL;
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true,
+      value: createObjectURL
+    });
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      configurable: true,
+      value: revokeObjectURL
+    });
+
+    render(
+      <ScenarioCompare
+        diff={diff}
+        catalog={catalog}
+        baseHash="baseline"
+        compareHash="alt"
+        baseManifest={baseManifest}
+        compareManifest={compareManifest}
+      />
+    );
+
+    const exportButton = screen.getByTestId('scenario-compare-export');
+    await user.click(exportButton);
+
+    expect(createObjectURL).toHaveBeenCalledTimes(1);
+    expect(revokeObjectURL).toHaveBeenCalledTimes(1);
+
+    if (typeof originalCreateObjectURL === 'function') {
+      Object.defineProperty(URL, 'createObjectURL', {
+        configurable: true,
+        value: originalCreateObjectURL
+      });
+    } else {
+      delete (URL as Record<string, unknown>).createObjectURL;
+    }
+    if (typeof originalRevokeObjectURL === 'function') {
+      Object.defineProperty(URL, 'revokeObjectURL', {
+        configurable: true,
+        value: originalRevokeObjectURL
+      });
+    } else {
+      delete (URL as Record<string, unknown>).revokeObjectURL;
+    }
   });
 });

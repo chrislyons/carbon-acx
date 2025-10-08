@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { Catalog } from '../lib/catalog';
 import {
@@ -8,6 +8,12 @@ import {
   type CategoryDelta,
   type ScenarioDiff
 } from '../lib/scenarioCompare';
+import {
+  buildSignedDiff,
+  safeWriteExport,
+  stableStringify,
+  type ScenarioManifest
+} from '../lib/exportDiff';
 import { compareDenseSpacing } from '../styles/dense';
 
 export interface ScenarioCompareProps {
@@ -15,6 +21,8 @@ export interface ScenarioCompareProps {
   catalog: Catalog;
   baseHash?: string;
   compareHash?: string;
+  baseManifest: ScenarioManifest;
+  compareManifest: ScenarioManifest;
 }
 
 type CompareView = 'category' | 'activity';
@@ -191,10 +199,59 @@ function updateSearchParams(baseHash: string | undefined, compareHash: string | 
   window.history.replaceState(null, '', next);
 }
 
-export function ScenarioCompare({ diff, catalog, baseHash, compareHash }: ScenarioCompareProps) {
+export function ScenarioCompare({
+  diff,
+  catalog,
+  baseHash,
+  compareHash,
+  baseManifest,
+  compareManifest
+}: ScenarioCompareProps) {
   const [view, setView] = useCompareView();
   const categoryDeltas = useMemo(() => aggregateByCategory(diff, 'activity.category', catalog), [diff, catalog]);
   const activityDeltas = useMemo(() => listActivityDeltas(diff, catalog), [diff, catalog]);
+
+  const mergedBaseManifest = useMemo<ScenarioManifest>(() => {
+    if (typeof baseHash === 'string' && baseHash.trim().length > 0) {
+      return { ...baseManifest, scenario_hash: baseHash };
+    }
+    return baseManifest;
+  }, [baseManifest, baseHash]);
+
+  const mergedCompareManifest = useMemo<ScenarioManifest>(() => {
+    if (typeof compareHash === 'string' && compareHash.trim().length > 0) {
+      return { ...compareManifest, scenario_hash: compareHash };
+    }
+    return compareManifest;
+  }, [compareManifest, compareHash]);
+
+  const [exportState, setExportState] = useState<'idle' | 'saved' | 'downloaded' | 'error'>('idle');
+  const resetTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    if (exportState === 'idle') {
+      return;
+    }
+    if (resetTimerRef.current !== null) {
+      window.clearTimeout(resetTimerRef.current);
+    }
+    resetTimerRef.current = window.setTimeout(() => {
+      setExportState('idle');
+      resetTimerRef.current = null;
+    }, 2500);
+    return () => {
+      if (typeof window === 'undefined') {
+        return;
+      }
+      if (resetTimerRef.current !== null) {
+        window.clearTimeout(resetTimerRef.current);
+        resetTimerRef.current = null;
+      }
+    };
+  }, [exportState]);
 
   useEffect(() => {
     updateSearchParams(baseHash, compareHash, view);
@@ -231,6 +288,63 @@ export function ScenarioCompare({ diff, catalog, baseHash, compareHash }: Scenar
     return { netDelta, baseTotal, compareTotal, netPct, increase, decrease };
   }, [categoryDeltas]);
 
+  const handleExport = useCallback(async () => {
+    try {
+      const payload = buildSignedDiff(diff, {
+        baseManifest: mergedBaseManifest,
+        compareManifest: mergedCompareManifest
+      });
+      const json = stableStringify(payload);
+      const safeSegment = (value: string | undefined, fallback: string) => {
+        if (!value) {
+          return fallback;
+        }
+        const slug = value.toLowerCase().replace(/[^a-z0-9._-]/g, '');
+        return slug.length > 0 ? slug : fallback;
+      };
+      const fileName = `scenario_diff_${safeSegment(payload.base_hash, 'base')}_vs_${safeSegment(payload.compare_hash, 'compare')}.json`;
+
+      const shouldAttemptFsWrite = import.meta.env.MODE === 'development';
+      if (shouldAttemptFsWrite) {
+        try {
+          await safeWriteExport(fileName, json);
+          setExportState('saved');
+          return;
+        } catch (error) {
+          console.warn('Unable to write diff export to disk; falling back to download.', error);
+        }
+      }
+
+      if (typeof window !== 'undefined' && typeof URL !== 'undefined' && typeof document !== 'undefined') {
+        const blob = new Blob([json], { type: 'application/json;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        setExportState('downloaded');
+        return;
+      }
+
+      throw new Error('Export environment unavailable');
+    } catch (error) {
+      console.error('Failed to export scenario diff', error);
+      setExportState('error');
+    }
+  }, [diff, mergedBaseManifest, mergedCompareManifest]);
+
+  const exportLabel =
+    exportState === 'saved'
+      ? 'Saved to exports'
+      : exportState === 'downloaded'
+        ? 'Download ready'
+        : exportState === 'error'
+          ? 'Export failed'
+          : 'Export diff JSON';
+
   return (
     <section
       className="rounded-2xl border border-slate-800/70 bg-slate-950/70 text-slate-100 shadow-inner shadow-slate-900/40"
@@ -241,7 +355,15 @@ export function ScenarioCompare({ diff, catalog, baseHash, compareHash }: Scenar
           <h2 className="text-lg font-semibold">Scenario comparison</h2>
           <p className="text-xs text-slate-400">Contrast baseline and alternative scenarios.</p>
         </div>
-        <div className="flex items-center gap-2" role="group" aria-label="Comparison basis">
+        <div className="flex items-center gap-2" role="group" aria-label="Comparison actions">
+          <button
+            type="button"
+            className="rounded-full border border-sky-500/50 bg-sky-500/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.28em] text-sky-100 transition hover:bg-sky-500/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
+            onClick={handleExport}
+            data-testid="scenario-compare-export"
+          >
+            {exportLabel}
+          </button>
           <button
             type="button"
             className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
