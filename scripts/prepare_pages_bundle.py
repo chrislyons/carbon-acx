@@ -18,7 +18,7 @@ HEADERS_TEMPLATE = (
     /artifacts/*
       Cache-Control: public, max-age=31536000, immutable
       Content-Type: application/json; charset=utf-8
-      Access-Control-Allow-Origin: https://boot.industries
+      Access-Control-Allow-Origin: *
       Access-Control-Allow-Methods: GET, HEAD, OPTIONS
       Access-Control-Allow-Headers: Content-Type
     """
