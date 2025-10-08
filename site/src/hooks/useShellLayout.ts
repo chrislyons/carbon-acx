@@ -1,24 +1,37 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
+  SHELL_DEFAULT_DOCK_FRACTION,
+  SHELL_DEFAULT_DOCK_POSITION,
   SHELL_DIVIDER_WIDTH,
   SHELL_KEYBOARD_RESIZE_STEP,
   SHELL_LAYOUT_PRESETS,
   SHELL_LAYOUT_STORAGE_KEY,
+  SHELL_MAX_DOCK_FRACTION,
   SHELL_MAX_LEFT_FRACTION,
   SHELL_MAX_RIGHT_FRACTION,
+  SHELL_MIN_DOCK_FRACTION,
   SHELL_MIN_LEFT_FRACTION,
   SHELL_MIN_MAIN_FRACTION,
   SHELL_MIN_RIGHT_FRACTION,
+  type ShellDockPosition,
   type ShellLayoutPreset
 } from '@/theme/tokens';
 
 interface ShellLayoutState {
   left: number;
   right: number;
+  dock: {
+    fraction: number;
+    position: ShellDockPosition;
+  };
 }
 
-const FALLBACK_LAYOUT: ShellLayoutState = { left: 0.28, right: 0.24 };
+const FALLBACK_LAYOUT: ShellLayoutState = {
+  left: 0.28,
+  right: 0.24,
+  dock: { fraction: SHELL_DEFAULT_DOCK_FRACTION, position: SHELL_DEFAULT_DOCK_POSITION }
+};
 const EPSILON = 0.0001;
 
 function clamp(value: number, min: number, max: number): number {
@@ -37,10 +50,18 @@ function resolvePreset(presets: ShellLayoutPreset[]): ShellLayoutState {
   }
   for (const preset of presets) {
     if (!preset.query) {
-      return { left: preset.left, right: preset.right };
+      return {
+        left: preset.left,
+        right: preset.right,
+        dock: { fraction: SHELL_DEFAULT_DOCK_FRACTION, position: SHELL_DEFAULT_DOCK_POSITION }
+      };
     }
     if (window.matchMedia(preset.query).matches) {
-      return { left: preset.left, right: preset.right };
+      return {
+        left: preset.left,
+        right: preset.right,
+        dock: { fraction: SHELL_DEFAULT_DOCK_FRACTION, position: SHELL_DEFAULT_DOCK_POSITION }
+      };
     }
   }
   return FALLBACK_LAYOUT;
@@ -61,10 +82,18 @@ function readStoredLayout(): ShellLayoutState | null {
     }
     const left = Number((parsed as Record<string, unknown>).left);
     const right = Number((parsed as Record<string, unknown>).right);
+    const dockFraction = Number((parsed as Record<string, unknown>).dockFraction);
+    const dockPositionRaw = (parsed as Record<string, unknown>).dockPosition;
+    const dockPosition = dockPositionRaw === 'bottom' ? 'bottom' : SHELL_DEFAULT_DOCK_POSITION;
     if (!Number.isFinite(left) || !Number.isFinite(right)) {
       return null;
     }
-    return { left, right };
+    const fraction = Number.isFinite(dockFraction) ? Number(dockFraction) : SHELL_DEFAULT_DOCK_FRACTION;
+    return {
+      left,
+      right,
+      dock: { fraction, position: dockPosition }
+    };
   } catch (error) {
     console.warn('Failed to read stored shell layout', error);
     return null;
@@ -76,7 +105,18 @@ function serialiseLayout(layout: ShellLayoutState): void {
     return;
   }
   try {
-    window.localStorage.setItem(SHELL_LAYOUT_STORAGE_KEY, JSON.stringify(layout));
+    const payload = {
+      left: layout.left,
+      right: layout.right,
+      dockFraction: layout.dock.fraction,
+      dockPosition: layout.dock.position
+    } satisfies {
+      left: number;
+      right: number;
+      dockFraction: number;
+      dockPosition: ShellDockPosition;
+    };
+    window.localStorage.setItem(SHELL_LAYOUT_STORAGE_KEY, JSON.stringify(payload));
   } catch (error) {
     console.warn('Failed to persist shell layout', error);
   }
@@ -100,10 +140,20 @@ function clampRight(value: number, left: number): number {
   return clamp(value, SHELL_MIN_RIGHT_FRACTION, safeMax);
 }
 
+function clampDockFraction(value: number): number {
+  return clamp(value, SHELL_MIN_DOCK_FRACTION, SHELL_MAX_DOCK_FRACTION);
+}
+
 function normaliseLayout(candidate: ShellLayoutState): ShellLayoutState {
   const left = clampLeft(candidate.left, candidate.right);
   const right = clampRight(candidate.right, left);
-  return { left, right };
+  const fraction = clampDockFraction(candidate.dock?.fraction ?? SHELL_DEFAULT_DOCK_FRACTION);
+  const position = candidate.dock?.position === 'bottom' ? 'bottom' : SHELL_DEFAULT_DOCK_POSITION;
+  return {
+    left,
+    right,
+    dock: { fraction, position }
+  };
 }
 
 export interface ShellLayout {
@@ -120,6 +170,12 @@ export interface ShellLayout {
   shiftRightBy: (delta: number) => void;
   reset: () => void;
   keyboardStep: number;
+  dockFraction: number;
+  dockPosition: ShellDockPosition;
+  setDockFraction: (value: number) => void;
+  shiftDockFraction: (delta: number) => void;
+  setDockPosition: (position: ShellDockPosition) => void;
+  toggleDockPosition: () => void;
 }
 
 export function useShellLayout(): ShellLayout {
@@ -142,7 +198,7 @@ export function useShellLayout(): ShellLayout {
       if (Math.abs(nextLeft - previous.left) < EPSILON) {
         return previous;
       }
-      return { left: nextLeft, right: previous.right };
+      return { ...previous, left: nextLeft };
     });
   }, []);
 
@@ -152,7 +208,20 @@ export function useShellLayout(): ShellLayout {
       if (Math.abs(nextRight - previous.right) < EPSILON) {
         return previous;
       }
-      return { left: previous.left, right: nextRight };
+      return { ...previous, right: nextRight };
+    });
+  }, []);
+
+  const setDockFraction = useCallback((value: number) => {
+    setLayout((previous) => {
+      const nextFraction = clampDockFraction(value);
+      if (Math.abs(previous.dock.fraction - nextFraction) < EPSILON) {
+        return previous;
+      }
+      return {
+        ...previous,
+        dock: { ...previous.dock, fraction: nextFraction }
+      };
     });
   }, []);
 
@@ -165,7 +234,7 @@ export function useShellLayout(): ShellLayout {
       if (Math.abs(nextLeft - previous.left) < EPSILON) {
         return previous;
       }
-      return { left: nextLeft, right: previous.right };
+      return { ...previous, left: nextLeft };
     });
   }, []);
 
@@ -178,7 +247,46 @@ export function useShellLayout(): ShellLayout {
       if (Math.abs(nextRight - previous.right) < EPSILON) {
         return previous;
       }
-      return { left: previous.left, right: nextRight };
+      return { ...previous, right: nextRight };
+    });
+  }, []);
+
+  const shiftDockFraction = useCallback((delta: number) => {
+    if (delta === 0) {
+      return;
+    }
+    setLayout((previous) => {
+      const nextFraction = clampDockFraction(previous.dock.fraction + delta);
+      if (Math.abs(nextFraction - previous.dock.fraction) < EPSILON) {
+        return previous;
+      }
+      return {
+        ...previous,
+        dock: { ...previous.dock, fraction: nextFraction }
+      };
+    });
+  }, []);
+
+  const setDockPosition = useCallback((position: ShellDockPosition) => {
+    setLayout((previous) => {
+      const normalised = position === 'bottom' ? 'bottom' : SHELL_DEFAULT_DOCK_POSITION;
+      if (previous.dock.position === normalised) {
+        return previous;
+      }
+      return {
+        ...previous,
+        dock: { ...previous.dock, position: normalised }
+      };
+    });
+  }, []);
+
+  const toggleDockPosition = useCallback(() => {
+    setLayout((previous) => {
+      const next = previous.dock.position === 'bottom' ? SHELL_DEFAULT_DOCK_POSITION : 'bottom';
+      return {
+        ...previous,
+        dock: { ...previous.dock, position: next }
+      };
     });
   }, []);
 
@@ -188,7 +296,6 @@ export function useShellLayout(): ShellLayout {
 
   const leftPercentage = useMemo(() => layout.left * 100, [layout.left]);
   const rightPercentage = useMemo(() => layout.right * 100, [layout.right]);
-
   const gridTemplateColumns = useMemo(
     () => `${layout.left * 100}% minmax(0, 1fr) ${layout.right * 100}%`,
     [layout.left, layout.right]
@@ -207,6 +314,12 @@ export function useShellLayout(): ShellLayout {
     shiftLeftBy,
     shiftRightBy,
     reset,
-    keyboardStep: SHELL_KEYBOARD_RESIZE_STEP
+    keyboardStep: SHELL_KEYBOARD_RESIZE_STEP,
+    dockFraction: layout.dock.fraction,
+    dockPosition: layout.dock.position,
+    setDockFraction,
+    shiftDockFraction,
+    setDockPosition,
+    toggleDockPosition
   };
 }

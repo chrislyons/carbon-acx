@@ -9,6 +9,7 @@ name: CI
 
 permissions:
   contents: read
+  actions: write
 
 jobs:
   lint-yaml:
