@@ -338,11 +338,16 @@ export function SectorBrowser(): JSX.Element {
               : null;
           const detailPanelId = `${layer.id}-panel`;
           return (
-            <details key={layer.id} className="group rounded-xl border border-slate-800/70 bg-slate-950/40" open={isActive}>
+            <details
+              key={layer.id}
+              className="group rounded-xl border border-slate-800/70 bg-slate-950/40"
+              open={isActive}
+            >
               <summary
                 className="flex cursor-pointer flex-col gap-[calc(var(--gap-0)*0.75)] px-[var(--gap-1)] py-[6px] text-left outline-none transition hover:bg-slate-900/50"
                 aria-controls={detailPanelId}
                 aria-expanded={isActive}
+                title={layer.summary ?? undefined}
               >
                 <div className="flex items-start gap-[calc(var(--gap-0)*0.8)]">
                   <Icon
@@ -355,9 +360,6 @@ export function SectorBrowser(): JSX.Element {
                     <div className="flex flex-wrap items-start gap-[calc(var(--gap-0)*0.6)]">
                       <div className="min-w-0 flex-1 space-y-[calc(var(--gap-0)*0.4)]">
                         <p className="text-sm font-semibold text-slate-100">{layer.title}</p>
-                        {layer.summary ? (
-                          <p className="max-w-[300px] text-[11px] leading-snug text-slate-400">{layer.summary}</p>
-                        ) : null}
                         <div className="flex flex-wrap items-center gap-[8px] text-[10px] uppercase tracking-[0.25em] text-slate-400">
                           <span
                             className={`inline-flex items-center gap-[4px] rounded-full border px-2 py-[2px] text-[10px] font-semibold tracking-[0.18em] ${statusMeta.tone}`}
