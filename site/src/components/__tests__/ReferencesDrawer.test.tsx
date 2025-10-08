@@ -5,7 +5,16 @@ import { ReferencesDrawer } from '../ReferencesDrawer';
 
 vi.mock('../../state/profile', () => ({
   useProfile: () => ({
-    activeReferences: ['First reference.', 'Second reference.']
+    activeReferences: ['First reference.', 'Second reference.'],
+    controls: {
+      commuteDaysPerWeek: 3,
+      modeSplit: { car: 60, transit: 30, bike: 10 },
+      diet: 'omnivore',
+      streamingHoursPerDay: 1.5,
+    },
+    overrides: {},
+    hasLifestyleOverrides: false,
+    result: { manifest: { sources: [] } },
   })
 }));
 
