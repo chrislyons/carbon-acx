@@ -1,6 +1,5 @@
-import { FetchJSONError, fetchJSON } from './fetchJSON';
-import { artifactUrl } from './paths';
-import { parseReferenceList } from './api';
+import { FetchJSONError } from './fetchJSON';
+import { loadArtifactJson, loadArtifactText, parseReferenceList } from './api';
 import { buildReferenceLookup } from './references';
 
 export type FigureDataStatus = 'idle' | 'loading' | 'success' | 'error';
@@ -71,19 +70,11 @@ const manifestCache: {
   promise: Promise<Map<string, FigureManifestEntry>> | null;
 } = {
   data: null,
-  promise: null
+  promise: null,
 };
 
 const figureCache = new Map<string, LoadedFigureData>();
 const pendingFigures = new Map<string, Promise<LoadedFigureData>>();
-
-function normalisePath(path: string): string {
-  return path.replace(/^\/+/, '');
-}
-
-function resolveArtifactUrl(path: string): string {
-  return artifactUrl(normalisePath(path));
-}
 
 function isAbortError(error: unknown): boolean {
   return error instanceof DOMException && error.name === 'AbortError';
@@ -196,11 +187,7 @@ function selectPreferredArtifact(entries: ManifestIndexArtifactEntry[] | undefin
 
 async function fetchAggregateManifest(signal?: AbortSignal): Promise<FigureManifestEntry[] | null> {
   try {
-    const payload = await fetchJSON<AggregateManifestPayload>(resolveArtifactUrl('figure_manifest.json'), {
-      signal,
-      headers: { Accept: 'application/json' },
-      cache: 'no-store'
-    });
+    const payload = await loadArtifactJson<AggregateManifestPayload>('figure_manifest.json', signal);
     const entries = extractAggregateManifestEntries(payload);
     if (entries.length === 0) {
       return null;
@@ -221,11 +208,7 @@ async function fetchAggregateManifest(signal?: AbortSignal): Promise<FigureManif
 }
 
 async function fetchManifestFromIndex(signal?: AbortSignal): Promise<FigureManifestEntry[]> {
-  const payload = await fetchJSON<ManifestIndexPayload>(resolveArtifactUrl('manifest.json'), {
-    signal,
-    headers: { Accept: 'application/json' },
-    cache: 'no-store'
-  });
+  const payload = await loadArtifactJson<ManifestIndexPayload>('manifest.json', signal);
   const figures = Array.isArray(payload.figures) ? payload.figures : [];
   const entries: FigureManifestEntry[] = [];
   for (const entry of figures) {
@@ -241,11 +224,7 @@ async function fetchManifestFromIndex(signal?: AbortSignal): Promise<FigureManif
       continue;
     }
     try {
-      const manifest = await fetchJSON<AggregateManifestPayload>(resolveArtifactUrl(manifestPath), {
-        signal,
-        headers: { Accept: 'application/json' },
-        cache: 'no-store'
-      });
+      const manifest = await loadArtifactJson<AggregateManifestPayload>(manifestPath, signal);
       const normalised = normaliseManifestEntry(manifest as unknown);
       if (normalised) {
         entries.push(normalised);
@@ -339,12 +318,7 @@ function reorderReferences(entry: FigureManifestEntry, references: string[]): st
 }
 
 async function fetchFigurePayload(entry: FigureManifestEntry, signal?: AbortSignal): Promise<FigureJsonPayload> {
-  const payload = await fetchJSON<FigureJsonPayload>(resolveArtifactUrl(entry.figure_path), {
-    signal,
-    headers: { Accept: 'application/json' },
-    cache: 'no-store'
-  });
-  return payload;
+  return await loadArtifactJson<FigureJsonPayload>(entry.figure_path, signal);
 }
 
 async function fetchReferences(entry: FigureManifestEntry, signal?: AbortSignal): Promise<string[]> {
@@ -352,15 +326,7 @@ async function fetchReferences(entry: FigureManifestEntry, signal?: AbortSignal)
   if (!path) {
     return [];
   }
-  const response = await fetch(resolveArtifactUrl(path), {
-    signal,
-    headers: { Accept: 'text/plain' },
-    cache: 'no-store'
-  });
-  if (!response.ok) {
-    throw new Error(`Reference fetch failed with status ${response.status}`);
-  }
-  const text = await response.text();
+  const text = await loadArtifactText(path, signal);
   const parsed = parseReferenceList(text);
   return reorderReferences(entry, parsed);
 }
