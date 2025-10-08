@@ -151,6 +151,7 @@ export function Layout({
   const rightPaneRef = useRef<HTMLElement | null>(null);
   const leftWidthRef = useRef(leftWidth);
   const rightWidthRef = useRef(rightWidth);
+  const previousCollapsedRef = useRef(isLeftCollapsed);
 
   useEffect(() => {
     leftWidthRef.current = leftWidth;
@@ -176,6 +177,15 @@ export function Layout({
       element.removeAttribute('aria-hidden');
     }
   }, [leftHidden]);
+
+  useEffect(() => {
+    const wasCollapsed = previousCollapsedRef.current;
+    previousCollapsedRef.current = isLeftCollapsed;
+    if (wasCollapsed && !isLeftCollapsed && !focusMode) {
+      const initialControl = leftPaneRef.current?.querySelector<HTMLElement>('[data-focus-target="workflow"]');
+      initialControl?.focus({ preventScroll: true });
+    }
+  }, [isLeftCollapsed, focusMode]);
 
   useEffect(() => {
     const element = rightPaneRef.current;
@@ -478,6 +488,7 @@ export function Layout({
                 return (
                   <li key={meta.id} className="list-none">
                     <section
+                      role="group"
                       aria-labelledby={controlId}
                       aria-current={isActive ? 'step' : undefined}
                       className={cn(
@@ -496,6 +507,7 @@ export function Layout({
                           aria-controls={panelId}
                           aria-expanded={isActive}
                           aria-disabled={!unlocked}
+                          data-focus-target="workflow"
                           className={cn(
                             'flex flex-1 flex-col items-start text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
                             unlocked ? '' : 'cursor-not-allowed'

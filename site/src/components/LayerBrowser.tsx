@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useId } from 'react';
 
 import { useLayerCatalog, LayerAuditActivity } from '../lib/useLayerCatalog';
 import { FetchJSONDiagnostics, FetchJSONError } from '../lib/fetchJSON';
@@ -92,6 +92,7 @@ export function SectorBrowser(): JSX.Element {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showDiagnostics, setShowDiagnostics] = useState(false);
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'error'>('idle');
+  const mobileContentId = useId();
 
   const availableSet = useMemo(() => new Set(availableLayers), [availableLayers]);
   const activeSet = useMemo(() => new Set(activeLayers), [activeLayers]);
@@ -335,9 +336,14 @@ export function SectorBrowser(): JSX.Element {
             coverage && typeof coverage.with_emission_factors === 'number' && typeof coverage.activities === 'number'
               ? `${coverage.with_emission_factors}/${coverage.activities} EF`
               : null;
+          const detailPanelId = `${layer.id}-panel`;
           return (
             <details key={layer.id} className="group rounded-xl border border-slate-800/70 bg-slate-950/40" open={isActive}>
-              <summary className="flex cursor-pointer flex-col gap-[calc(var(--gap-0)*0.75)] px-[var(--gap-1)] py-[6px] text-left outline-none transition hover:bg-slate-900/50">
+              <summary
+                className="flex cursor-pointer flex-col gap-[calc(var(--gap-0)*0.75)] px-[var(--gap-1)] py-[6px] text-left outline-none transition hover:bg-slate-900/50"
+                aria-controls={detailPanelId}
+                aria-expanded={isActive}
+              >
                 <div className="flex items-start gap-[calc(var(--gap-0)*0.8)]">
                   <Icon
                     id={layer.icon ?? undefined}
@@ -371,6 +377,12 @@ export function SectorBrowser(): JSX.Element {
                           event.stopPropagation();
                           handleToggleLayer(layer.id);
                         }}
+                        aria-label={
+                          isActive
+                            ? `Remove ${layer.title ?? layer.id} from the active comparison`
+                            : `Add ${layer.title ?? layer.id} to the active comparison`
+                        }
+                        aria-pressed={isActive}
                         className={`inline-flex items-center gap-1 rounded-md border px-2 py-[6px] text-[10px] font-semibold uppercase tracking-[0.2em] transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 ${
                           isActive
                             ? 'border-sky-400/60 bg-sky-500/10 text-sky-200 hover:border-sky-300'
@@ -383,7 +395,10 @@ export function SectorBrowser(): JSX.Element {
                   </div>
                 </div>
               </summary>
-              <div className="border-t border-slate-800/60 bg-slate-950/70 px-[var(--gap-1)] py-[var(--gap-1)]">
+              <div
+                id={detailPanelId}
+                className="border-t border-slate-800/60 bg-slate-950/70 px-[var(--gap-1)] py-[var(--gap-1)]"
+              >
                 {activities.length === 0 ? (
                   <p className="text-xs text-slate-400">No activities mapped to this layer in the dataset.</p>
                 ) : (
@@ -424,6 +439,7 @@ export function SectorBrowser(): JSX.Element {
           type="button"
           className="inline-flex w-full items-center justify-between rounded-xl border border-slate-800/70 bg-slate-950/60 px-[var(--gap-1)] py-[var(--gap-1)] text-left text-sm font-semibold text-slate-100 shadow-sm"
           aria-expanded={mobileOpen}
+          aria-controls={`${mobileContentId}-container`}
           onClick={() => setMobileOpen((open) => !open)}
         >
           <span>Browse sectors</span>
@@ -437,7 +453,9 @@ export function SectorBrowser(): JSX.Element {
           </svg>
         </button>
       </div>
-      <div className={`${mobileOpen ? 'block' : 'hidden'} lg:block`}>{content}</div>
+      <div id={`${mobileContentId}-container`} className={`${mobileOpen ? 'block' : 'hidden'} lg:block`}>
+        {content}
+      </div>
     </div>
   );
 }

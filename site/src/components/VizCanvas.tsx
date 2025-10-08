@@ -1,4 +1,4 @@
-import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useMemo, useRef, useState, useId } from 'react';
 
 import type { StageId } from './Layout';
 
@@ -993,6 +993,7 @@ export function VizCanvas({ stage, onFigureDataChange }: VizCanvasProps): JSX.El
   const statusTone = resolveStatusTone(status);
   const statusLabel = STATUS_LABEL[status] ?? status;
   const canvasRef = useRef<HTMLElement | null>(null);
+  const descriptionId = useId();
   const [expandedViz, setExpandedViz] = useState<Set<string>>(
     () => new Set(['stacked', 'bubble', 'sankey', 'feedback'])
   );
@@ -1013,8 +1014,12 @@ export function VizCanvas({ stage, onFigureDataChange }: VizCanvasProps): JSX.El
     <section
       ref={canvasRef}
       aria-labelledby="viz-canvas-heading"
+      aria-describedby={descriptionId}
       className="acx-card relative flex h-full flex-col gap-[var(--gap-1)] overflow-hidden bg-gradient-to-br from-slate-900/80 via-slate-900 to-slate-950 sm:px-[var(--gap-2)] sm:py-[var(--gap-2)]"
     >
+      <p id={descriptionId} className="sr-only">
+        Interactive visualization canvas with stacked, bubble, and pathway views for the active scenario. Use the workflow panel to adjust context and the references panel to review data sources.
+      </p>
       <div className="flex flex-col gap-[var(--gap-1)] sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 id="viz-canvas-heading" className="text-[13px] font-semibold">
