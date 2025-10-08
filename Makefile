@@ -40,18 +40,39 @@ $(LATEST_BUILD):
 
 build: $(LATEST_BUILD)
 
-SITE_PACKAGE_MANAGER ?= pnpm
+SITE_NODE_VERSION ?= 20.19.4
+SITE_NODE_ARCHIVE := node-v$(SITE_NODE_VERSION)-linux-x64
+SITE_NODE_TARBALL := $(CURDIR)/.cache/$(SITE_NODE_ARCHIVE).tar.xz
+SITE_NODE_DIR := $(CURDIR)/.cache/$(SITE_NODE_ARCHIVE)
+SITE_NODE_BIN := $(SITE_NODE_DIR)/bin
+SITE_NODE_DOWNLOAD := https://nodejs.org/dist/v$(SITE_NODE_VERSION)/$(SITE_NODE_ARCHIVE).tar.xz
+PNPM_VERSION ?= 10.5.2
+
+SITE_ENV := PATH=$(SITE_NODE_BIN):$$PATH
+SITE_COREPACK := $(SITE_ENV) corepack
+SITE_PNPM := $(SITE_ENV) pnpm
 
 SITE_LAYERS_JSON := $(SITE_DIR)/public/artifacts/layers.json
 DATA_LAYERS_CSV := data/layers.csv
 
 .PHONY: site_install site_build site_dev
 
-site_install:
-	cd $(SITE_DIR) && $(SITE_PACKAGE_MANAGER) install
+$(SITE_NODE_BIN)/node:
+	@mkdir -p $(CURDIR)/.cache
+	@if [ ! -d "$(SITE_NODE_DIR)" ]; then \
+		echo "Downloading Node.js $(SITE_NODE_VERSION)"; \
+		curl -fsSLo $(SITE_NODE_TARBALL) $(SITE_NODE_DOWNLOAD); \
+		tar -xJf $(SITE_NODE_TARBALL) -C $(CURDIR)/.cache; \
+		rm -f $(SITE_NODE_TARBALL); \
+	fi
+
+site_install: $(SITE_NODE_BIN)/node
+	@$(SITE_COREPACK) enable
+	@$(SITE_COREPACK) prepare pnpm@$(PNPM_VERSION) --activate
+	cd $(SITE_DIR) && $(SITE_PNPM) install
 
 $(SITE_BUILD_DIR)/index.html: site_install $(SITE_LAYERS_JSON)
-	cd $(SITE_DIR) && $(SITE_PACKAGE_MANAGER) run build
+	cd $(SITE_DIR) && $(SITE_PNPM) run build
 
 site_build: $(SITE_BUILD_DIR)/index.html
 
@@ -61,7 +82,7 @@ site: site_build
 	cp -R $(SITE_BUILD_DIR) $(DIST_SITE_DIR)
 
 site_dev: site_install
-	cd $(SITE_DIR) && $(SITE_PACKAGE_MANAGER) run dev -- --host 0.0.0.0
+	cd $(SITE_DIR) && $(SITE_PNPM) run dev -- --host 0.0.0.0
 
 $(SITE_LAYERS_JSON): $(DATA_LAYERS_CSV) scripts/sync_layers_json.py
 	PYTHONPATH=. poetry run python -m scripts.sync_layers_json --csv $(DATA_LAYERS_CSV) --output $(SITE_LAYERS_JSON)
