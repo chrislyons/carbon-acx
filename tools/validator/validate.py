@@ -197,17 +197,19 @@ def _find_manifest_file(manifest_dir: Path, manifest_hash: str) -> Path:
 def _collect_sources(manifest: Any) -> list[str]:
     if not isinstance(manifest, dict):
         return []
-    sources = manifest.get("sources")
-    if isinstance(sources, str):
-        source_iterable: Iterable[Any] = [sources]
-    elif isinstance(sources, Iterable):
-        source_iterable = sources
-    else:
+    references = manifest.get("references")
+    if not isinstance(references, dict):
+        return []
+    order = references.get("order")
+    if not isinstance(order, Iterable):
         return []
     collected: set[str] = set()
-    for entry in source_iterable:
-        if isinstance(entry, str) and entry.strip():
-            collected.add(entry)
+    for entry in order:
+        if not isinstance(entry, dict):
+            continue
+        source_id = entry.get("source_id")
+        if isinstance(source_id, str) and source_id.strip():
+            collected.add(source_id)
     return sorted(collected)
 
 
@@ -334,7 +336,9 @@ def validate_diff_file(path: Path, manifest_dir: Path | None, pubkey_b64: str | 
             )
         base_manifest = _load_json(_find_manifest_file(manifest_dir, base_hash))
         compare_manifest = _load_json(_find_manifest_file(manifest_dir, compare_hash))
-        union_sources = sorted(set(_collect_sources(base_manifest)) | set(_collect_sources(compare_manifest)))
+        union_sources = sorted(
+            set(_collect_sources(base_manifest)) | set(_collect_sources(compare_manifest))
+        )
         declared_union = payload.get("sources_union")
         if union_sources != declared_union:
             raise ValidationFailure(
@@ -352,9 +356,7 @@ def _manifest_paths(target: Path) -> list[Path]:
         return [target]
     if target.is_dir():
         return sorted(
-            p
-            for p in target.rglob("*.json")
-            if p.is_file() and "manifest" in p.name.lower()
+            p for p in target.rglob("*.json") if p.is_file() and "manifest" in p.name.lower()
         )
     raise ValidationFailure(f"Unsupported path type: {target}", EXIT_IO_ERROR)
 
@@ -392,13 +394,19 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     manifest_parser = subparsers.add_parser("validate-manifest", help="Validate figure manifests.")
-    manifest_parser.add_argument("path", help="Path to a manifest JSON file or directory containing manifests.")
+    manifest_parser.add_argument(
+        "path", help="Path to a manifest JSON file or directory containing manifests."
+    )
     manifest_parser.set_defaults(func=_run_validate_manifest)
 
     diff_parser = subparsers.add_parser("validate-diff", help="Validate signed diff payloads.")
     diff_parser.add_argument("diff", help="Path to a diff JSON payload.")
-    diff_parser.add_argument("--manifests", help="Directory containing manifests referenced by the diff.")
-    diff_parser.add_argument("--pubkey", help="Base64-encoded Ed25519 public key for signature verification.")
+    diff_parser.add_argument(
+        "--manifests", help="Directory containing manifests referenced by the diff."
+    )
+    diff_parser.add_argument(
+        "--pubkey", help="Base64-encoded Ed25519 public key for signature verification."
+    )
     diff_parser.set_defaults(func=_run_validate_diff)
 
     return parser
