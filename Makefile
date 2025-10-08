@@ -40,7 +40,7 @@ $(LATEST_BUILD):
 
 build: $(LATEST_BUILD)
 
-NPM ?= npm
+SITE_PACKAGE_MANAGER ?= pnpm
 
 SITE_LAYERS_JSON := $(SITE_DIR)/public/artifacts/layers.json
 DATA_LAYERS_CSV := data/layers.csv
@@ -48,10 +48,10 @@ DATA_LAYERS_CSV := data/layers.csv
 .PHONY: site_install site_build site_dev
 
 site_install:
-	cd $(SITE_DIR) && $(NPM) install
+	cd $(SITE_DIR) && $(SITE_PACKAGE_MANAGER) install
 
 $(SITE_BUILD_DIR)/index.html: site_install $(SITE_LAYERS_JSON)
-	cd $(SITE_DIR) && $(NPM) run build
+	cd $(SITE_DIR) && $(SITE_PACKAGE_MANAGER) run build
 
 site_build: $(SITE_BUILD_DIR)/index.html
 
@@ -61,7 +61,7 @@ site: site_build
 	cp -R $(SITE_BUILD_DIR) $(DIST_SITE_DIR)
 
 site_dev: site_install
-	cd $(SITE_DIR) && $(NPM) run dev -- --host 0.0.0.0
+	cd $(SITE_DIR) && $(SITE_PACKAGE_MANAGER) run dev -- --host 0.0.0.0
 
 $(SITE_LAYERS_JSON): $(DATA_LAYERS_CSV) scripts/sync_layers_json.py
 	PYTHONPATH=. poetry run python -m scripts.sync_layers_json --csv $(DATA_LAYERS_CSV) --output $(SITE_LAYERS_JSON)
