@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://carbon-acx.org/schemas/figure-manifest.json",
+  "title": "ACX Figure Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "figure_id",
+    "figure_method",
+    "generated_at",
+    "hash_prefix",
+    "figure_path",
+    "legacy_figure_path",
+    "figure_sha256",
+    "citation_keys",
+    "references",
+    "numeric_invariance"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "acx.figure-manifest/1-0-0"
+    },
+    "figure_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "figure_method": {
+      "type": "string",
+      "minLength": 1
+    },
+    "generated_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "hash_prefix": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}$"
+    },
+    "figure_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "legacy_figure_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "figure_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "citation_keys": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "references": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "legacy_path", "sha256", "line_count", "order"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "legacy_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "line_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "order": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["index", "source_id"],
+            "properties": {
+              "index": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "source_id": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    "numeric_invariance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["passed", "tolerance_percent"],
+      "properties": {
+        "passed": {
+          "type": "boolean"
+        },
+        "tolerance_percent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.01
+        }
+      }
+    }
+  }
+}

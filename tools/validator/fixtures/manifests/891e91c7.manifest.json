@@ -1,0 +1,8 @@
+{
+  "references": {
+    "order": [
+      {"index": 1, "source_id": "SRC.ALPHA"},
+      {"index": 2, "source_id": "SRC.BETA"}
+    ]
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "schema_version": "acx.figure-manifest/1-0-0",
+  "figure_id": "FIG.SECTOR_COVERAGE_OVERVIEW",
+  "figure_method": "sample_generation",
+  "generated_at": "2024-01-01T00:00:00Z",
+  "hash_prefix": "49746976",
+  "figure_path": "figures/sector_coverage_overview.svg",
+  "legacy_figure_path": "legacy/figures/sector_coverage_overview.svg",
+  "figure_sha256": "497469763a996da1bfa521fb8ed41bfde9d61415184f1c9cb71554af3bb64da3",
+  "citation_keys": [
+    "SRC.VALIDATOR.DEMO"
+  ],
+  "references": {
+    "path": "references/SRC.VALIDATOR.DEMO.txt",
+    "legacy_path": "legacy/references/SRC.VALIDATOR.DEMO.txt",
+    "sha256": "82eef038c3fa468ee5dfb14bdbd6545d5d03de3f15e25abcbc85ec430449be19",
+    "line_count": 1,
+    "order": [
+      {
+        "index": 1,
+        "source_id": "SRC.VALIDATOR.DEMO"
+      }
+    ]
+  },
+  "numeric_invariance": {
+    "passed": true,
+    "tolerance_percent": 0.0001
+  }
+}

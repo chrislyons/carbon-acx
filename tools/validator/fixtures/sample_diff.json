@@ -1,0 +1,25 @@
+{
+  "spec_version": "1.0",
+  "created_at": "2024-01-01T00:00:00Z",
+  "base_hash": "891e91c7",
+  "compare_hash": "c3e5db0c",
+  "scenario_diff": {
+    "changed": [
+      {
+        "activity_id": "ACT.1",
+        "delta": 1.2345,
+        "total_base": 2.3456,
+        "total_compare": 3.4567
+      }
+    ]
+  },
+  "sources_union": [
+    "SRC.ALPHA",
+    "SRC.BETA",
+    "SRC.GAMMA"
+  ],
+  "manifest_hashes": {
+    "base": "891e91c7",
+    "compare": "c3e5db0c"
+  }
+}

@@ -42,6 +42,9 @@ jobs:
         with:
           poetry-version: "1.8.3"
 
+      - name: Install validator dependencies
+        run: pip install -r tools/validator/requirements.txt
+
       - name: Install deps
         run: poetry install --no-interaction --no-root --extras "db"
 
@@ -55,6 +58,8 @@ jobs:
         run: |
           make build
           make verify_manifests
+          make validate-manifests
+          make validate-diff-fixtures
           make build-static
 
       - name: Upload data artifacts

@@ -1,16 +1,30 @@
 {
-  "build_id": "7e4af6717ca0",
-  "dataset_version": "v1.2",
-  "manifests": [
+  "dataset_manifest": {
+    "path": "manifests/dataset.json",
+    "sha256": "229161c243e539a5645cf51d8bf4bb2fe515b265aa7102ab12219dddd4e530f7"
+  },
+  "figures": [
     {
-      "name": "figures",
-      "path": "dist/artifacts/manifests/figures.json",
-      "sha256": "728d2215dd973bed0437212c1afdf1be12e4faeff09eda61a7efdaa1656f5a4e"
-    },
-    {
-      "name": "references",
-      "path": "dist/artifacts/manifests/references.json",
-      "sha256": "666847cb1fd8f7daf3824b4e6feb9c2789dd476d09d3aebd04afb41584e8520d"
+      "figure_id": "FIG.SECTOR_COVERAGE_OVERVIEW",
+      "manifests": [
+        {
+          "path": "manifests/sector_coverage_overview.manifest.json",
+          "sha256": "6b5f10bada110108cc1d9421ea751dd76eee682b790789a5859f76fe867c2f9e"
+        }
+      ],
+      "figures": [
+        {
+          "path": "figures/sector_coverage_overview.svg",
+          "sha256": "497469763a996da1bfa521fb8ed41bfde9d61415184f1c9cb71554af3bb64da3",
+          "preferred": true
+        }
+      ],
+      "references": [
+        {
+          "path": "references/SRC.VALIDATOR.DEMO.txt",
+          "sha256": "82eef038c3fa468ee5dfb14bdbd6545d5d03de3f15e25abcbc85ec430449be19"
+        }
+      ]
     }
   ]
 }

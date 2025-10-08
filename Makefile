@@ -15,7 +15,7 @@ CATALOG_PATH := artifacts/catalog.json
 
 .PHONY: install lint test audit ci_build_pages app format validate release build-backend build site package sbom build-static \
         db_init db_import db_export build_csv build_db citations-scan refs-check refs-fetch refs-normalize refs-audit \
-        verify_manifests catalog
+        verify_manifests catalog validate-manifests validate-diff-fixtures
 
 install:
 	poetry install --with dev --no-root
@@ -139,3 +139,9 @@ refs-normalize:
 
 refs-audit:
 	poetry run python -m calc.refs_audit
+
+validate-manifests:
+	python -m tools.validator.validate validate-manifest dist/artifacts/manifests/figures
+
+validate-diff-fixtures:
+	python -m tools.validator.validate validate-diff tools/validator/fixtures/sample_diff.json --manifests dist/artifacts/manifests

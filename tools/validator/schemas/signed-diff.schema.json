@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://carbon-acx.org/schemas/signed-diff.json",
+  "title": "ACX Signed Scenario Diff",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "spec_version",
+    "created_at",
+    "base_hash",
+    "compare_hash",
+    "scenario_diff",
+    "sources_union",
+    "manifest_hashes"
+  ],
+  "properties": {
+    "spec_version": {
+      "const": "1.0"
+    },
+    "created_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "base_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{1,64}$"
+    },
+    "compare_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{1,64}$"
+    },
+    "scenario_diff": {
+      "type": "object"
+    },
+    "sources_union": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "manifest_hashes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["base", "compare"],
+      "properties": {
+        "base": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{1,64}$"
+        },
+        "compare": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{1,64}$"
+        }
+      }
+    },
+    "signer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algo", "key_id"],
+      "properties": {
+        "algo": {
+          "const": "ed25519"
+        },
+        "key_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "signature": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "allOf": [
+    {
+      "if": { "required": ["signature"] },
+      "then": { "required": ["signer"] }
+    },
+    {
+      "if": { "required": ["signer"] },
+      "then": { "required": ["signature"] }
+    }
+  ]
+}
