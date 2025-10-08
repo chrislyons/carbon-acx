@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import type { Catalog } from '../lib/catalog';
 import {
@@ -8,11 +8,20 @@ import {
   type CategoryDelta,
   type ScenarioDiff
 } from '../lib/scenarioCompare';
+import {
+  buildSignedDiff,
+  downloadExport,
+  stableStringify,
+  type ScenarioManifest
+} from '../lib/exportDiff';
+import { hashManifest } from '../lib/hash';
 import { compareDenseSpacing } from '../styles/dense';
 
 export interface ScenarioCompareProps {
   diff: ScenarioDiff;
   catalog: Catalog;
+  baseManifest: ScenarioManifest;
+  compareManifest: ScenarioManifest;
   baseHash?: string;
   compareHash?: string;
 }
@@ -191,14 +200,32 @@ function updateSearchParams(baseHash: string | undefined, compareHash: string | 
   window.history.replaceState(null, '', next);
 }
 
-export function ScenarioCompare({ diff, catalog, baseHash, compareHash }: ScenarioCompareProps) {
+export function ScenarioCompare({
+  diff,
+  catalog,
+  baseManifest,
+  compareManifest,
+  baseHash,
+  compareHash
+}: ScenarioCompareProps) {
   const [view, setView] = useCompareView();
   const categoryDeltas = useMemo(() => aggregateByCategory(diff, 'activity.category', catalog), [diff, catalog]);
   const activityDeltas = useMemo(() => listActivityDeltas(diff, catalog), [diff, catalog]);
+  const derivedBaseHash = useMemo(() => baseHash ?? hashManifest(baseManifest), [baseHash, baseManifest]);
+  const derivedCompareHash = useMemo(
+    () => compareHash ?? hashManifest(compareManifest),
+    [compareHash, compareManifest]
+  );
 
   useEffect(() => {
-    updateSearchParams(baseHash, compareHash, view);
-  }, [baseHash, compareHash, view]);
+    updateSearchParams(derivedBaseHash, derivedCompareHash, view);
+  }, [derivedBaseHash, derivedCompareHash, view]);
+
+  const handleExport = useCallback(async () => {
+    const payload = buildSignedDiff(diff, { baseManifest, compareManifest });
+    const filename = `scenario_diff_${payload.base_hash}_vs_${payload.compare_hash}.json`;
+    await downloadExport(filename, stableStringify(payload));
+  }, [diff, baseManifest, compareManifest]);
 
   const summary = useMemo(() => {
     if (!Array.isArray(categoryDeltas) || categoryDeltas.length === 0) {
@@ -241,30 +268,42 @@ export function ScenarioCompare({ diff, catalog, baseHash, compareHash }: Scenar
           <h2 className="text-lg font-semibold">Scenario comparison</h2>
           <p className="text-xs text-slate-400">Contrast baseline and alternative scenarios.</p>
         </div>
-        <div className="flex items-center gap-2" role="group" aria-label="Comparison basis">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2" role="group" aria-label="Comparison basis">
+            <button
+              type="button"
+              className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
+                view === 'category'
+                  ? 'bg-sky-500 text-slate-900 shadow-sm shadow-sky-900/40'
+                  : 'bg-slate-900/50 text-slate-300 hover:bg-slate-900/70'
+              }`}
+              onClick={() => setView('category')}
+              data-testid="scenario-compare-toggle-category"
+            >
+              By category
+            </button>
+            <button
+              type="button"
+              className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
+                view === 'activity'
+                  ? 'bg-sky-500 text-slate-900 shadow-sm shadow-sky-900/40'
+                  : 'bg-slate-900/50 text-slate-300 hover:bg-slate-900/70'
+              }`}
+              onClick={() => setView('activity')}
+              data-testid="scenario-compare-toggle-activity"
+            >
+              By activity
+            </button>
+          </div>
           <button
             type="button"
-            className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
-              view === 'category'
-                ? 'bg-sky-500 text-slate-900 shadow-sm shadow-sky-900/40'
-                : 'bg-slate-900/50 text-slate-300 hover:bg-slate-900/70'
-            }`}
-            onClick={() => setView('category')}
-            data-testid="scenario-compare-toggle-category"
+            className="rounded-full bg-slate-900/50 px-4 py-1.5 text-sm font-medium text-slate-300 transition hover:bg-slate-900/70"
+            onClick={() => {
+              void handleExport();
+            }}
+            data-testid="scenario-compare-export"
           >
-            By category
-          </button>
-          <button
-            type="button"
-            className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
-              view === 'activity'
-                ? 'bg-sky-500 text-slate-900 shadow-sm shadow-sky-900/40'
-                : 'bg-slate-900/50 text-slate-300 hover:bg-slate-900/70'
-            }`}
-            onClick={() => setView('activity')}
-            data-testid="scenario-compare-toggle-activity"
-          >
-            By activity
+            Export diff JSON
           </button>
         </div>
       </header>
