@@ -39,14 +39,17 @@ for (const entry of ICON_REGISTRY) {
   }
 }
 
-export interface IconProps extends ImgHTMLAttributes<HTMLImageElement> {
-  id?: string | null;
-  layerId?: string | null;
-  activityId?: string | null;
+type BaseImageProps = Omit<ImgHTMLAttributes<HTMLImageElement>, 'id'>;
+
+export interface IconProps extends BaseImageProps {
+  iconId?: string;
+  layerId?: string;
+  activityId?: string;
+  imageId?: string;
 }
 
 function resolveIconSlug(props: IconProps): string | null {
-  const id = props.id?.trim();
+  const id = props.iconId?.trim();
   if (id) {
     const descriptor = ICON_BY_ID.get(id) ?? { slug: id };
     return descriptor.slug;
@@ -68,13 +71,13 @@ function resolveIconSlug(props: IconProps): string | null {
   return null;
 }
 
-function IconComponent({ id, layerId, activityId, alt = '', ...rest }: IconProps): JSX.Element | null {
-  const slug = resolveIconSlug({ id, layerId, activityId });
+function IconComponent({ iconId, layerId, activityId, alt = '', imageId, ...rest }: IconProps): JSX.Element | null {
+  const slug = resolveIconSlug({ iconId, layerId, activityId });
   if (!slug) {
     return null;
   }
   const src = `${ASSETS()}/layers/${slug}`;
-  return <img src={src} alt={alt} {...rest} />;
+  return <img id={imageId} src={src} alt={alt} {...rest} />;
 }
 
 export const Icon = memo(IconComponent);

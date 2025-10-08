@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useState, useId } from 'react';
 
-import { useLayerCatalog, LayerAuditActivity } from '../lib/useLayerCatalog';
-import { FetchJSONDiagnostics, FetchJSONError } from '../lib/fetchJSON';
+import type { LayerAuditActivity } from '../lib/useLayerCatalog';
+import { useLayerCatalog } from '../lib/useLayerCatalog';
+import type { FetchJSONDiagnostics } from '../lib/fetchJSON';
+import { FetchJSONError } from '../lib/fetchJSON';
 import { useProfile } from '../state/profile';
 import { PRIMARY_LAYER_ID } from '../state/constants';
 import { Icon } from './Icon';
@@ -354,7 +356,7 @@ export function SectorBrowser(): JSX.Element {
               >
                 <div className="flex items-start gap-[calc(var(--gap-0)*0.8)]">
                   <Icon
-                    id={layer.icon ?? undefined}
+                    iconId={layer.icon ?? undefined}
                     layerId={layer.id}
                     alt=""
                     className="h-9 w-9 flex-shrink-0 rounded-lg border border-slate-800/70 bg-slate-950/80 object-contain"

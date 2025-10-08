@@ -379,7 +379,7 @@ async function fetchArtifact(
     return response;
   }
 
-  const fallbackPath = await resolveOverridePath(normalised, requestInit.signal);
+  const fallbackPath = await resolveOverridePath(normalised, requestInit.signal ?? undefined);
   if (fallbackPath && fallbackPath !== normalised) {
     response = await performFetch(fallbackPath);
     if (response.ok) {

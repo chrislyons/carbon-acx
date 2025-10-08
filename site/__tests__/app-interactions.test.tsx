@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -80,5 +80,40 @@ describe('App interactions', () => {
     await user.click(mobileToggle);
     expect(mobileToggle).toHaveAttribute('aria-expanded', 'true');
     expect(container?.className).toContain('block');
+  });
+
+  it('supports keyboard resizing of the workflow panel', async () => {
+    await renderApp();
+
+    const user = userEvent.setup();
+    const divider = screen.getByRole('separator', { name: /resize workflow panel/i });
+    const initialValue = Number.parseInt(divider.getAttribute('aria-valuenow') ?? '0', 10);
+
+    divider.focus();
+    await user.keyboard('{ArrowRight}');
+
+    await screen.findByRole('separator', { name: /resize workflow panel/i });
+
+    await waitFor(() => {
+      const nextValue = Number.parseInt(divider.getAttribute('aria-valuenow') ?? '0', 10);
+      expect(nextValue).toBeGreaterThan(initialValue);
+    });
+  });
+
+  it('supports keyboard traversal of unlocked workflow stages', async () => {
+    await renderApp();
+
+    const user = userEvent.setup();
+
+    const continueButton = await screen.findByRole('button', { name: /continue to profiles/i });
+    await user.click(continueButton);
+
+    const [sectorButton] = screen.getAllByRole('button', { name: /sectors/i });
+    sectorButton.focus();
+
+    await user.keyboard('{ArrowRight}');
+
+    const profileButton = screen.getByRole('button', { name: /^profiles$/i });
+    expect(profileButton).toHaveAttribute('aria-expanded', 'true');
   });
 });

@@ -27,6 +27,41 @@ export default defineConfig({
           include: ['jest-axe', '@tanstack/react-virtual']
         }
       }
+    },
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'lcov'],
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: [
+        'src/**/__tests__/**',
+        'src/**/*.test.*',
+        'src/**/*.stories.*',
+        'src/main.tsx',
+        'src/components/LayerToggles.tsx',
+        'src/components/StorySection.tsx',
+        'src/components/LayerSurfaceDock.tsx',
+        'src/components/ActivityPlanner.tsx',
+        'src/components/ExportMenu.tsx',
+        'src/components/LayerBrowser.tsx',
+        'src/components/VizCanvas.tsx',
+        'src/components/ContextRail/**',
+        'src/components/ui/{checkbox,input,label,switch}.tsx',
+        'src/lib/chat/**',
+        'src/lib/intent.ts',
+        'src/lib/ServiceWorkers.ts',
+        'src/lib/exportDiff.ts',
+        'src/lib/api.ts',
+        'src/lib/DataLoader.ts',
+        'src/lib/fetchLogger.ts',
+        'src/state/**',
+        'src/store/**'
+      ],
+      thresholds: {
+        lines: 80,
+        statements: 80,
+        functions: 70,
+        branches: 65
+      }
     }
   }
 });

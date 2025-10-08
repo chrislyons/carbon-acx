@@ -130,6 +130,7 @@ export function Wizard({
           className="block h-1 rounded-full bg-sky-500 transition-all"
           style={{ width: `${progress}%` }}
           role="progressbar"
+          aria-label="Onboarding progress"
           aria-valuemin={1}
           aria-valuemax={totalSteps}
           aria-valuenow={currentIndex + 1}

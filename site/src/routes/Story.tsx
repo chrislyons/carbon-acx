@@ -395,8 +395,20 @@ export default function Story(): JSX.Element {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-950/95 to-slate-950 text-slate-100">
+      <a
+        href="#story-main"
+        className="skip-link"
+        onClick={() => {
+          const main = document.getElementById('story-main');
+          if (main instanceof HTMLElement) {
+            main.focus({ preventScroll: true });
+          }
+        }}
+      >
+        Skip to emissions story
+      </a>
       <div className="mx-auto flex w-full max-w-5xl flex-col px-6 py-10 lg:py-16">
-        <header className="flex flex-col gap-6 border-b border-slate-900 pb-10">
+        <header className="flex flex-col gap-6 border-b border-slate-900 pb-10" role="banner">
           <button
             type="button"
             onClick={handleBack}
@@ -407,13 +419,20 @@ export default function Story(): JSX.Element {
           </button>
           <div className="space-y-3">
             <p className="text-xs uppercase tracking-[0.4em] text-sky-400">Story mode</p>
-            <h1 className="text-3xl font-semibold text-slate-100">A guided path through the compute snapshot</h1>
+            <h1 id="story-heading" className="text-3xl font-semibold text-slate-100">
+              A guided path through the compute snapshot
+            </h1>
             <p className="max-w-2xl text-base text-slate-300">
               Scroll to explore how transport, food, and online habits stack up for this reference profile. Each section activates as it enters view.
             </p>
           </div>
         </header>
-        <main className="flex flex-col gap-16 py-12">
+        <main
+          id="story-main"
+          className="flex flex-col gap-16 py-12"
+          aria-labelledby="story-heading"
+          tabIndex={-1}
+        >
           {status === 'loading' ? (
             <div className="mx-auto w-full max-w-3xl space-y-6">
               {[0, 1, 2].map((index) => (
