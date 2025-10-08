@@ -5,6 +5,7 @@ import type { ComputeResult } from './profile';
 import { compute } from '../lib/api';
 import { applyIntent } from '../lib/intent';
 import type { IntentResolution } from '../lib/intent';
+import { hashManifest } from '../lib/hash';
 
 export type ChatRole = 'user' | 'assistant' | 'system';
 
@@ -64,16 +65,6 @@ function normaliseSources(manifest: ComputeResult['manifest'] | null): string[] 
   }
   const ids = Array.isArray(manifest.sources) ? manifest.sources : [];
   return ids.filter((value, index) => typeof value === 'string' && ids.indexOf(value) === index);
-}
-
-function hashManifest(manifest: ComputeResult['manifest'] | null): string {
-  const payload = JSON.stringify(manifest ?? {});
-  let hash = 2166136261;
-  for (let index = 0; index < payload.length; index += 1) {
-    hash ^= payload.charCodeAt(index);
-    hash = Math.imul(hash, 16777619);
-  }
-  return (hash >>> 0).toString(16);
 }
 
 function snapshotManifest(manifest: ComputeResult['manifest'] | null): ChatManifestSnapshot | null {

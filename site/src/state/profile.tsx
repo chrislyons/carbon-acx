@@ -117,7 +117,7 @@ const DIET_ACTIVITY_IDS: Record<DietOption, string> = {
 
 const STREAMING_ACTIVITY_ID = 'MEDIA.STREAM.HD.HOUR.TV';
 
-const DEFAULT_CONTROLS: ProfileControlsState = {
+export const DEFAULT_CONTROLS: ProfileControlsState = {
   commuteDaysPerWeek: 3,
   modeSplit: {
     car: 60,

@@ -51,6 +51,54 @@ exports[`ReferencesDrawer > renders references and closes on escape 1`] = `
       </kbd>
        to close.
     </p>
+    <section
+      class="rounded-xl border border-slate-800/70 bg-slate-950/50 p-[calc(var(--gap-1)*0.8)] shadow-inner shadow-slate-950/40"
+    >
+      <header
+        class="flex items-center justify-between gap-[var(--gap-0)]"
+      >
+        <p
+          class="text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-300"
+        >
+          Scenario manifest
+        </p>
+        <button
+          class="inline-flex items-center gap-2 rounded-md border border-sky-500/50 bg-sky-500/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.28em] text-sky-100 transition hover:bg-sky-500/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
+          data-testid="scenario-manifest-copy"
+          type="button"
+        >
+          Copy JSON
+        </button>
+      </header>
+      <p
+        class="mt-[calc(var(--gap-0)*0.6)] text-[11px] text-slate-400"
+        data-testid="scenario-manifest-summary"
+      >
+        <span
+          class="font-semibold text-slate-200"
+        >
+          What changed:
+        </span>
+         Defaults retained • 0 active rows • 0 sources
+      </p>
+      <div
+        class="mt-[calc(var(--gap-0)*0.8)] rounded-lg border border-slate-800/60 bg-slate-950/70 p-[calc(var(--gap-0)*0.8)]"
+      >
+        <pre
+          class="max-h-48 overflow-auto whitespace-pre-wrap break-words text-[11px] leading-relaxed text-slate-200"
+        >
+          <code
+            data-testid="scenario-manifest-json"
+          >
+            {
+  "selected_rows": [],
+  "source_ids": [],
+  "scenario_hash": "e0fadea9"
+}
+          </code>
+        </pre>
+      </div>
+    </section>
     <div
       class="flex-1 overflow-y-auto rounded-xl border border-slate-800/60 bg-slate-950/30 p-[var(--gap-1)] text-compact text-slate-300"
       id="references-content"

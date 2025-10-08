@@ -15,6 +15,7 @@ import {
 } from 'react-window';
 
 import { useProfile } from '../state/profile';
+import { ScenarioManifest } from './ScenarioManifest';
 
 type ReferencesDrawerProps = {
   id?: string;
@@ -187,6 +188,7 @@ export function ReferencesDrawer({ id = 'references', open, onToggle }: Referenc
       <p className="text-compact text-slate-400">
         Primary sources supporting the figures. Press <kbd className="rounded bg-slate-800 px-1">Esc</kbd> to close.
       </p>
+      <ScenarioManifest />
       <div
         id={`${id}-content`}
         hidden={!open}
