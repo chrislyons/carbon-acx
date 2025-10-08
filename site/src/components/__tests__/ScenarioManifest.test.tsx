@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { Mock } from 'vitest';
 
 vi.mock('../../state/profile', async () => {
   const actual = await vi.importActual<typeof import('../../state/profile')>('../../state/profile');
@@ -14,7 +15,7 @@ import { ScenarioManifest } from '../ScenarioManifest';
 import { hashManifest } from '../../lib/hash';
 import { useProfile } from '../../state/profile';
 
-const mockUseProfile = useProfile as unknown as vi.Mock;
+const mockUseProfile = useProfile as unknown as Mock;
 
 describe('ScenarioManifest', () => {
   const manifest = {
