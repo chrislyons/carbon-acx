@@ -198,7 +198,7 @@ export function useShellLayout(): ShellLayout {
       if (Math.abs(nextLeft - previous.left) < EPSILON) {
         return previous;
       }
-      return { left: nextLeft, right: previous.right };
+      return { ...previous, left: nextLeft };
     });
   }, []);
 
@@ -208,7 +208,7 @@ export function useShellLayout(): ShellLayout {
       if (Math.abs(nextRight - previous.right) < EPSILON) {
         return previous;
       }
-      return { left: previous.left, right: nextRight };
+      return { ...previous, right: nextRight };
     });
   }, []);
 
@@ -234,7 +234,7 @@ export function useShellLayout(): ShellLayout {
       if (Math.abs(nextLeft - previous.left) < EPSILON) {
         return previous;
       }
-      return { left: nextLeft, right: previous.right };
+      return { ...previous, left: nextLeft };
     });
   }, []);
 
@@ -247,7 +247,7 @@ export function useShellLayout(): ShellLayout {
       if (Math.abs(nextRight - previous.right) < EPSILON) {
         return previous;
       }
-      return { left: previous.left, right: nextRight };
+      return { ...previous, right: nextRight };
     });
   }, []);
 
