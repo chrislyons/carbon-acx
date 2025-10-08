@@ -1,4 +1,1 @@
-# Ignore all internal documents in this directory by default.
-# Individual files can be force-added if necessary.
-*
-!.gitignore
+
