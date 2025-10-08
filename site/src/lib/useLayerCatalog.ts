@@ -16,6 +16,7 @@ export interface LayerAuditActivity {
   id: string;
   name: string;
   category?: string;
+  activity_id?: string;
 }
 
 export interface LayerAuditActivities {
