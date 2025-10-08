@@ -168,7 +168,9 @@ export function Layout({
 
   return (
     <div className="grid min-h-0 flex-1 grid-cols-1 gap-[var(--gap-1)] lg:grid-cols-[minmax(0,0.34fr)_minmax(0,0.66fr)]">
-      <div className="order-2 flex min-h-0 flex-col lg:order-1 lg:pr-[calc(var(--gap-0)*0.75)]">
+      <div
+        className="order-2 flex min-h-0 flex-col lg:order-1 lg:max-h-[calc(100vh-128px)] lg:overflow-y-auto lg:pr-[calc(var(--gap-0)*0.75)]"
+      >
         <div className="sticky top-0 z-20 bg-slate-950/85 pb-[calc(var(--gap-0)*0.5)] pt-[var(--gap-0)] backdrop-blur">
           <p id={workflowLabelId} className="text-[11px] font-semibold uppercase tracking-[0.32em] text-slate-500">
             Context depth
@@ -177,7 +179,7 @@ export function Layout({
             Feed the console more context to unlock deeper, sector-aware visualizations.
           </p>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto pt-[calc(var(--gap-0)*0.9)]">
+        <div className="min-h-0 flex-1 pt-[calc(var(--gap-0)*0.9)]">
           <ol
             role="list"
             aria-labelledby={workflowLabelId}
