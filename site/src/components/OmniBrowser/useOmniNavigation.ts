@@ -201,18 +201,26 @@ function createNavigationState(options: BuildStateOptions): OmniNavigationState 
   });
 
   const allActivities = Array.from(options.activityLookup.values()).flat();
+  const globalActivityIds: string[] = [];
+  const seenActivities = new Set<string>();
   allActivities.forEach((activityId) => {
-    const activityLabel = normaliseLabel(activityId.split('.').join(' › '), activityId);
-    registry.registerNode(`activity:${activityId}`, GROUP_IDS.activities, 'activity', activityLabel, {
-      searchableText: `${activityLabel} ${activityId}`.toLowerCase(),
-      metadata: { activityId },
+    if (!activityId || seenActivities.has(activityId)) {
+      return;
+    }
+    seenActivities.add(activityId);
+    const existing = registry.getNode(`activity:${activityId}`);
+    const activityLabel = existing?.label ?? normaliseLabel(activityId.split('.').join(' › '), activityId);
+    const searchableText = existing?.searchableText ?? `${activityLabel} ${activityId}`.toLowerCase();
+    const metadata = existing?.metadata ?? {};
+    const nodeId = existing ? `activity:${activityId}::global` : `activity:${activityId}`;
+    const descriptor = registry.registerNode(nodeId, GROUP_IDS.activities, 'activity', activityLabel, {
+      searchableText,
+      metadata: { ...metadata, activityId },
     });
+    globalActivityIds.push(descriptor.id);
   });
-  if (allActivities.length > 0) {
-    registry.setChildren(
-      GROUP_IDS.activities,
-      allActivities.map((activityId) => `activity:${activityId}`)
-    );
+  if (globalActivityIds.length > 0) {
+    registry.setChildren(GROUP_IDS.activities, globalActivityIds);
   }
 
   options.scenarioMeta.forEach((entry) => {
@@ -352,22 +360,44 @@ export function useOmniNavigation(): UseOmniNavigationResult {
 
   const openNode = useCallback(
     (id: string) => {
-      if (id.startsWith('layer:')) {
-        const layerId = id.slice('layer:'.length);
-        const next = new Set(profile.activeLayers);
-        next.add(layerId);
-        setSelectedLayers(next);
-      } else if (id.startsWith('activity:')) {
-        const activityId = id.slice('activity:'.length);
-        console.debug('Activity selected', activityId);
-      } else if (id.startsWith('figure:')) {
-        const figureId = id.slice('figure:'.length);
-        setFigureId(figureId);
-      } else if (id.startsWith('scenario:')) {
-        setFocusMode(true);
+      const descriptor = state.nodes.get(id);
+      if (!descriptor) {
+        return;
+      }
+      switch (descriptor.type) {
+        case 'layer': {
+          const layerId = descriptor.metadata?.layerId ?? (descriptor.id.startsWith('layer:') ? descriptor.id.slice('layer:'.length) : null);
+          if (!layerId) {
+            return;
+          }
+          const next = new Set(profile.activeLayers);
+          next.add(layerId);
+          setSelectedLayers(next);
+          break;
+        }
+        case 'activity': {
+          const activityId = descriptor.metadata?.activityId ?? (descriptor.id.startsWith('activity:') ? descriptor.id.slice('activity:'.length) : null);
+          if (activityId) {
+            console.debug('Activity selected', activityId);
+          }
+          break;
+        }
+        case 'figure': {
+          const figureId = descriptor.metadata?.figureId ?? (descriptor.id.startsWith('figure:') ? descriptor.id.slice('figure:'.length) : null);
+          if (figureId) {
+            setFigureId(figureId);
+          }
+          break;
+        }
+        case 'scenario': {
+          setFocusMode(true);
+          break;
+        }
+        default:
+          break;
       }
     },
-    [profile.activeLayers, setFigureId, setFocusMode, setSelectedLayers]
+    [profile.activeLayers, setFigureId, setFocusMode, setSelectedLayers, state.nodes]
   );
 
   const focusNode = useCallback(
