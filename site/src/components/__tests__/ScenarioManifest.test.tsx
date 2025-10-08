@@ -81,11 +81,14 @@ describe('ScenarioManifest', () => {
 
     render(<ScenarioManifest />);
 
-    const copyButton = screen.getByTestId('scenario-manifest-copy');
+    const copyButton = screen.getByRole('button', { name: /copy manifest json/i });
+    expect(copyButton).toHaveAttribute('title', 'Copy JSON');
     await user.click(copyButton);
 
     expect(writeText).toHaveBeenCalledTimes(1);
     expect(writeText).toHaveBeenCalledWith(expect.stringContaining('selected_rows'));
-    expect(copyButton).toHaveTextContent(/copied/i);
+    expect(copyButton).toHaveAttribute('title', 'Copied');
+    const status = screen.getByRole('status');
+    expect(status).toHaveTextContent(/manifest json copied/i);
   });
 });

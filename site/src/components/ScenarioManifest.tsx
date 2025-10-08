@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Copy } from 'lucide-react';
 
 import { hashManifest } from '../lib/hash';
 import { DEFAULT_CONTROLS, type DietOption, type ModeSplit, useProfile } from '../state/profile';
-import { Button } from './ui/button';
 
 const MODE_LABELS: Record<keyof ModeSplit, string> = {
   car: 'Drive',
@@ -179,22 +179,35 @@ export function ScenarioManifest(): JSX.Element {
     scheduleReset();
   }, [manifestJson, scheduleReset]);
 
-  const copyLabel = copyState === 'copied' ? 'Copied' : copyState === 'error' ? 'Copy failed' : 'Copy JSON';
+  const copyTitle = copyState === 'copied' ? 'Copied' : copyState === 'error' ? 'Copy failed' : 'Copy JSON';
+  const copyAriaLabel =
+    copyState === 'copied'
+      ? 'Manifest JSON copied'
+      : copyState === 'error'
+      ? 'Copy manifest failed'
+      : 'Copy manifest JSON';
+  const copyFeedback =
+    copyState === 'copied' ? 'Manifest JSON copied' : copyState === 'error' ? 'Copy failed' : '';
 
   return (
     <section className="rounded-xl border border-border/70 bg-card/70 p-5 shadow-inner shadow-black/40">
       <header className="flex items-center justify-between gap-3">
         <p className="text-2xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">Scenario manifest</p>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={handleCopy}
-          className="inline-flex items-center gap-2 rounded-md border-primary/40 bg-primary/10 text-xs font-semibold uppercase tracking-[0.28em] text-primary hover:bg-primary/20"
-          data-testid="scenario-manifest-copy"
-        >
-          {copyLabel}
-        </Button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className="icon-btn"
+            onClick={handleCopy}
+            aria-label={copyAriaLabel}
+            title={copyTitle}
+            data-testid="scenario-manifest-copy"
+          >
+            <Copy aria-hidden />
+          </button>
+          <span className="sr-only" role="status" aria-live="polite">
+            {copyFeedback}
+          </span>
+        </div>
       </header>
       <p className="mt-3 text-xs text-muted-foreground" data-testid="scenario-manifest-summary">
         <span className="font-semibold text-foreground">What changed:</span> {changeSummary}

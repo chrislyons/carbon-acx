@@ -37,6 +37,8 @@ export class OmniRegistry {
       loadChildren: options.loadChildren,
       order: options.order ?? nextOrder(),
       metadata: options.metadata,
+      state: options.state,
+      counts: options.counts,
     };
     this.nodes.set(id, descriptor);
     if (parentId) {
