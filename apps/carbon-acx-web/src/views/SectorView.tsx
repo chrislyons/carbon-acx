@@ -58,9 +58,9 @@ function SectorDatasetCta({
 function SectorSkeleton() {
   return (
     <div className="sector-view">
-      <Skeleton style={{ height: '1.75rem', width: '12rem' }} />
-      <Skeleton style={{ height: '1rem', width: '100%' }} />
-      <Skeleton style={{ height: '1rem', width: '60%' }} />
+      <Skeleton className="h-7 w-48" />
+      <Skeleton className="h-4 w-full" />
+      <Skeleton className="h-4 w-2/3" />
     </div>
   );
 }
