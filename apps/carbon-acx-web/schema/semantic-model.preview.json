@@ -1,0 +1,544 @@
+{
+  "version": "acx-1",
+  "entities": [
+    {
+      "name": "Activity",
+      "fields": [
+        {
+          "name": "activity_id",
+          "type": "string"
+        },
+        {
+          "name": "category",
+          "type": "string"
+        },
+        {
+          "name": "default_unit",
+          "type": "string",
+          "ref": "Unit"
+        },
+        {
+          "name": "description",
+          "type": "string"
+        },
+        {
+          "name": "layer_id",
+          "type": "string"
+        },
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "notes",
+          "type": "string"
+        },
+        {
+          "name": "sector_id",
+          "type": "string",
+          "ref": "Sector"
+        },
+        {
+          "name": "unit_definition",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "ActivitySchedule",
+      "fields": [
+        {
+          "name": "activity_id",
+          "type": "string",
+          "ref": "Activity"
+        },
+        {
+          "name": "distance_km",
+          "type": "number"
+        },
+        {
+          "name": "freq_per_day",
+          "type": "number"
+        },
+        {
+          "name": "freq_per_week",
+          "type": "number"
+        },
+        {
+          "name": "hours",
+          "type": "number"
+        },
+        {
+          "name": "layer_id",
+          "type": "string"
+        },
+        {
+          "name": "mix_region",
+          "type": "string"
+        },
+        {
+          "name": "office_days_only",
+          "type": "number"
+        },
+        {
+          "name": "office_only",
+          "type": "number"
+        },
+        {
+          "name": "passengers",
+          "type": "number"
+        },
+        {
+          "name": "profile_id",
+          "type": "string",
+          "ref": "Profile"
+        },
+        {
+          "name": "quantity_per_week",
+          "type": "number"
+        },
+        {
+          "name": "region_override",
+          "type": "string"
+        },
+        {
+          "name": "schedule_notes",
+          "type": "string"
+        },
+        {
+          "name": "sector_id",
+          "type": "string",
+          "ref": "Sector"
+        },
+        {
+          "name": "servings",
+          "type": "number"
+        },
+        {
+          "name": "use_canada_average",
+          "type": "number"
+        },
+        {
+          "name": "viewers",
+          "type": "number"
+        }
+      ]
+    },
+    {
+      "name": "Dataset",
+      "fields": [
+        {
+          "name": "dataset_id",
+          "type": "string"
+        },
+        {
+          "name": "figure_count",
+          "type": "number"
+        },
+        {
+          "name": "generated_at",
+          "type": "string"
+        },
+        {
+          "name": "layer_citation_keys",
+          "type": "json",
+          "list": false
+        },
+        {
+          "name": "layer_references",
+          "type": "json",
+          "list": false
+        },
+        {
+          "name": "manifest_path",
+          "type": "string"
+        },
+        {
+          "name": "manifest_sha256",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "EmissionFactor",
+      "fields": [
+        {
+          "name": "activity_id",
+          "type": "string",
+          "ref": "Activity"
+        },
+        {
+          "name": "ef_id",
+          "type": "string"
+        },
+        {
+          "name": "electricity_kwh_per_unit",
+          "type": "number"
+        },
+        {
+          "name": "electricity_kwh_per_unit_high",
+          "type": "number"
+        },
+        {
+          "name": "electricity_kwh_per_unit_low",
+          "type": "number"
+        },
+        {
+          "name": "gwp_horizon",
+          "type": "string"
+        },
+        {
+          "name": "is_grid_indexed",
+          "type": "number"
+        },
+        {
+          "name": "layer_id",
+          "type": "string"
+        },
+        {
+          "name": "method_notes",
+          "type": "string"
+        },
+        {
+          "name": "region",
+          "type": "string"
+        },
+        {
+          "name": "scope_boundary",
+          "type": "string"
+        },
+        {
+          "name": "sector_id",
+          "type": "string",
+          "ref": "Sector"
+        },
+        {
+          "name": "source_id",
+          "type": "string",
+          "ref": "Reference"
+        },
+        {
+          "name": "uncert_high_g_per_unit",
+          "type": "number"
+        },
+        {
+          "name": "uncert_low_g_per_unit",
+          "type": "number"
+        },
+        {
+          "name": "unit",
+          "type": "string",
+          "ref": "Unit"
+        },
+        {
+          "name": "value_g_per_unit",
+          "type": "number"
+        },
+        {
+          "name": "vintage_year",
+          "type": "number"
+        }
+      ]
+    },
+    {
+      "name": "GridIntensity",
+      "fields": [
+        {
+          "name": "g_per_kwh",
+          "type": "number"
+        },
+        {
+          "name": "g_per_kwh_high",
+          "type": "number"
+        },
+        {
+          "name": "g_per_kwh_low",
+          "type": "number"
+        },
+        {
+          "name": "gwp_horizon",
+          "type": "string"
+        },
+        {
+          "name": "region",
+          "type": "string"
+        },
+        {
+          "name": "region_code",
+          "type": "string"
+        },
+        {
+          "name": "scope_boundary",
+          "type": "string"
+        },
+        {
+          "name": "source_id",
+          "type": "string",
+          "ref": "Reference"
+        },
+        {
+          "name": "vintage_year",
+          "type": "number"
+        }
+      ]
+    },
+    {
+      "name": "Manifest",
+      "fields": [
+        {
+          "name": "dataset_manifest_path",
+          "type": "string"
+        },
+        {
+          "name": "dataset_manifest_sha256",
+          "type": "string"
+        },
+        {
+          "name": "figures",
+          "type": "json",
+          "list": true,
+          "ref": "ManifestEntry"
+        }
+      ]
+    },
+    {
+      "name": "ManifestEntry",
+      "fields": [
+        {
+          "name": "figure_id",
+          "type": "string"
+        },
+        {
+          "name": "figure_method",
+          "type": "string"
+        },
+        {
+          "name": "figures",
+          "type": "json",
+          "list": true
+        },
+        {
+          "name": "hash_prefix",
+          "type": "string"
+        },
+        {
+          "name": "manifests",
+          "type": "json",
+          "list": true
+        },
+        {
+          "name": "references",
+          "type": "json",
+          "list": true,
+          "ref": "Reference"
+        }
+      ]
+    },
+    {
+      "name": "Profile",
+      "fields": [
+        {
+          "name": "assumption_notes",
+          "type": "string"
+        },
+        {
+          "name": "cohort_id",
+          "type": "string"
+        },
+        {
+          "name": "grid_mix_json",
+          "type": "string"
+        },
+        {
+          "name": "grid_strategy",
+          "type": "string"
+        },
+        {
+          "name": "layer_id",
+          "type": "string"
+        },
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "office_days_per_week",
+          "type": "number"
+        },
+        {
+          "name": "profile_id",
+          "type": "string"
+        },
+        {
+          "name": "region_code_default",
+          "type": "string"
+        },
+        {
+          "name": "sector_id",
+          "type": "string",
+          "ref": "Sector"
+        }
+      ]
+    },
+    {
+      "name": "Reference",
+      "fields": [
+        {
+          "name": "ieee_citation",
+          "type": "string"
+        },
+        {
+          "name": "license",
+          "type": "string"
+        },
+        {
+          "name": "source_id",
+          "type": "string"
+        },
+        {
+          "name": "url",
+          "type": "string"
+        },
+        {
+          "name": "year",
+          "type": "number"
+        }
+      ]
+    },
+    {
+      "name": "Sector",
+      "fields": [
+        {
+          "name": "description",
+          "type": "string"
+        },
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "sector_id",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "Unit",
+      "fields": [
+        {
+          "name": "notes",
+          "type": "string"
+        },
+        {
+          "name": "si_conversion_factor",
+          "type": "number"
+        },
+        {
+          "name": "unit_code",
+          "type": "string"
+        },
+        {
+          "name": "unit_type",
+          "type": "string"
+        }
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "from": "Activity",
+      "to": "ActivitySchedule",
+      "via": "activity_id",
+      "cardinality": "1:n"
+    },
+    {
+      "from": "Activity",
+      "to": "EmissionFactor",
+      "via": "activity_id",
+      "cardinality": "1:n"
+    },
+    {
+      "from": "Dataset",
+      "to": "Reference",
+      "via": "layer_citation_keys",
+      "cardinality": "n:n"
+    },
+    {
+      "from": "Dataset",
+      "to": "Sector",
+      "via": "activities.sector_id",
+      "cardinality": "1:n"
+    },
+    {
+      "from": "Manifest",
+      "to": "Dataset",
+      "via": "dataset_manifest",
+      "cardinality": "1:1"
+    },
+    {
+      "from": "Manifest",
+      "to": "ManifestEntry",
+      "cardinality": "1:n"
+    },
+    {
+      "from": "Profile",
+      "to": "Activity",
+      "via": "ActivitySchedule",
+      "cardinality": "n:n"
+    },
+    {
+      "from": "Profile",
+      "to": "ActivitySchedule",
+      "via": "profile_id",
+      "cardinality": "1:n"
+    },
+    {
+      "from": "Reference",
+      "to": "EmissionFactor",
+      "via": "source_id",
+      "cardinality": "1:n"
+    },
+    {
+      "from": "Reference",
+      "to": "GridIntensity",
+      "via": "source_id",
+      "cardinality": "1:n"
+    },
+    {
+      "from": "Sector",
+      "to": "Activity",
+      "via": "sector_id",
+      "cardinality": "1:n"
+    },
+    {
+      "from": "Sector",
+      "to": "ActivitySchedule",
+      "via": "sector_id",
+      "cardinality": "1:n"
+    },
+    {
+      "from": "Sector",
+      "to": "EmissionFactor",
+      "via": "sector_id",
+      "cardinality": "1:n"
+    },
+    {
+      "from": "Sector",
+      "to": "Profile",
+      "via": "sector_id",
+      "cardinality": "1:n"
+    },
+    {
+      "from": "Unit",
+      "to": "Activity",
+      "via": "default_unit",
+      "cardinality": "1:n"
+    },
+    {
+      "from": "Unit",
+      "to": "EmissionFactor",
+      "via": "unit",
+      "cardinality": "1:n"
+    }
+  ]
+}
