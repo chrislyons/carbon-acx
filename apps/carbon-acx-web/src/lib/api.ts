@@ -73,20 +73,65 @@ export interface ReferenceSummary {
   layer?: string;
 }
 
-async function fetchJson<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
-  const response = await fetch(input, init);
+const rawConfiguredApiBase = (import.meta.env.VITE_API_BASE_URL ?? '').trim();
+const fallbackApiBase = (() => {
+  const baseUrl = import.meta.env.BASE_URL ?? '/';
+  const formatted = baseUrl.startsWith('/') ? baseUrl : `/${baseUrl}`;
+  const resolved = new URL('./api/', `http://localhost${formatted}`);
+  const pathname = resolved.pathname.replace(/\/?$/, '');
+  return pathname.length > 0 ? pathname : '/';
+})();
+const apiBase = rawConfiguredApiBase.length > 0 ? rawConfiguredApiBase : fallbackApiBase;
+
+function resolveApiUrl(path: string): string {
+  if (/^https?:\/\//i.test(path)) {
+    return path;
+  }
+  const normalizedPath = path.replace(/^\/+/, '');
+  if (/^https?:\/\//i.test(apiBase)) {
+    const baseUrl = apiBase.endsWith('/') ? apiBase : `${apiBase}/`;
+    return new URL(normalizedPath, baseUrl).toString();
+  }
+  const basePath = apiBase.length > 0 ? apiBase : '/';
+  const formattedBase = basePath.startsWith('/') ? basePath : `/${basePath}`;
+  const directoryBase = formattedBase.endsWith('/') ? formattedBase : `${formattedBase}/`;
+  const baseUrl = new URL(directoryBase, 'http://localhost');
+  const resolved = new URL(normalizedPath, baseUrl);
+  return `${resolved.pathname}${resolved.search}${resolved.hash}`;
+}
+
+async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
+  const url = resolveApiUrl(path);
+  const response = await fetch(url, init);
   if (!response.ok) {
     throw new Error(`Request failed with status ${response.status}`);
   }
-  return (await response.json()) as T;
+  const contentType = response.headers.get('content-type');
+  const text = await response.text();
+  if (contentType && contentType.toLowerCase().includes('application/json')) {
+    try {
+      return JSON.parse(text) as T;
+    } catch (error) {
+      throw new Error(`Failed to parse JSON from ${url}: ${(error as Error).message}`);
+    }
+  }
+  try {
+    return JSON.parse(text) as T;
+  } catch (error) {
+    const preview = text.trim().slice(0, 120);
+    const suffix = text.length > 120 ? '…' : '';
+    throw new Error(
+      `Failed to parse JSON from ${url}: ${(error as Error).message}. Received: ${preview}${suffix}`,
+    );
+  }
 }
 
 export function loadSectors(): Promise<SectorSummary[]> {
-  return fetchJson<{ sectors: SectorSummary[] }>('/api/sectors').then((data) => data.sectors);
+  return fetchJson<{ sectors: SectorSummary[] }>('sectors').then((data) => data.sectors);
 }
 
 export function loadDatasets(): Promise<DatasetSummary[]> {
-  return fetchJson<{ datasets: DatasetSummary[] }>('/api/datasets').then((data) => data.datasets);
+  return fetchJson<{ datasets: DatasetSummary[] }>('datasets').then((data) => data.datasets);
 }
 
 export function loadActivities(sectorId: string): Promise<ActivitySummary[]> {
@@ -98,7 +143,7 @@ export function loadSector(sectorId: string): Promise<{
   activities: ActivitySummary[];
 }> {
   return fetchJson<{ sector: SectorSummary; activities: ActivitySummary[] }>(
-    `/api/sectors/${encodeURIComponent(sectorId)}`,
+    `sectors/${encodeURIComponent(sectorId)}`,
   );
 }
 
@@ -267,7 +312,7 @@ export function loadDataset(datasetId: string): Promise<{
   references: ReferenceSummary[];
 }> {
   return fetchJson<{ dataset: unknown; references: ReferenceSummary[] }>(
-    `/api/datasets/${encodeURIComponent(datasetId)}`,
+    `datasets/${encodeURIComponent(datasetId)}`,
   ).then((payload) => ({
     dataset: normaliseDatasetDetail(payload.dataset),
     references: Array.isArray(payload.references)

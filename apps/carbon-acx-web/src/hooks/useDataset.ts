@@ -22,11 +22,7 @@ type DatasetPayloadConfig = SWRConfiguration<DatasetPayload, Error>;
 
 type DerivedResponse<Data> = Omit<DatasetPayloadResponse, 'data'> & { data: Data };
 
-type DatasetSelectConfig<Data> = DatasetPayloadConfig & {
-  select?: (payload: DatasetPayload) => Data;
-};
-
-function useDatasetResource<Data>(datasetId: string | undefined, config?: DatasetSelectConfig<Data>) {
+function useDatasetResource(datasetId: string | undefined, config?: DatasetPayloadConfig) {
   const key = datasetId ? (['dataset', datasetId] as DatasetKey) : null;
   return useSWR<DatasetPayload, Error>(
     key,
@@ -91,10 +87,7 @@ export function useDatasetFigures(
   datasetId: string | undefined,
   config?: DatasetPayloadConfig,
 ): DerivedResponse<DatasetFigure[] | undefined> {
-  const response = useDatasetResource(datasetId, {
-    ...config,
-    select: (payload) => payload.dataset.figures,
-  });
+  const response = useDatasetResource(datasetId, config);
   return {
     ...response,
     data: response.data?.dataset.figures,
@@ -105,10 +98,7 @@ export function useReferences(
   datasetId: string | undefined,
   config?: DatasetPayloadConfig,
 ): DerivedResponse<ReferenceSummary[] | undefined> {
-  const response = useDatasetResource(datasetId, {
-    ...config,
-    select: (payload) => payload.references,
-  });
+  const response = useDatasetResource(datasetId, config);
   return {
     ...response,
     data: response.data?.references,
