@@ -1,12 +1,11 @@
-import type { ActivitySummary, SectorSummary } from '../lib/api';
+import type { SectorSummary } from '../lib/api';
 import { Skeleton } from '../components/ui/skeleton';
 
 interface ScopeSelectorProps {
   sector?: SectorSummary | null;
-  activities?: ActivitySummary[];
 }
 
-export default function ScopeSelector({ sector, activities }: ScopeSelectorProps) {
+export default function ScopeSelector({ sector }: ScopeSelectorProps) {
   if (!sector) {
     return (
       <section className="scope-selector">
@@ -22,14 +21,7 @@ export default function ScopeSelector({ sector, activities }: ScopeSelectorProps
         <h2 id="scope-heading">Scope</h2>
         <span className="scope-selector__sector">{sector.name}</span>
       </div>
-      <div className="scope-selector__chips" role="list" aria-label="Sector activities">
-        {activities?.map((activity) => (
-          <span key={activity.id} role="listitem" className="scope-selector__chip">
-            {activity.name ?? activity.id}
-          </span>
-        ))}
-        {!activities?.length && <p className="scope-selector__empty">No profiles available.</p>}
-      </div>
+      {sector.description && <p className="scope-selector__description">{sector.description}</p>}
     </section>
   );
 }
@@ -37,20 +29,8 @@ export default function ScopeSelector({ sector, activities }: ScopeSelectorProps
 export function ScopeSelectorSkeleton() {
   return (
     <section className="scope-selector">
-      <Skeleton style={{ height: '1.5rem', width: '8rem', marginBottom: '1rem' }} />
-      <div className="scope-selector__chips">
-        {Array.from({ length: 4 }).map((_, index) => (
-          <Skeleton
-            key={index}
-            style={{
-              display: 'inline-block',
-              height: '2rem',
-              width: '5rem',
-              marginRight: '0.5rem',
-            }}
-          />
-        ))}
-      </div>
+      <Skeleton style={{ height: '1.5rem', width: '8rem', marginBottom: '0.75rem' }} />
+      <Skeleton style={{ height: '1rem', width: '14rem' }} />
     </section>
   );
 }

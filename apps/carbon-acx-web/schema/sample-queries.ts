@@ -217,6 +217,19 @@ export async function getDataset(id: string): Promise<DatasetSummary | null> {
   };
 }
 
+export async function listDatasets(): Promise<DatasetSummary[]> {
+  const manifest = await loadDatasetManifest();
+  if (!manifest) {
+    return [];
+  }
+  const datasetId = typeof manifest['dataset_id'] === 'string' ? manifest['dataset_id'] : null;
+  if (!datasetId) {
+    return [];
+  }
+  const summary = await getDataset(datasetId);
+  return summary ? [summary] : [];
+}
+
 async function loadSourcesById(): Promise<Map<string, CsvRecord>> {
   const sources = await loadCsvRecords('sources.csv');
   const map = new Map<string, CsvRecord>();

@@ -9,6 +9,7 @@ import {
   getDataset,
   getSector,
   listActivities,
+  listDatasets,
   listReferences,
   listSectors,
 } from './schema/sample-queries';
@@ -42,6 +43,11 @@ function sampleQueriesApi(): Plugin {
         if (url.pathname === '/api/sectors') {
           const sectors = await listSectors();
           json(res, { sectors });
+          return;
+        }
+        if (url.pathname === '/api/datasets') {
+          const datasets = await listDatasets();
+          json(res, { datasets });
           return;
         }
         const sectorMatch = url.pathname.match(/^\/api\/sectors\/([^/]+)$/);

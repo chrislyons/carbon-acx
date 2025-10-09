@@ -11,11 +11,17 @@ import NavSidebar, { NavSidebarSkeleton } from './NavSidebar';
 import ReferencePanel, { ReferencePanelSkeleton } from './ReferencePanel';
 import ScopeSelector, { ScopeSelectorSkeleton } from './ScopeSelector';
 import VisualizationCanvas, { VisualizationSkeleton } from './VisualizationCanvas';
+import ProfilePicker, { ProfilePickerSkeleton } from './ProfilePicker';
 
 import '../styles/layout.css';
 
 interface LayoutLoaderData {
   sectors: Promise<SectorSummary[]>;
+  datasets: Promise<DatasetSummary[]>;
+}
+
+export interface LayoutOutletContext {
+  datasets: DatasetSummary[];
 }
 
 interface DatasetLoaderData {
@@ -46,7 +52,7 @@ export default function Layout() {
         </Suspense>
       </aside>
       <main className="app-layout__main">
-        <ScopePane />
+        <ScopePane datasetsPromise={data.datasets} />
       </main>
       <aside className="app-layout__inspect" data-open={isInspectOpen}>
         <Suspense fallback={<ReferencePanelSkeleton />}>
@@ -69,7 +75,7 @@ export default function Layout() {
   );
 }
 
-function ScopePane() {
+function ScopePane({ datasetsPromise }: { datasetsPromise: Promise<DatasetSummary[]> }) {
   const matches = useMatches();
   const sectorMatch = matches.find((match) => match.id === 'sector');
   const sectorData = sectorMatch?.data as
@@ -80,21 +86,29 @@ function ScopePane() {
     return (
       <>
         <ScopeSelector />
-        <VisualizationCanvas>
-          <Outlet />
-        </VisualizationCanvas>
+        <ProfilePicker />
+        <Suspense fallback={<VisualizationSkeleton />}>
+          <Await resolve={datasetsPromise}>
+            {(datasets) => (
+              <VisualizationCanvas>
+                <Outlet context={{ datasets } satisfies LayoutOutletContext} />
+              </VisualizationCanvas>
+            )}
+          </Await>
+        </Suspense>
       </>
     );
   }
 
   return (
     <Suspense fallback={<ScopePaneSkeleton />}>
-      <Await resolve={Promise.all([sectorData.sector, sectorData.activities])}>
-        {([sector, activities]) => (
+      <Await resolve={Promise.all([sectorData.sector, sectorData.activities, datasetsPromise])}>
+        {([sector, activities, datasets]) => (
           <>
-            <ScopeSelector sector={sector} activities={activities} />
+            <ScopeSelector sector={sector} />
+            <ProfilePicker activities={activities} />
             <VisualizationCanvas>
-              <Outlet />
+              <Outlet context={{ datasets } satisfies LayoutOutletContext} />
             </VisualizationCanvas>
           </>
         )}
@@ -107,6 +121,7 @@ function ScopePaneSkeleton() {
   return (
     <>
       <ScopeSelectorSkeleton />
+      <ProfilePickerSkeleton />
       <VisualizationSkeleton />
     </>
   );

@@ -5,7 +5,7 @@ import Layout from './views/Layout';
 import HomeView from './views/HomeView';
 import SectorView from './views/SectorView';
 import DatasetView from './views/DatasetView';
-import { loadDataset, loadSector, loadSectors } from './lib/api';
+import { loadDataset, loadDatasets, loadSector, loadSectors } from './lib/api';
 import ErrorView from './views/ErrorView';
 
 export const router = createBrowserRouter([
@@ -13,11 +13,11 @@ export const router = createBrowserRouter([
     id: 'layout',
     path: '/',
     element: <Layout />, 
-    loader: async () => {
-      return defer({
+    loader: async () =>
+      defer({
         sectors: loadSectors(),
-      });
-    },
+        datasets: loadDatasets(),
+      }),
     errorElement: <ErrorView title="Navigation error" />,
     children: [
       {

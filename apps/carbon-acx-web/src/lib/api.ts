@@ -43,6 +43,10 @@ export function loadSectors(): Promise<SectorSummary[]> {
   return fetchJson<{ sectors: SectorSummary[] }>('/api/sectors').then((data) => data.sectors);
 }
 
+export function loadDatasets(): Promise<DatasetSummary[]> {
+  return fetchJson<{ datasets: DatasetSummary[] }>('/api/datasets').then((data) => data.datasets);
+}
+
 export function loadSector(sectorId: string): Promise<{
   sector: SectorSummary;
   activities: ActivitySummary[];
