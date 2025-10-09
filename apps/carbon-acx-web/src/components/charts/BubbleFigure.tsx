@@ -1,4 +1,4 @@
-import { useId, useMemo } from 'react';
+import { memo, useId, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import {
   CartesianGrid,
@@ -19,7 +19,7 @@ interface BubbleFigureProps {
   className?: string;
 }
 
-export function BubbleFigure({ figure, className }: BubbleFigureProps) {
+export const BubbleFigure = memo(function BubbleFigure({ figure, className }: BubbleFigureProps) {
   const chartId = useId();
   const descriptionId = `${chartId}-description`;
 
@@ -108,7 +108,7 @@ export function BubbleFigure({ figure, className }: BubbleFigureProps) {
       </dl>
     </motion.section>
   );
-}
+});
 
 function axisLabel(axis: { label: string; unit?: string | null }) {
   return axis.unit ? `${axis.label} (${axis.unit})` : axis.label;

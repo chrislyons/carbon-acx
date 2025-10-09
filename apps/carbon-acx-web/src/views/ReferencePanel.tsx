@@ -1,3 +1,6 @@
+import { useRef } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
+
 import type { DatasetDetail, ReferenceSummary } from '../lib/api';
 import { ScrollArea } from '../components/ui/scroll-area';
 import { Skeleton } from '../components/ui/skeleton';
@@ -26,6 +29,18 @@ export default function ReferencePanel({
   const dataset = datasetState.data ?? fallbackDataset ?? null;
   const references = referencesState.data ?? fallbackReferences ?? [];
   const hasReferences = references && references.length > 0;
+  const shouldVirtualize = references.length > 30;
+
+  const viewportRef = useRef<HTMLDivElement | null>(null);
+  const virtualizer = useVirtualizer({
+    count: references.length,
+    getScrollElement: () => viewportRef.current,
+    estimateSize: () => 168,
+    overscan: 8,
+    enabled: shouldVirtualize,
+  });
+
+  const virtualizedItems = shouldVirtualize ? virtualizer.getVirtualItems() : [];
 
   const title = dataset ? `References · ${dataset.datasetId}` : 'References';
 
@@ -42,28 +57,74 @@ export default function ReferencePanel({
           </button>
         )}
       </header>
-      <ScrollArea className="h-full">
-        <ol className="reference-panel__list" aria-live="polite">
+      <ScrollArea className="h-full" viewportRef={viewportRef} viewportClassName="reference-panel__viewport">
+        <ol
+          className={shouldVirtualize ? 'reference-panel__list reference-panel__list--virtualized' : 'reference-panel__list'}
+          aria-live="polite"
+          style={shouldVirtualize ? { height: `${virtualizer.getTotalSize()}px` } : undefined}
+        >
           {referencesState.isLoading && !hasReferences && (
             <li className="reference-panel__empty">Loading references…</li>
           )}
-          {hasReferences ? (
-            references.map((reference) => (
-              <li key={reference.referenceId} className="reference-panel__item">
-                <p className="text-sm text-foreground">{reference.text}</p>
-                <ReferenceMeta reference={reference} />
+          {hasReferences && shouldVirtualize
+            ? virtualizedItems.map((item) => {
+                const reference = references[item.index];
+                if (!reference) {
+                  return null;
+                }
+                return (
+                  <li
+                    key={reference.referenceId}
+                    ref={virtualizer.measureElement}
+                    className="reference-panel__item"
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      transform: `translateY(${item.start}px)`,
+                    }}
+                    aria-setsize={references.length}
+                    aria-posinset={item.index + 1}
+                  >
+                    <ReferenceItem reference={reference} index={item.index} />
+                  </li>
+                );
+              })
+            : null}
+          {hasReferences && !shouldVirtualize &&
+            references.map((reference, index) => (
+              <li
+                key={reference.referenceId}
+                className="reference-panel__item"
+                aria-setsize={references.length}
+                aria-posinset={index + 1}
+              >
+                <ReferenceItem reference={reference} index={index} />
               </li>
-            ))
-          ) : (
-            !referencesState.isLoading && (
-              <li className="reference-panel__empty">
-                {dataset ? 'No references provided for this dataset.' : 'Select a dataset to review its references.'}
-              </li>
-            )
+            ))}
+          {!hasReferences && !referencesState.isLoading && (
+            <li className="reference-panel__empty">
+              {dataset ? 'No references provided for this dataset.' : 'Select a dataset to review its references.'}
+            </li>
           )}
         </ol>
       </ScrollArea>
     </aside>
+  );
+}
+
+function ReferenceItem({ reference, index }: { reference: ReferenceSummary; index: number }) {
+  return (
+    <div className="reference-panel__item-content">
+      <span className="reference-panel__index" aria-hidden="true">
+        {index + 1}
+      </span>
+      <div className="reference-panel__body">
+        <p className="text-sm text-foreground">{reference.text}</p>
+        <ReferenceMeta reference={reference} />
+      </div>
+    </div>
   );
 }
 
@@ -114,8 +175,13 @@ export function ReferencePanelSkeleton() {
       <ol className="reference-panel__list">
         {Array.from({ length: 4 }).map((_, index) => (
           <li key={index} className="reference-panel__item">
-            <Skeleton className="mb-2 h-4 w-full" />
-            <Skeleton className="h-3 w-2/3" />
+            <div className="reference-panel__item-content">
+              <Skeleton className="h-9 w-9 rounded-full" />
+              <div className="reference-panel__body">
+                <Skeleton className="mb-2 h-4 w-full" />
+                <Skeleton className="h-3 w-2/3" />
+              </div>
+            </div>
           </li>
         ))}
       </ol>
