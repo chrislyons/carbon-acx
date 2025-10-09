@@ -35,7 +35,7 @@ export default function ReferencePanel({
       </header>
       <ol className="reference-panel__list">
         {hasReferences ? (
-          references!.map((reference) => (
+          references.map((reference) => (
             <li key={reference.referenceId} className="reference-panel__item">
               <p>{reference.text}</p>
               <ReferenceMeta reference={reference} />
