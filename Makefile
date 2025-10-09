@@ -72,7 +72,8 @@ site_install: $(SITE_NODE_BIN)/node
 	cd $(SITE_DIR) && $(SITE_PNPM) install --frozen-lockfile --prod=false
 
 $(SITE_BUILD_DIR)/index.html: site_install $(SITE_LAYERS_JSON)
-	cd $(SITE_DIR) && $(SITE_PNPM) run build
+        cd $(SITE_DIR) && $(SITE_PNPM) install --frozen-lockfile --prod=false
+        cd $(SITE_DIR) && $(SITE_PNPM) run build
 
 site_build: $(SITE_BUILD_DIR)/index.html
 
