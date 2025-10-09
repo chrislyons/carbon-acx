@@ -48,7 +48,7 @@ SITE_NODE_BIN := $(SITE_NODE_DIR)/bin
 SITE_NODE_DOWNLOAD := https://nodejs.org/dist/v$(SITE_NODE_VERSION)/$(SITE_NODE_ARCHIVE).tar.xz
 PNPM_VERSION ?= 10.5.2
 
-SITE_ENV := PATH=$(SITE_NODE_BIN):$$PATH
+SITE_ENV := PATH=$(SITE_NODE_BIN):$$PATH NODE_ENV=development
 SITE_COREPACK := $(SITE_ENV) corepack
 SITE_PNPM := $(SITE_ENV) pnpm
 
@@ -69,7 +69,7 @@ $(SITE_NODE_BIN)/node:
 site_install: $(SITE_NODE_BIN)/node
 	@$(SITE_COREPACK) enable
 	@$(SITE_COREPACK) prepare pnpm@$(PNPM_VERSION) --activate
-	cd $(SITE_DIR) && $(SITE_PNPM) install
+	cd $(SITE_DIR) && $(SITE_PNPM) install --frozen-lockfile --prod=false
 
 $(SITE_BUILD_DIR)/index.html: site_install $(SITE_LAYERS_JSON)
 	cd $(SITE_DIR) && $(SITE_PNPM) run build

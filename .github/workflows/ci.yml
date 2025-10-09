@@ -36,6 +36,13 @@ jobs:
           version: 10.5.2
           run_install: false
 
+      - name: Install workspace dependencies
+        run: pnpm install --frozen-lockfile -w
+
+      - name: Install web workspace dependencies
+        run: pnpm --filter carbon-acx-web install --frozen-lockfile
+
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -59,6 +66,7 @@ jobs:
           ACX040_HASHED: "1"
           PYTHONPATH: "."
         run: |
+          pnpm --dir site install --frozen-lockfile --prod=false
           make build
           make verify_manifests
           make validate-manifests
@@ -112,6 +120,10 @@ jobs:
         with:
           version: 10.5.2
           run_install: false
+      - name: Install workspace dependencies
+        run: pnpm install --frozen-lockfile -w
+      - name: Install web workspace dependencies
+        run: pnpm --filter carbon-acx-web install --frozen-lockfile
       - name: Install site dependencies
         working-directory: site
         run: pnpm install --frozen-lockfile

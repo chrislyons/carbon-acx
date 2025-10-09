@@ -30,6 +30,11 @@ calc/outputs/sources_archive/*
 .pytest_cache/
 node_modules/
 *.csv~
+apps/carbon-acx-web/dist/
+apps/carbon-acx-web/**/*.tsbuildinfo
+apps/carbon-acx-web/schema/*.d.ts
+apps/carbon-acx-web/schema/*.js
+apps/carbon-acx-web/vite.config.js
 
 # Reference retrieval outputs (never commit)
 refs/raw/
