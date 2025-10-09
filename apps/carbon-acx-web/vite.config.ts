@@ -85,8 +85,7 @@ function sampleQueriesApi(): Plugin {
             const relativePath = url.pathname.replace(/^\/references\/?/, '');
             const filePath = path.resolve(referencesRoot, relativePath);
             if (
-              !filePath.startsWith(referencesRoot + path.sep) &&
-              filePath !== referencesRoot
+              !filePath.startsWith(referencesRoot + path.sep)
             ) {
               notFound(res);
               return;
