@@ -1,28 +1,47 @@
+import { lazy, Suspense } from 'react';
+import type { ReactElement } from 'react';
 import type { LoaderFunctionArgs } from 'react-router-dom';
 import { createBrowserRouter, defer } from 'react-router-dom';
 
-import Layout from './views/Layout';
-import HomeView from './views/HomeView';
-import SectorView from './views/SectorView';
-import DatasetView from './views/DatasetView';
 import { loadDataset, loadDatasets, loadSector, loadSectors } from './lib/api';
-import ErrorView from './views/ErrorView';
+
+const Layout = lazy(() => import('./views/Layout'));
+const HomeView = lazy(() => import('./views/HomeView'));
+const SectorView = lazy(() => import('./views/SectorView'));
+const DatasetView = lazy(() => import('./views/DatasetView'));
+const ErrorView = lazy(() => import('./views/ErrorView'));
+
+function suspenseElement(element: ReactElement, message: string) {
+  return (
+    <Suspense fallback={<RouteFallback message={message} />}>
+      {element}
+    </Suspense>
+  );
+}
+
+function RouteFallback({ message }: { message: string }) {
+  return (
+    <div className="route-fallback" role="status" aria-live="polite">
+      {message}
+    </div>
+  );
+}
 
 export const router = createBrowserRouter([
   {
     id: 'layout',
     path: '/',
-    element: <Layout />, 
+    element: suspenseElement(<Layout />, 'Loading workspace shell…'),
     loader: async () =>
       defer({
         sectors: loadSectors(),
         datasets: loadDatasets(),
       }),
-    errorElement: <ErrorView title="Navigation error" />,
+    errorElement: suspenseElement(<ErrorView title="Navigation error" />, 'Resolving error state…'),
     children: [
       {
         index: true,
-        element: <HomeView />,
+        element: suspenseElement(<HomeView />, 'Preparing home view…'),
       },
       {
         id: 'sector',
@@ -38,8 +57,8 @@ export const router = createBrowserRouter([
             activities: promise.then((data) => data.activities),
           });
         },
-        element: <SectorView />,
-        errorElement: <ErrorView title="Sector not found" />, 
+        element: suspenseElement(<SectorView />, 'Loading sector data…'),
+        errorElement: suspenseElement(<ErrorView title="Sector not found" />, 'Retrieving sector details…'),
       },
       {
         id: 'dataset',
@@ -55,8 +74,8 @@ export const router = createBrowserRouter([
             references: promise.then((data) => data.references),
           });
         },
-        element: <DatasetView />,
-        errorElement: <ErrorView title="Dataset not available" />, 
+        element: suspenseElement(<DatasetView />, 'Fetching dataset view…'),
+        errorElement: suspenseElement(<ErrorView title="Dataset not available" />, 'Resolving dataset error…'),
       },
     ],
   },
