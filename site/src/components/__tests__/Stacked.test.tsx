@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 
 import { Stacked } from '../Stacked';
 
@@ -23,16 +23,24 @@ const sampleData = [
 
 describe('Stacked', () => {
   it('renders stacked bars with reference hints', () => {
-    const { getByRole, getByTestId } = render(
+    render(
       <Stacked data={sampleData} referenceLookup={referenceLookup} />
     );
 
     // Section is a landmark with an accessible name and focus target.
-    const section = getByRole('region', { name: /annual emissions by category/i });
+    const section = screen.getByRole('region', { name: /annual emissions by category/i });
     expect(section).toHaveAttribute('tabindex', '-1');
 
-    const chart = getByTestId('stacked-svg');
-    expect(chart).toMatchSnapshot();
-    expect(getByTestId('stacked-bar-0')).toHaveAttribute('title', expect.stringContaining('[1]'));
+    const chart = screen.getByTestId('stacked-svg');
+    expect(chart.tagName).toBe('OL');
+    const items = screen.getAllByTestId(/stacked-item-/);
+    expect(items).toHaveLength(2);
+
+    const firstBar = screen.getByTestId('stacked-bar-0');
+    expect(firstBar).toHaveAttribute('title', expect.stringContaining('[1]'));
+    expect(firstBar.getAttribute('style')).toMatch(/width:\s*\d+%/);
+
+    const labels = items.map((item) => item.querySelector('span')?.textContent);
+    expect(labels).toEqual(expect.arrayContaining(['Cooling', 'Heating']));
   });
 });

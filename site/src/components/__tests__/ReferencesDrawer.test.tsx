@@ -22,10 +22,16 @@ describe('ReferencesDrawer', () => {
   it('renders references and closes on escape', async () => {
     const user = userEvent.setup();
     const onToggle = vi.fn();
-    const { asFragment } = render(<ReferencesDrawer open onToggle={onToggle} />);
+    render(<ReferencesDrawer open onToggle={onToggle} />);
 
-    expect(asFragment()).toMatchSnapshot();
+    const drawer = screen.getByRole('complementary', { name: /references/i });
+    expect(drawer).toHaveAttribute('aria-live', 'polite');
+
+    const toggle = screen.getByRole('button', { name: /collapse references/i });
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+
     expect(screen.getByText('First reference.')).toBeInTheDocument();
+    expect(screen.getByRole('list', { name: /reference list/i })).toBeInTheDocument();
 
     await user.keyboard('{Escape}');
     expect(onToggle).toHaveBeenCalled();
