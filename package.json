@@ -8,7 +8,10 @@
     "pnpm": "10.5.2"
   },
   "scripts": {
-    "schema:gen": "tsx apps/carbon-acx-web/schema/semantic-model.ts"
+    "schema:gen": "tsx apps/carbon-acx-web/schema/semantic-model.ts",
+    "dev": "pnpm --filter carbon-acx-web dev",
+    "build:web": "pnpm --filter carbon-acx-web build",
+    "preview:web": "pnpm --filter carbon-acx-web preview"
   },
   "devDependencies": {
     "tsx": "^4.16.2"
