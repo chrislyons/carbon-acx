@@ -1,5 +1,7 @@
 # Carbon ACX
 
+![New UI Preview](https://img.shields.io/badge/New%20UI-Preview-blueviolet)
+
 > **Current dataset version:** v1.2【F:calc/outputs/sprint_status.txt†L1-L18】
 
 Carbon ACX is an open reference stack for trustworthy carbon accounting. It turns auditable CSV inputs into a reproducible dataset, then ships the same disclosures through interactive Dash tooling, a static React experience, and Cloudflare delivery surfaces so teams can communicate climate performance with confidence.【F:calc/derive.py†L52-L92】【F:app/app.py†L12-L158】【F:site/src/App.tsx†L1-L160】【F:functions/carbon-acx/[[path]].ts†L1-L160】【F:workers/compute/index.ts†L1-L123】
