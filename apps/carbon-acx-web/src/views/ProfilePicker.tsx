@@ -15,13 +15,13 @@ export default function ProfilePicker({ activities }: ProfilePickerProps) {
         <h2 id="profile-picker-heading">Profiles</h2>
         {hasActivities && (
           <span className="profile-picker__count">
-            {activities!.length} {activities!.length === 1 ? 'profile' : 'profiles'}
+            {activities.length} {activities.length === 1 ? 'profile' : 'profiles'}
           </span>
         )}
       </div>
       {hasActivities ? (
         <div className="profile-picker__grid" role="list" aria-label="Profiles">
-          {activities!.map((activity) => (
+          {activities.map((activity) => (
             <span key={activity.id} role="listitem" className="profile-picker__option">
               {activity.name ?? activity.id}
             </span>
