@@ -69,7 +69,7 @@ $(SITE_NODE_BIN)/node:
 site_install: $(SITE_NODE_BIN)/node
 	@$(SITE_COREPACK) enable
 	@$(SITE_COREPACK) prepare pnpm@$(PNPM_VERSION) --activate
-	cd $(SITE_DIR) && $(SITE_PNPM) install
+	cd $(SITE_DIR) && $(SITE_PNPM) install --frozen-lockfile --prod=false
 
 $(SITE_BUILD_DIR)/index.html: site_install $(SITE_LAYERS_JSON)
 	cd $(SITE_DIR) && $(SITE_PNPM) run build
