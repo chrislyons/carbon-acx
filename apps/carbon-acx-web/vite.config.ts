@@ -75,7 +75,16 @@ function sampleQueriesApi(): Plugin {
         if (url.pathname.startsWith('/references/')) {
           try {
             const repoRoot = path.resolve(__dirname, '..', '..');
-            const filePath = path.join(repoRoot, 'dist', url.pathname);
+            const referencesRoot = path.resolve(repoRoot, 'dist', 'references');
+            const relativePath = url.pathname.replace(/^\/references\/?/, '');
+            const filePath = path.resolve(referencesRoot, relativePath);
+            if (
+              !filePath.startsWith(referencesRoot + path.sep) &&
+              filePath !== referencesRoot
+            ) {
+              notFound(res);
+              return;
+            }
             const file = await readFile(filePath);
             res.statusCode = 200;
             res.end(file);
