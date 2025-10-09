@@ -1,9 +1,11 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 import type { SectorSummary } from '../lib/api';
 import { Skeleton } from '../components/ui/skeleton';
 import { cn } from '../lib/cn';
+import { ScrollArea } from '../components/ui/scroll-area';
+import { useSectors } from '../hooks/useDataset';
 
 interface NavSidebarProps {
   sectors: SectorSummary[];
@@ -12,18 +14,41 @@ interface NavSidebarProps {
 export default function NavSidebar({ sectors }: NavSidebarProps) {
   const location = useLocation();
   const [query, setQuery] = useState('');
+  const { data: remoteSectors } = useSectors({ fallbackData: sectors });
+  const items = remoteSectors ?? sectors;
 
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();
     if (!term) {
-      return sectors;
+      return items;
     }
-    return sectors.filter((sector) =>
+    return items.filter((sector) =>
       [sector.name, sector.description, sector.id]
         .filter(Boolean)
         .some((value) => value!.toLowerCase().includes(term)),
     );
-  }, [query, sectors]);
+  }, [items, query]);
+
+  const listRef = useRef<Array<HTMLAnchorElement | null>>([]);
+  const [tabbableIndex, setTabbableIndex] = useState(0);
+
+  useEffect(() => {
+    const activeIndex = filtered.findIndex((sector) =>
+      location.pathname.startsWith(`/sectors/${encodeURIComponent(sector.id)}`),
+    );
+    if (activeIndex >= 0) {
+      setTabbableIndex(activeIndex);
+    } else {
+      setTabbableIndex(0);
+    }
+  }, [filtered, location.pathname]);
+
+  useEffect(() => {
+    listRef.current = listRef.current.slice(0, filtered.length);
+    if (tabbableIndex >= filtered.length) {
+      setTabbableIndex(filtered.length - 1 >= 0 ? filtered.length - 1 : 0);
+    }
+  }, [filtered.length, tabbableIndex]);
 
   return (
     <nav className="nav-sidebar" aria-label="Sector navigation">
@@ -38,26 +63,46 @@ export default function NavSidebar({ sectors }: NavSidebarProps) {
           onChange={(event) => setQuery(event.target.value)}
         />
       </div>
-      <ul className="nav-sidebar__list">
-        {filtered.map((sector) => {
-          const to = `/sectors/${encodeURIComponent(sector.id)}`;
-          const isActive = location.pathname.startsWith(to);
-          return (
-            <li key={sector.id}>
-              <Link
-                to={to}
-                className={cn('nav-sidebar__item', isActive && 'nav-sidebar__item--active')}
+      <ScrollArea className="max-h-[calc(100vh-12rem)]">
+        <ul className="nav-sidebar__list" role="listbox">
+          {filtered.map((sector, index) => {
+            const to = `/sectors/${encodeURIComponent(sector.id)}`;
+            const isActive = location.pathname.startsWith(to);
+            return (
+              <li key={sector.id}>
+                <Link
+                  to={to}
+                ref={(element) => {
+                  listRef.current[index] = element;
+                }}
+                className={cn(
+                  'nav-sidebar__item focus-outline',
+                  isActive && 'nav-sidebar__item--active',
+                )}
+                tabIndex={tabbableIndex === index ? 0 : -1}
+                role="option"
+                aria-selected={isActive}
+                onKeyDown={(event) => {
+                  if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                    event.preventDefault();
+                    const direction = event.key === 'ArrowDown' ? 1 : -1;
+                    const nextIndex = (index + direction + filtered.length) % filtered.length;
+                    setTabbableIndex(nextIndex);
+                    listRef.current[nextIndex]?.focus();
+                  }
+                }}
               >
                 <span className="nav-sidebar__name">{sector.name}</span>
                 {sector.description && <span className="nav-sidebar__meta">{sector.description}</span>}
               </Link>
             </li>
           );
-        })}
-        {filtered.length === 0 && (
-          <li className="nav-sidebar__empty">No sectors match your search.</li>
-        )}
-      </ul>
+          })}
+          {filtered.length === 0 && (
+            <li className="nav-sidebar__empty">No sectors match your search.</li>
+          )}
+        </ul>
+      </ScrollArea>
     </nav>
   );
 }
@@ -66,12 +111,12 @@ export function NavSidebarSkeleton() {
   return (
     <div className="nav-sidebar">
       <div className="nav-sidebar__search">
-        <Skeleton style={{ height: '2.75rem', width: '100%' }} />
+        <Skeleton className="h-12 w-full rounded-full" />
       </div>
       <ul className="nav-sidebar__list">
         {Array.from({ length: 6 }).map((_, index) => (
           <li key={index}>
-            <Skeleton style={{ height: '3.25rem', width: '100%', marginBottom: '0.75rem' }} />
+            <Skeleton className="mb-3 h-12 w-full rounded-xl" />
           </li>
         ))}
       </ul>

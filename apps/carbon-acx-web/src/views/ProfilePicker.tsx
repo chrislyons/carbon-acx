@@ -7,7 +7,8 @@ interface ProfilePickerProps {
 
 export default function ProfilePicker({ activities }: ProfilePickerProps) {
   const hasSelection = Array.isArray(activities);
-  const hasActivities = Boolean(activities && activities.length > 0);
+  const activityList = hasSelection ? activities : [];
+  const hasActivities = activityList.length > 0;
 
   return (
     <section className="profile-picker" aria-labelledby="profile-picker-heading">
@@ -15,13 +16,13 @@ export default function ProfilePicker({ activities }: ProfilePickerProps) {
         <h2 id="profile-picker-heading">Profiles</h2>
         {hasActivities && (
           <span className="profile-picker__count">
-            {activities.length} {activities.length === 1 ? 'profile' : 'profiles'}
+            {activityList.length} {activityList.length === 1 ? 'profile' : 'profiles'}
           </span>
         )}
       </div>
       {hasActivities ? (
         <div className="profile-picker__grid" role="list" aria-label="Profiles">
-          {activities.map((activity) => (
+          {activityList.map((activity) => (
             <span key={activity.id} role="listitem" className="profile-picker__option">
               {activity.name ?? activity.id}
             </span>
@@ -42,20 +43,12 @@ export function ProfilePickerSkeleton() {
   return (
     <section className="profile-picker">
       <div className="profile-picker__header">
-        <Skeleton style={{ height: '1.5rem', width: '8rem' }} />
-        <Skeleton style={{ height: '1rem', width: '4rem' }} />
+        <Skeleton className="h-5 w-32" />
+        <Skeleton className="h-4 w-16" />
       </div>
       <div className="profile-picker__grid">
         {Array.from({ length: 4 }).map((_, index) => (
-          <Skeleton
-            key={index}
-            style={{
-              display: 'inline-block',
-              height: '2rem',
-              width: '6rem',
-              marginRight: '0.5rem',
-            }}
-          />
+          <Skeleton key={index} className="h-8 w-24 rounded-full" />
         ))}
       </div>
     </section>

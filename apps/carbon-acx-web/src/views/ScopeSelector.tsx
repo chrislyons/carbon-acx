@@ -29,8 +29,8 @@ export default function ScopeSelector({ sector }: ScopeSelectorProps) {
 export function ScopeSelectorSkeleton() {
   return (
     <section className="scope-selector">
-      <Skeleton style={{ height: '1.5rem', width: '8rem', marginBottom: '0.75rem' }} />
-      <Skeleton style={{ height: '1rem', width: '14rem' }} />
+      <Skeleton className="mb-3 h-5 w-32" />
+      <Skeleton className="h-4 w-56" />
     </section>
   );
 }

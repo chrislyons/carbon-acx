@@ -3,6 +3,7 @@ import { Await, Outlet, useLoaderData, useMatches } from 'react-router-dom';
 
 import type {
   ActivitySummary,
+  DatasetDetail,
   DatasetSummary,
   ReferenceSummary,
   SectorSummary,
@@ -10,8 +11,10 @@ import type {
 import NavSidebar, { NavSidebarSkeleton } from './NavSidebar';
 import ReferencePanel, { ReferencePanelSkeleton } from './ReferencePanel';
 import ScopeSelector, { ScopeSelectorSkeleton } from './ScopeSelector';
-import VisualizationCanvas, { VisualizationSkeleton } from './VisualizationCanvas';
 import ProfilePicker, { ProfilePickerSkeleton } from './ProfilePicker';
+import { CanvasSkeleton } from './VisualizationCanvas';
+import { Sheet, SheetContent, SheetTrigger } from '../components/ui/sheet';
+import { Button } from '../components/ui/button';
 
 import '../styles/layout.css';
 
@@ -25,7 +28,7 @@ export interface LayoutOutletContext {
 }
 
 interface DatasetLoaderData {
-  dataset: Promise<DatasetSummary>;
+  dataset: Promise<DatasetDetail>;
   references: Promise<ReferenceSummary[]>;
 }
 
@@ -41,6 +44,7 @@ export default function Layout() {
   }, [datasetMatch]);
 
   const datasetData = datasetMatch?.data as DatasetLoaderData | undefined;
+  const datasetId = datasetMatch?.params?.datasetId as string | undefined;
 
   return (
     <div className="app-layout">
@@ -54,23 +58,36 @@ export default function Layout() {
       <main className="app-layout__main">
         <ScopePane datasetsPromise={data.datasets} />
       </main>
-      <aside className="app-layout__inspect" data-open={isInspectOpen}>
+      <aside className="app-layout__inspect hidden lg:flex" data-open={isInspectOpen ? 'true' : 'false'}>
         <Suspense fallback={<ReferencePanelSkeleton />}>
           <ReferencesContent
+            datasetId={datasetId}
             data={datasetData}
-            isSheetOpen={isInspectOpen}
-            onToggleSheet={() => setInspectOpen((value) => !value)}
+            onClose={() => setInspectOpen(false)}
           />
         </Suspense>
       </aside>
-      <button
-        type="button"
-        className="app-layout__inspect-trigger"
-        onClick={() => setInspectOpen((value) => !value)}
-        aria-expanded={isInspectOpen}
-      >
-        {isInspectOpen ? 'Hide references' : 'Show references'}
-      </button>
+      <Sheet open={isInspectOpen} onOpenChange={setInspectOpen}>
+        <SheetTrigger asChild>
+          <Button
+            type="button"
+            variant="secondary"
+            className="app-layout__inspect-trigger lg:hidden"
+            aria-expanded={isInspectOpen}
+          >
+            {isInspectOpen ? 'Hide references' : 'Show references'}
+          </Button>
+        </SheetTrigger>
+        <SheetContent className="lg:hidden overflow-y-auto">
+          <Suspense fallback={<ReferencePanelSkeleton />}>
+            <ReferencesContent
+              datasetId={datasetId}
+              data={datasetData}
+              onClose={() => setInspectOpen(false)}
+            />
+          </Suspense>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
@@ -87,13 +104,9 @@ function ScopePane({ datasetsPromise }: { datasetsPromise: Promise<DatasetSummar
       <>
         <ScopeSelector />
         <ProfilePicker />
-        <Suspense fallback={<VisualizationSkeleton />}>
+        <Suspense fallback={<CanvasSkeleton />}>
           <Await resolve={datasetsPromise}>
-            {(datasets) => (
-              <VisualizationCanvas>
-                <Outlet context={{ datasets } satisfies LayoutOutletContext} />
-              </VisualizationCanvas>
-            )}
+            {(datasets) => <Outlet context={{ datasets } satisfies LayoutOutletContext} />}
           </Await>
         </Suspense>
       </>
@@ -107,9 +120,7 @@ function ScopePane({ datasetsPromise }: { datasetsPromise: Promise<DatasetSummar
           <>
             <ScopeSelector sector={sector} />
             <ProfilePicker activities={activities} />
-            <VisualizationCanvas>
-              <Outlet context={{ datasets } satisfies LayoutOutletContext} />
-            </VisualizationCanvas>
+            <Outlet context={{ datasets } satisfies LayoutOutletContext} />
           </>
         )}
       </Await>
@@ -122,40 +133,32 @@ function ScopePaneSkeleton() {
     <>
       <ScopeSelectorSkeleton />
       <ProfilePickerSkeleton />
-      <VisualizationSkeleton />
+      <CanvasSkeleton />
     </>
   );
 }
 
 function ReferencesContent({
+  datasetId,
   data,
-  isSheetOpen,
-  onToggleSheet,
+  onClose,
 }: {
+  datasetId?: string;
   data?: DatasetLoaderData;
-  isSheetOpen: boolean;
-  onToggleSheet: () => void;
+  onClose?: () => void;
 }) {
-  const matches = useMatches();
-
-  if (!data) {
-    return (
-      <ReferencePanel
-        references={undefined}
-        isSheetOpen={isSheetOpen}
-        onToggleSheet={matches.some((match) => match.pathname.startsWith('/sectors')) ? onToggleSheet : undefined}
-      />
-    );
+  if (!datasetId || !data) {
+    return <ReferencePanel datasetId={undefined} onClose={onClose} />;
   }
 
   return (
     <Await resolve={Promise.all([data.dataset, data.references])}>
       {([dataset, references]) => (
         <ReferencePanel
-          dataset={dataset}
-          references={references}
-          isSheetOpen={isSheetOpen}
-          onToggleSheet={onToggleSheet}
+          datasetId={datasetId}
+          fallbackDataset={dataset}
+          fallbackReferences={references}
+          onClose={onClose}
         />
       )}
     </Await>
