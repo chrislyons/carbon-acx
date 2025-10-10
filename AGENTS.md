@@ -33,9 +33,6 @@ Local dev	.env (never committed)
 GitHub CI	Settings → Secrets and variables
 Cloudflare Workers	wrangler secret put <NAME> or dashboard UI
 
-Common vars:
-OPENAI_API_KEY, CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID
-
 ⸻
 
 4. AI-Generated Code Policy
