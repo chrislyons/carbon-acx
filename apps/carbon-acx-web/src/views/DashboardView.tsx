@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import ExportButton from '../components/ExportButton';
 import ComparativeBarChart from '../components/charts/ComparativeBarChart';
 import TimeSeriesChart from '../components/charts/TimeSeriesChart';
+import FullscreenChart from '../components/FullscreenChart';
 import type { ComparativeDataPoint } from '../components/charts/ComparativeBarChart';
 import type { TimeSeriesDataPoint } from '../components/charts/TimeSeriesChart';
 
@@ -232,7 +233,7 @@ export default function DashboardView() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <Card>
+              <Card className="relative">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <BarChart2 className="h-5 w-5 text-accent-500" />
@@ -243,21 +244,23 @@ export default function DashboardView() {
                   </p>
                 </CardHeader>
                 <CardContent>
-                  <TimeSeriesChart
-                    data={timeSeriesData}
-                    valueKey="value"
-                    variant="area"
-                    showTrend={true}
-                    referenceLines={[
-                      {
-                        value: GLOBAL_AVERAGE_KG,
-                        label: 'Global Average (4.5t/year)',
-                        color: '#ff7a45',
-                      },
-                    ]}
-                    height={300}
-                    animated={true}
-                  />
+                  <FullscreenChart title="Emissions Trend" description="Track your carbon footprint over time">
+                    <TimeSeriesChart
+                      data={timeSeriesData}
+                      valueKey="value"
+                      variant="area"
+                      showTrend={true}
+                      referenceLines={[
+                        {
+                          value: GLOBAL_AVERAGE_KG,
+                          label: 'Global Average (4.5t/year)',
+                          color: '#ff7a45',
+                        },
+                      ]}
+                      height={300}
+                      animated={true}
+                    />
+                  </FullscreenChart>
                 </CardContent>
               </Card>
             </motion.div>
@@ -270,7 +273,7 @@ export default function DashboardView() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <Card>
+              <Card className="relative">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <BarChart2 className="h-5 w-5 text-accent-500" />
@@ -281,16 +284,18 @@ export default function DashboardView() {
                   </p>
                 </CardHeader>
                 <CardContent>
-                  <ComparativeBarChart
-                    data={comparativeData}
-                    orientation="horizontal"
-                    showDelta={true}
-                    sortBy="value"
-                    sortDirection="desc"
-                    axisLabel="Annual Emissions (kg CO₂)"
-                    height={Math.max(300, comparativeData.length * 50)}
-                    animated={true}
-                  />
+                  <FullscreenChart title="Top Activities by Impact" description="Compare your highest-emission activities">
+                    <ComparativeBarChart
+                      data={comparativeData}
+                      orientation="horizontal"
+                      showDelta={true}
+                      sortBy="value"
+                      sortDirection="desc"
+                      axisLabel="Annual Emissions (kg CO₂)"
+                      height={Math.max(300, comparativeData.length * 50)}
+                      animated={true}
+                    />
+                  </FullscreenChart>
                 </CardContent>
               </Card>
             </motion.div>
