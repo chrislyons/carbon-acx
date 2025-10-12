@@ -295,7 +295,7 @@ function DataInsights({
   const max = Math.max(...values);
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-border">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-4 border-t border-border">
       <InsightCard
         label="Change"
         value={`${isIncreasing ? '+' : ''}${change.toFixed(1)}`}
@@ -330,9 +330,9 @@ function InsightCard({
   color?: string;
 }) {
   return (
-    <div className="text-center">
+    <div className="text-center min-w-0">
       <p className="text-xs text-text-muted uppercase tracking-wide">{label}</p>
-      <p className={`text-2xl font-bold ${color} mt-1`}>{value}</p>
+      <p className={`text-lg font-bold ${color} mt-1 truncate`}>{value}</p>
       {sublabel && <p className="text-xs text-text-muted mt-0.5">{sublabel}</p>}
     </div>
   );

@@ -316,7 +316,7 @@ function SummaryStats({
     : 0;
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-border">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-4 border-t border-border">
       <StatCard label="Total" value={total.toFixed(1)} />
       <StatCard label="Average" value={avg.toFixed(1)} />
       <StatCard label="Highest" value={max.toFixed(1)} sublabel={maxItem?.category} />
@@ -343,9 +343,9 @@ function StatCard({
   color?: string;
 }) {
   return (
-    <div className="text-center">
+    <div className="text-center min-w-0">
       <p className="text-xs text-text-muted uppercase tracking-wide">{label}</p>
-      <p className={`text-2xl font-bold ${color} mt-1`}>{value}</p>
+      <p className={`text-lg font-bold ${color} mt-1 truncate`}>{value}</p>
       {sublabel && <p className="text-xs text-text-muted mt-0.5 truncate">{sublabel}</p>}
     </div>
   );
