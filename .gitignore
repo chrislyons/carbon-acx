@@ -44,3 +44,6 @@ refs/normalized/
 .env
 .env.*
 !.env.example
+
+# macOS files
+.DS_Store
