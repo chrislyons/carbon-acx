@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, cloneElement, isValidElement } from 'react';
 import { Maximize2, Minimize2, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from './ui/button';
@@ -11,6 +11,28 @@ interface FullscreenChartProps {
 
 export default function FullscreenChart({ children, title, description }: FullscreenChartProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Clone children and override height for fullscreen
+  const cloneChildrenWithFullscreenHeight = (node: React.ReactNode): React.ReactNode => {
+    if (!isValidElement(node)) return node;
+
+    // Calculate fullscreen chart height (viewport height minus header and padding)
+    const fullscreenHeight = typeof window !== 'undefined'
+      ? window.innerHeight - 200 // 200px for header, padding, and controls
+      : 600;
+
+    // If the child has children, recursively clone them too
+    const clonedChildren = node.props.children
+      ? cloneChildrenWithFullscreenHeight(node.props.children)
+      : node.props.children;
+
+    // Override height prop if it exists
+    return cloneElement(node as React.ReactElement<any>, {
+      ...node.props,
+      height: node.props.height !== undefined ? fullscreenHeight : node.props.height,
+      children: clonedChildren,
+    });
+  };
 
   // Handle ESC key to exit fullscreen
   useEffect(() => {
@@ -86,7 +108,7 @@ export default function FullscreenChart({ children, title, description }: Fullsc
               {/* Chart content */}
               <div className="h-[calc(100%-4rem)] w-full rounded-lg bg-white/5 backdrop-blur-md border border-white/10 p-6 overflow-auto">
                 <div className="h-full">
-                  {children}
+                  {cloneChildrenWithFullscreenHeight(children)}
                 </div>
               </div>
 
