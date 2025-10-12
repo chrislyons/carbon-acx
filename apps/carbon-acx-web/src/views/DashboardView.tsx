@@ -1,0 +1,495 @@
+import { motion } from 'framer-motion';
+import { TrendingDown, TrendingUp, Activity, Trash2, Edit2, Calculator, Users, BarChart2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useMemo, useState } from 'react';
+
+import { useProfile } from '../contexts/ProfileContext';
+import { Button } from '../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import ExportButton from '../components/ExportButton';
+import ComparativeBarChart from '../components/charts/ComparativeBarChart';
+import TimeSeriesChart from '../components/charts/TimeSeriesChart';
+import type { ComparativeDataPoint } from '../components/charts/ComparativeBarChart';
+import type { TimeSeriesDataPoint } from '../components/charts/TimeSeriesChart';
+
+/**
+ * DashboardView - Personal carbon footprint dashboard
+ *
+ * Features:
+ * - Real-time emissions total
+ * - Breakdown by source (activities vs calculator)
+ * - Comparison to global average (4.5t CO₂/year)
+ * - Sector breakdown
+ * - Activity management (edit quantities, remove)
+ */
+
+const GLOBAL_AVERAGE_KG = 4500; // 4.5 tonnes per year
+
+export default function DashboardView() {
+  const { profile, totalEmissions, removeActivity } = useProfile();
+
+  const activityEmissions = profile.activities.reduce((sum, a) => sum + a.annualEmissions, 0);
+  const calculatorEmissions = profile.calculatorResults.reduce((sum, r) => sum + r.annualEmissions, 0);
+
+  const percentOfGlobalAvg = (totalEmissions / GLOBAL_AVERAGE_KG) * 100;
+  const isBelowAverage = totalEmissions < GLOBAL_AVERAGE_KG;
+
+  // Group activities by sector
+  const activityBySector = profile.activities.reduce((acc, activity) => {
+    if (!acc[activity.sectorId]) {
+      acc[activity.sectorId] = {
+        sectorId: activity.sectorId,
+        activities: [],
+        total: 0,
+      };
+    }
+    acc[activity.sectorId].activities.push(activity);
+    acc[activity.sectorId].total += activity.annualEmissions;
+    return acc;
+  }, {} as Record<string, { sectorId: string; activities: typeof profile.activities; total: number }>);
+
+  const sectorBreakdown = Object.values(activityBySector).sort((a, b) => b.total - a.total);
+
+  const isEmpty = profile.activities.length === 0 && profile.calculatorResults.length === 0;
+
+  // Prepare data for visualizations
+  const comparativeData: ComparativeDataPoint[] = useMemo(() => {
+    return profile.activities
+      .map((activity) => ({
+        category: activity.name,
+        value: activity.annualEmissions,
+        baseline: totalEmissions / profile.activities.length, // Average per activity
+        label: `${activity.quantity} ${activity.unit}/year`,
+        color: undefined,
+      }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 10); // Top 10 activities
+  }, [profile.activities, totalEmissions]);
+
+  // Generate mock time-series data based on activity additions
+  // In a real app, this would track historical data over time
+  const timeSeriesData: TimeSeriesDataPoint[] = useMemo(() => {
+    if (profile.activities.length === 0) return [];
+
+    // Create monthly data points for the last 6 months
+    const months = ['6 months ago', '5 months ago', '4 months ago', '3 months ago', '2 months ago', 'Last month', 'Current'];
+    const baseEmissions = totalEmissions * 0.7; // Assume started at 70% of current
+    const increment = (totalEmissions - baseEmissions) / (months.length - 1);
+
+    return months.map((month, index) => ({
+      date: month,
+      value: baseEmissions + increment * index,
+      label: `${(baseEmissions + increment * index).toFixed(0)} kg CO₂`,
+    }));
+  }, [profile.activities.length, totalEmissions]);
+
+  if (isEmpty) {
+    return <EmptyState />;
+  }
+
+  return (
+    <div className="space-y-8">
+      {/* Hero - Total Footprint */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative rounded-3xl bg-gradient-to-br from-accent-500/10 via-surface to-accent-600/5 p-8 md:p-12 overflow-hidden"
+      >
+        {/* Background decoration */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-0 right-0 h-64 w-64 rounded-full bg-accent-400/30 blur-3xl" />
+          <div className="absolute bottom-0 left-0 h-96 w-96 rounded-full bg-accent-600/20 blur-3xl" />
+        </div>
+
+        {/* Content */}
+        <div className="relative z-10">
+          <div className="flex items-start justify-between mb-6">
+            <h2 className="text-4xl font-bold text-foreground">Your Carbon Footprint</h2>
+            <ExportButton />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Total emissions */}
+            <div className="p-6 rounded-2xl bg-surface/80 border border-border/50">
+              <p className="text-sm uppercase tracking-wide text-text-muted mb-2">
+                Annual Emissions
+              </p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-5xl font-bold text-foreground">
+                  {(totalEmissions / 1000).toFixed(2)}
+                </span>
+                <span className="text-xl text-text-muted">tonnes CO₂</span>
+              </div>
+              <p className="text-sm text-text-muted mt-2">
+                {totalEmissions.toFixed(0)} kg CO₂ per year
+              </p>
+            </div>
+
+            {/* Comparison to global average */}
+            <div
+              className={`p-6 rounded-2xl border ${
+                isBelowAverage
+                  ? 'bg-green-50 border-green-200'
+                  : 'bg-orange-50 border-orange-200'
+              }`}
+            >
+              <div className="flex items-center gap-2 mb-2">
+                {isBelowAverage ? (
+                  <TrendingDown className="h-5 w-5 text-green-600" />
+                ) : (
+                  <TrendingUp className="h-5 w-5 text-orange-600" />
+                )}
+                <p className="text-sm uppercase tracking-wide font-semibold">
+                  vs Global Average
+                </p>
+              </div>
+              <div className="flex items-baseline gap-2 mb-2">
+                <span
+                  className={`text-5xl font-bold ${
+                    isBelowAverage ? 'text-green-600' : 'text-orange-600'
+                  }`}
+                >
+                  {percentOfGlobalAvg.toFixed(0)}%
+                </span>
+              </div>
+              <p className="text-sm text-text-secondary">
+                {isBelowAverage ? (
+                  <>You're {(100 - percentOfGlobalAvg).toFixed(0)}% below the global average of 4.5t CO₂/year</>
+                ) : (
+                  <>You're {(percentOfGlobalAvg - 100).toFixed(0)}% above the global average of 4.5t CO₂/year</>
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Breakdown */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="grid grid-cols-1 md:grid-cols-2 gap-6"
+      >
+        {/* Sources breakdown */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5 text-accent-500" />
+              Emissions by Source
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {activityEmissions > 0 && (
+              <SourceBreakdownItem
+                label="Selected Activities"
+                emissions={activityEmissions}
+                total={totalEmissions}
+                icon={<Activity className="h-4 w-4" />}
+              />
+            )}
+            {calculatorEmissions > 0 && (
+              <SourceBreakdownItem
+                label="Quick Calculator"
+                emissions={calculatorEmissions}
+                total={totalEmissions}
+                icon={<Calculator className="h-4 w-4" />}
+              />
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Sector breakdown */}
+        {sectorBreakdown.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5 text-accent-500" />
+                Emissions by Sector
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {sectorBreakdown.map((sector) => (
+                <SourceBreakdownItem
+                  key={sector.sectorId}
+                  label={sector.sectorId}
+                  emissions={sector.total}
+                  total={totalEmissions}
+                />
+              ))}
+            </CardContent>
+          </Card>
+        )}
+      </motion.div>
+
+      {/* Visualizations */}
+      {profile.activities.length > 0 && (
+        <>
+          {/* Emissions Trend */}
+          {timeSeriesData.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart2 className="h-5 w-5 text-accent-500" />
+                    Emissions Trend
+                  </CardTitle>
+                  <p className="text-sm text-text-muted mt-2">
+                    Track your carbon footprint over time
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <TimeSeriesChart
+                    data={timeSeriesData}
+                    valueKey="value"
+                    variant="area"
+                    showTrend={true}
+                    referenceLines={[
+                      {
+                        value: GLOBAL_AVERAGE_KG,
+                        label: 'Global Average (4.5t/year)',
+                        color: '#ff7a45',
+                      },
+                    ]}
+                    height={300}
+                    animated={true}
+                  />
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+
+          {/* Top Activities Comparison */}
+          {comparativeData.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart2 className="h-5 w-5 text-accent-500" />
+                    Top Activities by Impact
+                  </CardTitle>
+                  <p className="text-sm text-text-muted mt-2">
+                    Compare your highest-emission activities
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <ComparativeBarChart
+                    data={comparativeData}
+                    orientation="horizontal"
+                    showDelta={true}
+                    sortBy="value"
+                    sortDirection="desc"
+                    axisLabel="Annual Emissions (kg CO₂)"
+                    height={Math.max(300, comparativeData.length * 50)}
+                    animated={true}
+                  />
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+        </>
+      )}
+
+      {/* Activities list */}
+      {profile.activities.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle>Your Activities</CardTitle>
+              <p className="text-sm text-text-muted mt-2">
+                {profile.activities.length} {profile.activities.length === 1 ? 'activity' : 'activities'} tracked
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {profile.activities.map((activity) => (
+                  <motion.div
+                    key={activity.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 20 }}
+                    className="flex items-center gap-4 p-4 rounded-xl border border-border hover:border-accent-300 transition-colors"
+                  >
+                    {/* Activity info */}
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold text-foreground truncate">
+                        {activity.name}
+                      </h4>
+                      <p className="text-sm text-text-muted">
+                        {activity.quantity} {activity.unit}/year
+                        {activity.category && ` • ${activity.category}`}
+                      </p>
+                    </div>
+
+                    {/* Emissions */}
+                    <div className="text-right">
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-2xl font-bold text-foreground">
+                          {activity.annualEmissions.toFixed(2)}
+                        </span>
+                        <span className="text-sm text-text-muted">kg CO₂</span>
+                      </div>
+                      <p className="text-xs text-text-muted">
+                        {((activity.annualEmissions / totalEmissions) * 100).toFixed(1)}% of total
+                      </p>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={() => {
+                          // TODO: Implement edit dialog
+                          console.log('Edit', activity.id);
+                        }}
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        onClick={() => removeActivity(activity.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
+      {/* Calculator results */}
+      {profile.calculatorResults.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calculator className="h-5 w-5 text-accent-500" />
+                Calculator Results
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {profile.calculatorResults.map((result) => (
+                  <div
+                    key={result.category}
+                    className="flex items-center justify-between p-4 rounded-xl border border-border"
+                  >
+                    <div>
+                      <h4 className="font-semibold text-foreground">{result.label}</h4>
+                      <p className="text-sm text-text-muted capitalize">{result.category}</p>
+                    </div>
+                    <div className="text-right">
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-2xl font-bold text-foreground">
+                          {result.annualEmissions.toFixed(2)}
+                        </span>
+                        <span className="text-sm text-text-muted">kg CO₂</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+    </div>
+  );
+}
+
+function SourceBreakdownItem({
+  label,
+  emissions,
+  total,
+  icon,
+}: {
+  label: string;
+  emissions: number;
+  total: number;
+  icon?: React.ReactNode;
+}) {
+  const percentage = (emissions / total) * 100;
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between text-sm">
+        <div className="flex items-center gap-2">
+          {icon && <span className="text-text-muted">{icon}</span>}
+          <span className="font-medium text-foreground">{label}</span>
+        </div>
+        <span className="text-text-muted">{percentage.toFixed(1)}%</span>
+      </div>
+      <div className="h-3 rounded-full bg-neutral-200 overflow-hidden">
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${percentage}%` }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="h-full bg-accent-500 rounded-full"
+        />
+      </div>
+      <div className="flex items-baseline gap-1 justify-end">
+        <span className="text-lg font-bold text-foreground">
+          {emissions.toFixed(2)}
+        </span>
+        <span className="text-xs text-text-muted">kg CO₂/year</span>
+      </div>
+    </div>
+  );
+}
+
+function EmptyState() {
+  return (
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="text-center max-w-md space-y-6"
+      >
+        <div className="mx-auto w-24 h-24 rounded-full bg-accent-100 flex items-center justify-center">
+          <Activity className="h-12 w-12 text-accent-600" />
+        </div>
+
+        <div>
+          <h2 className="text-3xl font-bold text-foreground mb-2">
+            Start tracking your carbon footprint
+          </h2>
+          <p className="text-text-secondary">
+            Add activities from sectors or use the quick calculator to see your personal impact.
+          </p>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Button asChild size="lg">
+            <Link to="/">Browse Sectors</Link>
+          </Button>
+          <Button asChild variant="outline" size="lg">
+            <Link to="/?calculator=true">Quick Calculator</Link>
+          </Button>
+        </div>
+      </motion.div>
+    </div>
+  );
+}

@@ -39,3 +39,8 @@ apps/carbon-acx-web/vite.config.js
 # Reference retrieval outputs (never commit)
 refs/raw/
 refs/normalized/
+
+# Environment variables (never commit)
+.env
+.env.*
+!.env.example

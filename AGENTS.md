@@ -1,12 +1,12 @@
 AGENTS.md for carbon-acx
 
 Purpose
-Define safe and efficient use of AI assistants (e.g., OpenAI Codex Cloud) within the Carbon ACX repository. Maintain code quality, security, and provenance while enabling AI-assisted development.
+Define safe and efficient use of AI assistants (e.g., Claude Code) within the Carbon ACX repository. Maintain code quality, security, and provenance while enabling AI-assisted development.
 
 ⸻
 
 1. Scope
-	•	Primary assistant: OpenAI Codex Cloud
+	•	Primary assistant: Claude Code
 	•	Permitted tasks: Component scaffolding, refactors, tests, documentation, typed API clients, small features, data pipelines, deployment boilerplate
 	•	Excluded: Secrets, production data, architectural changes without review, or unvetted dependencies
 
@@ -58,7 +58,7 @@ Cloudflare Workers	wrangler secret put <NAME> or dashboard UI
 
 All AI-generated changes must be human-reviewed.
 	•	PR label: ai-generated
-	•	Commit footer: Generated-by: openai-codex-cloud
+	•	Commit footer: Generated-by: claude-code
 	•	Approval required for changes to: Workers config, CI workflows, build system files, and auth/security code.
 
 ⸻
@@ -104,15 +104,11 @@ Quick Checklist
 	•	ai-generated label applied
 	•	Tests updated
 	•	No secrets exposed
-  • No binary files will be inluded in commit
+  • No binary files will be included in commit
 	•	Cloudflare rules respected
 	•	Dependency change justified
 	•	Human review requested
 
 ⸻
 
-Last reviewed: 2025-10-09
-
-⸻
-
-Would you like me to tune this further for the “frontend-agent mode” context—e.g., add brief AI-lint rules or style prompts for UI generation?
+Last reviewed: 2025-10-12
