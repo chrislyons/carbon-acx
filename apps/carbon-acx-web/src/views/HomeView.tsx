@@ -1,17 +1,21 @@
 import { Suspense } from 'react';
-import { Await, useLoaderData } from 'react-router-dom';
+import { Await, useRouteLoaderData } from 'react-router-dom';
 
 import HeroSection from '../components/HeroSection';
 import type { DatasetSummary, SectorSummary } from '../lib/api';
 import { Skeleton } from '../components/ui/skeleton';
 
-interface HomeLoaderData {
+interface LayoutLoaderData {
   sectors: Promise<SectorSummary[]>;
   datasets: Promise<DatasetSummary[]>;
 }
 
 export default function HomeView() {
-  const data = useLoaderData() as HomeLoaderData;
+  const data = useRouteLoaderData('layout') as LayoutLoaderData | undefined;
+
+  if (!data) {
+    throw new Error('Layout loader data is unavailable');
+  }
 
   return (
     <div className="home-view space-y-12 -mt-6">
