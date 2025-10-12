@@ -9,6 +9,10 @@ import { Skeleton } from '../components/ui/skeleton';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import ActivityMatrix, { ActivityMatrixSkeleton } from '../components/ActivityMatrix';
+import ComparativeBarChart from '../components/charts/ComparativeBarChart';
+import TimeSeriesChart from '../components/charts/TimeSeriesChart';
+import FullscreenChart from '../components/FullscreenChart';
+import { getSectorActivityBreakdown, getSectorEmissionsTrend } from '../lib/demoData';
 import type { LayoutOutletContext } from './Layout';
 
 interface SectorLoaderData {
@@ -71,6 +75,58 @@ export default function SectorView() {
                   />
                 </div>
               </div>
+            </motion.div>
+
+            {/* Sector Visualizations - IMMEDIATELY VISIBLE */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="grid grid-cols-1 lg:grid-cols-2 gap-4"
+            >
+              {/* Activity Impact Comparison */}
+              <Card className="p-4 relative">
+                <FullscreenChart
+                  title={`${sector.name} Activity Comparison`}
+                  description="Compare carbon intensity across sector activities"
+                >
+                  <div className="mb-2">
+                    <h3 className="text-sm font-semibold text-foreground">Activity Impact</h3>
+                    <p className="text-xs text-text-muted">Annual emissions by activity type (kg CO₂)</p>
+                  </div>
+                  <ComparativeBarChart
+                    data={getSectorActivityBreakdown(sector.id)}
+                    orientation="horizontal"
+                    showDelta={true}
+                    sortBy="value"
+                    sortDirection="desc"
+                    axisLabel="kg CO₂/year"
+                    height={280}
+                    animated={true}
+                  />
+                </FullscreenChart>
+              </Card>
+
+              {/* Sector Emissions Trend */}
+              <Card className="p-4 relative">
+                <FullscreenChart
+                  title={`${sector.name} Emissions Trend`}
+                  description="12-month sector emissions trajectory"
+                >
+                  <div className="mb-2">
+                    <h3 className="text-sm font-semibold text-foreground">Sector Trend</h3>
+                    <p className="text-xs text-text-muted">Demo data: 12-month sector tracking</p>
+                  </div>
+                  <TimeSeriesChart
+                    data={getSectorEmissionsTrend(sector.id)}
+                    valueKey="value"
+                    variant="area"
+                    showTrend={true}
+                    height={280}
+                    animated={true}
+                  />
+                </FullscreenChart>
+              </Card>
             </motion.div>
 
             {/* Activity Matrix */}
@@ -197,6 +253,18 @@ function SectorSkeleton() {
           <Skeleton className="h-24" />
           <Skeleton className="h-24" />
         </div>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Card className="p-4">
+          <Skeleton className="h-6 w-48 mb-2" />
+          <Skeleton className="h-4 w-64 mb-4" />
+          <Skeleton className="h-[280px]" />
+        </Card>
+        <Card className="p-4">
+          <Skeleton className="h-6 w-48 mb-2" />
+          <Skeleton className="h-4 w-64 mb-4" />
+          <Skeleton className="h-[280px]" />
+        </Card>
       </div>
       <Card>
         <CardHeader>

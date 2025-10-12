@@ -133,3 +133,70 @@ export function getGlobalComparisonData() {
     { category: 'Paris Target', value: 2000, color: '#3b82f6', baseline: 4500 },
   ];
 }
+
+// Sector-specific visualization data
+export function getSectorActivityBreakdown(sectorId: string) {
+  // Generate realistic activity comparisons for this sector
+  const activityData: Record<string, any[]> = {
+    'professional-services': [
+      { category: 'Office Electricity', value: 960, color: '#f59e0b', baseline: 800 },
+      { category: 'Business Travel (Air)', value: 1800, color: '#dc2626', baseline: 800 },
+      { category: 'Car Commute', value: 1680, color: '#f97316', baseline: 800 },
+      { category: 'Public Transit', value: 240, color: '#10b981', baseline: 800 },
+      { category: 'Office Heating', value: 720, color: '#f59e0b', baseline: 800 },
+    ],
+    'industrial-energy': [
+      { category: 'Process Heat', value: 4500, color: '#dc2626', baseline: 2000 },
+      { category: 'Machinery', value: 3200, color: '#f59e0b', baseline: 2000 },
+      { category: 'Lighting', value: 800, color: '#10b981', baseline: 2000 },
+      { category: 'HVAC', value: 1400, color: '#f59e0b', baseline: 2000 },
+      { category: 'Refrigeration', value: 2100, color: '#f97316', baseline: 2000 },
+    ],
+    'industrial-land-use': [
+      { category: 'Livestock (Beef)', value: 2700, color: '#dc2626', baseline: 1500 },
+      { category: 'Livestock (Dairy)', value: 1200, color: '#f59e0b', baseline: 1500 },
+      { category: 'Rice Cultivation', value: 1800, color: '#f97316', baseline: 1500 },
+      { category: 'Vegetable Farming', value: 400, color: '#10b981', baseline: 1500 },
+      { category: 'Fruit Farming', value: 600, color: '#22c55e', baseline: 1500 },
+    ],
+  };
+
+  return activityData[sectorId] || [
+    { category: 'Activity A', value: 1200, color: '#059669', baseline: 1000 },
+    { category: 'Activity B', value: 800, color: '#f59e0b', baseline: 1000 },
+    { category: 'Activity C', value: 1500, color: '#dc2626', baseline: 1000 },
+    { category: 'Activity D', value: 600, color: '#10b981', baseline: 1000 },
+  ];
+}
+
+// Sector emissions trend (simulated 12-month data)
+export function getSectorEmissionsTrend(sectorId: string) {
+  const months = [
+    '12 mo ago', '11 mo ago', '10 mo ago', '9 mo ago',
+    '8 mo ago', '7 mo ago', '6 mo ago', '5 mo ago',
+    '4 mo ago', '3 mo ago', '2 mo ago', 'Last month'
+  ];
+
+  // Different growth patterns for different sectors
+  const baseValues: Record<string, number> = {
+    'professional-services': 4000,
+    'industrial-energy': 8000,
+    'industrial-land-use': 5000,
+    'default': 3000,
+  };
+
+  const growthRate: Record<string, number> = {
+    'professional-services': 1.02, // 2% monthly growth
+    'industrial-energy': 0.98, // 2% monthly decline (efficiency improvements)
+    'industrial-land-use': 1.01, // 1% monthly growth
+    'default': 1.015,
+  };
+
+  const base = baseValues[sectorId] || baseValues.default;
+  const rate = growthRate[sectorId] || growthRate.default;
+
+  return months.map((month, index) => ({
+    date: month,
+    value: Math.round(base * Math.pow(rate, index)),
+  }));
+}
