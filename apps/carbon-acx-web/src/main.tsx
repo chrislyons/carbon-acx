@@ -14,7 +14,8 @@ const loadApp = enableNewUi ? () => import('./NewApp') : () => import('./legacy/
 
 async function bootstrap() {
   const { default: App } = await loadApp();
-  ReactDOM.createRoot(rootElement).render(
+  // TypeScript needs explicit non-null assertion here
+  ReactDOM.createRoot(rootElement!).render(
     <React.StrictMode>
       <App />
     </React.StrictMode>,

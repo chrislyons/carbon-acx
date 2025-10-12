@@ -201,12 +201,16 @@ export default function ComparativeBarChart({
             animationDuration={animated ? 800 : 0}
             radius={[4, 4, 0, 0]}
           >
-            {dataWithDeltas.map((entry, index) => (
-              <Cell
-                key={`cell-${index}`}
-                fill={entry.color || colorScale(entry[valueKey] as number)}
-              />
-            ))}
+            {dataWithDeltas.map((entry, index) => {
+              // @ts-ignore - valueKey is guaranteed to be a valid key
+              const value = entry[valueKey] ?? entry.value;
+              return (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={entry.color || colorScale(value as number)}
+                />
+              );
+            })}
             <LabelList
               dataKey={valueKey}
               position={isHorizontal ? 'right' : 'top'}
@@ -307,8 +311,8 @@ function SummaryStats({
 
   const avgDelta = showDelta
     ? data
-        .filter((d) => d.delta !== undefined)
-        .reduce((sum, d) => sum + (d.delta || 0), 0) / data.filter((d) => d.delta !== undefined).length
+        .filter((d) => typeof d.delta === 'number')
+        .reduce((sum, d) => sum + (typeof d.delta === 'number' ? d.delta : 0), 0) / data.filter((d) => typeof d.delta === 'number').length
     : 0;
 
   return (
