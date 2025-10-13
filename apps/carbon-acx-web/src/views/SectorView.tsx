@@ -29,51 +29,26 @@ export default function SectorView() {
     <Suspense fallback={<SectorSkeleton />}>
       <Await resolve={Promise.all([data.sector, data.activities])}>
         {([sector, activities]) => (
-          <div className="space-y-8">
-            {/* Sector Hero */}
+          <div className="space-y-3">
+            {/* Sector Header - Ultra Compact */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="relative rounded-3xl bg-gradient-to-br from-accent-500/10 via-surface to-accent-600/5 p-8 md:p-12 overflow-hidden"
+              className="flex items-center justify-between gap-4 bg-gradient-to-r from-accent-500/10 to-accent-600/5 border border-accent-200/30 rounded-lg p-3"
             >
-              {/* Background decoration */}
-              <div className="absolute inset-0 opacity-20">
-                <div className="absolute top-0 right-0 h-64 w-64 rounded-full bg-accent-400/30 blur-3xl" />
-                <div className="absolute bottom-0 left-0 h-96 w-96 rounded-full bg-accent-600/20 blur-3xl" />
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-accent-50 text-accent-600">
+                  <Layers className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-foreground">{sector.name}</h2>
+                  <p className="text-xs text-text-muted">{sector.description ?? 'Explore carbon impact data'}</p>
+                </div>
               </div>
-
-              {/* Content */}
-              <div className="relative z-10 space-y-4">
-                <div className="flex items-start gap-4">
-                  <div className="p-4 rounded-2xl bg-accent-50 text-accent-600">
-                    <Layers className="h-8 w-8" />
-                  </div>
-                  <div className="flex-1">
-                    <h2 className="text-4xl font-bold text-foreground mb-2">{sector.name}</h2>
-                    <p className="text-lg text-text-secondary max-w-3xl">
-                      {sector.description ?? 'Explore carbon impact data for this sector.'}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                  <StatCard
-                    icon={<BarChart3 className="h-5 w-5" />}
-                    label="Activities tracked"
-                    value={activities.length}
-                  />
-                  <StatCard
-                    icon={<BarChart3 className="h-5 w-5" />}
-                    label="Datasets available"
-                    value={datasets.length}
-                  />
-                  <StatCard
-                    icon={<BarChart3 className="h-5 w-5" />}
-                    label="In your profile"
-                    value={profile.activities.filter(a => a.sectorId === sector.id).length}
-                    highlight={profile.activities.filter(a => a.sectorId === sector.id).length > 0}
-                  />
-                </div>
+              <div className="flex items-center gap-2 text-xs text-text-muted">
+                <span><strong>{activities.length}</strong> activities</span>
+                <span>•</span>
+                <span><strong>{profile.activities.filter(a => a.sectorId === sector.id).length}</strong> in profile</span>
               </div>
             </motion.div>
 
@@ -163,35 +138,6 @@ export default function SectorView() {
   );
 }
 
-function StatCard({
-  icon,
-  label,
-  value,
-  highlight = false,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: number;
-  highlight?: boolean;
-}) {
-  return (
-    <div
-      className={`p-4 rounded-xl border transition-colors ${
-        highlight
-          ? 'bg-accent-50 border-accent-200'
-          : 'bg-surface/80 border-border/50'
-      }`}
-    >
-      <div className="flex items-center gap-2 text-text-muted mb-2">
-        {icon}
-        <span className="text-sm font-medium uppercase tracking-wide">{label}</span>
-      </div>
-      <p className={`text-3xl font-bold ${highlight ? 'text-accent-600' : 'text-foreground'}`}>
-        {value}
-      </p>
-    </div>
-  );
-}
 
 function SectorDatasetCta({
   datasets,

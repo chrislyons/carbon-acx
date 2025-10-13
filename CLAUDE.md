@@ -1,5 +1,7 @@
 # CLAUDE.md - Claude Code Context for Carbon ACX
 
+**Workspace:** This repo inherits general conventions from `~/chrislyons/dev/CLAUDE.md`
+
 ## Purpose
 This document provides context and guidance for Claude Code when working with the Carbon ACX repository. It complements the general AI assistant guidelines in AGENTS.md with Claude-specific information.
 

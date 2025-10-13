@@ -137,7 +137,7 @@ export default function ComparativeBarChart({
         <BarChart
           data={dataWithDeltas}
           layout={isHorizontal ? 'horizontal' : 'vertical'}
-          margin={{ top: 20, right: 30, left: isHorizontal ? 100 : 20, bottom: 60 }}
+          margin={{ top: 5, right: 20, left: isHorizontal ? 120 : 10, bottom: isHorizontal ? 5 : 40 }}
         >
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.3} />
 

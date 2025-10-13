@@ -101,7 +101,7 @@ export default function TimeSeriesChart({
       <ResponsiveContainer width="100%" height={height}>
         <ChartComponent
           data={data}
-          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+          margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
         >
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.3} />
 
