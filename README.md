@@ -73,6 +73,7 @@ Layer descriptions, types, and activities are sourced directly from `data/layers
 | --- | --- |
 | `calc/` | Pydantic schemas, datastore abstractions, derivation routines, figure builders, and manifest utilities for the carbon dataset.【F:calc/derive.py†L52-L92】 |
 | `app/` | Dash components and layouts for analyst demos, including reference drawers, agency strips, and intensity explorers tied to derived payloads.【F:app/app.py†L12-L158】 |
+| `apps/` | Next-generation web applications built as pnpm workspace packages. Currently contains `carbon-acx-web`, a modern React + TypeScript application. |
 | `site/` | Static React client (Vite 5 + Tailwind) with stage-managed storytelling, scope pins, and artefact-aware navigation for publishing.【F:site/src/App.tsx†L1-L160】 |
 | `functions/` | Cloudflare Pages Function that proxies artefact access with immutable caching, sanitised paths, and optional upstream origins.【F:functions/carbon-acx/[[path]].ts†L1-L160】 |
 | `workers/` | Cloudflare Worker compute API providing `/api/compute` and `/api/health` endpoints for lightweight integrations.【F:workers/compute/index.ts†L1-L123】 |

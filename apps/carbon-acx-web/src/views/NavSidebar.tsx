@@ -1,19 +1,24 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { LayoutDashboard, Leaf, Settings } from 'lucide-react';
 
 import type { SectorSummary } from '../lib/api';
 import { Skeleton } from '../components/ui/skeleton';
 import { cn } from '../lib/cn';
 import { ScrollArea } from '../components/ui/scroll-area';
 import { useSectors } from '../hooks/useDataset';
+import { useProfile } from '../contexts/ProfileContext';
+import ThemeToggle from '../components/ThemeToggle';
 
 interface NavSidebarProps {
   sectors: SectorSummary[];
+  onOpenSettings?: () => void;
 }
 
-export default function NavSidebar({ sectors }: NavSidebarProps) {
+export default function NavSidebar({ sectors, onOpenSettings }: NavSidebarProps) {
   const location = useLocation();
   const [query, setQuery] = useState('');
+  const { totalEmissions } = useProfile();
   const { data: remoteSectors } = useSectors({ fallbackData: sectors });
   const items = remoteSectors ?? sectors;
 
@@ -51,58 +56,116 @@ export default function NavSidebar({ sectors }: NavSidebarProps) {
   }, [filtered.length, tabbableIndex]);
 
   return (
-    <nav className="nav-sidebar" aria-label="Sector navigation">
-      <div className="nav-sidebar__search">
-        <label htmlFor="sector-search">Search sectors</label>
-        <input
-          id="sector-search"
-          name="sector-search"
-          type="search"
-          placeholder="Search..."
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-        />
+    <nav className="nav-sidebar flex flex-col h-full" aria-label="Main navigation">
+      <div className="flex-1 min-h-0">
+        {/* Quick Links */}
+        <div className="mb-4 space-y-1">
+          <Link
+            to="/"
+            className={cn(
+              'flex items-center gap-3 px-4 py-3 rounded-lg transition-colors',
+              location.pathname === '/'
+                ? 'bg-accent-50 text-accent-600 font-medium'
+                : 'text-text-secondary hover:bg-surface hover:text-foreground'
+            )}
+          >
+            <Leaf className="h-5 w-5" />
+            <span>Home</span>
+          </Link>
+          <Link
+            to="/dashboard"
+            className={cn(
+              'flex items-center gap-3 px-4 py-3 rounded-lg transition-colors',
+              location.pathname === '/dashboard'
+                ? 'bg-accent-50 text-accent-600 font-medium'
+                : 'text-text-secondary hover:bg-surface hover:text-foreground'
+            )}
+          >
+            <LayoutDashboard className="h-5 w-5" />
+            <div className="flex-1">
+              <span>Dashboard</span>
+              {totalEmissions > 0 && (
+                <div className="text-xs text-text-muted mt-0.5">
+                  {(totalEmissions / 1000).toFixed(1)}t CO₂/year
+                </div>
+              )}
+            </div>
+          </Link>
+        </div>
+
+        <div className="border-t border-border mb-4" />
+
+        <div className="nav-sidebar__search">
+          <label htmlFor="sector-search">Search sectors</label>
+          <input
+            id="sector-search"
+            name="sector-search"
+            type="search"
+            placeholder="Search..."
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+          />
+        </div>
+        <ScrollArea className="max-h-[calc(100vh-24rem)]">
+          <ul className="nav-sidebar__list" role="listbox">
+            {filtered.map((sector, index) => {
+              const to = `/sectors/${encodeURIComponent(sector.id)}`;
+              const isActive = location.pathname.startsWith(to);
+              return (
+                <li key={sector.id}>
+                  <Link
+                    to={to}
+                  ref={(element) => {
+                    listRef.current[index] = element;
+                  }}
+                  className={cn(
+                    'nav-sidebar__item focus-outline',
+                    isActive && 'nav-sidebar__item--active',
+                  )}
+                  tabIndex={tabbableIndex === index ? 0 : -1}
+                  role="option"
+                  aria-selected={isActive}
+                  onKeyDown={(event) => {
+                    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                      event.preventDefault();
+                      const direction = event.key === 'ArrowDown' ? 1 : -1;
+                      const nextIndex = (index + direction + filtered.length) % filtered.length;
+                      setTabbableIndex(nextIndex);
+                      listRef.current[nextIndex]?.focus();
+                    }
+                  }}
+                >
+                  <span className="nav-sidebar__name">{sector.name}</span>
+                  {sector.description && <span className="nav-sidebar__meta">{sector.description}</span>}
+                </Link>
+              </li>
+            );
+            })}
+            {filtered.length === 0 && (
+              <li className="nav-sidebar__empty">No sectors match your search.</li>
+            )}
+          </ul>
+        </ScrollArea>
       </div>
-      <ScrollArea className="max-h-[calc(100vh-12rem)]">
-        <ul className="nav-sidebar__list" role="listbox">
-          {filtered.map((sector, index) => {
-            const to = `/sectors/${encodeURIComponent(sector.id)}`;
-            const isActive = location.pathname.startsWith(to);
-            return (
-              <li key={sector.id}>
-                <Link
-                  to={to}
-                ref={(element) => {
-                  listRef.current[index] = element;
-                }}
-                className={cn(
-                  'nav-sidebar__item focus-outline',
-                  isActive && 'nav-sidebar__item--active',
-                )}
-                tabIndex={tabbableIndex === index ? 0 : -1}
-                role="option"
-                aria-selected={isActive}
-                onKeyDown={(event) => {
-                  if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-                    event.preventDefault();
-                    const direction = event.key === 'ArrowDown' ? 1 : -1;
-                    const nextIndex = (index + direction + filtered.length) % filtered.length;
-                    setTabbableIndex(nextIndex);
-                    listRef.current[nextIndex]?.focus();
-                  }
-                }}
-              >
-                <span className="nav-sidebar__name">{sector.name}</span>
-                {sector.description && <span className="nav-sidebar__meta">{sector.description}</span>}
-              </Link>
-            </li>
-          );
-          })}
-          {filtered.length === 0 && (
-            <li className="nav-sidebar__empty">No sectors match your search.</li>
-          )}
-        </ul>
-      </ScrollArea>
+
+      {/* Controls at bottom */}
+      <div className="border-t border-border pt-4 mt-4">
+        <div className="flex items-center justify-between px-2">
+          <span className="text-xs font-medium text-text-muted">Settings</span>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <button
+              type="button"
+              className="p-2 rounded-lg hover:bg-surface-hover transition-colors"
+              onClick={onOpenSettings}
+              title="Settings"
+              aria-label="Open settings"
+            >
+              <Settings className="h-5 w-5 text-text-secondary" />
+            </button>
+          </div>
+        </div>
+      </div>
     </nav>
   );
 }

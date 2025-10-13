@@ -15,6 +15,7 @@ import ProfilePicker, { ProfilePickerSkeleton } from './ProfilePicker';
 import { CanvasSkeleton } from './VisualizationCanvas';
 import { Sheet, SheetContent, SheetTrigger } from '../components/ui/sheet';
 import { Button } from '../components/ui/button';
+import SettingsModal from '../components/SettingsModal';
 
 import '../styles/layout.css';
 
@@ -38,20 +39,29 @@ export default function Layout() {
   const datasetMatch = matches.find((match) => match.id === 'dataset');
 
   const [isInspectOpen, setInspectOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
+  // References panel starts hidden by default
   useEffect(() => {
-    setInspectOpen(Boolean(datasetMatch));
-  }, [datasetMatch]);
+    // Only auto-open references when dataset is loaded AND it's currently closed
+    if (datasetMatch && !isInspectOpen) {
+      // Don't auto-open, let user explicitly open it
+      // setInspectOpen(true);
+    }
+  }, [datasetMatch, isInspectOpen]);
 
   const datasetData = datasetMatch?.data as DatasetLoaderData | undefined;
   const datasetId = datasetMatch?.params?.datasetId as string | undefined;
 
   return (
-    <div className="app-layout">
+    <>
+      <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+
+      <div className="app-layout" data-references-open={isInspectOpen}>
       <aside className="app-layout__nav">
         <Suspense fallback={<NavSidebarSkeleton />}>
           <Await resolve={data.sectors}>
-            {(sectors) => <NavSidebar sectors={sectors} />}
+            {(sectors) => <NavSidebar sectors={sectors} onOpenSettings={() => setSettingsOpen(true)} />}
           </Await>
         </Suspense>
       </aside>
@@ -59,11 +69,27 @@ export default function Layout() {
         <ScopePane datasetsPromise={data.datasets} />
       </main>
       <aside className="app-layout__inspect hidden lg:flex" data-open={isInspectOpen ? 'true' : 'false'}>
+        {/* Toggle button for References */}
+        {!isInspectOpen && datasetId && (
+          <button
+            type="button"
+            onClick={() => setInspectOpen(true)}
+            className="absolute left-0 top-1/2 -translate-x-full -translate-y-1/2 bg-surface border border-border rounded-l-lg px-2 py-8 hover:bg-surface-hover transition-colors shadow-md"
+            aria-label="Show references"
+            title="Show references"
+          >
+            <div className="text-xs font-semibold text-text-muted writing-mode-vertical">
+              References
+            </div>
+          </button>
+        )}
+
         <Suspense fallback={<ReferencePanelSkeleton />}>
           <ReferencesContent
             datasetId={datasetId}
             data={datasetData}
             onClose={() => setInspectOpen(false)}
+            onToggle={() => setInspectOpen(!isInspectOpen)}
           />
         </Suspense>
       </aside>
@@ -88,7 +114,8 @@ export default function Layout() {
           </Suspense>
         </SheetContent>
       </Sheet>
-    </div>
+      </div>
+    </>
   );
 }
 
@@ -142,13 +169,15 @@ function ReferencesContent({
   datasetId,
   data,
   onClose,
+  onToggle,
 }: {
   datasetId?: string;
   data?: DatasetLoaderData;
   onClose?: () => void;
+  onToggle?: () => void;
 }) {
   if (!datasetId || !data) {
-    return <ReferencePanel datasetId={undefined} onClose={onClose} />;
+    return <ReferencePanel datasetId={undefined} onClose={onClose} onToggle={onToggle} />;
   }
 
   return (
@@ -159,6 +188,7 @@ function ReferencesContent({
           fallbackDataset={dataset}
           fallbackReferences={references}
           onClose={onClose}
+          onToggle={onToggle}
         />
       )}
     </Await>

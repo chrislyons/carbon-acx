@@ -5,12 +5,16 @@
 
   --surface-background: #f4f6fb;
   --surface-default: #ffffff;
+  --surface: #ffffff;
   --surface-muted: rgba(255, 255, 255, 0.72);
   --surface-elevated: rgba(255, 255, 255, 0.92);
+  --surface-hover: rgba(0, 0, 0, 0.04);
 
+  --border: rgba(20, 25, 36, 0.12);
   --border-default: rgba(20, 25, 36, 0.12);
   --border-strong: rgba(20, 25, 36, 0.24);
 
+  --foreground: #171c2a;
   --text-primary: #171c2a;
   --text-secondary: rgba(23, 28, 42, 0.68);
   --text-muted: rgba(23, 28, 42, 0.52);
@@ -70,12 +74,16 @@
   color-scheme: dark;
   --surface-background: #0c121f;
   --surface-default: #121a2b;
+  --surface: #121a2b;
   --surface-muted: rgba(18, 26, 43, 0.72);
   --surface-elevated: rgba(18, 26, 43, 0.92);
+  --surface-hover: rgba(255, 255, 255, 0.08);
 
+  --border: rgba(229, 235, 255, 0.12);
   --border-default: rgba(229, 235, 255, 0.12);
   --border-strong: rgba(229, 235, 255, 0.32);
 
+  --foreground: #eef2ff;
   --text-primary: #eef2ff;
   --text-secondary: rgba(238, 242, 255, 0.76);
   --text-muted: rgba(238, 242, 255, 0.56);
