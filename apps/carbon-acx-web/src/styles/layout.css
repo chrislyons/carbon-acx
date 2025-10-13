@@ -222,7 +222,6 @@
 .profile-picker__empty {
   color: var(--text-muted);
   font-size: 0.9rem;
-  margin-bottom: 0.75rem;
 }
 
 .home-view,
