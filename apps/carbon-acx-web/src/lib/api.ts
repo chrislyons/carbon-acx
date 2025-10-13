@@ -145,11 +145,11 @@ async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export function loadSectors(): Promise<SectorSummary[]> {
-  return fetchJson<{ sectors: SectorSummary[] }>('sectors').then((data) => data.sectors);
+  return fetchJson<{ sectors: SectorSummary[] }>('sectors.json').then((data) => data.sectors);
 }
 
 export function loadDatasets(): Promise<DatasetSummary[]> {
-  return fetchJson<{ datasets: DatasetSummary[] }>('datasets').then((data) => data.datasets);
+  return fetchJson<{ datasets: DatasetSummary[] }>('datasets.json').then((data) => data.datasets);
 }
 
 export function loadActivities(sectorId: string): Promise<ActivitySummary[]> {
@@ -162,7 +162,7 @@ export function loadSector(sectorId: string): Promise<{
   profiles: ProfileSummary[];
 }> {
   return fetchJson<{ sector: SectorSummary; activities: ActivitySummary[]; profiles?: ProfileSummary[] }>(
-    `sectors/${encodeURIComponent(sectorId)}`,
+    `sectors/${encodeURIComponent(sectorId)}.json`,
   ).then((data) => ({
     sector: data.sector,
     activities: data.activities,
@@ -335,7 +335,7 @@ export function loadDataset(datasetId: string): Promise<{
   references: ReferenceSummary[];
 }> {
   return fetchJson<{ dataset: unknown; references: ReferenceSummary[] }>(
-    `datasets/${encodeURIComponent(datasetId)}`,
+    `datasets/${encodeURIComponent(datasetId)}.json`,
   ).then((payload) => ({
     dataset: normaliseDatasetDetail(payload.dataset),
     references: Array.isArray(payload.references)
