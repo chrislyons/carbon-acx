@@ -1,6 +1,9 @@
 # Carbon ACX User Journeys
 
-This document outlines the key user scenarios and interactions within the Carbon ACX web application. Last updated: 2025-10-12
+This document outlines the key user scenarios and interactions within the Carbon ACX web application.
+
+**Last updated:** 2025-10-13
+**Recent changes:** Moved theme/settings controls to nav sidebar, fixed fullscreen charts, updated Journey 7 & 12
 
 ---
 
@@ -135,18 +138,20 @@ This document outlines the key user scenarios and interactions within the Carbon
 **Goal:** Switch to dark theme for comfortable viewing
 
 **Steps:**
-1. User sees top-right controls (theme + settings)
-2. Clicks moon icon to enable dark mode
-3. Interface smoothly transitions to dark theme
-4. All colors, charts, and text remain readable
-5. Theme preference saved to localStorage
-6. On next visit, dark mode persists
+1. User scrolls to bottom of left navigation sidebar
+2. Sees "Settings" section with theme toggle and settings icon
+3. Clicks moon/sun icon to toggle dark mode
+4. Interface smoothly transitions to dark theme
+5. All colors, charts, and text remain readable
+6. Theme preference saved to localStorage
+7. On next visit, dark mode persists
 
 **Success Criteria:**
-- ✅ Toggle is discoverable (top-right corner)
+- ✅ Toggle is accessible at bottom of nav sidebar
 - ✅ Transition is smooth (<300ms)
 - ✅ All components support dark mode
 - ✅ Preference persists across sessions
+- ✅ Controls don't obstruct main content
 
 ---
 
@@ -245,18 +250,21 @@ This document outlines the key user scenarios and interactions within the Carbon
 **Goal:** Configure app and learn more about Carbon ACX
 
 **Steps:**
-1. User clicks Settings icon (top-right)
-2. Modal opens with app information
-3. Reads about Carbon ACX mission
-4. Views current version (ACX 0.4.1)
-5. Clicks "View on GitHub" to see source code
-6. Clicks "Documentation" to read guides
-7. Closes modal with X or "Close" button
+1. User scrolls to bottom of left navigation sidebar
+2. Sees "Settings" section with theme toggle and settings icon
+3. Clicks settings icon (gear)
+4. Modal opens with app information
+5. Reads about Carbon ACX mission
+6. Views current version (ACX 0.4.1)
+7. Clicks "View on GitHub" to see source code
+8. Clicks "Documentation" to read guides
+9. Closes modal with X or "Close" button
 
 **Success Criteria:**
-- ✅ Settings accessible from any page
+- ✅ Settings accessible from any page (via nav sidebar)
 - ✅ Links open in new tabs
 - ✅ Modal is keyboard accessible (ESC to close)
+- ✅ Settings persist in nav sidebar (always visible)
 
 ---
 
@@ -312,6 +320,36 @@ To measure success of these journeys:
 - localStorage is used for theme and profile persistence
 - No authentication required (client-side only)
 - Demo data is hardcoded JSON (not API)
+
+---
+
+## Recent Updates (2025-10-13)
+
+### UX Polish Sprint
+
+**What Changed:**
+1. **Controls Repositioned** - Moved theme toggle and settings button from floating top-right to bottom of left navigation sidebar
+2. **Fullscreen Charts Fixed** - Corrected button positioning to ensure fullscreen mode works properly
+3. **Layout Structure Fixed** - Resolved broken frontend caused by incorrect NavSidebar component structure
+4. **TypeScript Error Fixed** - Corrected ReferencePanel dataset selector to use `datasetId` instead of non-existent `title` property
+
+**Impact:**
+- Controls are now less obtrusive and don't cover content
+- Theme/settings always accessible but out of the way
+- Fullscreen chart modal now displays correctly when clicking maximize icon
+- No more blank frontend page
+
+**Files Modified:**
+- `apps/carbon-acx-web/src/views/NavSidebar.tsx` - Added controls section at bottom
+- `apps/carbon-acx-web/src/views/Layout.tsx` - Removed floating controls, manages SettingsModal state
+- `apps/carbon-acx-web/src/components/FullscreenChart.tsx` - Fixed button positioning within relative parent
+- `apps/carbon-acx-web/src/views/ReferencePanel.tsx` - Fixed TypeScript error in dataset selector
+- `apps/carbon-acx-web/src/styles/layout.css` - Added height constraint to nav for proper flex layout
+
+**Commits:**
+- `fix: use datasetId instead of non-existent title property`
+- `refactor: move controls to nav sidebar and fix fullscreen button`
+- `fix: correct NavSidebar structure to prevent layout breaking`
 
 ---
 
