@@ -218,14 +218,27 @@ function createSnapshot(profile: ProfileData, totalEmissions: number): Historica
 }
 
 /** Check if snapshot should be taken (throttled to once per day) */
-function shouldTakeSnapshot(history: HistoricalSnapshot[]): boolean {
-  if (history.length === 0) return true;
+function shouldTakeSnapshot(
+  history: HistoricalSnapshot[],
+  totalEmissions: number
+): boolean {
+  // Skip initial snapshot if profile is empty (0 emissions)
+  if (history.length === 0) {
+    return totalEmissions > 0;
+  }
 
   const lastSnapshot = history[history.length - 1];
   const lastTime = new Date(lastSnapshot.timestamp).getTime();
   const now = Date.now();
 
-  return now - lastTime >= SNAPSHOT_THROTTLE_MS;
+  // If enough time has passed, check if we should update:
+  // - Always snapshot if profile has changed (non-zero emissions)
+  // - Also snapshot if last snapshot was empty but profile now has data
+  if (now - lastTime >= SNAPSHOT_THROTTLE_MS) {
+    return totalEmissions > 0 || lastSnapshot.totalEmissions > 0;
+  }
+
+  return false;
 }
 
 // ============================================================================
@@ -247,8 +260,8 @@ export function ProfileProvider({ children }: ProfileProviderProps) {
     const newTotal = calculateTotal(profile);
     setTotalEmissions(newTotal);
 
-    // Automatically take snapshot if enough time has passed
-    if (shouldTakeSnapshot(history)) {
+    // Automatically take snapshot if enough time has passed and profile has data
+    if (shouldTakeSnapshot(history, newTotal)) {
       const snapshot = createSnapshot(profile, newTotal);
       const newHistory = [...history, snapshot];
       setHistory(newHistory);
