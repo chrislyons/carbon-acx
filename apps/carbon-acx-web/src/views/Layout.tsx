@@ -11,7 +11,6 @@ import type {
 import NavSidebar, { NavSidebarSkeleton } from './NavSidebar';
 import ReferencePanel, { ReferencePanelSkeleton } from './ReferencePanel';
 import ScopeSelector, { ScopeSelectorSkeleton } from './ScopeSelector';
-import ProfilePicker, { ProfilePickerSkeleton } from './ProfilePicker';
 import { CanvasSkeleton } from './VisualizationCanvas';
 import { Sheet, SheetContent, SheetTrigger } from '../components/ui/sheet';
 import { Button } from '../components/ui/button';
@@ -130,7 +129,6 @@ function ScopePane({ datasetsPromise }: { datasetsPromise: Promise<DatasetSummar
     return (
       <>
         <ScopeSelector />
-        <ProfilePicker />
         <Suspense fallback={<CanvasSkeleton />}>
           <Await resolve={datasetsPromise}>
             {(datasets) => <Outlet context={{ datasets } satisfies LayoutOutletContext} />}
@@ -146,7 +144,6 @@ function ScopePane({ datasetsPromise }: { datasetsPromise: Promise<DatasetSummar
         {([sector, activities, datasets]) => (
           <>
             <ScopeSelector sector={sector} />
-            <ProfilePicker activities={activities} />
             <Outlet context={{ datasets } satisfies LayoutOutletContext} />
           </>
         )}
@@ -159,7 +156,6 @@ function ScopePaneSkeleton() {
   return (
     <>
       <ScopeSelectorSkeleton />
-      <ProfilePickerSkeleton />
       <CanvasSkeleton />
     </>
   );

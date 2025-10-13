@@ -29,12 +29,18 @@ export default function FullscreenChart({ children, title, description }: Fullsc
         ? cloneChildrenWithFullscreenHeight(child.props.children)
         : child.props.children;
 
-      // Override height prop if it exists
-      return cloneElement(child as React.ReactElement<any>, {
+      // Override height prop for components that accept it
+      const newProps: any = {
         ...child.props,
-        height: child.props.height !== undefined ? fullscreenHeight : child.props.height,
         children: clonedChildren,
-      });
+      };
+
+      // If the component has a height prop, override it for fullscreen
+      if ('height' in child.props) {
+        newProps.height = fullscreenHeight;
+      }
+
+      return cloneElement(child as React.ReactElement<any>, newProps);
     });
   };
 

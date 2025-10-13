@@ -1,5 +1,6 @@
 import type { ProfileSummary } from '../lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Skeleton } from '../components/ui/skeleton';
 
 interface ProfilePickerProps {
   profiles: ProfileSummary[];
