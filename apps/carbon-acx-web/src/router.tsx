@@ -60,6 +60,7 @@ export const router = createBrowserRouter([
           return defer({
             sector: promise.then((data) => data.sector),
             activities: promise.then((data) => data.activities),
+            profiles: promise.then((data) => data.profiles),
           });
         },
         element: suspenseElement(<SectorView />, 'Loading sector data…'),

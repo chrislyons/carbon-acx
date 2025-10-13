@@ -3,7 +3,7 @@ import { Await, Link, useLoaderData, useOutletContext } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, BarChart3, Layers } from 'lucide-react';
 
-import type { ActivitySummary, DatasetSummary, SectorSummary } from '../lib/api';
+import type { ActivitySummary, DatasetSummary, ProfileSummary, SectorSummary } from '../lib/api';
 import { useProfile } from '../contexts/ProfileContext';
 import { Skeleton } from '../components/ui/skeleton';
 import { Button } from '../components/ui/button';
@@ -14,10 +14,12 @@ import TimeSeriesChart from '../components/charts/TimeSeriesChart';
 import FullscreenChart from '../components/FullscreenChart';
 import { getSectorActivityBreakdown, getSectorEmissionsTrend } from '../lib/demoData';
 import type { LayoutOutletContext } from './Layout';
+import ProfilePicker from './ProfilePicker';
 
 interface SectorLoaderData {
   sector: Promise<SectorSummary>;
   activities: Promise<ActivitySummary[]>;
+  profiles: Promise<ProfileSummary[]>;
 }
 
 export default function SectorView() {
@@ -27,8 +29,8 @@ export default function SectorView() {
 
   return (
     <Suspense fallback={<SectorSkeleton />}>
-      <Await resolve={Promise.all([data.sector, data.activities])}>
-        {([sector, activities]) => (
+      <Await resolve={Promise.all([data.sector, data.activities, data.profiles])}>
+        {([sector, activities, profiles]) => (
           <div className="space-y-3">
             {/* Sector Header - Ultra Compact */}
             <motion.div
@@ -46,11 +48,24 @@ export default function SectorView() {
                 </div>
               </div>
               <div className="flex items-center gap-2 text-xs text-text-muted">
+                <span><strong>{profiles.length}</strong> profiles</span>
+                <span>•</span>
                 <span><strong>{activities.length}</strong> activities</span>
                 <span>•</span>
                 <span><strong>{profile.activities.filter(a => a.sectorId === sector.id).length}</strong> in profile</span>
               </div>
             </motion.div>
+
+            {/* Profile Presets */}
+            {profiles.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.05 }}
+              >
+                <ProfilePicker profiles={profiles} sectorId={sector.id} />
+              </motion.div>
+            )}
 
             {/* Sector Visualizations - IMMEDIATELY VISIBLE */}
             <motion.div

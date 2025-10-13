@@ -104,6 +104,17 @@ export interface ActivitySummary {
   description: string | null;
 }
 
+export interface ProfileSummary {
+  id: string;
+  sectorId: string;
+  layerId: string | null;
+  name: string;
+  regionCode: string | null;
+  gridStrategy: string | null;
+  officeDaysPerWeek: number | null;
+  notes: string | null;
+}
+
 export interface DatasetSummary {
   datasetId: string;
   generatedAt: string | null;
@@ -180,6 +191,22 @@ export async function listActivities(sectorId: string): Promise<ActivitySummary[
       name: record['name'] ?? null,
       defaultUnit: record['default_unit'] ?? null,
       description: record['description'] ?? null,
+    }));
+}
+
+export async function listProfiles(sectorId: string): Promise<ProfileSummary[]> {
+  const records = await loadCsvRecords('profiles.csv');
+  return records
+    .filter((record) => (record['sector_id'] ?? '').toLowerCase() === sectorId.toLowerCase())
+    .map((record) => ({
+      id: record['profile_id'] ?? '',
+      sectorId: record['sector_id'] ?? '',
+      layerId: record['layer_id'] ?? null,
+      name: record['name'] ?? '',
+      regionCode: record['region_code_default'] ?? null,
+      gridStrategy: record['grid_strategy'] ?? null,
+      officeDaysPerWeek: record['office_days_per_week'] ? parseFloat(record['office_days_per_week']) : null,
+      notes: record['assumption_notes'] ?? null,
     }));
 }
 
