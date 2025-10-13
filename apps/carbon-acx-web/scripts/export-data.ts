@@ -13,6 +13,7 @@ import { fileURLToPath } from 'node:url';
 import {
   getDataset,
   listActivities,
+  listActivitySchedule,
   listDatasets,
   listProfiles,
   listReferences,
@@ -44,12 +45,14 @@ async function exportData() {
   await ensureDirectory(apiDir);
   await ensureDirectory(path.join(apiDir, 'sectors'));
   await ensureDirectory(path.join(apiDir, 'datasets'));
+  await ensureDirectory(path.join(apiDir, 'profiles'));
 
   // Export sectors list
   const sectors = await listSectors();
   await writeJson(path.join(apiDir, 'sectors.json'), { sectors });
 
   // Export sector details (activities + profiles)
+  const allProfiles = [];
   for (const sector of sectors) {
     const [activities, profiles] = await Promise.all([
       listActivities(sector.id),
@@ -59,6 +62,16 @@ async function exportData() {
       sector,
       activities,
       profiles,
+    });
+    allProfiles.push(...profiles);
+  }
+
+  // Export profile activity schedules
+  for (const profile of allProfiles) {
+    const schedule = await listActivitySchedule(profile.id);
+    await writeJson(path.join(apiDir, 'profiles', `${encodeURIComponent(profile.id)}.json`), {
+      profile,
+      activities: schedule,
     });
   }
 

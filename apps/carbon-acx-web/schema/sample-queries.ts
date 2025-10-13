@@ -132,6 +132,23 @@ export interface ReferenceSummary {
   layer?: string;
 }
 
+export interface ActivityScheduleEntry {
+  profileId: string;
+  sectorId: string;
+  activityId: string;
+  layerId: string | null;
+  freqPerDay: number | null;
+  freqPerWeek: number | null;
+  officeDaysOnly: boolean;
+  regionOverride: string | null;
+  scheduleNotes: string | null;
+  distanceKm: number | null;
+  passengers: number | null;
+  hours: number | null;
+  viewers: number | null;
+  servings: number | null;
+}
+
 async function loadManifestIndex(): Promise<Record<string, unknown> | null> {
   try {
     const filePath = path.join(artifactsDir, 'manifest.json');
@@ -207,6 +224,28 @@ export async function listProfiles(sectorId: string): Promise<ProfileSummary[]> 
       gridStrategy: record['grid_strategy'] ?? null,
       officeDaysPerWeek: record['office_days_per_week'] ? parseFloat(record['office_days_per_week']) : null,
       notes: record['assumption_notes'] ?? null,
+    }));
+}
+
+export async function listActivitySchedule(profileId: string): Promise<ActivityScheduleEntry[]> {
+  const records = await loadCsvRecords('activity_schedule.csv');
+  return records
+    .filter((record) => (record['profile_id'] ?? '').toLowerCase() === profileId.toLowerCase())
+    .map((record) => ({
+      profileId: record['profile_id'] ?? '',
+      sectorId: record['sector_id'] ?? '',
+      activityId: record['activity_id'] ?? '',
+      layerId: record['layer_id'] ?? null,
+      freqPerDay: record['freq_per_day'] ? parseFloat(record['freq_per_day']) : null,
+      freqPerWeek: record['freq_per_week'] ? parseFloat(record['freq_per_week']) : null,
+      officeDaysOnly: (record['office_days_only'] ?? '').toLowerCase() === 'true',
+      regionOverride: record['region_override'] ?? null,
+      scheduleNotes: record['schedule_notes'] ?? null,
+      distanceKm: record['distance_km'] ? parseFloat(record['distance_km']) : null,
+      passengers: record['passengers'] ? parseFloat(record['passengers']) : null,
+      hours: record['hours'] ? parseFloat(record['hours']) : null,
+      viewers: record['viewers'] ? parseFloat(record['viewers']) : null,
+      servings: record['servings'] ? parseFloat(record['servings']) : null,
     }));
 }
 

@@ -91,6 +91,23 @@ export interface ReferenceSummary {
   layer?: string;
 }
 
+export interface ProfileActivitySchedule {
+  profileId: string;
+  sectorId: string;
+  activityId: string;
+  layerId: string | null;
+  freqPerDay: number | null;
+  freqPerWeek: number | null;
+  officeDaysOnly: boolean;
+  regionOverride: string | null;
+  scheduleNotes: string | null;
+  distanceKm: number | null;
+  passengers: number | null;
+  hours: number | null;
+  viewers: number | null;
+  servings: number | null;
+}
+
 const rawConfiguredApiBase = (import.meta.env.VITE_API_BASE_URL ?? '').trim();
 const fallbackApiBase = (() => {
   const baseUrl = import.meta.env.BASE_URL ?? '/';
@@ -342,4 +359,13 @@ export function loadDataset(datasetId: string): Promise<{
       ? payload.references.map(normaliseReference)
       : [],
   }));
+}
+
+export function loadProfileActivities(profileId: string): Promise<{
+  profile: ProfileSummary;
+  activities: ProfileActivitySchedule[];
+}> {
+  return fetchJson<{ profile: ProfileSummary; activities: ProfileActivitySchedule[] }>(
+    `profiles/${encodeURIComponent(profileId)}.json`,
+  );
 }

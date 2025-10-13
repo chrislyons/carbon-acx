@@ -63,7 +63,7 @@ export default function SectorView() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 }}
               >
-                <ProfilePicker profiles={profiles} sectorId={sector.id} />
+                <ProfilePicker profiles={profiles} sectorId={sector.id} activities={activities} />
               </motion.div>
             )}
 

@@ -1,18 +1,94 @@
-import type { ProfileSummary } from '../lib/api';
+import { useState } from 'react';
+import type { ActivitySummary, ProfileSummary } from '../lib/api';
+import { loadProfileActivities } from '../lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Skeleton } from '../components/ui/skeleton';
+import { useProfile } from '../contexts/ProfileContext';
 
 interface ProfilePickerProps {
   profiles: ProfileSummary[];
   sectorId: string;
+  activities: ActivitySummary[];
 }
 
-export default function ProfilePicker({ profiles, sectorId }: ProfilePickerProps) {
+export default function ProfilePicker({ profiles, sectorId, activities }: ProfilePickerProps) {
   const hasProfiles = profiles.length > 0;
+  const { addActivity, clearProfile } = useProfile();
+  const [loading, setLoading] = useState<string | null>(null);
 
   if (!hasProfiles) {
     return null;
   }
+
+  const handleProfileSelect = async (profile: ProfileSummary) => {
+    setLoading(profile.id);
+    try {
+      // Load profile activity schedule
+      const profileData = await loadProfileActivities(profile.id);
+
+      // Create activity lookup map
+      const activityMap = new Map(activities.map((a) => [a.id, a]));
+
+      // Clear existing profile activities
+      clearProfile();
+
+      // Calculate and add activities from schedule
+      let addedCount = 0;
+      for (const scheduleEntry of profileData.activities) {
+        const activity = activityMap.get(scheduleEntry.activityId);
+        if (!activity) {
+          console.warn(`Activity ${scheduleEntry.activityId} not found in sector activities`);
+          continue;
+        }
+
+        // Calculate annual quantity from frequency
+        let annualQuantity = 0;
+        if (scheduleEntry.freqPerDay !== null) {
+          // Daily frequency: multiply by 365 days
+          annualQuantity = scheduleEntry.freqPerDay * 365;
+          // If office days only, adjust by work days
+          if (scheduleEntry.officeDaysOnly && profile.officeDaysPerWeek !== null) {
+            annualQuantity = scheduleEntry.freqPerDay * profile.officeDaysPerWeek * 52;
+          }
+        } else if (scheduleEntry.freqPerWeek !== null) {
+          // Weekly frequency: multiply by 52 weeks
+          annualQuantity = scheduleEntry.freqPerWeek * 52;
+        }
+
+        // Apply any parameter multipliers (distance, hours, etc.)
+        if (scheduleEntry.distanceKm !== null) annualQuantity *= scheduleEntry.distanceKm;
+        if (scheduleEntry.hours !== null) annualQuantity *= scheduleEntry.hours;
+        if (scheduleEntry.servings !== null) annualQuantity *= scheduleEntry.servings;
+
+        // Use placeholder carbon intensity (will be calculated by backend in future)
+        // For now, use 100g CO2e per unit as rough estimate
+        const carbonIntensity = 0.1; // kg CO2e per unit
+
+        addActivity({
+          id: activity.id,
+          sectorId: activity.sectorId,
+          name: activity.name || activity.id,
+          category: activity.category,
+          quantity: annualQuantity,
+          unit: activity.defaultUnit || 'unit',
+          carbonIntensity,
+          annualEmissions: annualQuantity * carbonIntensity,
+          iconType: activity.iconType ?? undefined,
+          iconUrl: activity.iconUrl ?? undefined,
+          badgeColor: activity.badgeColor ?? undefined,
+        });
+        addedCount++;
+      }
+
+      console.log(`Loaded profile "${profile.name}" with ${addedCount} activities`);
+      alert(`Profile "${profile.name}" loaded successfully!\n\n${addedCount} activities added to your footprint.`);
+    } catch (error) {
+      console.error('Failed to load profile:', error);
+      alert(`Failed to load profile "${profile.name}". Please try again.`);
+    } finally {
+      setLoading(null);
+    }
+  };
 
   return (
     <Card>
@@ -27,24 +103,12 @@ export default function ProfilePicker({ profiles, sectorId }: ProfilePickerProps
           {profiles.map((profile) => (
             <button
               key={profile.id}
-              className="text-left p-3 rounded-lg border border-border hover:border-accent-500 hover:bg-accent-50/50 transition-all duration-200 group"
-              onClick={() => {
-                // TODO: Full implementation requires:
-                // 1. Backend API endpoint: GET /api/profiles/:profileId/activities
-                //    - Load activity_schedule.csv rows for this profile_id
-                //    - Join with activities.csv to get full activity details
-                //    - Calculate emissions using emission_factors.csv
-                // 2. Add activities to ProfileContext using addActivity()
-                // 3. Update visualizations to show profile data
-                // 4. Support multiple profile comparison (layers)
-                //
-                // For now, show a placeholder message
-                alert(`Profile selected: ${profile.name}\n\nFull profile loading will be implemented in a future update. This requires:\n• Backend API for activity schedules\n• Emissions calculation\n• Profile comparison features`);
-                console.log('Selected profile:', profile);
-              }}
+              disabled={loading === profile.id}
+              className="text-left p-3 rounded-lg border border-border hover:border-accent-500 hover:bg-accent-50/50 transition-all duration-200 group disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => handleProfileSelect(profile)}
             >
               <div className="font-medium text-sm text-foreground group-hover:text-accent-700 mb-1">
-                {profile.name}
+                {loading === profile.id ? 'Loading...' : profile.name}
               </div>
               {profile.notes && (
                 <p className="text-xs text-text-muted line-clamp-2 mt-1">{profile.notes}</p>
