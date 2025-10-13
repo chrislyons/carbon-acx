@@ -9,14 +9,14 @@ ONLINE.AB.CONSUMER.2025,SECTOR.DIGITAL_INFRASTRUCTURE,online,Online Services —
 ONLINE.BC.CONSUMER.2025,SECTOR.DIGITAL_INFRASTRUCTURE,online,Online Services — British Columbia consumer (2025),CA-BC,region_default,,,,
 ONLINE.QC.CONSUMER.2025,SECTOR.DIGITAL_INFRASTRUCTURE,online,Online Services — Quebec consumer (2025),CA-QC,region_default,,,,
 ONLINE.TO.CONSUMER.2025,SECTOR.DIGITAL_INFRASTRUCTURE,online,Online Services — Toronto consumer (2025),CA-ON,region_default,,,,
-PRO.AB.24_39.HYBRID.2025,SECTOR.PROFESSIONAL_SERVICES,professional,Alberta Pros 24–39 — Hybrid (2025),CA-AB,region_default,,,3.0,
-PRO.AB.40_56.HYBRID.2025,SECTOR.PROFESSIONAL_SERVICES,professional,Alberta Pros 40–56 — Hybrid (2025),CA-AB,region_default,,,3.0,
-PRO.BC.24_39.HYBRID.2025,SECTOR.PROFESSIONAL_SERVICES,professional,British Columbia Pros 24–39 — Hybrid (2025),CA-BC,region_default,,,3.0,
-PRO.BC.40_56.HYBRID.2025,SECTOR.PROFESSIONAL_SERVICES,professional,British Columbia Pros 40–56 — Hybrid (2025),CA-BC,region_default,,,3.0,
-PRO.QC.24_39.HYBRID.2025,SECTOR.PROFESSIONAL_SERVICES,professional,Quebec Pros 24–39 — Hybrid (2025),CA-QC,region_default,,,3.0,
-PRO.QC.40_56.HYBRID.2025,SECTOR.PROFESSIONAL_SERVICES,professional,Quebec Pros 40–56 — Hybrid (2025),CA-QC,region_default,,,3.0,
-PRO.TO.24_39.HYBRID.2025,SECTOR.PROFESSIONAL_SERVICES,professional,Toronto Pros 24–39 — Hybrid (2025),CA-ON,region_default,,,3.0,
-PRO.TO.40_56.HYBRID.2025,SECTOR.PROFESSIONAL_SERVICES,professional,Toronto Pros 40–56 — Hybrid (2025),CA-ON,region_default,,,3.0,
+PRO.AB.24_39.HYBRID.2025,SECTOR.PROFESSIONAL_SERVICES,professional,Alberta Professional 24–39 — Hybrid (2025),CA-AB,region_default,,,3.0,
+PRO.AB.40_56.HYBRID.2025,SECTOR.PROFESSIONAL_SERVICES,professional,Alberta Professional 40–56 — Hybrid (2025),CA-AB,region_default,,,3.0,
+PRO.BC.24_39.HYBRID.2025,SECTOR.PROFESSIONAL_SERVICES,professional,British Columbia Professional 24–39 — Hybrid (2025),CA-BC,region_default,,,3.0,
+PRO.BC.40_56.HYBRID.2025,SECTOR.PROFESSIONAL_SERVICES,professional,British Columbia Professional 40–56 — Hybrid (2025),CA-BC,region_default,,,3.0,
+PRO.QC.24_39.HYBRID.2025,SECTOR.PROFESSIONAL_SERVICES,professional,Quebec Professional 24–39 — Hybrid (2025),CA-QC,region_default,,,3.0,
+PRO.QC.40_56.HYBRID.2025,SECTOR.PROFESSIONAL_SERVICES,professional,Quebec Professional 40–56 — Hybrid (2025),CA-QC,region_default,,,3.0,
+PRO.TO.24_39.HYBRID.2025,SECTOR.PROFESSIONAL_SERVICES,professional,Toronto Professional 24–39 — Hybrid (2025),CA-ON,region_default,,,3.0,
+PRO.TO.40_56.HYBRID.2025,SECTOR.PROFESSIONAL_SERVICES,professional,Toronto Professional 40–56 — Hybrid (2025),CA-ON,region_default,,,3.0,
 PROFILE.ADULT.CLOTHING.2025,SECTOR.PROFESSIONAL_SERVICES,professional,Adult clothing consumption (2025),,region_default,,,0.0,Annualized clothing purchases for a representative adult cohort.
 PROFILE.CHILD.CLOTHING.2025,SECTOR.PROFESSIONAL_SERVICES,professional,Child clothing consumption (2025),,region_default,,,0.0,Annualized clothing purchases for a representative child cohort.
 PROFILE.ELITE.SECURITY.2025,SECTOR.PRIVATE_SECURITY,personal_security_layer,Elite private security program (2025),CA-ON,region_default,,,0.0,"High-net-worth security envelope covering convoy, guard, and aerial patrol services."
