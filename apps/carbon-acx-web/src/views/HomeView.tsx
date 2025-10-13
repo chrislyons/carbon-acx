@@ -10,10 +10,12 @@ import FullscreenChart from '../components/FullscreenChart';
 import MetricCard from '../components/MetricCard';
 import QuickAction from '../components/QuickAction';
 import { useProfile } from '../contexts/ProfileContext';
-import { loadDemoProfile, getDemoTimeSeries, getGlobalComparisonData } from '../lib/demoData';
+import { loadDemoProfile, getDemoTimeSeries } from '../lib/demoData';
+import { useLayerChartData } from '../hooks/useLayerChartData';
 
 export default function HomeView() {
   const { totalEmissions, profile } = useProfile();
+  const { chartData } = useLayerChartData();
   const hasData = profile.activities.length > 0 || profile.calculatorResults.length > 0;
 
   return (
@@ -74,13 +76,13 @@ export default function HomeView() {
       <div className="grid grid-cols-1 gap-3">
         {/* Global Comparison Chart */}
         <Card className="p-3 relative">
-          <FullscreenChart title="Global Carbon Footprint Comparison" description="Annual per capita emissions">
+          <FullscreenChart title="Global Carbon Footprint Comparison" description="Compare your emissions against regional and global averages">
             <div className="mb-2">
-              <h3 className="text-sm font-semibold text-foreground">Global Comparison</h3>
-              <p className="text-xs text-text-muted">Annual per capita emissions (kg CO₂)</p>
+              <h3 className="text-sm font-semibold text-foreground">Profile Comparison</h3>
+              <p className="text-xs text-text-muted">Toggle layers in the sidebar to compare emissions • Annual per capita (kg CO₂/year)</p>
             </div>
             <ComparativeBarChart
-              data={getGlobalComparisonData()}
+              data={chartData}
               orientation="horizontal"
               showDelta={true}
               sortBy="value"

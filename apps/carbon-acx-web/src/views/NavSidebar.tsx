@@ -9,6 +9,7 @@ import { ScrollArea } from '../components/ui/scroll-area';
 import { useSectors } from '../hooks/useDataset';
 import { useProfile } from '../contexts/ProfileContext';
 import ThemeToggle from '../components/ThemeToggle';
+import LayerToggle from '../components/LayerToggle';
 
 interface NavSidebarProps {
   sectors: SectorSummary[];
@@ -149,7 +150,13 @@ export default function NavSidebar({ sectors, onOpenSettings }: NavSidebarProps)
       </div>
 
       {/* Controls at bottom */}
-      <div className="border-t border-border pt-2 mt-2">
+      <div className="border-t border-border pt-2 mt-2 space-y-2">
+        {/* Layer comparison toggle */}
+        <div className="px-2">
+          <LayerToggle />
+        </div>
+
+        {/* Settings controls */}
         <div className="flex items-center justify-between px-2">
           <span className="text-xs font-medium text-text-muted">Settings</span>
           <div className="flex items-center gap-1.5">
