@@ -12,10 +12,17 @@ export interface ActivitySummary {
   name: string | null;
   defaultUnit: string | null;
   description: string | null;
+  /** Icon URL (SVG preferred) for visual badge representation */
+  iconUrl?: string | null;
+  /** Icon type identifier for predefined icons (e.g., 'netflix', 'amazon', 'car') */
+  iconType?: string | null;
+  /** Background color for badge (hex format) */
+  badgeColor?: string | null;
 }
 
 export interface DatasetSummary {
   datasetId: string;
+  title?: string | null;
   generatedAt: string | null;
   figureCount: number | null;
   manifestPath: string | null;

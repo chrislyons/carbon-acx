@@ -28,6 +28,12 @@ export interface SelectedActivity {
   /** Calculated: quantity * carbonIntensity */
   annualEmissions: number;
   addedAt: string; // ISO timestamp
+  /** Optional icon type from icon registry */
+  iconType?: string;
+  /** Optional direct icon URL */
+  iconUrl?: string;
+  /** Optional brand/badge color */
+  badgeColor?: string;
 }
 
 export interface CalculatorResult {
@@ -43,10 +49,22 @@ export interface ProfileData {
   lastUpdated: string; // ISO timestamp
 }
 
+export interface HistoricalSnapshot {
+  timestamp: string; // ISO timestamp
+  totalEmissions: number;
+  activityCount: number;
+  topSectors: Array<{
+    sectorId: string;
+    emissions: number;
+  }>;
+}
+
 interface ProfileContextValue {
   profile: ProfileData;
   /** Total annual emissions from all sources */
   totalEmissions: number;
+  /** Historical snapshots for tracking over time */
+  history: HistoricalSnapshot[];
   /** Add an activity to profile */
   addActivity: (activity: Omit<SelectedActivity, 'addedAt'>) => void;
   /** Remove activity by ID */
@@ -59,6 +77,10 @@ interface ProfileContextValue {
   clearProfile: () => void;
   /** Check if activity is in profile */
   hasActivity: (activityId: string) => boolean;
+  /** Manually take a snapshot of current profile */
+  takeSnapshot: () => void;
+  /** Get time-series data for charting */
+  getTimeSeriesData: () => Array<{ date: string; value: number }>;
 }
 
 // ============================================================================
@@ -72,7 +94,10 @@ const ProfileContext = createContext<ProfileContextValue | null>(null);
 // ============================================================================
 
 const STORAGE_KEY = 'carbon-acx:profile';
+const HISTORY_STORAGE_KEY = 'carbon-acx:history';
 const STORAGE_VERSION = 1;
+const MAX_HISTORY_ENTRIES = 365; // Keep up to 1 year of daily snapshots
+const SNAPSHOT_THROTTLE_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 const EMPTY_PROFILE: ProfileData = {
   activities: [],
@@ -134,6 +159,75 @@ function calculateTotal(profile: ProfileData): number {
   return activityTotal + calculatorTotal;
 }
 
+/** Load history from localStorage */
+function loadHistory(): HistoricalSnapshot[] {
+  try {
+    const stored = localStorage.getItem(HISTORY_STORAGE_KEY);
+    if (!stored) return [];
+
+    const parsed = JSON.parse(stored);
+    if (parsed.version !== STORAGE_VERSION) {
+      console.warn('History version mismatch, resetting');
+      return [];
+    }
+
+    return (parsed.data || []) as HistoricalSnapshot[];
+  } catch (error) {
+    console.error('Failed to load history from localStorage:', error);
+    return [];
+  }
+}
+
+/** Save history to localStorage */
+function saveHistory(history: HistoricalSnapshot[]): void {
+  try {
+    // Keep only the most recent entries
+    const trimmed = history.slice(-MAX_HISTORY_ENTRIES);
+
+    const payload = {
+      version: STORAGE_VERSION,
+      data: trimmed,
+    };
+    localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(payload));
+  } catch (error) {
+    console.error('Failed to save history to localStorage:', error);
+  }
+}
+
+/** Create a snapshot from current profile */
+function createSnapshot(profile: ProfileData, totalEmissions: number): HistoricalSnapshot {
+  // Calculate emissions by sector
+  const sectorMap = new Map<string, number>();
+  profile.activities.forEach((activity) => {
+    const current = sectorMap.get(activity.sectorId) || 0;
+    sectorMap.set(activity.sectorId, current + activity.annualEmissions);
+  });
+
+  // Get top 5 sectors
+  const topSectors = Array.from(sectorMap.entries())
+    .map(([sectorId, emissions]) => ({ sectorId, emissions }))
+    .sort((a, b) => b.emissions - a.emissions)
+    .slice(0, 5);
+
+  return {
+    timestamp: new Date().toISOString(),
+    totalEmissions,
+    activityCount: profile.activities.length + profile.calculatorResults.length,
+    topSectors,
+  };
+}
+
+/** Check if snapshot should be taken (throttled to once per day) */
+function shouldTakeSnapshot(history: HistoricalSnapshot[]): boolean {
+  if (history.length === 0) return true;
+
+  const lastSnapshot = history[history.length - 1];
+  const lastTime = new Date(lastSnapshot.timestamp).getTime();
+  const now = Date.now();
+
+  return now - lastTime >= SNAPSHOT_THROTTLE_MS;
+}
+
 // ============================================================================
 // Provider Component
 // ============================================================================
@@ -145,12 +239,22 @@ interface ProfileProviderProps {
 export function ProfileProvider({ children }: ProfileProviderProps) {
   const [profile, setProfile] = useState<ProfileData>(loadProfile);
   const [totalEmissions, setTotalEmissions] = useState<number>(() => calculateTotal(profile));
+  const [history, setHistory] = useState<HistoricalSnapshot[]>(loadHistory);
 
   // Persist to localStorage whenever profile changes
   useEffect(() => {
     saveProfile(profile);
-    setTotalEmissions(calculateTotal(profile));
-  }, [profile]);
+    const newTotal = calculateTotal(profile);
+    setTotalEmissions(newTotal);
+
+    // Automatically take snapshot if enough time has passed
+    if (shouldTakeSnapshot(history)) {
+      const snapshot = createSnapshot(profile, newTotal);
+      const newHistory = [...history, snapshot];
+      setHistory(newHistory);
+      saveHistory(newHistory);
+    }
+  }, [profile, history]);
 
   const addActivity = (activity: Omit<SelectedActivity, 'addedAt'>) => {
     setProfile((prev) => {
@@ -206,21 +310,45 @@ export function ProfileProvider({ children }: ProfileProviderProps) {
   const clearProfile = () => {
     setProfile(EMPTY_PROFILE);
     localStorage.removeItem(STORAGE_KEY);
+    // Optionally clear history too
+    setHistory([]);
+    localStorage.removeItem(HISTORY_STORAGE_KEY);
   };
 
   const hasActivity = (activityId: string): boolean => {
     return profile.activities.some((a) => a.id === activityId);
   };
 
+  const takeSnapshot = () => {
+    const snapshot = createSnapshot(profile, totalEmissions);
+    const newHistory = [...history, snapshot];
+    setHistory(newHistory);
+    saveHistory(newHistory);
+  };
+
+  const getTimeSeriesData = (): Array<{ date: string; value: number }> => {
+    return history.map((snapshot) => ({
+      date: new Date(snapshot.timestamp).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      }),
+      value: snapshot.totalEmissions,
+    }));
+  };
+
   const value: ProfileContextValue = {
     profile,
     totalEmissions,
+    history,
     addActivity,
     removeActivity,
     updateActivityQuantity,
     saveCalculatorResults,
     clearProfile,
     hasActivity,
+    takeSnapshot,
+    getTimeSeriesData,
   };
 
   return (

@@ -8,7 +8,7 @@ import { useProfile } from '../contexts/ProfileContext';
 import { Skeleton } from '../components/ui/skeleton';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import ActivityMatrix, { ActivityMatrixSkeleton } from '../components/ActivityMatrix';
+import ActivityBadgeGrid from '../components/ActivityBadgeGrid';
 import ComparativeBarChart from '../components/charts/ComparativeBarChart';
 import TimeSeriesChart from '../components/charts/TimeSeriesChart';
 import FullscreenChart from '../components/FullscreenChart';
@@ -104,7 +104,7 @@ export default function SectorView() {
               </Card>
             </motion.div>
 
-            {/* Activity Matrix */}
+            {/* Activities */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -114,14 +114,14 @@ export default function SectorView() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <BarChart3 className="h-5 w-5 text-accent-500" />
-                    Activity Carbon Impact
+                    {sector.name} Activities
                   </CardTitle>
                   <p className="text-sm text-text-muted mt-2">
-                    Select activities to add to your personal carbon profile. Click on any activity to see its impact.
+                    Select activities to add to your profile.
                   </p>
                 </CardHeader>
                 <CardContent>
-                  <ActivityMatrix
+                  <ActivityBadgeGrid
                     activities={activities}
                     sectorId={sector.id}
                   />
@@ -217,7 +217,11 @@ function SectorSkeleton() {
           <Skeleton className="h-6 w-48" />
         </CardHeader>
         <CardContent>
-          <ActivityMatrixSkeleton />
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <Skeleton key={i} className="h-32 rounded-2xl" />
+            ))}
+          </div>
         </CardContent>
       </Card>
     </div>

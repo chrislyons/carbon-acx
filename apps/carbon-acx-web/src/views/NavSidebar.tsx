@@ -9,6 +9,7 @@ import { ScrollArea } from '../components/ui/scroll-area';
 import { useSectors } from '../hooks/useDataset';
 import { useProfile } from '../contexts/ProfileContext';
 import ThemeToggle from '../components/ThemeToggle';
+import LayerToggle from '../components/LayerToggle';
 
 interface NavSidebarProps {
   sectors: SectorSummary[];
@@ -59,33 +60,33 @@ export default function NavSidebar({ sectors, onOpenSettings }: NavSidebarProps)
     <nav className="nav-sidebar flex flex-col h-full" aria-label="Main navigation">
       <div className="flex-1 min-h-0">
         {/* Quick Links */}
-        <div className="mb-4 space-y-1">
+        <div className="mb-2 space-y-0.5">
           <Link
             to="/"
             className={cn(
-              'flex items-center gap-3 px-4 py-3 rounded-lg transition-colors',
+              'flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors',
               location.pathname === '/'
                 ? 'bg-accent-50 text-accent-600 font-medium'
                 : 'text-text-secondary hover:bg-surface hover:text-foreground'
             )}
           >
-            <Leaf className="h-5 w-5" />
-            <span>Home</span>
+            <Leaf className="h-4 w-4" />
+            <span className="text-sm">Home</span>
           </Link>
           <Link
             to="/dashboard"
             className={cn(
-              'flex items-center gap-3 px-4 py-3 rounded-lg transition-colors',
+              'flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors',
               location.pathname === '/dashboard'
                 ? 'bg-accent-50 text-accent-600 font-medium'
                 : 'text-text-secondary hover:bg-surface hover:text-foreground'
             )}
           >
-            <LayoutDashboard className="h-5 w-5" />
+            <LayoutDashboard className="h-4 w-4" />
             <div className="flex-1">
-              <span>Dashboard</span>
+              <span className="text-sm">Dashboard</span>
               {totalEmissions > 0 && (
-                <div className="text-xs text-text-muted mt-0.5">
+                <div className="text-xs text-text-muted">
                   {(totalEmissions / 1000).toFixed(1)}t CO₂/year
                 </div>
               )}
@@ -93,7 +94,7 @@ export default function NavSidebar({ sectors, onOpenSettings }: NavSidebarProps)
           </Link>
         </div>
 
-        <div className="border-t border-border mb-4" />
+        <div className="border-t border-border my-2" />
 
         <div className="nav-sidebar__search">
           <label htmlFor="sector-search">Search sectors</label>
@@ -106,7 +107,7 @@ export default function NavSidebar({ sectors, onOpenSettings }: NavSidebarProps)
             onChange={(event) => setQuery(event.target.value)}
           />
         </div>
-        <ScrollArea className="max-h-[calc(100vh-24rem)]">
+        <ScrollArea className="max-h-[calc(100vh-16rem)]">
           <ul className="nav-sidebar__list" role="listbox">
             {filtered.map((sector, index) => {
               const to = `/sectors/${encodeURIComponent(sector.id)}`;
@@ -149,19 +150,25 @@ export default function NavSidebar({ sectors, onOpenSettings }: NavSidebarProps)
       </div>
 
       {/* Controls at bottom */}
-      <div className="border-t border-border pt-4 mt-4">
+      <div className="border-t border-border pt-2 mt-2 space-y-2">
+        {/* Layer comparison toggle */}
+        <div className="px-2">
+          <LayerToggle />
+        </div>
+
+        {/* Settings controls */}
         <div className="flex items-center justify-between px-2">
           <span className="text-xs font-medium text-text-muted">Settings</span>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <ThemeToggle />
             <button
               type="button"
-              className="p-2 rounded-lg hover:bg-surface-hover transition-colors"
+              className="p-1.5 rounded-lg hover:bg-surface-hover transition-colors"
               onClick={onOpenSettings}
               title="Settings"
               aria-label="Open settings"
             >
-              <Settings className="h-5 w-5 text-text-secondary" />
+              <Settings className="h-4 w-4 text-text-secondary" />
             </button>
           </div>
         </div>

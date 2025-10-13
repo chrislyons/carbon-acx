@@ -27,7 +27,7 @@ import type { TimeSeriesDataPoint } from '../components/charts/TimeSeriesChart';
 const GLOBAL_AVERAGE_KG = 4500; // 4.5 tonnes per year
 
 export default function DashboardView() {
-  const { profile, totalEmissions, removeActivity } = useProfile();
+  const { profile, totalEmissions, removeActivity, getTimeSeriesData, history } = useProfile();
 
   const activityEmissions = profile.activities.reduce((sum, a) => sum + a.annualEmissions, 0);
   const calculatorEmissions = profile.calculatorResults.reduce((sum, r) => sum + r.annualEmissions, 0);
@@ -67,22 +67,30 @@ export default function DashboardView() {
       .slice(0, 10); // Top 10 activities
   }, [profile.activities, totalEmissions]);
 
-  // Generate mock time-series data based on activity additions
-  // In a real app, this would track historical data over time
+  // Use real historical tracking data
   const timeSeriesData: TimeSeriesDataPoint[] = useMemo(() => {
-    if (profile.activities.length === 0) return [];
+    // If we have historical data, use it
+    if (history.length > 0) {
+      return getTimeSeriesData();
+    }
 
-    // Create monthly data points for the last 6 months
-    const months = ['6 months ago', '5 months ago', '4 months ago', '3 months ago', '2 months ago', 'Last month', 'Current'];
-    const baseEmissions = totalEmissions * 0.7; // Assume started at 70% of current
-    const increment = (totalEmissions - baseEmissions) / (months.length - 1);
+    // Fallback: If no history yet, show current snapshot
+    if (totalEmissions > 0) {
+      return [
+        {
+          date: new Date().toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+          }),
+          value: totalEmissions,
+          label: `${totalEmissions.toFixed(0)} kg CO₂`,
+        },
+      ];
+    }
 
-    return months.map((month, index) => ({
-      date: month,
-      value: baseEmissions + increment * index,
-      label: `${(baseEmissions + increment * index).toFixed(0)} kg CO₂`,
-    }));
-  }, [profile.activities.length, totalEmissions]);
+    return [];
+  }, [history, getTimeSeriesData, totalEmissions]);
 
   if (isEmpty) {
     return <EmptyState />;
@@ -240,7 +248,9 @@ export default function DashboardView() {
                     Emissions Trend
                   </CardTitle>
                   <p className="text-sm text-text-muted mt-2">
-                    Track your carbon footprint over time
+                    {history.length > 1
+                      ? `Tracking ${history.length} snapshots over time`
+                      : 'Historical tracking starts automatically (snapshots taken daily)'}
                   </p>
                 </CardHeader>
                 <CardContent>

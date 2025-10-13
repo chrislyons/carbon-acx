@@ -1,4 +1,4 @@
-import { useState, useEffect, cloneElement, isValidElement } from 'react';
+import { useState, useEffect, Children, cloneElement, isValidElement } from 'react';
 import { createPortal } from 'react-dom';
 import { Maximize2, Minimize2, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -15,23 +15,26 @@ export default function FullscreenChart({ children, title, description }: Fullsc
 
   // Clone children and override height for fullscreen
   const cloneChildrenWithFullscreenHeight = (node: React.ReactNode): React.ReactNode => {
-    if (!isValidElement(node)) return node;
-
     // Calculate fullscreen chart height (viewport height minus header and padding)
     const fullscreenHeight = typeof window !== 'undefined'
       ? Math.max(window.innerHeight - 180, 400) // Minimize overhead, ensure minimum height
       : 600;
 
-    // If the child has children, recursively clone them too
-    const clonedChildren = node.props.children
-      ? cloneChildrenWithFullscreenHeight(node.props.children)
-      : node.props.children;
+    // Use React.Children.map to properly handle arrays and fragments
+    return Children.map(node, (child) => {
+      if (!isValidElement(child)) return child;
 
-    // Override height prop if it exists
-    return cloneElement(node as React.ReactElement<any>, {
-      ...node.props,
-      height: node.props.height !== undefined ? fullscreenHeight : node.props.height,
-      children: clonedChildren,
+      // Recursively process this child's children
+      const clonedChildren = child.props.children
+        ? cloneChildrenWithFullscreenHeight(child.props.children)
+        : child.props.children;
+
+      // Override height prop if it exists
+      return cloneElement(child as React.ReactElement<any>, {
+        ...child.props,
+        height: child.props.height !== undefined ? fullscreenHeight : child.props.height,
+        children: clonedChildren,
+      });
     });
   };
 
