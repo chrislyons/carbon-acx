@@ -161,9 +161,13 @@ export function loadSector(sectorId: string): Promise<{
   activities: ActivitySummary[];
   profiles: ProfileSummary[];
 }> {
-  return fetchJson<{ sector: SectorSummary; activities: ActivitySummary[]; profiles: ProfileSummary[] }>(
+  return fetchJson<{ sector: SectorSummary; activities: ActivitySummary[]; profiles?: ProfileSummary[] }>(
     `sectors/${encodeURIComponent(sectorId)}`,
-  );
+  ).then((data) => ({
+    sector: data.sector,
+    activities: data.activities,
+    profiles: data.profiles ?? [],
+  }));
 }
 
 function normaliseString(value: unknown): string | null {
