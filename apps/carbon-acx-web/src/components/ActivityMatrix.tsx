@@ -126,9 +126,9 @@ export default function ActivityMatrix({
 
   return (
     <div className="space-y-4">
-      {/* Header with sorting */}
-      <div className="flex items-center justify-between">
-        <div className="flex gap-2">
+      {/* Header with sorting and quick actions */}
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button
             variant={sortBy === 'impact' ? 'default' : 'outline'}
             size="sm"
@@ -147,9 +147,42 @@ export default function ActivityMatrix({
             Alphabetical
             {sortBy === 'name' && <ArrowUpDown className="h-3 w-3" />}
           </Button>
+
+          {/* Quick add top 3 */}
+          {selectedCount === 0 && sortedActivities.length >= 3 && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                // Add top 3 highest impact activities
+                sortedActivities.slice(0, 3).forEach((activity) => {
+                  if (!hasActivity(activity.id)) {
+                    const impact = activityImpacts.get(activity.id) || 100;
+                    const carbonIntensity = impact / 1000;
+                    addActivity({
+                      id: activity.id,
+                      sectorId,
+                      name: activity.name || activity.id,
+                      category: activity.category,
+                      quantity: 1,
+                      unit: activity.defaultUnit || 'unit',
+                      carbonIntensity,
+                      annualEmissions: carbonIntensity,
+                    });
+                  }
+                });
+                showToast('success', 'Quick add complete!', 'Added top 3 highest impact activities');
+              }}
+              className="gap-1"
+            >
+              <Plus className="h-3 w-3" />
+              Add Top 3
+            </Button>
+          )}
         </div>
         <p className="text-sm text-text-muted">
           {activities.length} {activities.length === 1 ? 'activity' : 'activities'}
+          {selectedCount > 0 && ` • ${selectedCount} selected`}
         </p>
       </div>
 
@@ -268,17 +301,35 @@ export default function ActivityMatrix({
             className="p-4 rounded-xl bg-accent-50 border border-accent-200"
           >
             <div className="flex items-center justify-between">
-              <div>
+              <div className="flex-1">
                 <p className="text-sm font-medium text-foreground">Added to profile</p>
                 <p className="text-xs text-text-muted">
                   Visit your dashboard to see total impact
                 </p>
               </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-accent-600">
-                  {selectedCount}
+              <div className="flex items-center gap-3">
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-accent-600">
+                    {selectedCount}
+                  </div>
+                  <p className="text-xs text-text-muted">activities</p>
                 </div>
-                <p className="text-xs text-text-muted">activities</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    activities.forEach((activity) => {
+                      if (hasActivity(activity.id)) {
+                        removeActivity(activity.id);
+                      }
+                    });
+                    showToast('info', 'Cleared selections', `Removed ${selectedCount} activities from profile`);
+                  }}
+                  className="gap-1"
+                >
+                  <X className="h-3 w-3" />
+                  Clear All
+                </Button>
               </div>
             </div>
           </motion.div>

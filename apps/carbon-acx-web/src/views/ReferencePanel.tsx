@@ -1,11 +1,12 @@
 import { useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { ChevronRight } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
 
-import type { DatasetDetail, ReferenceSummary } from '../lib/api';
+import type { DatasetDetail, ReferenceSummary, DatasetSummary } from '../lib/api';
 import { ScrollArea } from '../components/ui/scroll-area';
 import { Skeleton } from '../components/ui/skeleton';
-import { useDataset, useReferences } from '../hooks/useDataset';
+import { useDataset, useReferences, useDatasets } from '../hooks/useDataset';
 
 interface ReferencePanelProps {
   datasetId?: string;
@@ -22,17 +23,27 @@ export default function ReferencePanel({
   onClose,
   onToggle,
 }: ReferencePanelProps) {
+  const navigate = useNavigate();
+  const { sectorId } = useParams<{ sectorId: string }>();
+
   const payload =
     datasetId && fallbackDataset && fallbackReferences
       ? { dataset: fallbackDataset, references: fallbackReferences }
       : undefined;
   const datasetState = useDataset(datasetId, payload ? { fallbackData: payload } : undefined);
   const referencesState = useReferences(datasetId, payload ? { fallbackData: payload } : undefined);
+  const { data: availableDatasets } = useDatasets();
 
   const dataset = datasetState.data ?? fallbackDataset ?? null;
   const references = referencesState.data ?? fallbackReferences ?? [];
   const hasReferences = references && references.length > 0;
   const shouldVirtualize = references.length > 30;
+
+  const handleDatasetChange = (selectedDatasetId: string) => {
+    if (sectorId) {
+      navigate(`/sectors/${encodeURIComponent(sectorId)}/datasets/${encodeURIComponent(selectedDatasetId)}`);
+    }
+  };
 
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const virtualizer = useVirtualizer({
@@ -53,6 +64,22 @@ export default function ReferencePanel({
         <div className="flex-1 min-w-0">
           <h2 className="text-lg font-semibold text-foreground truncate">{title}</h2>
           {dataset?.title && <p className="text-sm text-text-muted truncate">{dataset.title}</p>}
+
+          {/* Dataset selector when available */}
+          {!dataset && availableDatasets && availableDatasets.length > 0 && sectorId && (
+            <select
+              className="mt-2 w-full px-3 py-2 text-sm border border-border rounded-lg bg-surface focus:outline-none focus:ring-2 focus:ring-accent-500"
+              onChange={(e) => handleDatasetChange(e.target.value)}
+              defaultValue=""
+            >
+              <option value="" disabled>Select a dataset...</option>
+              {availableDatasets.map((ds: DatasetSummary) => (
+                <option key={ds.datasetId} value={ds.datasetId}>
+                  {ds.title || ds.datasetId}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {onToggle && (
@@ -121,7 +148,11 @@ export default function ReferencePanel({
             ))}
           {!hasReferences && !referencesState.isLoading && (
             <li className="reference-panel__empty">
-              {dataset ? 'No references provided for this dataset.' : 'Select a dataset to review its references.'}
+              {dataset
+                ? 'No references provided for this dataset.'
+                : availableDatasets && availableDatasets.length > 0
+                  ? 'Use the dropdown above to select a dataset.'
+                  : 'Navigate to a sector to view dataset references.'}
             </li>
           )}
         </ol>
