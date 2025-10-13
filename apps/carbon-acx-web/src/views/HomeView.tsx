@@ -17,13 +17,13 @@ export default function HomeView() {
   const hasData = profile.activities.length > 0 || profile.calculatorResults.length > 0;
 
   return (
-    <div className="space-y-4 -mt-4">
+    <div className="space-y-3 -mt-4">
       {/* Compact Hero Bar */}
-      <div className="bg-gradient-to-r from-accent-500/10 to-accent-600/5 border border-accent-200/30 rounded-lg p-4">
+      <div className="bg-gradient-to-r from-accent-500/10 to-accent-600/5 border border-accent-200/30 rounded-lg p-3">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Carbon ACX</h1>
-            <p className="text-xs text-text-muted mt-0.5">Real-time carbon footprint analysis</p>
+            <h1 className="text-xl font-bold text-foreground">Carbon ACX</h1>
+            <p className="text-xs text-text-muted">Real-time carbon footprint analysis</p>
           </div>
           <div className="flex items-center gap-3">
             {!hasData && (
@@ -47,7 +47,7 @@ export default function HomeView() {
         </div>
 
         {/* Key Metrics Bar */}
-        <div className="grid grid-cols-3 gap-4 mt-4">
+        <div className="grid grid-cols-3 gap-3 mt-3">
           <MetricCard
             icon={<TrendingUp className="h-3.5 w-3.5" />}
             label="Your Footprint"
@@ -70,10 +70,10 @@ export default function HomeView() {
         </div>
       </div>
 
-      {/* Live Visualizations Grid - ALWAYS VISIBLE */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {/* Live Visualizations Stack - ALWAYS VISIBLE */}
+      <div className="grid grid-cols-1 gap-3">
         {/* Global Comparison Chart */}
-        <Card className="p-4 relative">
+        <Card className="p-3 relative">
           <FullscreenChart title="Global Carbon Footprint Comparison" description="Annual per capita emissions">
             <div className="mb-2">
               <h3 className="text-sm font-semibold text-foreground">Global Comparison</h3>
@@ -86,14 +86,14 @@ export default function HomeView() {
               sortBy="value"
               sortDirection="desc"
               axisLabel="kg CO₂/year"
-              height={280}
+              height={220}
               animated={true}
             />
           </FullscreenChart>
         </Card>
 
         {/* Emissions Trend Chart */}
-        <Card className="p-4 relative">
+        <Card className="p-3 relative">
           <FullscreenChart title="Demo Carbon Footprint Trend" description="6-month tracking simulation">
             <div className="mb-2">
               <h3 className="text-sm font-semibold text-foreground">Emissions Trend</h3>
@@ -111,7 +111,7 @@ export default function HomeView() {
                   color: '#f59e0b',
                 },
               ]}
-              height={280}
+              height={220}
               animated={true}
             />
           </FullscreenChart>
@@ -141,7 +141,7 @@ export default function HomeView() {
       </div>
 
       {/* Data Density Note */}
-      <div className="text-center py-2">
+      <div className="text-center py-1">
         <p className="text-xs text-text-muted">
           Hover over charts for details • Click fullscreen icons to expand • Load demo data to explore features
         </p>

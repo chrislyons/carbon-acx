@@ -82,10 +82,10 @@ export default function SectorView() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="grid grid-cols-1 lg:grid-cols-2 gap-4"
+              className="grid grid-cols-1 gap-3"
             >
               {/* Activity Impact Comparison */}
-              <Card className="p-4 relative">
+              <Card className="p-3 relative">
                 <FullscreenChart
                   title={`${sector.name} Activity Comparison`}
                   description="Compare carbon intensity across sector activities"
@@ -101,14 +101,14 @@ export default function SectorView() {
                     sortBy="value"
                     sortDirection="desc"
                     axisLabel="kg CO₂/year"
-                    height={280}
+                    height={220}
                     animated={true}
                   />
                 </FullscreenChart>
               </Card>
 
               {/* Sector Emissions Trend */}
-              <Card className="p-4 relative">
+              <Card className="p-3 relative">
                 <FullscreenChart
                   title={`${sector.name} Emissions Trend`}
                   description="12-month sector emissions trajectory"
@@ -122,7 +122,7 @@ export default function SectorView() {
                     valueKey="value"
                     variant="area"
                     showTrend={true}
-                    height={280}
+                    height={220}
                     animated={true}
                   />
                 </FullscreenChart>
