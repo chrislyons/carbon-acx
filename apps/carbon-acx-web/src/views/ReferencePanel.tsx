@@ -75,7 +75,7 @@ export default function ReferencePanel({
               <option value="" disabled>Select a dataset...</option>
               {availableDatasets.map((ds: DatasetSummary) => (
                 <option key={ds.datasetId} value={ds.datasetId}>
-                  {ds.title || ds.datasetId}
+                  {ds.datasetId}
                 </option>
               ))}
             </select>
