@@ -1,4 +1,5 @@
 import { useState, useEffect, cloneElement, isValidElement } from 'react';
+import { createPortal } from 'react-dom';
 import { Maximize2, Minimize2, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from './ui/button';
@@ -18,7 +19,7 @@ export default function FullscreenChart({ children, title, description }: Fullsc
 
     // Calculate fullscreen chart height (viewport height minus header and padding)
     const fullscreenHeight = typeof window !== 'undefined'
-      ? window.innerHeight - 200 // 200px for header, padding, and controls
+      ? Math.max(window.innerHeight - 180, 400) // Minimize overhead, ensure minimum height
       : 600;
 
     // If the child has children, recursively clone them too
@@ -66,14 +67,14 @@ export default function FullscreenChart({ children, title, description }: Fullsc
         {children}
       </div>
 
-      {/* Fullscreen modal */}
+      {/* Fullscreen modal - rendered via Portal at document.body */}
       <AnimatePresence>
-        {isFullscreen && (
+        {isFullscreen && createPortal(
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm"
+            className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-sm"
             onClick={() => setIsFullscreen(false)}
           >
             <div className="h-full w-full p-4 md:p-8" onClick={(e) => e.stopPropagation()}>
@@ -117,7 +118,8 @@ export default function FullscreenChart({ children, title, description }: Fullsc
                 Press ESC to exit fullscreen
               </div>
             </div>
-          </motion.div>
+          </motion.div>,
+          document.body
         )}
       </AnimatePresence>
     </>
