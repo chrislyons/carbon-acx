@@ -149,6 +149,18 @@ export interface ActivityScheduleEntry {
   servings: number | null;
 }
 
+export interface EmissionFactor {
+  efId: string;
+  sectorId: string;
+  activityId: string;
+  layerId: string | null;
+  unit: string | null;
+  valueGPerUnit: number | null;
+  isGridIndexed: boolean;
+  electricityKwhPerUnit: number | null;
+  region: string | null;
+}
+
 async function loadManifestIndex(): Promise<Record<string, unknown> | null> {
   try {
     const filePath = path.join(artifactsDir, 'manifest.json');
@@ -247,6 +259,21 @@ export async function listActivitySchedule(profileId: string): Promise<ActivityS
       viewers: record['viewers'] ? parseFloat(record['viewers']) : null,
       servings: record['servings'] ? parseFloat(record['servings']) : null,
     }));
+}
+
+export async function listEmissionFactors(): Promise<EmissionFactor[]> {
+  const records = await loadCsvRecords('emission_factors.csv');
+  return records.map((record) => ({
+    efId: record['ef_id'] ?? '',
+    sectorId: record['sector_id'] ?? '',
+    activityId: record['activity_id'] ?? '',
+    layerId: record['layer_id'] ?? null,
+    unit: record['unit'] ?? null,
+    valueGPerUnit: record['value_g_per_unit'] ? parseFloat(record['value_g_per_unit']) : null,
+    isGridIndexed: (record['is_grid_indexed'] ?? '').toLowerCase() === 'true',
+    electricityKwhPerUnit: record['electricity_kwh_per_unit'] ? parseFloat(record['electricity_kwh_per_unit']) : null,
+    region: record['region'] ?? null,
+  }));
 }
 
 export async function getDataset(id: string): Promise<DatasetSummary | null> {

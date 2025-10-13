@@ -108,6 +108,18 @@ export interface ProfileActivitySchedule {
   servings: number | null;
 }
 
+export interface EmissionFactor {
+  efId: string;
+  sectorId: string;
+  activityId: string;
+  layerId: string | null;
+  unit: string | null;
+  valueGPerUnit: number | null;
+  isGridIndexed: boolean;
+  electricityKwhPerUnit: number | null;
+  region: string | null;
+}
+
 const rawConfiguredApiBase = (import.meta.env.VITE_API_BASE_URL ?? '').trim();
 const fallbackApiBase = (() => {
   const baseUrl = import.meta.env.BASE_URL ?? '/';
@@ -367,5 +379,11 @@ export function loadProfileActivities(profileId: string): Promise<{
 }> {
   return fetchJson<{ profile: ProfileSummary; activities: ProfileActivitySchedule[] }>(
     `profiles/${encodeURIComponent(profileId)}.json`,
+  );
+}
+
+export function loadEmissionFactors(): Promise<EmissionFactor[]> {
+  return fetchJson<{ emissionFactors: EmissionFactor[] }>('emission-factors.json').then(
+    (data) => data.emissionFactors,
   );
 }

@@ -15,6 +15,7 @@ import {
   listActivities,
   listActivitySchedule,
   listDatasets,
+  listEmissionFactors,
   listProfiles,
   listReferences,
   listSectors,
@@ -74,6 +75,10 @@ async function exportData() {
       activities: schedule,
     });
   }
+
+  // Export emission factors
+  const emissionFactors = await listEmissionFactors();
+  await writeJson(path.join(apiDir, 'emission-factors.json'), { emissionFactors });
 
   // Export datasets list
   const datasets = await listDatasets();

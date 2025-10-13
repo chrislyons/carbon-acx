@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import type { ActivitySummary, ProfileSummary } from '../lib/api';
-import { loadProfileActivities } from '../lib/api';
+import { useState, useEffect } from 'react';
+import type { ActivitySummary, EmissionFactor, ProfileSummary } from '../lib/api';
+import { loadProfileActivities, loadEmissionFactors } from '../lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Skeleton } from '../components/ui/skeleton';
 import { useProfile } from '../contexts/ProfileContext';
@@ -15,6 +15,14 @@ export default function ProfilePicker({ profiles, sectorId, activities }: Profil
   const hasProfiles = profiles.length > 0;
   const { addActivity, clearProfile } = useProfile();
   const [loading, setLoading] = useState<string | null>(null);
+  const [emissionFactors, setEmissionFactors] = useState<EmissionFactor[]>([]);
+
+  // Load emission factors on mount
+  useEffect(() => {
+    loadEmissionFactors().then(setEmissionFactors).catch((error) => {
+      console.error('Failed to load emission factors:', error);
+    });
+  }, []);
 
   if (!hasProfiles) {
     return null;
@@ -28,6 +36,14 @@ export default function ProfilePicker({ profiles, sectorId, activities }: Profil
 
       // Create activity lookup map
       const activityMap = new Map(activities.map((a) => [a.id, a]));
+
+      // Create emission factor lookup map (activity_id -> emission factor)
+      const emissionFactorMap = new Map(
+        emissionFactors.map((ef) => [ef.activityId, ef])
+      );
+
+      // Ontario grid intensity (g CO2e/kWh) - used for grid-indexed activities
+      const ONTARIO_GRID_INTENSITY = 28; // From EF data
 
       // Clear existing profile activities
       clearProfile();
@@ -60,9 +76,22 @@ export default function ProfilePicker({ profiles, sectorId, activities }: Profil
         if (scheduleEntry.hours !== null) annualQuantity *= scheduleEntry.hours;
         if (scheduleEntry.servings !== null) annualQuantity *= scheduleEntry.servings;
 
-        // Use placeholder carbon intensity (will be calculated by backend in future)
-        // For now, use 100g CO2e per unit as rough estimate
-        const carbonIntensity = 0.1; // kg CO2e per unit
+        // Get emission factor for this activity
+        const emissionFactor = emissionFactorMap.get(activity.id);
+        let carbonIntensity = 0.1; // Fallback to 100g CO2e per unit
+
+        if (emissionFactor) {
+          if (emissionFactor.isGridIndexed && emissionFactor.electricityKwhPerUnit !== null) {
+            // Grid-indexed: use electricity × grid intensity
+            // Convert to kg CO2e per unit
+            carbonIntensity = (emissionFactor.electricityKwhPerUnit * ONTARIO_GRID_INTENSITY) / 1000;
+          } else if (emissionFactor.valueGPerUnit !== null) {
+            // Direct emission factor: convert grams to kg
+            carbonIntensity = emissionFactor.valueGPerUnit / 1000;
+          }
+        } else {
+          console.warn(`No emission factor found for activity ${activity.id}, using fallback`);
+        }
 
         addActivity({
           id: activity.id,
