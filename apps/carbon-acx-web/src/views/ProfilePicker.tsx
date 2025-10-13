@@ -29,15 +29,17 @@ export default function ProfilePicker({ profiles, sectorId }: ProfilePickerProps
               key={profile.id}
               className="text-left p-3 rounded-lg border border-border hover:border-accent-500 hover:bg-accent-50/50 transition-all duration-200 group"
               onClick={() => {
-                /* TODO: Implement profile selection workflow
-                 * 1. Fetch activity_schedule for this profile_id from backend
-                 * 2. Create layer/entity in user's profile context
-                 * 3. Calculate emissions using the compute API
-                 * 4. Update visualizations to show profile data
-                 * 5. Allow comparison between multiple profiles
-                 *
-                 * For now, just log the selection for debugging
-                 */
+                // TODO: Full implementation requires:
+                // 1. Backend API endpoint: GET /api/profiles/:profileId/activities
+                //    - Load activity_schedule.csv rows for this profile_id
+                //    - Join with activities.csv to get full activity details
+                //    - Calculate emissions using emission_factors.csv
+                // 2. Add activities to ProfileContext using addActivity()
+                // 3. Update visualizations to show profile data
+                // 4. Support multiple profile comparison (layers)
+                //
+                // For now, show a placeholder message
+                alert(`Profile selected: ${profile.name}\n\nFull profile loading will be implemented in a future update. This requires:\n• Backend API for activity schedules\n• Emissions calculation\n• Profile comparison features`);
                 console.log('Selected profile:', profile);
               }}
             >
