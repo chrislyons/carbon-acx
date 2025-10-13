@@ -137,7 +137,7 @@ export default function ComparativeBarChart({
         <BarChart
           data={dataWithDeltas}
           layout={isHorizontal ? 'horizontal' : 'vertical'}
-          margin={{ top: 5, right: 20, left: isHorizontal ? 120 : 10, bottom: isHorizontal ? 5 : 40 }}
+          margin={{ top: 5, right: 10, left: isHorizontal ? 5 : 10, bottom: isHorizontal ? 5 : 40 }}
         >
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.3} />
 
@@ -158,8 +158,10 @@ export default function ComparativeBarChart({
                 type="category"
                 dataKey="category"
                 stroke="var(--text-muted)"
-                style={{ fontSize: '11px' }}
-                width={90}
+                style={{ fontSize: '10px' }}
+                width={80}
+                interval={0}
+                tick={{ width: 75 }}
               />
             </>
           ) : (
@@ -167,10 +169,11 @@ export default function ComparativeBarChart({
               <XAxis
                 dataKey="category"
                 stroke="var(--text-muted)"
-                style={{ fontSize: '11px' }}
+                style={{ fontSize: '10px' }}
                 angle={-45}
                 textAnchor="end"
-                height={80}
+                height={70}
+                interval={0}
               />
               <YAxis
                 stroke="var(--text-muted)"
