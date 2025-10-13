@@ -7,12 +7,7 @@ interface ScopeSelectorProps {
 
 export default function ScopeSelector({ sector }: ScopeSelectorProps) {
   if (!sector) {
-    return (
-      <section className="scope-selector">
-        <h2>Choose a sector</h2>
-        <p>Select a sector from the navigation to explore its datasets.</p>
-      </section>
-    );
+    return null;
   }
 
   return (
