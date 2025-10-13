@@ -1,6 +1,5 @@
 import { Suspense, useEffect, useState } from 'react';
 import { Await, Outlet, useLoaderData, useMatches } from 'react-router-dom';
-import { Settings } from 'lucide-react';
 
 import type {
   ActivitySummary,
@@ -16,8 +15,6 @@ import ProfilePicker, { ProfilePickerSkeleton } from './ProfilePicker';
 import { CanvasSkeleton } from './VisualizationCanvas';
 import { Sheet, SheetContent, SheetTrigger } from '../components/ui/sheet';
 import { Button } from '../components/ui/button';
-import ThemeToggle from '../components/ThemeToggle';
-import SettingsModal from '../components/SettingsModal';
 
 import '../styles/layout.css';
 
@@ -41,7 +38,6 @@ export default function Layout() {
   const datasetMatch = matches.find((match) => match.id === 'dataset');
 
   const [isInspectOpen, setInspectOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
 
   // References panel starts hidden by default
   useEffect(() => {
@@ -57,22 +53,6 @@ export default function Layout() {
 
   return (
     <>
-      {/* Top-right controls */}
-      <div className="fixed top-4 right-4 z-50 flex items-center gap-2 bg-surface/80 backdrop-blur-sm border border-border rounded-lg p-1 shadow-lg">
-        <ThemeToggle />
-        <button
-          type="button"
-          className="p-2 rounded-lg hover:bg-surface-hover transition-colors"
-          onClick={() => setSettingsOpen(true)}
-          title="Settings"
-          aria-label="Open settings"
-        >
-          <Settings className="h-5 w-5 text-text-secondary" />
-        </button>
-      </div>
-
-      <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
-
       <div className="app-layout" data-references-open={isInspectOpen}>
       <aside className="app-layout__nav">
         <Suspense fallback={<NavSidebarSkeleton />}>

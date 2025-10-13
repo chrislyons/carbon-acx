@@ -51,19 +51,19 @@ export default function FullscreenChart({ children, title, description }: Fullsc
 
   return (
     <>
-      {/* Fullscreen toggle button */}
-      <Button
-        variant="ghost"
-        size="sm"
-        className="absolute top-2 right-2 z-10 h-7 w-7 p-0 opacity-60 hover:opacity-100"
-        onClick={() => setIsFullscreen(true)}
-        title="Fullscreen"
-      >
-        <Maximize2 className="h-3.5 w-3.5" />
-      </Button>
-
-      {/* Regular view */}
+      {/* Regular view with fullscreen button */}
       <div className="relative">
+        {/* Fullscreen toggle button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="absolute top-2 right-2 z-10 h-7 w-7 p-0 opacity-60 hover:opacity-100 transition-opacity"
+          onClick={() => setIsFullscreen(true)}
+          title="Fullscreen"
+        >
+          <Maximize2 className="h-3.5 w-3.5" />
+        </Button>
+
         {children}
       </div>
 
