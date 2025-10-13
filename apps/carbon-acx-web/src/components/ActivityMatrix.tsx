@@ -4,6 +4,7 @@ import { ArrowUpDown, Check, Plus, X } from 'lucide-react';
 
 import type { ActivitySummary } from '../lib/api';
 import { useProfile } from '../contexts/ProfileContext';
+import { useToast } from '../contexts/ToastContext';
 import { Button } from './ui/button';
 import { Skeleton } from './ui/skeleton';
 import {
@@ -24,6 +25,7 @@ export default function ActivityMatrix({
   sectorId,
 }: ActivityMatrixProps) {
   const { hasActivity, addActivity, removeActivity } = useProfile();
+  const { showToast } = useToast();
   const [sortBy, setSortBy] = useState<'name' | 'impact'>('impact');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
@@ -77,6 +79,11 @@ export default function ActivityMatrix({
     if (isInProfile) {
       // Remove from profile
       removeActivity(activity.id);
+      showToast(
+        'info',
+        'Activity removed',
+        `${activity.name || activity.id} removed from your profile`
+      );
     } else {
       // Show dialog to add with quantity
       setDialogActivity(activity);
@@ -104,6 +111,12 @@ export default function ActivityMatrix({
       carbonIntensity,
       annualEmissions,
     });
+
+    showToast(
+      'success',
+      'Activity added!',
+      `${dialogActivity.name || dialogActivity.id} (${annualEmissions.toFixed(2)} kg CO₂/year) added to your profile`
+    );
 
     setDialogActivity(null);
     setQuantity('1');
@@ -151,11 +164,21 @@ export default function ActivityMatrix({
             <motion.div
               key={activity.id}
               initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.03, duration: 0.3 }}
+              animate={{
+                opacity: 1,
+                y: 0,
+                scale: isSelected ? [1, 1.02, 1] : 1,
+              }}
+              transition={{
+                delay: index * 0.03,
+                duration: 0.3,
+                scale: { duration: 0.2 }
+              }}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
               className={`group relative p-4 rounded-xl border-2 transition-all cursor-pointer ${
                 isSelected
-                  ? 'border-accent-500 bg-accent-50'
+                  ? 'border-accent-500 bg-accent-50 shadow-md'
                   : 'border-border hover:border-accent-300 bg-surface/50'
               }`}
               onClick={() => handleActivityClick(activity)}

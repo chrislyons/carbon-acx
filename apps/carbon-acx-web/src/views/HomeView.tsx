@@ -123,7 +123,7 @@ export default function HomeView() {
         <QuickAction
           title="Track Activities"
           description="Select from 100+ carbon activities"
-          to="/"
+          to="/sectors/SECTOR.PROFESSIONAL_SERVICES"
           icon={<TrendingUp className="h-4 w-4" />}
         />
         <QuickAction
