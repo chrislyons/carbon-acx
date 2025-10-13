@@ -16,7 +16,7 @@ import { Button } from './ui/button';
  */
 
 export default function ExportButton() {
-  const { profile } = useProfile();
+  const { profile, history } = useProfile();
   const [isOpen, setIsOpen] = useState(false);
 
   const isEmpty = profile.activities.length === 0 && profile.calculatorResults.length === 0;
@@ -63,7 +63,7 @@ export default function ExportButton() {
                   <button
                     key={option.format}
                     onClick={() => {
-                      option.action(profile);
+                      option.action(profile, history);
                       setIsOpen(false);
                     }}
                     className="w-full text-left px-3 py-2 rounded hover:bg-accent-50 transition-colors group"
@@ -85,7 +85,7 @@ export default function ExportButton() {
 
               <div className="border-t border-border p-2 bg-neutral-50">
                 <p className="text-xs text-text-muted px-2">
-                  Downloads include all activities and calculator results
+                  Downloads include activities, calculator results, and historical tracking
                 </p>
               </div>
             </motion.div>

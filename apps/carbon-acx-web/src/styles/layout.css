@@ -1,8 +1,8 @@
 .app-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-lg);
-  padding: var(--space-lg);
+  gap: var(--space-md);
+  padding: var(--space-md);
   min-height: 100vh;
 }
 
@@ -36,7 +36,7 @@
   background: var(--surface-elevated);
   border-radius: var(--radius-xl);
   border: 1px solid var(--border-default);
-  padding: var(--space-lg);
+  padding: var(--space-md);
   box-shadow: var(--shadow-md);
   backdrop-filter: blur(18px);
 }
@@ -44,14 +44,14 @@
 .app-layout__nav {
   display: flex;
   flex-direction: column;
-  gap: var(--space-md);
-  height: calc(100vh - (var(--space-lg) * 2));
+  gap: var(--space-sm);
+  height: calc(100vh - (var(--space-md) * 2));
 }
 
 .app-layout__main {
   display: flex;
   flex-direction: column;
-  gap: var(--space-lg);
+  gap: var(--space-md);
 }
 
 .app-layout__inspect {
@@ -111,20 +111,20 @@
 .nav-sidebar__search {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.25rem;
 }
 
 .nav-sidebar__search label {
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
 }
 
 .nav-sidebar__search input {
   border-radius: 999px;
   border: 1px solid var(--border-default);
-  padding: 0.75rem 1rem;
-  font-size: 1rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
   background: var(--surface-background);
 }
 
@@ -134,14 +134,14 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.25rem;
 }
 
 .nav-sidebar__item {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  padding: 0.75rem 1rem;
+  gap: 0.125rem;
+  padding: 0.5rem 0.75rem;
   border-radius: var(--radius-lg);
   border: 1px solid transparent;
   text-decoration: none;
@@ -162,12 +162,13 @@
 
 .nav-sidebar__name {
   font-weight: 600;
+  font-size: 0.875rem;
 }
 
 .nav-sidebar__meta,
 .nav-sidebar__empty {
   color: var(--text-muted);
-  font-size: 0.875rem;
+  font-size: 0.75rem;
 }
 
 .scope-selector,
