@@ -126,7 +126,7 @@ export default function ActivityBadge({
         ) : iconDef?.fallbackIcon ? (
           <iconDef.fallbackIcon
             className="w-full h-full"
-            style={{ color: brandColor }}
+            style={{ color: brandColor || undefined }}
             strokeWidth={1.5}
           />
         ) : iconDef?.emoji ? (
