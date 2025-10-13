@@ -10,6 +10,7 @@ import ExportButton from '../components/ExportButton';
 import ComparativeBarChart from '../components/charts/ComparativeBarChart';
 import TimeSeriesChart from '../components/charts/TimeSeriesChart';
 import FullscreenChart from '../components/FullscreenChart';
+import LayerManager from '../components/LayerManager';
 import type { ComparativeDataPoint } from '../components/charts/ComparativeBarChart';
 import type { TimeSeriesDataPoint } from '../components/charts/TimeSeriesChart';
 
@@ -27,7 +28,16 @@ import type { TimeSeriesDataPoint } from '../components/charts/TimeSeriesChart';
 const GLOBAL_AVERAGE_KG = 4500; // 4.5 tonnes per year
 
 export default function DashboardView() {
-  const { profile, totalEmissions, removeActivity, getTimeSeriesData, history } = useProfile();
+  const {
+    profile,
+    totalEmissions,
+    removeActivity,
+    getTimeSeriesData,
+    history,
+    toggleLayerVisibility,
+    removeLayer,
+    renameLayer,
+  } = useProfile();
 
   const activityEmissions = profile.activities.reduce((sum, a) => sum + a.annualEmissions, 0);
   const calculatorEmissions = profile.calculatorResults.reduce((sum, r) => sum + r.annualEmissions, 0);
@@ -230,6 +240,22 @@ export default function DashboardView() {
           </Card>
         )}
       </motion.div>
+
+      {/* Layer Manager */}
+      {profile.layers.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+        >
+          <LayerManager
+            layers={profile.layers}
+            onToggleVisibility={toggleLayerVisibility}
+            onRemoveLayer={removeLayer}
+            onRenameLayer={renameLayer}
+          />
+        </motion.div>
+      )}
 
       {/* Visualizations */}
       {profile.activities.length > 0 && (

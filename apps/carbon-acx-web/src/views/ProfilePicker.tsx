@@ -11,9 +11,25 @@ interface ProfilePickerProps {
   activities: ActivitySummary[];
 }
 
+// Generate distinct colors for profile layers
+const LAYER_COLORS = [
+  '#3b82f6', // blue-500
+  '#8b5cf6', // violet-500
+  '#ec4899', // pink-500
+  '#f59e0b', // amber-500
+  '#10b981', // emerald-500
+  '#06b6d4', // cyan-500
+  '#f97316', // orange-500
+  '#6366f1', // indigo-500
+];
+
+function getLayerColor(index: number): string {
+  return LAYER_COLORS[index % LAYER_COLORS.length];
+}
+
 export default function ProfilePicker({ profiles, sectorId, activities }: ProfilePickerProps) {
   const hasProfiles = profiles.length > 0;
-  const { addActivity, clearProfile } = useProfile();
+  const { addLayer, profile } = useProfile();
   const [loading, setLoading] = useState<string | null>(null);
   const [emissionFactors, setEmissionFactors] = useState<EmissionFactor[]>([]);
 
@@ -28,11 +44,18 @@ export default function ProfilePicker({ profiles, sectorId, activities }: Profil
     return null;
   }
 
-  const handleProfileSelect = async (profile: ProfileSummary) => {
-    setLoading(profile.id);
+  const handleProfileSelect = async (selectedProfile: ProfileSummary) => {
+    setLoading(selectedProfile.id);
     try {
+      // Check if layer already exists
+      if (profile.layers.some((l) => l.sourceProfileId === selectedProfile.id)) {
+        alert(`Profile "${selectedProfile.name}" is already loaded as a layer.`);
+        setLoading(null);
+        return;
+      }
+
       // Load profile activity schedule
-      const profileData = await loadProfileActivities(profile.id);
+      const profileData = await loadProfileActivities(selectedProfile.id);
 
       // Create activity lookup map
       const activityMap = new Map(activities.map((a) => [a.id, a]));
@@ -45,11 +68,8 @@ export default function ProfilePicker({ profiles, sectorId, activities }: Profil
       // Ontario grid intensity (g CO2e/kWh) - used for grid-indexed activities
       const ONTARIO_GRID_INTENSITY = 28; // From EF data
 
-      // Clear existing profile activities
-      clearProfile();
-
-      // Calculate and add activities from schedule
-      let addedCount = 0;
+      // Build layer activities from schedule
+      const layerActivities = [];
       for (const scheduleEntry of profileData.activities) {
         const activity = activityMap.get(scheduleEntry.activityId);
         if (!activity) {
@@ -63,8 +83,8 @@ export default function ProfilePicker({ profiles, sectorId, activities }: Profil
           // Daily frequency: multiply by 365 days
           annualQuantity = scheduleEntry.freqPerDay * 365;
           // If office days only, adjust by work days
-          if (scheduleEntry.officeDaysOnly && profile.officeDaysPerWeek !== null) {
-            annualQuantity = scheduleEntry.freqPerDay * profile.officeDaysPerWeek * 52;
+          if (scheduleEntry.officeDaysOnly && selectedProfile.officeDaysPerWeek !== null) {
+            annualQuantity = scheduleEntry.freqPerDay * selectedProfile.officeDaysPerWeek * 52;
           }
         } else if (scheduleEntry.freqPerWeek !== null) {
           // Weekly frequency: multiply by 52 weeks
@@ -93,7 +113,7 @@ export default function ProfilePicker({ profiles, sectorId, activities }: Profil
           console.warn(`No emission factor found for activity ${activity.id}, using fallback`);
         }
 
-        addActivity({
+        layerActivities.push({
           id: activity.id,
           sectorId: activity.sectorId,
           name: activity.name || activity.id,
@@ -105,15 +125,27 @@ export default function ProfilePicker({ profiles, sectorId, activities }: Profil
           iconType: activity.iconType ?? undefined,
           iconUrl: activity.iconUrl ?? undefined,
           badgeColor: activity.badgeColor ?? undefined,
+          addedAt: new Date().toISOString(),
+          layerId: selectedProfile.id,
         });
-        addedCount++;
       }
 
-      console.log(`Loaded profile "${profile.name}" with ${addedCount} activities`);
-      alert(`Profile "${profile.name}" loaded successfully!\n\n${addedCount} activities added to your footprint.`);
+      // Create new layer
+      const layerColor = getLayerColor(profile.layers.length);
+      addLayer({
+        id: selectedProfile.id,
+        name: selectedProfile.name,
+        sourceProfileId: selectedProfile.id,
+        color: layerColor,
+        visible: true,
+        activities: layerActivities,
+      });
+
+      console.log(`Loaded profile "${selectedProfile.name}" with ${layerActivities.length} activities as new layer`);
+      alert(`Profile "${selectedProfile.name}" loaded as new layer!\n\n${layerActivities.length} activities added.\n\nYou can now compare this with other profiles or manual activities.`);
     } catch (error) {
       console.error('Failed to load profile:', error);
-      alert(`Failed to load profile "${profile.name}". Please try again.`);
+      alert(`Failed to load profile "${selectedProfile.name}". Please try again.`);
     } finally {
       setLoading(null);
     }
