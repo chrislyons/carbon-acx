@@ -15,6 +15,7 @@ import ProfilePicker, { ProfilePickerSkeleton } from './ProfilePicker';
 import { CanvasSkeleton } from './VisualizationCanvas';
 import { Sheet, SheetContent, SheetTrigger } from '../components/ui/sheet';
 import { Button } from '../components/ui/button';
+import SettingsModal from '../components/SettingsModal';
 
 import '../styles/layout.css';
 
@@ -38,6 +39,7 @@ export default function Layout() {
   const datasetMatch = matches.find((match) => match.id === 'dataset');
 
   const [isInspectOpen, setInspectOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   // References panel starts hidden by default
   useEffect(() => {
@@ -53,11 +55,13 @@ export default function Layout() {
 
   return (
     <>
+      <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+
       <div className="app-layout" data-references-open={isInspectOpen}>
       <aside className="app-layout__nav">
         <Suspense fallback={<NavSidebarSkeleton />}>
           <Await resolve={data.sectors}>
-            {(sectors) => <NavSidebar sectors={sectors} />}
+            {(sectors) => <NavSidebar sectors={sectors} onOpenSettings={() => setSettingsOpen(true)} />}
           </Await>
         </Suspense>
       </aside>
