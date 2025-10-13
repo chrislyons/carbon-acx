@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { ChevronRight } from 'lucide-react';
 
 import type { DatasetDetail, ReferenceSummary } from '../lib/api';
 import { ScrollArea } from '../components/ui/scroll-area';
@@ -11,6 +12,7 @@ interface ReferencePanelProps {
   fallbackDataset?: DatasetDetail;
   fallbackReferences?: ReferenceSummary[];
   onClose?: () => void;
+  onToggle?: () => void;
 }
 
 export default function ReferencePanel({
@@ -18,6 +20,7 @@ export default function ReferencePanel({
   fallbackDataset,
   fallbackReferences,
   onClose,
+  onToggle,
 }: ReferencePanelProps) {
   const payload =
     datasetId && fallbackDataset && fallbackReferences
@@ -47,15 +50,28 @@ export default function ReferencePanel({
   return (
     <aside className="reference-panel" aria-label="References">
       <header className="reference-panel__header">
-        <div>
-          <h2 className="text-lg font-semibold text-foreground">{title}</h2>
-          {dataset?.title && <p className="text-sm text-text-muted">{dataset.title}</p>}
+        <div className="flex-1 min-w-0">
+          <h2 className="text-lg font-semibold text-foreground truncate">{title}</h2>
+          {dataset?.title && <p className="text-sm text-text-muted truncate">{dataset.title}</p>}
         </div>
-        {onClose && (
-          <button type="button" className="text-sm text-text-muted lg:hidden" onClick={onClose}>
-            Close
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {onToggle && (
+            <button
+              type="button"
+              className="hidden lg:block p-1 rounded hover:bg-surface-hover transition-colors"
+              onClick={onToggle}
+              aria-label="Collapse references"
+              title="Collapse references"
+            >
+              <ChevronRight className="h-5 w-5 text-text-muted" />
+            </button>
+          )}
+          {onClose && (
+            <button type="button" className="text-sm text-text-muted lg:hidden" onClick={onClose}>
+              Close
+            </button>
+          )}
+        </div>
       </header>
       <ScrollArea className="h-full" viewportRef={viewportRef} viewportClassName="reference-panel__viewport">
         <ol
