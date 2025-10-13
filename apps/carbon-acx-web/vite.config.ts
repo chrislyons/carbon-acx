@@ -11,6 +11,7 @@ import {
   getSector,
   listActivities,
   listDatasets,
+  listProfiles,
   listReferences,
   listSectors,
 } from './schema/sample-queries';
@@ -54,15 +55,16 @@ function sampleQueriesApi(): Plugin {
         const sectorMatch = url.pathname.match(/^\/api\/sectors\/([^/]+)$/);
         if (sectorMatch) {
           const [, sectorId] = sectorMatch;
-          const [sector, activities] = await Promise.all([
+          const [sector, activities, profiles] = await Promise.all([
             getSector(sectorId),
             listActivities(sectorId),
+            listProfiles(sectorId),
           ]);
           if (!sector) {
             notFound(res);
             return;
           }
-          json(res, { sector, activities });
+          json(res, { sector, activities, profiles });
           return;
         }
         const datasetMatch = url.pathname.match(/^\/api\/datasets\/([^/]+)$/);

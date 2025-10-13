@@ -20,6 +20,17 @@ export interface ActivitySummary {
   badgeColor?: string | null;
 }
 
+export interface ProfileSummary {
+  id: string;
+  sectorId: string;
+  layerId: string | null;
+  name: string;
+  regionCode: string | null;
+  gridStrategy: string | null;
+  officeDaysPerWeek: number | null;
+  notes: string | null;
+}
+
 export interface DatasetSummary {
   datasetId: string;
   title?: string | null;
@@ -148,8 +159,9 @@ export function loadActivities(sectorId: string): Promise<ActivitySummary[]> {
 export function loadSector(sectorId: string): Promise<{
   sector: SectorSummary;
   activities: ActivitySummary[];
+  profiles: ProfileSummary[];
 }> {
-  return fetchJson<{ sector: SectorSummary; activities: ActivitySummary[] }>(
+  return fetchJson<{ sector: SectorSummary; activities: ActivitySummary[]; profiles: ProfileSummary[] }>(
     `sectors/${encodeURIComponent(sectorId)}`,
   );
 }
