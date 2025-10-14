@@ -56,23 +56,48 @@ export default function SectorView() {
               </div>
             </motion.div>
 
-            {/* Profile Presets */}
-            {profiles.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05 }}
-              >
-                <ProfilePicker profiles={profiles} sectorId={sector.id} activities={activities} />
-              </motion.div>
-            )}
+            {/* Two-Column Layout: Profile Presets (left) + Activities (right) */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+              className="grid grid-cols-1 lg:grid-cols-12 gap-3"
+            >
+              {/* Left Column: Profile Presets */}
+              {profiles.length > 0 && (
+                <div className="lg:col-span-4">
+                  <ProfilePicker profiles={profiles} sectorId={sector.id} activities={activities} />
+                </div>
+              )}
 
-            {/* Sector Visualizations - IMMEDIATELY VISIBLE */}
+              {/* Right Column: Activities Browser */}
+              <div className={profiles.length > 0 ? "lg:col-span-8" : "lg:col-span-12"}>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BarChart3 className="h-5 w-5 text-accent-500" />
+                      {sector.name} Activities
+                    </CardTitle>
+                    <p className="text-sm text-text-muted mt-2">
+                      Select activities to add to your profile.
+                    </p>
+                  </CardHeader>
+                  <CardContent>
+                    <ActivityBadgeGrid
+                      activities={activities}
+                      sectorId={sector.id}
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+            </motion.div>
+
+            {/* Sector Visualizations */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="grid grid-cols-1 gap-3"
+              className="grid grid-cols-1 lg:grid-cols-2 gap-3"
             >
               {/* Activity Impact Comparison */}
               <Card className="p-3 relative">
@@ -116,31 +141,6 @@ export default function SectorView() {
                     animated={true}
                   />
                 </FullscreenChart>
-              </Card>
-            </motion.div>
-
-            {/* Activities */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5 text-accent-500" />
-                    {sector.name} Activities
-                  </CardTitle>
-                  <p className="text-sm text-text-muted mt-2">
-                    Select activities to add to your profile.
-                  </p>
-                </CardHeader>
-                <CardContent>
-                  <ActivityBadgeGrid
-                    activities={activities}
-                    sectorId={sector.id}
-                  />
-                </CardContent>
               </Card>
             </motion.div>
 

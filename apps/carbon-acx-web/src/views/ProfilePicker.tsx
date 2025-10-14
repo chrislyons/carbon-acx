@@ -159,37 +159,37 @@ export default function ProfilePicker({ profiles, sectorId, activities }: Profil
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">Profile Presets</CardTitle>
-        <p className="text-sm text-text-muted">
-          Select a profile to quickly populate your carbon calculation with representative activities.
+    <Card className="h-full">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm">Profile Presets</CardTitle>
+        <p className="text-xs text-text-muted">
+          Load a profile to compare activities
         </p>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="space-y-2">
           {profiles.map((profile) => (
             <button
               key={profile.id}
               disabled={loading === profile.id}
-              className="text-left p-3 rounded-lg border border-border hover:border-accent-500 hover:bg-accent-50/50 transition-all duration-200 group disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full text-left p-2.5 rounded-lg border border-border hover:border-accent-500 hover:bg-accent-50/50 transition-all duration-200 group disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={() => handleProfileSelect(profile)}
             >
-              <div className="font-medium text-sm text-foreground group-hover:text-accent-700 mb-1">
+              <div className="font-medium text-xs text-foreground group-hover:text-accent-700">
                 {loading === profile.id ? 'Loading...' : profile.name}
               </div>
               {profile.notes && (
-                <p className="text-xs text-text-muted line-clamp-2 mt-1">{profile.notes}</p>
+                <p className="text-[10px] text-text-muted line-clamp-2 mt-0.5 leading-tight">{profile.notes}</p>
               )}
-              <div className="flex gap-2 mt-2 text-xs text-text-muted">
+              <div className="flex gap-1.5 mt-1.5 text-[10px] text-text-muted">
                 {profile.regionCode && (
-                  <span className="px-2 py-0.5 rounded bg-accent-100 text-accent-700">
+                  <span className="px-1.5 py-0.5 rounded bg-accent-100 text-accent-700">
                     {profile.regionCode}
                   </span>
                 )}
                 {profile.officeDaysPerWeek !== null && (
-                  <span className="px-2 py-0.5 rounded bg-accent-100 text-accent-700">
-                    {profile.officeDaysPerWeek} days/wk
+                  <span className="px-1.5 py-0.5 rounded bg-accent-100 text-accent-700">
+                    {profile.officeDaysPerWeek}d/wk
                   </span>
                 )}
               </div>
