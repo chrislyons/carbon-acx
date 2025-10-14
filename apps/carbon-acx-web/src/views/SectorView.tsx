@@ -72,17 +72,17 @@ export default function SectorView() {
 
               {/* Right Column: Activities Browser */}
               <div className={profiles.length > 0 ? "lg:col-span-8" : "lg:col-span-12"}>
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <BarChart3 className="h-5 w-5 text-accent-500" />
+                <Card className="flex flex-col h-[500px]">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center gap-2 text-sm">
+                      <BarChart3 className="h-4 w-4 text-accent-500" />
                       {sector.name} Activities
                     </CardTitle>
-                    <p className="text-sm text-text-muted mt-2">
+                    <p className="text-xs text-text-muted">
                       Select activities to add to your profile.
                     </p>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="flex-1 overflow-y-auto px-4 pb-4">
                     <ActivityBadgeGrid
                       activities={activities}
                       sectorId={sector.id}

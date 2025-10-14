@@ -216,9 +216,9 @@ export default function ActivityBadgeGrid({
       {/* Activity badge grid */}
       <motion.div
         layout
-        className={`grid gap-3 ${
+        className={`grid gap-2 ${
           viewMode === 'grid'
-            ? 'grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6'
+            ? 'grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 xl:grid-cols-8'
             : 'grid-cols-1'
         }`}
       >
