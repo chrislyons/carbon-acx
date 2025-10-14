@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { TrendingUp, Zap, Globe, ArrowRight, Play } from 'lucide-react';
 
 import { Button } from '../components/ui/button';
@@ -8,7 +7,6 @@ import TimeSeriesChart from '../components/charts/TimeSeriesChart';
 import ComparativeBarChart from '../components/charts/ComparativeBarChart';
 import FullscreenChart from '../components/FullscreenChart';
 import MetricCard from '../components/MetricCard';
-import QuickAction from '../components/QuickAction';
 import { useProfile } from '../contexts/ProfileContext';
 import { loadDemoProfile, getDemoTimeSeries } from '../lib/demoData';
 import { useLayerChartData } from '../hooks/useLayerChartData';
@@ -118,28 +116,6 @@ export default function HomeView() {
             />
           </FullscreenChart>
         </Card>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <QuickAction
-          title="Track Activities"
-          description="Select from 100+ carbon activities"
-          to="/sectors/SECTOR.PROFESSIONAL_SERVICES"
-          icon={<TrendingUp className="h-4 w-4" />}
-        />
-        <QuickAction
-          title="Quick Calculator"
-          description="Get instant footprint estimate"
-          to="/?calculator=true"
-          icon={<Zap className="h-4 w-4" />}
-        />
-        <QuickAction
-          title="View Dashboard"
-          description="Analyze your carbon profile"
-          to="/dashboard"
-          icon={<Globe className="h-4 w-4" />}
-        />
       </div>
 
       {/* Data Density Note */}

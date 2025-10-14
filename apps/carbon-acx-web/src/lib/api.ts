@@ -20,6 +20,17 @@ export interface ActivitySummary {
   badgeColor?: string | null;
 }
 
+export interface ProfileSummary {
+  id: string;
+  sectorId: string;
+  layerId: string | null;
+  name: string;
+  regionCode: string | null;
+  gridStrategy: string | null;
+  officeDaysPerWeek: number | null;
+  notes: string | null;
+}
+
 export interface DatasetSummary {
   datasetId: string;
   title?: string | null;
@@ -80,6 +91,35 @@ export interface ReferenceSummary {
   layer?: string;
 }
 
+export interface ProfileActivitySchedule {
+  profileId: string;
+  sectorId: string;
+  activityId: string;
+  layerId: string | null;
+  freqPerDay: number | null;
+  freqPerWeek: number | null;
+  officeDaysOnly: boolean;
+  regionOverride: string | null;
+  scheduleNotes: string | null;
+  distanceKm: number | null;
+  passengers: number | null;
+  hours: number | null;
+  viewers: number | null;
+  servings: number | null;
+}
+
+export interface EmissionFactor {
+  efId: string;
+  sectorId: string;
+  activityId: string;
+  layerId: string | null;
+  unit: string | null;
+  valueGPerUnit: number | null;
+  isGridIndexed: boolean;
+  electricityKwhPerUnit: number | null;
+  region: string | null;
+}
+
 const rawConfiguredApiBase = (import.meta.env.VITE_API_BASE_URL ?? '').trim();
 const fallbackApiBase = (() => {
   const baseUrl = import.meta.env.BASE_URL ?? '/';
@@ -134,11 +174,11 @@ async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export function loadSectors(): Promise<SectorSummary[]> {
-  return fetchJson<{ sectors: SectorSummary[] }>('sectors').then((data) => data.sectors);
+  return fetchJson<{ sectors: SectorSummary[] }>('sectors.json').then((data) => data.sectors);
 }
 
 export function loadDatasets(): Promise<DatasetSummary[]> {
-  return fetchJson<{ datasets: DatasetSummary[] }>('datasets').then((data) => data.datasets);
+  return fetchJson<{ datasets: DatasetSummary[] }>('datasets.json').then((data) => data.datasets);
 }
 
 export function loadActivities(sectorId: string): Promise<ActivitySummary[]> {
@@ -148,10 +188,15 @@ export function loadActivities(sectorId: string): Promise<ActivitySummary[]> {
 export function loadSector(sectorId: string): Promise<{
   sector: SectorSummary;
   activities: ActivitySummary[];
+  profiles: ProfileSummary[];
 }> {
-  return fetchJson<{ sector: SectorSummary; activities: ActivitySummary[] }>(
-    `sectors/${encodeURIComponent(sectorId)}`,
-  );
+  return fetchJson<{ sector: SectorSummary; activities: ActivitySummary[]; profiles?: ProfileSummary[] }>(
+    `sectors/${encodeURIComponent(sectorId)}.json`,
+  ).then((data) => ({
+    sector: data.sector,
+    activities: data.activities,
+    profiles: data.profiles ?? [],
+  }));
 }
 
 function normaliseString(value: unknown): string | null {
@@ -319,11 +364,26 @@ export function loadDataset(datasetId: string): Promise<{
   references: ReferenceSummary[];
 }> {
   return fetchJson<{ dataset: unknown; references: ReferenceSummary[] }>(
-    `datasets/${encodeURIComponent(datasetId)}`,
+    `datasets/${encodeURIComponent(datasetId)}.json`,
   ).then((payload) => ({
     dataset: normaliseDatasetDetail(payload.dataset),
     references: Array.isArray(payload.references)
       ? payload.references.map(normaliseReference)
       : [],
   }));
+}
+
+export function loadProfileActivities(profileId: string): Promise<{
+  profile: ProfileSummary;
+  activities: ProfileActivitySchedule[];
+}> {
+  return fetchJson<{ profile: ProfileSummary; activities: ProfileActivitySchedule[] }>(
+    `profiles/${encodeURIComponent(profileId)}.json`,
+  );
+}
+
+export function loadEmissionFactors(): Promise<EmissionFactor[]> {
+  return fetchJson<{ emissionFactors: EmissionFactor[] }>('emission-factors.json').then(
+    (data) => data.emissionFactors,
+  );
 }

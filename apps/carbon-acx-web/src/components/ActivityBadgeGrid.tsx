@@ -7,6 +7,7 @@ import { useProfile } from '../contexts/ProfileContext';
 import { useToast } from '../contexts/ToastContext';
 import { Button } from './ui/button';
 import ActivityBadge from './ActivityBadge';
+import { inferIconType } from '../lib/activityIcons';
 import {
   Dialog,
   DialogContent,
@@ -215,9 +216,9 @@ export default function ActivityBadgeGrid({
       {/* Activity badge grid */}
       <motion.div
         layout
-        className={`grid gap-3 ${
+        className={`grid gap-2 ${
           viewMode === 'grid'
-            ? 'grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6'
+            ? 'grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 xl:grid-cols-8'
             : 'grid-cols-1'
         }`}
       >
@@ -225,13 +226,16 @@ export default function ActivityBadgeGrid({
           const impact = activityImpacts.get(activity.id) || 0;
           const isSelected = hasActivity(activity.id);
 
+          // Auto-assign icon type if not provided
+          const iconType = activity.iconType || inferIconType(activity.name, activity.category);
+
           return (
             <ActivityBadge
               key={activity.id}
               name={activity.name || activity.id}
               emissions={impact}
               iconUrl={activity.iconUrl}
-              iconType={activity.iconType}
+              iconType={iconType}
               badgeColor={activity.badgeColor}
               isSelected={isSelected}
               onClick={() => handleActivityClick(activity)}

@@ -545,3 +545,121 @@ export function canUseIcon(iconType: string): boolean {
   // Generic icons don't require citations
   return true;
 }
+
+/**
+ * Auto-assign icon type based on activity name and category
+ * Uses keyword matching to find the most appropriate icon
+ */
+export function inferIconType(activityName: string | null, category: string | null): string | null {
+  if (!activityName) return null;
+
+  const name = activityName.toLowerCase();
+  const cat = category?.toLowerCase() || '';
+
+  // Streaming & Media
+  if (name.includes('netflix')) return 'netflix';
+  if (name.includes('youtube')) return 'youtube';
+  if (name.includes('spotify')) return 'spotify';
+  if (name.includes('twitch')) return 'twitch';
+  if (name.includes('hd video') || name.includes('stream') || name.includes('streaming')) return 'video-streaming';
+  if (name.includes('music')) return 'music-streaming';
+  if (name.includes('social') || name.includes('facebook') || name.includes('instagram') || name.includes('tiktok')) return 'social-media';
+  if (name.includes('conference') || name.includes('zoom') || name.includes('video call')) return 'video-conference';
+
+  // Transport
+  if (name.includes('car') && name.includes('electric')) return 'car-electric';
+  if (name.includes('car') || name.includes('gasoline') || name.includes('automobile')) return 'car-gasoline';
+  if (name.includes('plane') || name.includes('flight') && name.includes('international')) return 'plane-international';
+  if (name.includes('plane') || name.includes('flight')) return 'plane-domestic';
+  if (name.includes('bike') || name.includes('bicycle') || name.includes('cycling')) return 'bike';
+  if (name.includes('bus')) return 'bus';
+  if (name.includes('train') || name.includes('rail') || name.includes('subway') || name.includes('metro')) return 'train';
+
+  // Shopping & Logistics
+  if (name.includes('amazon')) return 'amazon';
+  if (name.includes('walmart')) return 'walmart';
+  if (name.includes('target')) return 'target';
+  if (name.includes('delivery') || name.includes('parcel')) return 'delivery';
+  if (name.includes('truck')) return 'trucking';
+  if (name.includes('ship') || name.includes('maritime') || name.includes('freight')) return 'shipping';
+  if (name.includes('warehouse') || name.includes('storage')) return 'warehouse';
+
+  // Food
+  if (name.includes('coffee')) return 'coffee';
+  if (name.includes('beef')) return 'beef';
+  if (name.includes('chicken') || name.includes('poultry')) return 'chicken';
+  if (name.includes('fish') || name.includes('seafood')) return 'fish';
+  if (name.includes('vegetarian') || name.includes('veg') || name.includes('plant')) return 'vegetarian';
+  if (name.includes('meal') || name.includes('food') || cat.includes('food')) return 'meal';
+
+  // Energy
+  if (name.includes('solar')) return 'electricity-solar';
+  if (name.includes('electricity') || name.includes('power') || name.includes('grid')) return 'electricity-grid';
+  if (name.includes('gas') || name.includes('natural gas')) return 'natural-gas';
+  if (name.includes('oil') || name.includes('heating')) return 'heating-oil';
+
+  // Tech & Devices
+  if (name.includes('laptop') || name.includes('notebook')) return 'laptop';
+  if (name.includes('smartphone') || name.includes('phone') || name.includes('mobile')) return 'smartphone';
+  if (name.includes('monitor') || name.includes('display')) return 'monitor';
+  if (name.includes('television') || name.includes('tv')) return 'television';
+
+  // Cloud & Infrastructure
+  if (name.includes('llm') || name.includes('gpt') || name.includes('chatgpt')) return 'gpt';
+  if (name.includes('claude')) return 'claude';
+  if (name.includes('gemini')) return 'gemini';
+  if (name.includes('ai') || name.includes('assistant') || name.includes('inference')) return 'llm-generic';
+  if (name.includes('cdn') || name.includes('edge')) return 'cdn';
+  if (name.includes('server') || name.includes('cloud') && name.includes('storage')) return 'cloud-storage';
+  if (name.includes('data center') || name.includes('datacenter')) return 'data-center';
+  if (name.includes('cloud') || name.includes('colocation')) return 'cloud-server';
+
+  // Downloads
+  if (name.includes('download') && (name.includes('game') || name.includes('gaming'))) return 'game-download';
+  if (name.includes('download')) return 'download';
+
+  // Buildings & Infrastructure
+  if (name.includes('hospital')) return 'hospital';
+  if (name.includes('office') || name.includes('building') || cat.includes('construction')) return 'office-building';
+  if (name.includes('home') || name.includes('residential')) return 'residential';
+  if (name.includes('warehouse')) return 'warehouse';
+  if (name.includes('factory') || name.includes('plant') || name.includes('facility')) return 'factory';
+
+  // Transit & Commute
+  if (name.includes('ttc') || name.includes('metro') || name.includes('subway')) return 'train';
+  if (name.includes('commute') || name.includes('transit')) return 'bus';
+
+  // Electronics & Computing
+  if (name.includes('rack') || name.includes('colocation') || name.includes('colo')) return 'server';
+  if (name.includes('hyperscale')) return 'data-center';
+  if (name.includes('inference') || name.includes('model')) return 'llm-generic';
+
+  // Food Processing & Agriculture
+  if (name.includes('throughput') || name.includes('processing')) {
+    if (name.includes('beef') || name.includes('carcass')) return 'beef';
+    if (name.includes('poultry') || name.includes('chicken')) return 'chicken';
+    if (name.includes('fish')) return 'fish';
+    return 'factory';
+  }
+  if (name.includes('roasted') || name.includes('roasting')) return 'coffee';
+
+  // Online Services & Social
+  if (name.includes('snapchat')) return 'social-media';
+  if (name.includes('twitter') || name.includes('x usage')) return 'social-media';
+  if (name.includes('linkedin')) return 'social-media';
+
+  // Specialized Services
+  if (name.includes('telemedicine') || name.includes('telehealth')) return 'video-conference';
+  if (name.includes('e-commerce') || name.includes('online shopping')) return 'delivery';
+
+  // Category-based fallbacks
+  if (cat.includes('transport') || cat.includes('logistics')) return 'car-gasoline';
+  if (cat.includes('food') || cat.includes('meal')) return 'meal';
+  if (cat.includes('media') || cat.includes('stream')) return 'video-streaming';
+  if (cat.includes('cloud') || cat.includes('online')) return 'cloud-server';
+  if (cat.includes('energy') || cat.includes('power')) return 'electricity-grid';
+  if (cat.includes('construction') || cat.includes('industrial')) return 'office-building';
+  if (cat.includes('social')) return 'social-media';
+
+  return null;
+}

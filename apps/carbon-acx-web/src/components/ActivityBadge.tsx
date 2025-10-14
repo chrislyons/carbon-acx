@@ -52,23 +52,23 @@ export default function ActivityBadge({
   // Get icon definition from registry
   const iconDef = getIconDefinition(iconType);
 
-  // Size mappings
+  // Size mappings - Denser for better space utilization
   const sizeClasses = {
-    sm: 'w-20 h-24',
-    md: 'w-24 h-28',
-    lg: 'w-32 h-36',
+    sm: 'w-16 h-20',
+    md: 'w-20 h-24',
+    lg: 'w-24 h-28',
   };
 
   const iconSizes = {
-    sm: 'w-6 h-6',
-    md: 'w-8 h-8',
-    lg: 'w-12 h-12',
+    sm: 'w-5 h-5',
+    md: 'w-6 h-6',
+    lg: 'w-8 h-8',
   };
 
   const textSizes = {
-    sm: 'text-[10px]',
-    md: 'text-xs',
-    lg: 'text-sm',
+    sm: 'text-[9px]',
+    md: 'text-[10px]',
+    lg: 'text-xs',
   };
 
   // Determine badge background - use icon definition color if available

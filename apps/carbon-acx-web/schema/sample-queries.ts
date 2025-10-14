@@ -104,6 +104,17 @@ export interface ActivitySummary {
   description: string | null;
 }
 
+export interface ProfileSummary {
+  id: string;
+  sectorId: string;
+  layerId: string | null;
+  name: string;
+  regionCode: string | null;
+  gridStrategy: string | null;
+  officeDaysPerWeek: number | null;
+  notes: string | null;
+}
+
 export interface DatasetSummary {
   datasetId: string;
   generatedAt: string | null;
@@ -119,6 +130,35 @@ export interface ReferenceSummary {
   url?: string | null;
   year?: number | null;
   layer?: string;
+}
+
+export interface ActivityScheduleEntry {
+  profileId: string;
+  sectorId: string;
+  activityId: string;
+  layerId: string | null;
+  freqPerDay: number | null;
+  freqPerWeek: number | null;
+  officeDaysOnly: boolean;
+  regionOverride: string | null;
+  scheduleNotes: string | null;
+  distanceKm: number | null;
+  passengers: number | null;
+  hours: number | null;
+  viewers: number | null;
+  servings: number | null;
+}
+
+export interface EmissionFactor {
+  efId: string;
+  sectorId: string;
+  activityId: string;
+  layerId: string | null;
+  unit: string | null;
+  valueGPerUnit: number | null;
+  isGridIndexed: boolean;
+  electricityKwhPerUnit: number | null;
+  region: string | null;
 }
 
 async function loadManifestIndex(): Promise<Record<string, unknown> | null> {
@@ -181,6 +221,64 @@ export async function listActivities(sectorId: string): Promise<ActivitySummary[
       defaultUnit: record['default_unit'] ?? null,
       description: record['description'] ?? null,
     }));
+}
+
+export async function listProfiles(sectorId: string): Promise<ProfileSummary[]> {
+  const records = await loadCsvRecords('profiles.csv');
+  return records
+    .filter((record) => !sectorId || (record['sector_id'] ?? '').toLowerCase() === sectorId.toLowerCase())
+    .map((record) => ({
+      id: record['profile_id'] ?? '',
+      sectorId: record['sector_id'] ?? '',
+      layerId: record['layer_id'] ?? null,
+      name: record['name'] ?? '',
+      regionCode: record['region_code_default'] ?? null,
+      gridStrategy: record['grid_strategy'] ?? null,
+      officeDaysPerWeek: record['office_days_per_week'] ? parseFloat(record['office_days_per_week']) : null,
+      notes: record['assumption_notes'] ?? null,
+    }));
+}
+
+export async function getProfile(profileId: string): Promise<ProfileSummary | null> {
+  const allProfiles = await listProfiles('');
+  return allProfiles.find((p) => p.id === profileId) ?? null;
+}
+
+export async function listActivitySchedule(profileId: string): Promise<ActivityScheduleEntry[]> {
+  const records = await loadCsvRecords('activity_schedule.csv');
+  return records
+    .filter((record) => (record['profile_id'] ?? '').toLowerCase() === profileId.toLowerCase())
+    .map((record) => ({
+      profileId: record['profile_id'] ?? '',
+      sectorId: record['sector_id'] ?? '',
+      activityId: record['activity_id'] ?? '',
+      layerId: record['layer_id'] ?? null,
+      freqPerDay: record['freq_per_day'] ? parseFloat(record['freq_per_day']) : null,
+      freqPerWeek: record['freq_per_week'] ? parseFloat(record['freq_per_week']) : null,
+      officeDaysOnly: (record['office_days_only'] ?? '').toLowerCase() === 'true',
+      regionOverride: record['region_override'] ?? null,
+      scheduleNotes: record['schedule_notes'] ?? null,
+      distanceKm: record['distance_km'] ? parseFloat(record['distance_km']) : null,
+      passengers: record['passengers'] ? parseFloat(record['passengers']) : null,
+      hours: record['hours'] ? parseFloat(record['hours']) : null,
+      viewers: record['viewers'] ? parseFloat(record['viewers']) : null,
+      servings: record['servings'] ? parseFloat(record['servings']) : null,
+    }));
+}
+
+export async function listEmissionFactors(): Promise<EmissionFactor[]> {
+  const records = await loadCsvRecords('emission_factors.csv');
+  return records.map((record) => ({
+    efId: record['ef_id'] ?? '',
+    sectorId: record['sector_id'] ?? '',
+    activityId: record['activity_id'] ?? '',
+    layerId: record['layer_id'] ?? null,
+    unit: record['unit'] ?? null,
+    valueGPerUnit: record['value_g_per_unit'] ? parseFloat(record['value_g_per_unit']) : null,
+    isGridIndexed: (record['is_grid_indexed'] ?? '').toLowerCase() === 'true',
+    electricityKwhPerUnit: record['electricity_kwh_per_unit'] ? parseFloat(record['electricity_kwh_per_unit']) : null,
+    region: record['region'] ?? null,
+  }));
 }
 
 export async function getDataset(id: string): Promise<DatasetSummary | null> {

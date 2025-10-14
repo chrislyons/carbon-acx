@@ -34,6 +34,8 @@ export interface SelectedActivity {
   iconUrl?: string;
   /** Optional brand/badge color */
   badgeColor?: string;
+  /** Optional layer ID for multi-profile comparison */
+  layerId?: string;
 }
 
 export interface CalculatorResult {
@@ -43,9 +45,20 @@ export interface CalculatorResult {
   calculatedAt: string; // ISO timestamp
 }
 
-export interface ProfileData {
+export interface ProfileLayer {
+  id: string; // Unique layer ID (e.g., profile ID or "manual")
+  name: string; // Display name (e.g., "Toronto Professional Hybrid")
+  sourceProfileId: string | null; // Original profile ID if loaded from preset
+  color: string; // Hex color for visualization
+  visible: boolean; // Toggle visibility in dashboard
   activities: SelectedActivity[];
+  createdAt: string; // ISO timestamp
+}
+
+export interface ProfileData {
+  activities: SelectedActivity[]; // Legacy: activities not in any layer
   calculatorResults: CalculatorResult[];
+  layers: ProfileLayer[]; // Multi-profile comparison layers
   lastUpdated: string; // ISO timestamp
 }
 
@@ -61,7 +74,7 @@ export interface HistoricalSnapshot {
 
 interface ProfileContextValue {
   profile: ProfileData;
-  /** Total annual emissions from all sources */
+  /** Total annual emissions from all sources (including visible layers) */
   totalEmissions: number;
   /** Historical snapshots for tracking over time */
   history: HistoricalSnapshot[];
@@ -81,6 +94,16 @@ interface ProfileContextValue {
   takeSnapshot: () => void;
   /** Get time-series data for charting */
   getTimeSeriesData: () => Array<{ date: string; value: number }>;
+  /** Add a new layer (for profile comparison) */
+  addLayer: (layer: Omit<ProfileLayer, 'createdAt'>) => void;
+  /** Remove a layer by ID */
+  removeLayer: (layerId: string) => void;
+  /** Toggle layer visibility */
+  toggleLayerVisibility: (layerId: string) => void;
+  /** Rename a layer */
+  renameLayer: (layerId: string, name: string) => void;
+  /** Get all visible layers */
+  getVisibleLayers: () => ProfileLayer[];
 }
 
 // ============================================================================
@@ -102,6 +125,7 @@ const SNAPSHOT_THROTTLE_MS = 24 * 60 * 60 * 1000; // 24 hours
 const EMPTY_PROFILE: ProfileData = {
   activities: [],
   calculatorResults: [],
+  layers: [],
   lastUpdated: new Date().toISOString(),
 };
 
@@ -123,7 +147,15 @@ function loadProfile(): ProfileData {
       return EMPTY_PROFILE;
     }
 
-    return parsed.data as ProfileData;
+    const data = parsed.data as Partial<ProfileData>;
+
+    // Migrate old format to new format with layers
+    return {
+      activities: data.activities ?? [],
+      calculatorResults: data.calculatorResults ?? [],
+      layers: data.layers ?? [],
+      lastUpdated: data.lastUpdated ?? new Date().toISOString(),
+    };
   } catch (error) {
     console.error('Failed to load profile from localStorage:', error);
     return EMPTY_PROFILE;
@@ -146,7 +178,7 @@ function saveProfile(data: ProfileData): void {
   }
 }
 
-/** Calculate total emissions from profile */
+/** Calculate total emissions from profile (including visible layers) */
 function calculateTotal(profile: ProfileData): number {
   const activityTotal = profile.activities.reduce(
     (sum, activity) => sum + activity.annualEmissions,
@@ -156,7 +188,16 @@ function calculateTotal(profile: ProfileData): number {
     (sum, result) => sum + result.annualEmissions,
     0
   );
-  return activityTotal + calculatorTotal;
+  const layerTotal = profile.layers
+    .filter((layer) => layer.visible)
+    .reduce((sum, layer) => {
+      const layerEmissions = layer.activities.reduce(
+        (layerSum, activity) => layerSum + activity.annualEmissions,
+        0
+      );
+      return sum + layerEmissions;
+    }, 0);
+  return activityTotal + calculatorTotal + layerTotal;
 }
 
 /** Load history from localStorage */
@@ -350,6 +391,55 @@ export function ProfileProvider({ children }: ProfileProviderProps) {
     }));
   };
 
+  const addLayer = (layer: Omit<ProfileLayer, 'createdAt'>) => {
+    setProfile((prev) => {
+      // Prevent duplicate layer IDs
+      if (prev.layers.some((l) => l.id === layer.id)) {
+        console.warn(`Layer with ID ${layer.id} already exists, skipping`);
+        return prev;
+      }
+
+      const newLayer: ProfileLayer = {
+        ...layer,
+        createdAt: new Date().toISOString(),
+      };
+
+      return {
+        ...prev,
+        layers: [...prev.layers, newLayer],
+      };
+    });
+  };
+
+  const removeLayer = (layerId: string) => {
+    setProfile((prev) => ({
+      ...prev,
+      layers: prev.layers.filter((l) => l.id !== layerId),
+    }));
+  };
+
+  const toggleLayerVisibility = (layerId: string) => {
+    setProfile((prev) => ({
+      ...prev,
+      layers: prev.layers.map((layer) =>
+        layer.id === layerId ? { ...layer, visible: !layer.visible } : layer
+      ),
+    }));
+  };
+
+  const renameLayer = (layerId: string, name: string) => {
+    setProfile((prev) => ({
+      ...prev,
+      layers: prev.layers.map((layer) =>
+        layer.id === layerId ? { ...layer, name } : layer
+      ),
+    }));
+  };
+
+  const getVisibleLayers = (): ProfileLayer[] => {
+    return profile.layers.filter((layer) => layer.visible);
+  };
+
   const value: ProfileContextValue = {
     profile,
     totalEmissions,
@@ -362,6 +452,11 @@ export function ProfileProvider({ children }: ProfileProviderProps) {
     hasActivity,
     takeSnapshot,
     getTimeSeriesData,
+    addLayer,
+    removeLayer,
+    toggleLayerVisibility,
+    renameLayer,
+    getVisibleLayers,
   };
 
   return (

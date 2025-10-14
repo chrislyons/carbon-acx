@@ -1,9 +1,10 @@
+// apps/carbon-acx-web/src/components/Toast.tsx
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, XCircle, Info, X } from 'lucide-react';
+import { CheckCircle2, XCircle, Info, AlertTriangle, X } from 'lucide-react';
 
-export type ToastType = 'success' | 'error' | 'info';
+export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
 export interface Toast {
   id: string;
@@ -29,16 +30,18 @@ function ToastItem({ toast, onDismiss }: ToastProps) {
     }
   }, [toast.id, toast.duration, onDismiss]);
 
-  const icons = {
+  const icons: Record<ToastType, JSX.Element> = {
     success: <CheckCircle2 className="h-5 w-5 text-accent-success" />,
     error: <XCircle className="h-5 w-5 text-accent-danger" />,
     info: <Info className="h-5 w-5 text-accent-500" />,
+    warning: <AlertTriangle className="h-5 w-5 text-amber-500" />, // new
   };
 
-  const colors = {
+  const colors: Record<ToastType, string> = {
     success: 'border-accent-success/30 bg-accent-success/10',
     error: 'border-accent-danger/30 bg-accent-danger/10',
     info: 'border-accent-500/30 bg-accent-500/10',
+    warning: 'border-amber-400/30 bg-amber-50 dark:bg-amber-500/10', // new
   };
 
   return (
@@ -94,3 +97,4 @@ export function ToastContainer({ toasts, onDismiss }: ToastContainerProps) {
 }
 
 export default ToastContainer;
+

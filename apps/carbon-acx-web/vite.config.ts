@@ -8,9 +8,13 @@ import { defineConfig } from 'vite';
 
 import {
   getDataset,
+  getProfile,
   getSector,
   listActivities,
+  listActivitySchedule,
   listDatasets,
+  listEmissionFactors,
+  listProfiles,
   listReferences,
   listSectors,
 } from './schema/sample-queries';
@@ -51,21 +55,22 @@ function sampleQueriesApi(): Plugin {
           json(res, { datasets });
           return;
         }
-        const sectorMatch = url.pathname.match(/^\/api\/sectors\/([^/]+)$/);
+        const sectorMatch = url.pathname.match(/^\/api\/sectors\/([^/]+?)(\.json)?$/);
         if (sectorMatch) {
           const [, sectorId] = sectorMatch;
-          const [sector, activities] = await Promise.all([
+          const [sector, activities, profiles] = await Promise.all([
             getSector(sectorId),
             listActivities(sectorId),
+            listProfiles(sectorId),
           ]);
           if (!sector) {
             notFound(res);
             return;
           }
-          json(res, { sector, activities });
+          json(res, { sector, activities, profiles });
           return;
         }
-        const datasetMatch = url.pathname.match(/^\/api\/datasets\/([^/]+)$/);
+        const datasetMatch = url.pathname.match(/^\/api\/datasets\/([^/]+?)(\.json)?$/);
         if (datasetMatch) {
           const [, datasetId] = datasetMatch;
           const [datasetSummary, references] = await Promise.all([
@@ -108,6 +113,27 @@ function sampleQueriesApi(): Plugin {
             ],
           };
           json(res, { dataset, references });
+          return;
+        }
+        // Profile activity schedule endpoint
+        const profileMatch = url.pathname.match(/^\/api\/profiles\/([^/]+?)(\.json)?$/);
+        if (profileMatch) {
+          const [, profileId] = profileMatch;
+          const [profile, activities] = await Promise.all([
+            getProfile(profileId),
+            listActivitySchedule(profileId),
+          ]);
+          if (!profile) {
+            notFound(res);
+            return;
+          }
+          json(res, { profile, activities });
+          return;
+        }
+        // Emission factors endpoint
+        if (url.pathname === '/api/emission-factors') {
+          const emissionFactors = await listEmissionFactors();
+          json(res, { emissionFactors });
           return;
         }
         if (url.pathname.startsWith('/references/')) {
