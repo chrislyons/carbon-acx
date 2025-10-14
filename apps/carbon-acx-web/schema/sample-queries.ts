@@ -226,7 +226,7 @@ export async function listActivities(sectorId: string): Promise<ActivitySummary[
 export async function listProfiles(sectorId: string): Promise<ProfileSummary[]> {
   const records = await loadCsvRecords('profiles.csv');
   return records
-    .filter((record) => (record['sector_id'] ?? '').toLowerCase() === sectorId.toLowerCase())
+    .filter((record) => !sectorId || (record['sector_id'] ?? '').toLowerCase() === sectorId.toLowerCase())
     .map((record) => ({
       id: record['profile_id'] ?? '',
       sectorId: record['sector_id'] ?? '',
@@ -237,6 +237,11 @@ export async function listProfiles(sectorId: string): Promise<ProfileSummary[]> 
       officeDaysPerWeek: record['office_days_per_week'] ? parseFloat(record['office_days_per_week']) : null,
       notes: record['assumption_notes'] ?? null,
     }));
+}
+
+export async function getProfile(profileId: string): Promise<ProfileSummary | null> {
+  const allProfiles = await listProfiles('');
+  return allProfiles.find((p) => p.id === profileId) ?? null;
 }
 
 export async function listActivitySchedule(profileId: string): Promise<ActivityScheduleEntry[]> {

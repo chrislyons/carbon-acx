@@ -39,14 +39,22 @@ export default function DashboardView() {
     renameLayer,
   } = useProfile();
 
-  const activityEmissions = profile.activities.reduce((sum, a) => sum + a.annualEmissions, 0);
+  // Aggregate all activities from visible layers AND legacy activities
+  const allActivities = useMemo(() => {
+    const layerActivities = profile.layers
+      .filter(layer => layer.visible)
+      .flatMap(layer => layer.activities);
+    return [...profile.activities, ...layerActivities];
+  }, [profile.activities, profile.layers]);
+
+  const activityEmissions = allActivities.reduce((sum, a) => sum + a.annualEmissions, 0);
   const calculatorEmissions = profile.calculatorResults.reduce((sum, r) => sum + r.annualEmissions, 0);
 
   const percentOfGlobalAvg = (totalEmissions / GLOBAL_AVERAGE_KG) * 100;
   const isBelowAverage = totalEmissions < GLOBAL_AVERAGE_KG;
 
   // Group activities by sector
-  const activityBySector = profile.activities.reduce((acc, activity) => {
+  const activityBySector = allActivities.reduce((acc, activity) => {
     if (!acc[activity.sectorId]) {
       acc[activity.sectorId] = {
         sectorId: activity.sectorId,
@@ -57,25 +65,29 @@ export default function DashboardView() {
     acc[activity.sectorId].activities.push(activity);
     acc[activity.sectorId].total += activity.annualEmissions;
     return acc;
-  }, {} as Record<string, { sectorId: string; activities: typeof profile.activities; total: number }>);
+  }, {} as Record<string, { sectorId: string; activities: typeof allActivities; total: number }>);
 
   const sectorBreakdown = Object.values(activityBySector).sort((a, b) => b.total - a.total);
 
-  const isEmpty = profile.activities.length === 0 && profile.calculatorResults.length === 0;
+  // Dashboard is empty only if there are NO activities/layers at all (not just hidden)
+  const hasAnyData = profile.activities.length > 0 ||
+                     profile.calculatorResults.length > 0 ||
+                     profile.layers.length > 0;
+  const isEmpty = !hasAnyData;
 
   // Prepare data for visualizations
   const comparativeData: ComparativeDataPoint[] = useMemo(() => {
-    return profile.activities
+    return allActivities
       .map((activity) => ({
         category: activity.name,
         value: activity.annualEmissions,
-        baseline: totalEmissions / profile.activities.length, // Average per activity
+        baseline: totalEmissions / allActivities.length, // Average per activity
         label: `${activity.quantity} ${activity.unit}/year`,
         color: undefined,
       }))
       .sort((a, b) => b.value - a.value)
       .slice(0, 10); // Top 10 activities
-  }, [profile.activities, totalEmissions]);
+  }, [allActivities, totalEmissions]);
 
   // Use real historical tracking data
   const timeSeriesData: TimeSeriesDataPoint[] = useMemo(() => {
@@ -258,7 +270,7 @@ export default function DashboardView() {
       )}
 
       {/* Visualizations */}
-      {profile.activities.length > 0 && (
+      {allActivities.length > 0 && (
         <>
           {/* Emissions Trend */}
           {timeSeriesData.length > 0 && (
@@ -348,9 +360,9 @@ export default function DashboardView() {
         >
           <Card>
             <CardHeader>
-              <CardTitle>Your Activities</CardTitle>
+              <CardTitle>Your Manual Activities</CardTitle>
               <p className="text-sm text-text-muted mt-2">
-                {profile.activities.length} {profile.activities.length === 1 ? 'activity' : 'activities'} tracked
+                {profile.activities.length} manual {profile.activities.length === 1 ? 'activity' : 'activities'} tracked
               </p>
             </CardHeader>
             <CardContent>

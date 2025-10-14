@@ -4,6 +4,7 @@ import { loadProfileActivities, loadEmissionFactors } from '../lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Skeleton } from '../components/ui/skeleton';
 import { useProfile } from '../contexts/ProfileContext';
+import { useToast } from '../contexts/ToastContext';
 
 interface ProfilePickerProps {
   profiles: ProfileSummary[];
@@ -30,6 +31,7 @@ function getLayerColor(index: number): string {
 export default function ProfilePicker({ profiles, sectorId, activities }: ProfilePickerProps) {
   const hasProfiles = profiles.length > 0;
   const { addLayer, profile } = useProfile();
+  const { showToast } = useToast();
   const [loading, setLoading] = useState<string | null>(null);
   const [emissionFactors, setEmissionFactors] = useState<EmissionFactor[]>([]);
 
@@ -49,7 +51,7 @@ export default function ProfilePicker({ profiles, sectorId, activities }: Profil
     try {
       // Check if layer already exists
       if (profile.layers.some((l) => l.sourceProfileId === selectedProfile.id)) {
-        alert(`Profile "${selectedProfile.name}" is already loaded as a layer.`);
+        showToast('warning', 'Profile already loaded', `"${selectedProfile.name}" is already loaded as a layer.`);
         setLoading(null);
         return;
       }
@@ -142,10 +144,15 @@ export default function ProfilePicker({ profiles, sectorId, activities }: Profil
       });
 
       console.log(`Loaded profile "${selectedProfile.name}" with ${layerActivities.length} activities as new layer`);
-      alert(`Profile "${selectedProfile.name}" loaded as new layer!\n\n${layerActivities.length} activities added.\n\nYou can now compare this with other profiles or manual activities.`);
+      showToast(
+        'success',
+        'Profile loaded as new layer!',
+        `${layerActivities.length} activities added. You can now compare this with other profiles or manual activities.`,
+        6000
+      );
     } catch (error) {
       console.error('Failed to load profile:', error);
-      alert(`Failed to load profile "${selectedProfile.name}". Please try again.`);
+      showToast('error', 'Failed to load profile', `Could not load "${selectedProfile.name}". Please try again.`);
     } finally {
       setLoading(null);
     }
