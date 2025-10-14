@@ -93,7 +93,7 @@ export default function ActivityBadge({
       }}
       whileHover={{ y: -2 }}
       whileTap={{ scale: 0.95 }}
-      initial={{ opacity: 0, scale: 0.99 }}
+      initial={{ opacity: 0, scale: 0.91 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.2 }}
     >
