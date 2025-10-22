@@ -67,7 +67,7 @@ export default function LayerToggle() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.15 }}
-              className="absolute left-0 top-full mt-2 z-50 w-[calc(100vw-2rem)] max-w-md bg-surface border border-border rounded-lg shadow-lg"
+              className="absolute left-0 top-full mt-2 z-50 w-full max-w-md bg-surface border border-border rounded-lg shadow-lg"
             >
               {/* Header */}
               <div className="p-3 border-b border-border">
