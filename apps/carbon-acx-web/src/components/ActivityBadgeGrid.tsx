@@ -213,15 +213,16 @@ export default function ActivityBadgeGrid({
         </p>
       </div>
 
-      {/* Activity badge grid */}
-      <motion.div
-        layout
-        className={`grid gap-2 ${
-          viewMode === 'grid'
-            ? 'grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 xl:grid-cols-8'
-            : 'grid-cols-1'
-        }`}
-      >
+      {/* Activity badge grid - 8 columns × 2 rows max, scrollable */}
+      <div className={viewMode === 'grid' ? 'max-h-[240px] overflow-y-auto' : ''}>
+        <motion.div
+          layout
+          className={`grid gap-2 ${
+            viewMode === 'grid'
+              ? 'grid-cols-8'
+              : 'grid-cols-1'
+          }`}
+        >
         {sortedActivities.map((activity) => {
           const impact = activityImpacts.get(activity.id) || 0;
           const isSelected = hasActivity(activity.id);
@@ -239,12 +240,27 @@ export default function ActivityBadgeGrid({
               badgeColor={activity.badgeColor}
               isSelected={isSelected}
               onClick={() => handleActivityClick(activity)}
+              onValueSubmit={(value) => {
+                const carbonIntensity = impact / 1000; // g to kg
+                const annualEmissions = carbonIntensity * value;
+                addActivity({
+                  id: activity.id,
+                  sectorId,
+                  name: activity.name || activity.id,
+                  category: activity.category,
+                  quantity: value,
+                  unit: activity.defaultUnit || 'unit',
+                  carbonIntensity,
+                  annualEmissions,
+                });
+              }}
               size={viewMode === 'grid' ? 'md' : 'sm'}
               showEmissions={true}
             />
           );
         })}
-      </motion.div>
+        </motion.div>
+      </div>
 
       {/* Collection summary */}
       <AnimatePresence>
