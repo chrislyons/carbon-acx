@@ -124,33 +124,36 @@ export default function LayerToggle() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-7 w-7 p-0"
+                            className="h-10 w-10 p-0"
                             onClick={() => toggleLayerVisibility(layer.id)}
+                            aria-label={layer.visible ? `Hide ${layer.name} layer` : `Show ${layer.name} layer`}
                             title={layer.visible ? 'Hide layer' : 'Show layer'}
                           >
                             {layer.visible ? (
-                              <Eye className="h-3.5 w-3.5" />
+                              <Eye className="h-3.5 w-3.5" aria-hidden="true" />
                             ) : (
-                              <EyeOff className="h-3.5 w-3.5" />
+                              <EyeOff className="h-3.5 w-3.5" aria-hidden="true" />
                             )}
                           </Button>
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-7 w-7 p-0"
+                            className="h-10 w-10 p-0"
                             onClick={() => handleRename(layer.id, layer.name)}
+                            aria-label={`Rename ${layer.name} layer`}
                             title="Rename layer"
                           >
-                            <Edit2 className="h-3.5 w-3.5" />
+                            <Edit2 className="h-3.5 w-3.5" aria-hidden="true" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-7 w-7 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="h-10 w-10 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
                             onClick={() => handleRemove(layer.id, layer.name)}
+                            aria-label={`Remove ${layer.name} layer`}
                             title="Remove layer"
                           >
-                            <Trash2 className="h-3.5 w-3.5" />
+                            <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                           </Button>
                         </div>
                       </div>
