@@ -3,9 +3,16 @@ import { TrendingDown, TrendingUp, Activity, Trash2, Edit2, Calculator, Users, B
 import { Link } from 'react-router-dom';
 import { useMemo, useState } from 'react';
 
-import { useProfile } from '../contexts/ProfileContext';
+import { useProfile, type SelectedActivity } from '../contexts/ProfileContext';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '../components/ui/dialog';
 import ExportButton from '../components/ExportButton';
 import ComparativeBarChart from '../components/charts/ComparativeBarChart';
 import TimeSeriesChart from '../components/charts/TimeSeriesChart';
@@ -32,12 +39,29 @@ export default function DashboardView() {
     profile,
     totalEmissions,
     removeActivity,
+    updateActivityQuantity,
     getTimeSeriesData,
     history,
     toggleLayerVisibility,
     removeLayer,
     renameLayer,
   } = useProfile();
+
+  // Edit dialog state
+  const [editingActivity, setEditingActivity] = useState<SelectedActivity | null>(null);
+  const [editQuantity, setEditQuantity] = useState<string>('');
+
+  // Handle edit activity
+  const handleEditActivity = () => {
+    if (!editingActivity) return;
+
+    const parsedQuantity = parseFloat(editQuantity);
+    if (!isNaN(parsedQuantity) && parsedQuantity > 0) {
+      updateActivityQuantity(editingActivity.id, parsedQuantity);
+      setEditingActivity(null);
+      setEditQuantity('');
+    }
+  };
 
   // Aggregate all activities from visible layers AND legacy activities
   const allActivities = useMemo(() => {
@@ -406,8 +430,8 @@ export default function DashboardView() {
                         size="sm"
                         className="h-8 w-8 p-0"
                         onClick={() => {
-                          // TODO: Implement edit dialog
-                          console.log('Edit', activity.id);
+                          setEditingActivity(activity);
+                          setEditQuantity(activity.quantity.toString());
                         }}
                       >
                         <Edit2 className="h-4 w-4" />
@@ -469,6 +493,73 @@ export default function DashboardView() {
           </Card>
         </motion.div>
       )}
+
+      {/* Edit Activity Dialog */}
+      <Dialog open={!!editingActivity} onOpenChange={(open) => !open && setEditingActivity(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Activity</DialogTitle>
+            <DialogDescription>
+              Update the annual quantity for {editingActivity?.name}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 pt-4">
+            <div>
+              <label htmlFor="edit-quantity" className="block text-sm font-medium text-foreground mb-2">
+                Annual quantity
+              </label>
+              <div className="flex gap-2">
+                <input
+                  id="edit-quantity"
+                  type="number"
+                  value={editQuantity}
+                  onChange={(e) => setEditQuantity(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleEditActivity();
+                    }
+                  }}
+                  className="flex-1 px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500"
+                  placeholder="Enter quantity"
+                  min="0"
+                  step="0.1"
+                  autoFocus
+                />
+                <div className="px-3 py-2 border border-border rounded-lg bg-surface text-text-muted min-w-[80px] flex items-center justify-center">
+                  {editingActivity?.unit || 'units'}
+                </div>
+              </div>
+            </div>
+
+            {editingActivity && (
+              <div className="p-3 rounded-lg bg-neutral-50 border border-neutral-200">
+                <p className="text-sm text-text-muted mb-1">Estimated annual emissions:</p>
+                <p className="text-2xl font-bold text-foreground">
+                  {(editingActivity.carbonIntensity * parseFloat(editQuantity || '0')).toFixed(2)} kg CO₂
+                </p>
+              </div>
+            )}
+
+            <div className="flex gap-2 pt-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setEditingActivity(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="flex-1"
+                onClick={handleEditActivity}
+                disabled={!editQuantity || parseFloat(editQuantity) <= 0}
+              >
+                Save Changes
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

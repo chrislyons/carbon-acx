@@ -199,7 +199,7 @@ export default function ActivityBadge({
           />
         ) : iconDef?.svgPath ? (
           <img
-            src={`/src/assets/activity-icons/${iconDef.svgPath}`}
+            src={`/activity-icons/${iconDef.svgPath}`}
             alt={name}
             className="w-full h-full object-contain"
           />
