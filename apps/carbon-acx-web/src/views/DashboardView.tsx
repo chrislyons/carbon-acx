@@ -428,21 +428,25 @@ export default function DashboardView() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 w-8 p-0"
+                        className="h-10 w-10 p-0"
                         onClick={() => {
                           setEditingActivity(activity);
                           setEditQuantity(activity.quantity.toString());
                         }}
+                        aria-label={`Edit ${activity.name}`}
+                        title={`Edit ${activity.name}`}
                       >
-                        <Edit2 className="h-4 w-4" />
+                        <Edit2 className="h-4 w-4" aria-hidden="true" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        className="h-10 w-10 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
                         onClick={() => removeActivity(activity.id)}
+                        aria-label={`Remove ${activity.name}`}
+                        title={`Remove ${activity.name}`}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4" aria-hidden="true" />
                       </Button>
                     </div>
                   </motion.div>

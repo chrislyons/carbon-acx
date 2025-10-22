@@ -61,7 +61,8 @@ export default function NavSidebar({ sectors, onOpenSettings }: NavSidebarProps)
 
   return (
     <nav className="nav-sidebar flex flex-col h-full" aria-label="Main navigation">
-      <div className="flex-1 min-h-0">
+      {/* Fixed header section */}
+      <div className="flex-shrink-0">
         {/* Main Navigation - Controls Right Pane */}
         <div className="mb-2 space-y-0.5">
           <Link
@@ -132,7 +133,10 @@ export default function NavSidebar({ sectors, onOpenSettings }: NavSidebarProps)
         </div>
 
         <div className="border-t border-border my-2" />
+      </div>
 
+      {/* Scrollable content section */}
+      <div className="flex-1 min-h-0 flex flex-col">
         {/* Conditional Content: Sectors or Layers */}
         {activeView === 'sectors' ? (
           <>
@@ -147,7 +151,7 @@ export default function NavSidebar({ sectors, onOpenSettings }: NavSidebarProps)
                 onChange={(event) => setQuery(event.target.value)}
               />
             </div>
-            <ScrollArea className="h-[calc(100vh-16rem)] overflow-auto">
+            <ScrollArea className="flex-1 overflow-auto">
               <ul className="nav-sidebar__list" role="listbox">
             {filtered.map((sector, index) => {
               const to = `/sectors/${encodeURIComponent(sector.id)}`;
@@ -190,8 +194,7 @@ export default function NavSidebar({ sectors, onOpenSettings }: NavSidebarProps)
           </>
         ) : (
           /* Profile Layers Management View */
-          <div className="flex-1 min-h-0 overflow-hidden">
-            <ScrollArea className="h-full px-2">
+          <ScrollArea className="flex-1 overflow-auto px-2">
               {profile.layers.length === 0 ? (
                 <div className="text-center py-8 text-text-muted">
                   <Layers className="h-12 w-12 mx-auto mb-3 opacity-30" />
@@ -249,20 +252,21 @@ export default function NavSidebar({ sectors, onOpenSettings }: NavSidebarProps)
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-7 w-7 p-0"
+                          className="h-10 w-10 p-0"
                           onClick={() => toggleLayerVisibility(layer.id)}
+                          aria-label={layer.visible ? `Hide ${layer.name} layer` : `Show ${layer.name} layer`}
                           title={layer.visible ? 'Hide layer' : 'Show layer'}
                         >
                           {layer.visible ? (
-                            <Eye className="h-3.5 w-3.5" />
+                            <Eye className="h-3.5 w-3.5" aria-hidden="true" />
                           ) : (
-                            <EyeOff className="h-3.5 w-3.5" />
+                            <EyeOff className="h-3.5 w-3.5" aria-hidden="true" />
                           )}
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-7 w-7 p-0"
+                          className="h-10 w-10 p-0"
                           onClick={() => {
                             const newName = prompt('Enter new layer name:', layer.name);
                             if (newName && newName !== layer.name) {
@@ -270,21 +274,23 @@ export default function NavSidebar({ sectors, onOpenSettings }: NavSidebarProps)
                               showToast('success', 'Layer renamed', `Renamed to "${newName}"`);
                             }
                           }}
+                          aria-label={`Rename ${layer.name} layer`}
                           title="Rename layer"
                         >
-                          <Edit2 className="h-3.5 w-3.5" />
+                          <Edit2 className="h-3.5 w-3.5" aria-hidden="true" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-7 w-7 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          className="h-10 w-10 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
                           onClick={() => {
                             removeLayer(layer.id);
                             showToast('success', 'Layer removed', `Removed "${layer.name}"`);
                           }}
+                          aria-label={`Remove ${layer.name} layer`}
                           title="Remove layer"
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
+                          <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                         </Button>
                       </div>
                     </div>
@@ -292,13 +298,12 @@ export default function NavSidebar({ sectors, onOpenSettings }: NavSidebarProps)
                 })}
                 </div>
               )}
-            </ScrollArea>
-          </div>
+          </ScrollArea>
         )}
       </div>
 
-      {/* Controls at bottom */}
-      <div className="border-t border-border pt-4 mt-4 space-y-2">
+      {/* Fixed footer section */}
+      <div className="flex-shrink-0 border-t border-border pt-4 mt-4 space-y-2">
 
         {/* Settings controls */}
         <div className="flex items-center justify-between px-2">

@@ -157,21 +157,25 @@ export default function ActivityBadgeGrid({
           <div className="flex gap-1 border border-border rounded-lg p-0.5">
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-1.5 rounded transition-colors ${
+              className={`p-2.5 rounded transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center ${
                 viewMode === 'grid' ? 'bg-accent-500 text-white' : 'hover:bg-surface'
               }`}
               title="Grid view"
+              aria-label="Switch to grid view"
+              aria-pressed={viewMode === 'grid'}
             >
-              <Grid3x3 className="h-4 w-4" />
+              <Grid3x3 className="h-4 w-4" aria-hidden="true" />
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`p-1.5 rounded transition-colors ${
+              className={`p-2.5 rounded transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center ${
                 viewMode === 'list' ? 'bg-accent-500 text-white' : 'hover:bg-surface'
               }`}
               title="List view"
+              aria-label="Switch to list view"
+              aria-pressed={viewMode === 'list'}
             >
-              <List className="h-4 w-4" />
+              <List className="h-4 w-4" aria-hidden="true" />
             </button>
           </div>
 
@@ -217,10 +221,10 @@ export default function ActivityBadgeGrid({
       <div className={viewMode === 'grid' ? 'max-h-[240px] overflow-y-auto' : ''}>
         <motion.div
           layout
-          className={`grid gap-2 ${
+          className={`grid ${
             viewMode === 'grid'
-              ? 'grid-cols-8'
-              : 'grid-cols-1'
+              ? 'grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3'
+              : 'grid-cols-1 gap-2'
           }`}
         >
         {sortedActivities.map((activity) => {
