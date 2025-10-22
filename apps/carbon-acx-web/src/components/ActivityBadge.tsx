@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Check, Plus } from 'lucide-react';
 import { cn } from '../lib/cn';
@@ -36,6 +37,8 @@ export interface ActivityBadgeProps {
   size?: 'sm' | 'md' | 'lg';
   /** Show emissions value */
   showEmissions?: boolean;
+  /** Callback when value is entered */
+  onValueSubmit?: (value: number) => void;
 }
 
 export default function ActivityBadge({
@@ -48,9 +51,64 @@ export default function ActivityBadge({
   onClick,
   size = 'md',
   showEmissions = true,
+  onValueSubmit,
 }: ActivityBadgeProps) {
   // Get icon definition from registry
   const iconDef = getIconDefinition(iconType);
+
+  // State for input mode
+  const [isInputMode, setIsInputMode] = useState(false);
+  const [inputValue, setInputValue] = useState('');
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [confirmedValue, setConfirmedValue] = useState<number | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Focus input when entering input mode
+  useEffect(() => {
+    if (isInputMode && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isInputMode]);
+
+  // Handle icon click to enter input mode
+  const handleIconClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsInputMode(true);
+    setInputValue('');
+  };
+
+  // Handle input submission
+  const handleInputSubmit = () => {
+    const value = parseFloat(inputValue);
+    if (!isNaN(value) && value > 0 && onValueSubmit) {
+      onValueSubmit(value);
+      setConfirmedValue(value);
+      setShowConfirmation(true);
+      setTimeout(() => setShowConfirmation(false), 2000);
+    }
+    setIsInputMode(false);
+    setInputValue('');
+  };
+
+  // Handle input key press
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleInputSubmit();
+    } else if (e.key === 'Escape') {
+      setIsInputMode(false);
+      setInputValue('');
+    }
+  };
+
+  // Handle blur
+  const handleBlur = () => {
+    if (inputValue) {
+      handleInputSubmit();
+    } else {
+      setIsInputMode(false);
+    }
+  };
 
   // Size mappings - Denser for better space utilization
   const sizeClasses = {
@@ -109,9 +167,31 @@ export default function ActivityBadge({
         </motion.div>
       )}
 
-      {/* Icon/Logo */}
-      <div className={cn('flex items-center justify-center', iconSizes[size])}>
-        {iconUrl ? (
+      {/* Icon/Logo or Input Field */}
+      <div
+        className={cn('flex items-center justify-center', iconSizes[size])}
+        onClick={!isSelected ? handleIconClick : undefined}
+        style={{ cursor: !isSelected && onValueSubmit ? 'pointer' : undefined }}
+      >
+        {isInputMode ? (
+          <input
+            ref={inputRef}
+            type="number"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={handleKeyPress}
+            onBlur={handleBlur}
+            className={cn(
+              'w-full h-full text-center border-2 border-accent-500 rounded-lg',
+              'focus:outline-none focus:ring-2 focus:ring-accent-500',
+              'bg-white text-foreground font-semibold',
+              size === 'sm' ? 'text-xs' : size === 'md' ? 'text-sm' : 'text-base'
+            )}
+            placeholder="Qty"
+            min="0"
+            step="0.1"
+          />
+        ) : iconUrl ? (
           <img
             src={iconUrl}
             alt={name}
@@ -119,7 +199,7 @@ export default function ActivityBadge({
           />
         ) : iconDef?.svgPath ? (
           <img
-            src={`/src/assets/activity-icons/${iconDef.svgPath}`}
+            src={`/activity-icons/${iconDef.svgPath}`}
             alt={name}
             className="w-full h-full object-contain"
           />
@@ -166,6 +246,19 @@ export default function ActivityBadge({
             {formatEmissions(emissions)}
           </span>
         </div>
+      )}
+
+      {/* Confirmation indicator with +n */}
+      {showConfirmation && confirmedValue !== null && (
+        <motion.div
+          className="absolute top-0 right-0 -mr-1 -mt-1 bg-green-500 text-white rounded-full px-1.5 py-0.5 shadow-lg"
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0, opacity: 0 }}
+          transition={{ type: 'spring', stiffness: 500, damping: 20 }}
+        >
+          <span className="text-[10px] font-bold">+{confirmedValue}</span>
+        </motion.div>
       )}
 
     </motion.button>

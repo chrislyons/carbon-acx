@@ -84,3 +84,79 @@ Pull requests should leave the repository in a releasable state:
   behaviours or targets change.
 - New data preserves backward compatibility for downstream consumers unless the
   change is explicitly flagged in **Scope Notes**.
+
+---
+
+## Claude Skills
+
+This repository includes Claude SKILL.md files to assist with common development tasks.
+
+### Available Skills
+
+Carbon ACX provides 5 specialized skills to enhance AI-assisted development:
+
+#### Project-Specific Skills
+
+- **carbon.data.qa** — Query carbon accounting data, emission factors, and activity information
+- **carbon.report.gen** — Generate carbon reports automatically (monthly, quarterly, compliance)
+- **acx.code.assistant** — Generate code following ACX conventions (React, TypeScript, Python, Cloudflare Workers)
+
+#### Shared Skills
+
+- **schema.linter** — Validate config files (JSON, YAML, TOML) against schemas
+- **dependency.audit** — Check for vulnerable dependencies and license compliance
+
+### Using Skills
+
+In Claude Code, you can invoke skills by natural language:
+
+```
+"Use carbon.data.qa to find Q1 2024 total emissions"
+"Generate a monthly carbon report for March 2025"
+"Use schema.linter to check config files"
+"Create a React component for displaying emission trends"
+"Check for vulnerable dependencies"
+```
+
+### Skill Documentation
+
+Each skill has a complete SKILL.md file in `.claude/skills/` with:
+- Purpose and when to use
+- Allowed tools and access level
+- Expected inputs and outputs
+- Examples and edge cases
+- Validation criteria
+
+### Validating Skills
+
+Run the validation script to check all skills:
+
+```bash
+.claude/skills/validate.sh
+```
+
+This validates:
+- YAML frontmatter completeness
+- Required sections present
+- manifest.json integrity
+- Config file validity
+- Directory structure
+
+### Creating New Skills
+
+See `/Users/chrislyons/dev/SKIL003.md` for the complete framework.
+
+**Quick checklist:**
+1. Create `.claude/skills/project/<skill-name>/SKILL.md`
+2. Follow template structure from SKIL003.md
+3. Add to `manifest.json`
+4. Include examples and validation criteria
+5. Run `validate.sh` to verify
+6. Update this document
+
+### Security & Review
+
+- All skills follow least-privilege principle for tool access
+- Skills generating code are subject to AGENTS.md review requirements
+- Access level 2+ skills (file modification) require human review before deployment
+- High-risk file modifications (wrangler.toml, CI workflows) flagged for extra review

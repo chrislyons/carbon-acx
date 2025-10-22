@@ -1,0 +1,228 @@
+# Quarterly Carbon Report — {{ quarter }} {{ year }}
+
+**Report Generated:** {{ generation_date }}
+**Data Version:** {{ data_version }}
+**Reporting Period:** {{ reporting_period }}
+**Coverage:** {{ start_date }} to {{ end_date }}
+
+---
+
+## Executive Summary
+
+{{ executive_summary }}
+
+**Quarter Highlights:**
+
+{{ quarter_highlights }}
+
+**Total Quarterly Emissions:** {{ total_emissions_tco2e }} tCO2e
+
+---
+
+## Quarterly Performance
+
+### Key Performance Indicators
+
+| KPI | Q{{ quarter }} {{ year }} | Q{{ previous_quarter }} {{ previous_year }} | Change | Trend |
+|-----|----------------|------------------------|--------|-------|
+| **Total Emissions** | {{ total_emissions_tco2e }} tCO2e | {{ previous_total }} tCO2e | {{ qoq_change }}% | {{ trend_indicator }} |
+| **Average Monthly Emissions** | {{ avg_monthly }} tCO2e/month | {{ previous_avg_monthly }} tCO2e/month | {{ avg_change }}% | {{ avg_trend }} |
+| **Emissions Intensity** | {{ emissions_intensity }} | {{ previous_intensity }} | {{ intensity_change }}% | {{ intensity_trend }} |
+| **Data Coverage** | {{ coverage }}% | {{ previous_coverage }}% | {{ coverage_change }}pp | {{ coverage_trend }} |
+
+---
+
+## Emissions Breakdown
+
+### By Layer
+
+{{ layer_breakdown_summary }}
+
+| Layer | Q{{ quarter }} Emissions (tCO2e) | % of Total | Q{{ previous_quarter }} | Change |
+|-------|--------------------------------|------------|-------------|--------|
+{{ layer_breakdown_table }}
+
+**Total:** {{ total_emissions_tco2e }} tCO2e
+
+### Chart: Quarterly Emissions by Layer
+
+![Quarterly Emissions by Layer]({{ chart_quarterly_by_layer }})
+
+**Figure 1:** Emissions distribution across layers for Q{{ quarter }} {{ year }}.
+
+---
+
+### By Sector
+
+{{ sector_breakdown_summary }}
+
+### Chart: Sector Contribution
+
+![Sector Pie Chart]({{ chart_sector_pie }})
+
+**Figure 2:** Sector-level emissions share for Q{{ quarter }} {{ year }}.
+
+---
+
+### By Month
+
+{{ monthly_breakdown_summary }}
+
+| Month | Emissions (tCO2e) | % of Quarter | Notable Activities |
+|-------|------------------|--------------|-------------------|
+{{ monthly_breakdown_table }}
+
+### Chart: Monthly Trend Within Quarter
+
+![Monthly Trend]({{ chart_monthly_trend }})
+
+**Figure 3:** Month-by-month emissions within Q{{ quarter }} {{ year }}.
+
+---
+
+## Top Activities
+
+### Top 20 Emission-Intensive Activities
+
+{{ top_activities_summary }}
+
+{{ top_20_activities_table }}
+
+### Chart: Top 20 Activities
+
+![Top 20 Activities]({{ chart_top_20 }})
+
+**Figure 4:** Twenty highest-intensity activities for Q{{ quarter }} {{ year }}.
+
+---
+
+## Year-over-Year Comparison
+
+{{ yoy_comparison_summary }}
+
+| Metric | Q{{ quarter }} {{ year }} | Q{{ quarter }} {{ year_minus_1 }} | YoY Change |
+|--------|----------------|-------------------|------------|
+| Total Emissions | {{ total_emissions_tco2e }} tCO2e | {{ yoy_previous }} tCO2e | {{ yoy_change }}% |
+| Professional Services | {{ prof_services }} tCO2e | {{ yoy_prof }} tCO2e | {{ yoy_prof_change }}% |
+| Industrial Operations | {{ industrial }} tCO2e | {{ yoy_industrial }} tCO2e | {{ yoy_industrial_change }}% |
+| Digital Infrastructure | {{ digital }} tCO2e | {{ yoy_digital }} tCO2e | {{ yoy_digital_change }}% |
+
+### Chart: Year-over-Year Comparison
+
+![YoY Comparison]({{ chart_yoy }})
+
+**Figure 5:** Quarter-over-quarter trend showing Q{{ quarter }} across years.
+
+---
+
+## Detailed Analysis
+
+### Sector Deep-Dive
+
+{{ sector_deep_dive }}
+
+### Emerging Trends
+
+{{ emerging_trends }}
+
+### Anomalies & Outliers
+
+{{ anomalies }}
+
+---
+
+## Data Quality & Coverage
+
+### Quality Metrics
+
+| Quality Indicator | Value | Target | Status |
+|-------------------|-------|--------|--------|
+| Activities with Emission Factors | {{ ef_coverage }}% | >90% | {{ ef_status }} |
+| Emission Factors with Sources | {{ sources_coverage }}% | >95% | {{ sources_status }} |
+| Data Vintage (Median) | {{ median_vintage }} | ≤2 years old | {{ vintage_status }} |
+| Complete Activity Records | {{ complete_records }}% | >98% | {{ records_status }} |
+
+### Data Gaps
+
+{{ data_gaps_summary }}
+
+{{ data_gaps_table }}
+
+---
+
+## Recommendations
+
+### Strategic Insights
+
+{{ strategic_insights }}
+
+### Operational Recommendations
+
+{{ operational_recommendations }}
+
+### Data Improvement Opportunities
+
+{{ data_improvement_recommendations }}
+
+---
+
+## Methodology
+
+### Calculation Approach
+
+{{ methodology }}
+
+### Scope & Boundaries
+
+{{ scope_boundaries }}
+
+### Assumptions
+
+{{ assumptions }}
+
+---
+
+## Data Sources
+
+**Primary Dataset:** Carbon ACX version {{ data_version }}
+
+**Source Summary:**
+
+{{ sources_summary }}
+
+**Detailed Source References:**
+
+{{ detailed_sources }}
+
+---
+
+## Appendices
+
+### Appendix A: Emission Factor Details
+
+{{ ef_details_table }}
+
+### Appendix B: Layer Definitions
+
+{{ layer_definitions }}
+
+### Appendix C: Calculation Examples
+
+{{ calculation_examples }}
+
+### Appendix D: Glossary
+
+- **tCO2e:** Metric tonnes of CO₂ equivalent (1,000 kgCO2e)
+- **kgCO2e:** Kilograms of CO₂ equivalent
+- **QoQ:** Quarter-over-quarter
+- **YoY:** Year-over-year
+- **Vintage:** Year of emission factor publication/measurement
+- **Layer:** Activity classification tier (professional, industrial, online, etc.)
+- **Sector:** High-level grouping of related activities
+
+---
+
+**Report Version:** {{ report_version }}
+**Contact:** {{ contact_email }}
+**Generated by:** Claude Code (carbon.report.gen skill)
+**Generation Timestamp:** {{ generation_timestamp }}

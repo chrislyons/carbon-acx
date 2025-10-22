@@ -2,6 +2,8 @@
 
 This directory contains SVG icons and logos for activity badges in the Carbon ACX application.
 
+**Location**: `public/activity-icons/` - These assets are served statically from the public directory and are accessible at `/activity-icons/` in both development and production builds.
+
 ## ⚠️ CRITICAL: Citation Requirements
 
 **ALL BRAND-SPECIFIC ICONS (Netflix, Starbucks, Amazon, etc.) REQUIRE CITATIONS**

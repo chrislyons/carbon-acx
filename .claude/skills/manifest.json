@@ -1,0 +1,141 @@
+{
+  "version": "1.0.0",
+  "repository": "carbon-acx",
+  "last_updated": "2025-10-18",
+  "skill_framework_version": "1.0.0",
+  "framework_reference": "/Users/chrislyons/dev/SKIL003.md",
+  "skills": [
+    {
+      "name": "carbon.data.qa",
+      "path": "./project/carbon-data-qa",
+      "enabled": true,
+      "access_level": 1,
+      "owner": "ACX Team",
+      "review_cycle": "monthly",
+      "description": "Answer analytical questions about carbon accounting data using internal datasets and APIs",
+      "trigger_keywords": ["emission factor", "carbon data", "activity data", "tCO2e", "kgCO2e"],
+      "config": {
+        "api_endpoint": "http://localhost:8787/api",
+        "data_path": "data/",
+        "cache_ttl": 3600,
+        "require_units": true,
+        "require_sources": true,
+        "allow_estimation": false
+      },
+      "dependencies": ["data/activities.csv", "data/emission_factors.csv", "data/sources.csv"],
+      "version": "1.0.0"
+    },
+    {
+      "name": "carbon.report.gen",
+      "path": "./project/carbon-report-gen",
+      "enabled": true,
+      "access_level": 2,
+      "owner": "ACX Team",
+      "review_cycle": "monthly",
+      "description": "Automate creation of structured carbon reports by pulling data and formatting per template",
+      "trigger_keywords": ["generate report", "monthly report", "quarterly report", "compliance report"],
+      "config": {
+        "template_dir": "./project/carbon-report-gen/templates",
+        "output_dir": "reports/",
+        "chart_style": "matplotlib",
+        "chart_dir": "reports/charts/",
+        "default_format": "markdown",
+        "include_charts": true,
+        "chart_dpi": 150
+      },
+      "dependencies": ["carbon.data.qa"],
+      "version": "1.0.0"
+    },
+    {
+      "name": "acx.code.assistant",
+      "path": "./project/acx-code-assistant",
+      "enabled": true,
+      "access_level": 2,
+      "owner": "ACX Team",
+      "review_cycle": "weekly",
+      "description": "Generate code scaffolds following Carbon ACX conventions for React, TypeScript, Python, and Cloudflare Workers",
+      "trigger_keywords": ["create component", "generate code", "scaffold", "write test", "API endpoint"],
+      "config": {
+        "conventions_path": "./project/acx-code-assistant/reference/conventions.md",
+        "monorepo_root": "./",
+        "require_tests": true,
+        "require_types": true,
+        "auto_format": true,
+        "linters": {
+          "typescript": "eslint",
+          "python": "ruff"
+        }
+      },
+      "dependencies": ["AGENTS.md", "CLAUDE.md"],
+      "high_risk_files": ["wrangler.toml", ".github/workflows/", "Makefile"],
+      "version": "1.0.0"
+    },
+    {
+      "name": "schema.linter",
+      "path": "./shared/schema-linter",
+      "enabled": true,
+      "access_level": 1,
+      "owner": "Platform Team",
+      "review_cycle": "quarterly",
+      "description": "Validate and lint structured data files (YAML, JSON, TOML) for consistency and schema compliance",
+      "trigger_keywords": ["validate config", "lint schema", "check JSON", "verify YAML"],
+      "config_path": "./shared/schema-linter/config.json",
+      "sharing_scope": "shared",
+      "version": "1.0.0"
+    },
+    {
+      "name": "dependency.audit",
+      "path": "./shared/dependency-audit",
+      "enabled": true,
+      "access_level": 3,
+      "owner": "Platform Team",
+      "review_cycle": "quarterly",
+      "description": "Scan project for outdated or vulnerable dependencies, check licenses, generate upgrade recommendations",
+      "trigger_keywords": ["check dependencies", "audit npm", "security scan", "vulnerable packages"],
+      "config_path": "./shared/dependency-audit/config.json",
+      "allowlist_path": "./shared/dependency-audit/allowlist.json",
+      "sharing_scope": "shared",
+      "network_access": {
+        "allowed_domains": ["npmjs.com", "pypi.org", "crates.io", "registry.npmjs.org"]
+      },
+      "version": "1.0.0"
+    }
+  ],
+  "skill_groups": {
+    "data_analysis": ["carbon.data.qa", "carbon.report.gen"],
+    "code_generation": ["acx.code.assistant"],
+    "quality_assurance": ["schema.linter", "dependency.audit"]
+  },
+  "access_levels": {
+    "0": "Read-Only",
+    "1": "Local Execution",
+    "2": "File Modification",
+    "3": "Network-Enabled",
+    "4": "Full Privilege"
+  },
+  "review_schedule": {
+    "weekly": ["acx.code.assistant"],
+    "monthly": ["carbon.data.qa", "carbon.report.gen"],
+    "quarterly": ["schema.linter", "dependency.audit"]
+  },
+  "security_notes": [
+    "All skills follow least-privilege principle for tool access",
+    "Access level 2+ skills require human review before deployment",
+    "Access level 3+ skills log all network activity",
+    "High-risk file modifications flagged for extra review"
+  ],
+  "usage_guidelines": [
+    "Skills can be invoked via natural language in Claude Code",
+    "Multiple skills can be chained (e.g., carbon.data.qa → carbon.report.gen)",
+    "All generated code/reports subject to AGENTS.md review requirements",
+    "Skills are not a replacement for human judgment and expertise"
+  ],
+  "metadata": {
+    "total_skills": 5,
+    "project_specific": 3,
+    "shared": 2,
+    "created_date": "2025-10-18",
+    "created_by": "Claude Code",
+    "dataset_version": "v1.2"
+  }
+}

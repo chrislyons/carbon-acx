@@ -1,6 +1,8 @@
 # Carbon ACX
 
 ![New UI Preview](https://img.shields.io/badge/New%20UI-Preview-blueviolet)
+[![Claude Skills](https://img.shields.io/badge/claude-5%20skills-blue)](.claude/skills/manifest.json)
+[![Skills Validated](https://img.shields.io/badge/skills-validated-green)](.claude/skills/validate.sh)
 
 > **Current dataset version:** v1.2【F:calc/outputs/sprint_status.txt†L1-L18】
 
@@ -172,3 +174,21 @@ See `docs/TESTING_NOTES.md` and `docs/WHAT_RUNS_WHERE.md` for deeper guidance on
 ## License
 
 Carbon ACX is released under the MIT License. See [`LICENSE`](LICENSE) for details.
+
+---
+
+## AI-Assisted Development
+
+This project includes [Claude Skills](https://docs.claude.com/skills) for enhanced AI assistance.
+
+### Available Skills
+
+- **carbon.data.qa** — Query carbon accounting data, emission factors, and activities
+- **carbon.report.gen** — Generate monthly, quarterly, and compliance reports automatically
+- **acx.code.assistant** — Generate code following ACX conventions (React, TypeScript, Python, Workers)
+- **schema.linter** — Validate config files (JSON, YAML, TOML)
+- **dependency.audit** — Check for vulnerable dependencies and license compliance
+
+Skills are located in `.claude/skills/` with complete documentation for each. See `CONTRIBUTING.md` for usage examples and validation instructions.
+
+---
