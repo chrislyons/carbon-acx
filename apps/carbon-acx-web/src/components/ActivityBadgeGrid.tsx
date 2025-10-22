@@ -217,53 +217,130 @@ export default function ActivityBadgeGrid({
         </p>
       </div>
 
-      {/* Activity badge grid - 8 columns × 2 rows max, scrollable */}
-      <div className={viewMode === 'grid' ? 'max-h-[240px] overflow-y-auto' : ''}>
-        <motion.div
-          layout
-          className={`grid ${
-            viewMode === 'grid'
-              ? 'grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3'
-              : 'grid-cols-1 gap-2'
-          }`}
-        >
-        {sortedActivities.map((activity) => {
-          const impact = activityImpacts.get(activity.id) || 0;
-          const isSelected = hasActivity(activity.id);
+      {/* Activity browser - Grid (6x2.5) or List view */}
+      <div className={viewMode === 'grid' ? 'max-h-[290px] overflow-y-auto' : 'max-h-[400px] overflow-y-auto'}>
+        {viewMode === 'grid' ? (
+          <motion.div
+            layout
+            className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-3"
+          >
+            {sortedActivities.map((activity) => {
+              const impact = activityImpacts.get(activity.id) || 0;
+              const isSelected = hasActivity(activity.id);
+              const iconType = activity.iconType || inferIconType(activity.name, activity.category);
 
-          // Auto-assign icon type if not provided
-          const iconType = activity.iconType || inferIconType(activity.name, activity.category);
+              return (
+                <ActivityBadge
+                  key={activity.id}
+                  name={activity.name || activity.id}
+                  emissions={impact}
+                  iconUrl={activity.iconUrl}
+                  iconType={iconType}
+                  badgeColor={activity.badgeColor}
+                  isSelected={isSelected}
+                  onClick={() => handleActivityClick(activity)}
+                  onValueSubmit={(value) => {
+                    const carbonIntensity = impact / 1000; // g to kg
+                    const annualEmissions = carbonIntensity * value;
+                    addActivity({
+                      id: activity.id,
+                      sectorId,
+                      name: activity.name || activity.id,
+                      category: activity.category,
+                      quantity: value,
+                      unit: activity.defaultUnit || 'unit',
+                      carbonIntensity,
+                      annualEmissions,
+                    });
+                  }}
+                  size="md"
+                  showEmissions={true}
+                />
+              );
+            })}
+          </motion.div>
+        ) : (
+          <div className="space-y-2">
+            {sortedActivities.map((activity, index) => {
+              const impact = activityImpacts.get(activity.id) || 0;
+              const isSelected = hasActivity(activity.id);
+              const iconType = activity.iconType || inferIconType(activity.name, activity.category);
 
-          return (
-            <ActivityBadge
-              key={activity.id}
-              name={activity.name || activity.id}
-              emissions={impact}
-              iconUrl={activity.iconUrl}
-              iconType={iconType}
-              badgeColor={activity.badgeColor}
-              isSelected={isSelected}
-              onClick={() => handleActivityClick(activity)}
-              onValueSubmit={(value) => {
-                const carbonIntensity = impact / 1000; // g to kg
-                const annualEmissions = carbonIntensity * value;
-                addActivity({
-                  id: activity.id,
-                  sectorId,
-                  name: activity.name || activity.id,
-                  category: activity.category,
-                  quantity: value,
-                  unit: activity.defaultUnit || 'unit',
-                  carbonIntensity,
-                  annualEmissions,
-                });
-              }}
-              size={viewMode === 'grid' ? 'md' : 'sm'}
-              showEmissions={true}
-            />
-          );
-        })}
-        </motion.div>
+              return (
+                <motion.div
+                  key={activity.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.02 }}
+                  className={`flex items-center gap-3 p-3 rounded-lg border-2 transition-all cursor-pointer ${
+                    isSelected
+                      ? 'border-accent-500 bg-accent-50'
+                      : 'border-border hover:border-accent-300 bg-surface'
+                  }`}
+                  onClick={() => handleActivityClick(activity)}
+                >
+                  {/* Icon */}
+                  <ActivityBadge
+                    name={activity.name || activity.id}
+                    emissions={impact}
+                    iconUrl={activity.iconUrl}
+                    iconType={iconType}
+                    badgeColor={activity.badgeColor}
+                    isSelected={isSelected}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleActivityClick(activity);
+                    }}
+                    onValueSubmit={(value) => {
+                      const carbonIntensity = impact / 1000;
+                      const annualEmissions = carbonIntensity * value;
+                      addActivity({
+                        id: activity.id,
+                        sectorId,
+                        name: activity.name || activity.id,
+                        category: activity.category,
+                        quantity: value,
+                        unit: activity.defaultUnit || 'unit',
+                        carbonIntensity,
+                        annualEmissions,
+                      });
+                    }}
+                    size="sm"
+                    showEmissions={false}
+                  />
+
+                  {/* Activity details */}
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-semibold text-foreground truncate">
+                      {activity.name || activity.id}
+                    </h4>
+                    {activity.description && (
+                      <p className="text-sm text-text-muted truncate">
+                        {activity.description}
+                      </p>
+                    )}
+                    {activity.category && (
+                      <span className="inline-block mt-1 px-2 py-0.5 text-xs rounded-full bg-neutral-100 text-text-muted">
+                        {activity.category}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Impact indicator */}
+                  <div className="flex-shrink-0 text-right">
+                    <div className="text-2xl font-bold text-accent-600">
+                      {impact}
+                    </div>
+                    <p className="text-xs text-text-muted">g CO₂</p>
+                    {activity.defaultUnit && (
+                      <p className="text-xs text-text-muted">per {activity.defaultUnit}</p>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Collection summary */}
