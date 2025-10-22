@@ -280,34 +280,32 @@ export default function ActivityBadgeGrid({
                   onClick={() => handleActivityClick(activity)}
                 >
                   {/* Icon */}
-                  <ActivityBadge
-                    name={activity.name || activity.id}
-                    emissions={impact}
-                    iconUrl={activity.iconUrl}
-                    iconType={iconType}
-                    badgeColor={activity.badgeColor}
-                    isSelected={isSelected}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleActivityClick(activity);
-                    }}
-                    onValueSubmit={(value) => {
-                      const carbonIntensity = impact / 1000;
-                      const annualEmissions = carbonIntensity * value;
-                      addActivity({
-                        id: activity.id,
-                        sectorId,
-                        name: activity.name || activity.id,
-                        category: activity.category,
-                        quantity: value,
-                        unit: activity.defaultUnit || 'unit',
-                        carbonIntensity,
-                        annualEmissions,
-                      });
-                    }}
-                    size="sm"
-                    showEmissions={false}
-                  />
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <ActivityBadge
+                      name={activity.name || activity.id}
+                      emissions={impact}
+                      iconUrl={activity.iconUrl}
+                      iconType={iconType}
+                      badgeColor={activity.badgeColor}
+                      isSelected={isSelected}
+                      onValueSubmit={(value) => {
+                        const carbonIntensity = impact / 1000;
+                        const annualEmissions = carbonIntensity * value;
+                        addActivity({
+                          id: activity.id,
+                          sectorId,
+                          name: activity.name || activity.id,
+                          category: activity.category,
+                          quantity: value,
+                          unit: activity.defaultUnit || 'unit',
+                          carbonIntensity,
+                          annualEmissions,
+                        });
+                      }}
+                      size="sm"
+                      showEmissions={false}
+                    />
+                  </div>
 
                   {/* Activity details */}
                   <div className="flex-1 min-w-0">
