@@ -31,14 +31,14 @@ export default function HomeView() {
                 onClick={loadDemoProfile}
                 variant="outline"
                 size="sm"
-                className="gap-1.5 h-8 text-xs"
+                className="gap-1.5 h-10 text-xs"
               >
                 <Play className="h-3 w-3" />
                 Load Demo Data
               </Button>
             )}
             <Link to="/dashboard">
-              <Button size="sm" className="gap-1.5 h-8 text-xs">
+              <Button size="sm" className="gap-1.5 h-10 text-xs">
                 {hasData ? 'Your Dashboard' : 'Get Started'}
                 <ArrowRight className="h-3 w-3" />
               </Button>
@@ -47,7 +47,7 @@ export default function HomeView() {
         </div>
 
         {/* Key Metrics Bar */}
-        <div className="grid grid-cols-3 gap-3 mt-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
           <MetricCard
             icon={<TrendingUp className="h-3.5 w-3.5" />}
             label="Your Footprint"

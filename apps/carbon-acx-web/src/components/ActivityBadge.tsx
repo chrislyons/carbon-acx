@@ -124,8 +124,8 @@ export default function ActivityBadge({
   };
 
   const textSizes = {
-    sm: 'text-[9px]',
-    md: 'text-[10px]',
+    sm: 'text-[10px]',
+    md: 'text-xs',
     lg: 'text-xs',
   };
 
@@ -245,7 +245,7 @@ export default function ActivityBadge({
         <div className="absolute bottom-0.5 left-1/2 -translate-x-1/2">
           <span className={cn(
             'px-1.5 py-0.5 bg-orange-100 text-orange-700 rounded-md font-medium whitespace-nowrap',
-            size === 'sm' ? 'text-[9px]' : 'text-[10px]'
+            size === 'sm' ? 'text-[10px]' : 'text-xs'
           )}>
             {formatEmissions(emissions)}
           </span>
@@ -261,7 +261,7 @@ export default function ActivityBadge({
           exit={{ scale: 0, opacity: 0 }}
           transition={{ type: 'spring', stiffness: 500, damping: 20 }}
         >
-          <span className="text-[10px] font-bold">+{confirmedValue}</span>
+          <span className="text-xs font-bold">+{confirmedValue}</span>
         </motion.div>
       )}
 

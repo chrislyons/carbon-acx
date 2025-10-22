@@ -179,9 +179,9 @@ export default function ProfilePicker({ profiles, sectorId, activities }: Profil
                 {loading === profile.id ? 'Loading...' : profile.name}
               </div>
               {profile.notes && (
-                <p className="text-[10px] text-text-muted line-clamp-2 mt-0.5 leading-tight">{profile.notes}</p>
+                <p className="text-xs text-text-muted line-clamp-2 mt-0.5 leading-tight">{profile.notes}</p>
               )}
-              <div className="flex gap-1.5 mt-1.5 text-[10px] text-text-muted">
+              <div className="flex gap-1.5 mt-1.5 text-xs text-text-muted">
                 {profile.regionCode && (
                   <span className="px-1.5 py-0.5 rounded bg-accent-100 text-accent-700">
                     {profile.regionCode}

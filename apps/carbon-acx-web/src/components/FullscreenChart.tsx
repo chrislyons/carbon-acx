@@ -66,11 +66,12 @@ export default function FullscreenChart({ children, title, description }: Fullsc
         <Button
           variant="ghost"
           size="sm"
-          className="absolute top-2 right-2 z-10 h-7 w-7 p-0 opacity-60 hover:opacity-100 transition-opacity"
+          className="absolute top-2 right-2 z-10 h-10 w-10 p-0 opacity-60 hover:opacity-100 transition-opacity"
           onClick={() => setIsFullscreen(true)}
+          aria-label="Fullscreen view"
           title="Fullscreen"
         >
-          <Maximize2 className="h-3.5 w-3.5" />
+          <Maximize2 className="h-3.5 w-3.5" aria-hidden="true" />
         </Button>
 
         {children}
@@ -97,20 +98,22 @@ export default function FullscreenChart({ children, title, description }: Fullsc
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 w-8 p-0 text-white hover:bg-white/10"
+                    className="h-10 w-10 p-0 text-white hover:bg-white/10"
                     onClick={() => setIsFullscreen(false)}
+                    aria-label="Exit fullscreen"
                     title="Exit fullscreen"
                   >
-                    <Minimize2 className="h-4 w-4" />
+                    <Minimize2 className="h-4 w-4" aria-hidden="true" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 w-8 p-0 text-white hover:bg-white/10"
+                    className="h-10 w-10 p-0 text-white hover:bg-white/10"
                     onClick={() => setIsFullscreen(false)}
+                    aria-label="Close"
                     title="Close"
                   >
-                    <X className="h-4 w-4" />
+                    <X className="h-4 w-4" aria-hidden="true" />
                   </Button>
                 </div>
               </div>

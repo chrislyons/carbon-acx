@@ -69,44 +69,47 @@ export default function LayerManager({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 w-8 p-0"
+                    className="h-10 w-10 p-0"
                     onClick={() => onToggleVisibility(layer.id)}
+                    aria-label={layer.visible ? `Hide ${layer.name} layer` : `Show ${layer.name} layer`}
                     title={layer.visible ? 'Hide layer' : 'Show layer'}
                   >
                     {layer.visible ? (
-                      <Eye className="h-4 w-4" />
+                      <Eye className="h-4 w-4" aria-hidden="true" />
                     ) : (
-                      <EyeOff className="h-4 w-4" />
+                      <EyeOff className="h-4 w-4" aria-hidden="true" />
                     )}
                   </Button>
                   {onRenameLayer && (
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-8 p-0"
+                      className="h-10 w-10 p-0"
                       onClick={() => {
                         const newName = prompt('Enter new layer name:', layer.name);
                         if (newName && newName !== layer.name) {
                           onRenameLayer(layer.id, newName);
                         }
                       }}
+                      aria-label={`Rename ${layer.name} layer`}
                       title="Rename layer"
                     >
-                      <Edit2 className="h-4 w-4" />
+                      <Edit2 className="h-4 w-4" aria-hidden="true" />
                     </Button>
                   )}
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                    className="h-10 w-10 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
                     onClick={() => {
                       if (confirm(`Remove layer "${layer.name}"?`)) {
                         onRemoveLayer(layer.id);
                       }
                     }}
+                    aria-label={`Remove ${layer.name} layer`}
                     title="Remove layer"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-4 w-4" aria-hidden="true" />
                   </Button>
                 </div>
               </motion.div>
