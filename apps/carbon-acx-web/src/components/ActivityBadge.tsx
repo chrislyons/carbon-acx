@@ -110,17 +110,17 @@ export default function ActivityBadge({
     }
   };
 
-  // Size mappings - Denser for better space utilization
+  // Size mappings - WCAG 2.5.5 compliant (minimum 44x44px touch targets)
   const sizeClasses = {
-    sm: 'w-16 h-20',
-    md: 'w-20 h-24',
-    lg: 'w-24 h-28',
+    sm: 'w-20 h-24',
+    md: 'w-24 h-28',
+    lg: 'w-28 h-32',
   };
 
   const iconSizes = {
-    sm: 'w-5 h-5',
-    md: 'w-6 h-6',
-    lg: 'w-8 h-8',
+    sm: 'w-6 h-6',
+    md: 'w-7 h-7',
+    lg: 'w-9 h-9',
   };
 
   const textSizes = {
@@ -141,11 +141,14 @@ export default function ActivityBadge({
         'relative flex flex-col items-center justify-center gap-1',
         'rounded-xl border-2 transition-all duration-200 p-2',
         'hover:scale-105 hover:shadow-lg active:scale-95',
+        'min-h-[44px] min-w-[44px]', // WCAG 2.5.5 minimum touch target
         sizeClasses[size],
         isSelected
           ? 'border-accent-500 bg-accent-50'
           : 'border-border bg-surface hover:border-accent-300'
       )}
+      aria-label={`${name}, ${isSelected ? 'selected' : 'not selected'}${emissions ? `, ${formatEmissions(emissions)} CO2` : ''}`}
+      aria-pressed={isSelected}
       style={{
         backgroundColor: isSelected ? selectedBgColor : undefined,
       }}
@@ -190,6 +193,7 @@ export default function ActivityBadge({
             placeholder="Qty"
             min="0"
             step="0.1"
+            aria-label={`Quantity for ${name}`}
           />
         ) : iconUrl ? (
           <img

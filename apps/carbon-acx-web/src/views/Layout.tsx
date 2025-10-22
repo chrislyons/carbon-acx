@@ -54,6 +54,14 @@ export default function Layout() {
 
   return (
     <>
+      {/* Skip Navigation Link for WCAG 2.4.1 */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-accent-500 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg"
+      >
+        Skip to main content
+      </a>
+
       <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
 
       <div className="app-layout" data-references-open={isInspectOpen}>
@@ -64,7 +72,7 @@ export default function Layout() {
           </Await>
         </Suspense>
       </aside>
-      <main className="app-layout__main">
+      <main id="main-content" className="app-layout__main">
         <ScopePane datasetsPromise={data.datasets} />
       </main>
       <aside className="app-layout__inspect hidden lg:flex" data-open={isInspectOpen ? 'true' : 'false'}>
