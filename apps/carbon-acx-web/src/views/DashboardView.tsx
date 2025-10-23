@@ -144,71 +144,71 @@ export default function DashboardView() {
   }
 
   return (
-    <div className="space-y-8">
-      {/* Hero - Total Footprint */}
+    <div className="space-y-4">
+      {/* Hero - Total Footprint - COMPACT */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative rounded-3xl bg-gradient-to-br from-accent-500/10 via-surface to-accent-600/5 p-8 md:p-12 overflow-hidden"
+        className="relative rounded-2xl bg-gradient-to-br from-accent-500/10 via-surface to-accent-600/5 p-4 md:p-6 overflow-hidden"
       >
         {/* Background decoration */}
         <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-0 right-0 h-64 w-64 rounded-full bg-accent-400/30 blur-3xl" />
-          <div className="absolute bottom-0 left-0 h-96 w-96 rounded-full bg-accent-600/20 blur-3xl" />
+          <div className="absolute top-0 right-0 h-48 w-48 rounded-full bg-accent-400/30 blur-3xl" />
+          <div className="absolute bottom-0 left-0 h-64 w-64 rounded-full bg-accent-600/20 blur-3xl" />
         </div>
 
         {/* Content */}
         <div className="relative z-10">
-          <div className="flex items-start justify-between mb-6">
-            <h2 className="text-4xl font-bold text-foreground">Your Carbon Footprint</h2>
+          <div className="flex items-start justify-between mb-4">
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground">Your Carbon Footprint</h2>
             <ExportButton />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Total emissions */}
-            <div className="p-6 rounded-2xl bg-surface/80 border border-border/50">
-              <p className="text-sm uppercase tracking-wide text-text-muted mb-2">
+            <div className="p-4 rounded-xl bg-surface/80 border border-border/50">
+              <p className="text-xs uppercase tracking-wide text-text-muted mb-1">
                 Annual Emissions
               </p>
               <div className="flex items-baseline gap-2">
-                <span className="text-5xl font-bold text-foreground">
+                <span className="text-4xl font-bold text-foreground">
                   {(totalEmissions / 1000).toFixed(2)}
                 </span>
-                <span className="text-xl text-text-muted">tonnes CO₂</span>
+                <span className="text-lg text-text-muted">tonnes CO₂</span>
               </div>
-              <p className="text-sm text-text-muted mt-2">
+              <p className="text-xs text-text-muted mt-1">
                 {totalEmissions.toFixed(0)} kg CO₂ per year
               </p>
             </div>
 
             {/* Comparison to global average */}
             <div
-              className={`p-6 rounded-2xl border ${
+              className={`p-4 rounded-xl border ${
                 isBelowAverage
                   ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800/30'
                   : 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800/30'
               }`}
             >
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-1">
                 {isBelowAverage ? (
-                  <TrendingDown className="h-5 w-5 text-green-600 dark:text-green-400" />
+                  <TrendingDown className="h-4 w-4 text-green-600 dark:text-green-400" />
                 ) : (
-                  <TrendingUp className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                  <TrendingUp className="h-4 w-4 text-orange-600 dark:text-orange-400" />
                 )}
-                <p className="text-sm uppercase tracking-wide font-semibold">
+                <p className="text-xs uppercase tracking-wide font-semibold">
                   vs Global Average
                 </p>
               </div>
-              <div className="flex items-baseline gap-2 mb-2">
+              <div className="flex items-baseline gap-2 mb-1">
                 <span
-                  className={`text-5xl font-bold ${
-                    isBelowAverage ? 'text-green-600' : 'text-orange-600'
+                  className={`text-4xl font-bold ${
+                    isBelowAverage ? 'text-green-600 dark:text-green-400' : 'text-orange-600 dark:text-orange-400'
                   }`}
                 >
                   {percentOfGlobalAvg.toFixed(0)}%
                 </span>
               </div>
-              <p className="text-sm text-text-secondary">
+              <p className="text-xs text-text-secondary">
                 {isBelowAverage ? (
                   <>You're {(100 - percentOfGlobalAvg).toFixed(0)}% below the global average of 4.5t CO₂/year</>
                 ) : (
@@ -220,28 +220,110 @@ export default function DashboardView() {
         </div>
       </motion.div>
 
-      {/* Breakdown */}
+      {/* VISUALIZATIONS - PRIME REAL ESTATE */}
+      {allActivities.length > 0 && (
+        <>
+          {/* Emissions Trend */}
+          {timeSeriesData.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Card className="relative">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <BarChart2 className="h-5 w-5 text-accent-500" />
+                    Emissions Trend
+                  </CardTitle>
+                  <p className="text-xs text-text-muted mt-1">
+                    {history.length > 1
+                      ? `Tracking ${history.length} snapshots over time`
+                      : 'Historical tracking starts automatically (snapshots taken daily)'}
+                  </p>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <FullscreenChart title="Emissions Trend" description="Track your carbon footprint over time">
+                    <TimeSeriesChart
+                      data={timeSeriesData}
+                      valueKey="value"
+                      variant="area"
+                      showTrend={true}
+                      referenceLines={[
+                        {
+                          value: GLOBAL_AVERAGE_KG,
+                          label: 'Global Average (4.5t/year)',
+                          color: '#ff7a45',
+                        },
+                      ]}
+                      height={400}
+                      animated={true}
+                    />
+                  </FullscreenChart>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+
+          {/* Top Activities Comparison */}
+          {comparativeData.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+            >
+              <Card className="relative">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <BarChart2 className="h-5 w-5 text-accent-500" />
+                    Top Activities by Impact
+                  </CardTitle>
+                  <p className="text-xs text-text-muted mt-1">
+                    Compare your highest-emission activities
+                  </p>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <FullscreenChart title="Top Activities by Impact" description="Compare your highest-emission activities">
+                    <ComparativeBarChart
+                      data={comparativeData}
+                      orientation="horizontal"
+                      showDelta={true}
+                      sortBy="value"
+                      sortDirection="desc"
+                      axisLabel="Annual Emissions (kg CO₂)"
+                      height={Math.max(400, comparativeData.length * 50)}
+                      animated={true}
+                    />
+                  </FullscreenChart>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+        </>
+      )}
+
+      {/* Breakdown - COMPACT */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="grid grid-cols-1 md:grid-cols-2 gap-6"
+        transition={{ delay: 0.2 }}
+        className="grid grid-cols-1 md:grid-cols-2 gap-3"
       >
         {/* Sources breakdown */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5 text-accent-500" />
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <Activity className="h-4 w-4 text-accent-500" />
               Emissions by Source
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3 pt-0">
             {activityEmissions > 0 && (
               <SourceBreakdownItem
                 label="Selected Activities"
                 emissions={activityEmissions}
                 total={totalEmissions}
-                icon={<Activity className="h-4 w-4" />}
+                icon={<Activity className="h-3.5 w-3.5" />}
               />
             )}
             {calculatorEmissions > 0 && (
@@ -249,7 +331,7 @@ export default function DashboardView() {
                 label="Quick Calculator"
                 emissions={calculatorEmissions}
                 total={totalEmissions}
-                icon={<Calculator className="h-4 w-4" />}
+                icon={<Calculator className="h-3.5 w-3.5" />}
               />
             )}
           </CardContent>
@@ -258,13 +340,13 @@ export default function DashboardView() {
         {/* Sector breakdown */}
         {sectorBreakdown.length > 0 && (
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-accent-500" />
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-sm">
+                <Users className="h-4 w-4 text-accent-500" />
                 Emissions by Sector
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3 pt-0">
               {sectorBreakdown.map((sector) => (
                 <SourceBreakdownItem
                   key={sector.sectorId}
@@ -283,7 +365,7 @@ export default function DashboardView() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
+          transition={{ delay: 0.25 }}
         >
           <LayerManager
             layers={profile.layers}
@@ -294,99 +376,17 @@ export default function DashboardView() {
         </motion.div>
       )}
 
-      {/* Visualizations */}
-      {allActivities.length > 0 && (
-        <>
-          {/* Emissions Trend */}
-          {timeSeriesData.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <Card className="relative">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart2 className="h-5 w-5 text-accent-500" />
-                    Emissions Trend
-                  </CardTitle>
-                  <p className="text-sm text-text-muted mt-2">
-                    {history.length > 1
-                      ? `Tracking ${history.length} snapshots over time`
-                      : 'Historical tracking starts automatically (snapshots taken daily)'}
-                  </p>
-                </CardHeader>
-                <CardContent>
-                  <FullscreenChart title="Emissions Trend" description="Track your carbon footprint over time">
-                    <TimeSeriesChart
-                      data={timeSeriesData}
-                      valueKey="value"
-                      variant="area"
-                      showTrend={true}
-                      referenceLines={[
-                        {
-                          value: GLOBAL_AVERAGE_KG,
-                          label: 'Global Average (4.5t/year)',
-                          color: '#ff7a45',
-                        },
-                      ]}
-                      height={300}
-                      animated={true}
-                    />
-                  </FullscreenChart>
-                </CardContent>
-              </Card>
-            </motion.div>
-          )}
-
-          {/* Top Activities Comparison */}
-          {comparativeData.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              <Card className="relative">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart2 className="h-5 w-5 text-accent-500" />
-                    Top Activities by Impact
-                  </CardTitle>
-                  <p className="text-sm text-text-muted mt-2">
-                    Compare your highest-emission activities
-                  </p>
-                </CardHeader>
-                <CardContent>
-                  <FullscreenChart title="Top Activities by Impact" description="Compare your highest-emission activities">
-                    <ComparativeBarChart
-                      data={comparativeData}
-                      orientation="horizontal"
-                      showDelta={true}
-                      sortBy="value"
-                      sortDirection="desc"
-                      axisLabel="Annual Emissions (kg CO₂)"
-                      height={Math.max(300, comparativeData.length * 50)}
-                      animated={true}
-                    />
-                  </FullscreenChart>
-                </CardContent>
-              </Card>
-            </motion.div>
-          )}
-        </>
-      )}
-
       {/* Activities list */}
       {profile.activities.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
+          transition={{ delay: 0.3 }}
         >
           <Card>
-            <CardHeader>
-              <CardTitle>Your Manual Activities</CardTitle>
-              <p className="text-sm text-text-muted mt-2">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Your Manual Activities</CardTitle>
+              <p className="text-xs text-text-muted mt-1">
                 {profile.activities.length} manual {profile.activities.length === 1 ? 'activity' : 'activities'} tracked
               </p>
             </CardHeader>
@@ -463,12 +463,12 @@ export default function DashboardView() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
+          transition={{ delay: 0.35 }}
         >
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calculator className="h-5 w-5 text-accent-500" />
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Calculator className="h-4 w-4 text-accent-500" />
                 Calculator Results
               </CardTitle>
             </CardHeader>
@@ -583,15 +583,15 @@ function SourceBreakdownItem({
   const percentage = (emissions / total) * 100;
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between text-sm">
-        <div className="flex items-center gap-2">
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between text-xs">
+        <div className="flex items-center gap-1.5">
           {icon && <span className="text-text-muted">{icon}</span>}
           <span className="font-medium text-foreground">{label}</span>
         </div>
         <span className="text-text-muted">{percentage.toFixed(1)}%</span>
       </div>
-      <div className="h-3 rounded-full bg-neutral-200 overflow-hidden">
+      <div className="h-2 rounded-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${percentage}%` }}
@@ -600,10 +600,10 @@ function SourceBreakdownItem({
         />
       </div>
       <div className="flex items-baseline gap-1 justify-end">
-        <span className="text-lg font-bold text-foreground">
+        <span className="text-base font-bold text-foreground">
           {emissions.toFixed(2)}
         </span>
-        <span className="text-xs text-text-muted">kg CO₂/year</span>
+        <span className="text-[10px] text-text-muted">kg CO₂/year</span>
       </div>
     </div>
   );
