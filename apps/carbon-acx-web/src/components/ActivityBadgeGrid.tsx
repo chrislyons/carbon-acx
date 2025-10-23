@@ -169,7 +169,7 @@ export default function ActivityBadgeGrid({
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="p-4 rounded-lg bg-blue-50 border border-blue-200 relative"
+              className="p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/30 relative"
             >
               <button
                 onClick={() => setIsFirstVisit(false)}

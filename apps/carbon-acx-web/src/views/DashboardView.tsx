@@ -185,15 +185,15 @@ export default function DashboardView() {
             <div
               className={`p-6 rounded-2xl border ${
                 isBelowAverage
-                  ? 'bg-green-50 border-green-200'
-                  : 'bg-orange-50 border-orange-200'
+                  ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800/30'
+                  : 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800/30'
               }`}
             >
               <div className="flex items-center gap-2 mb-2">
                 {isBelowAverage ? (
-                  <TrendingDown className="h-5 w-5 text-green-600" />
+                  <TrendingDown className="h-5 w-5 text-green-600 dark:text-green-400" />
                 ) : (
-                  <TrendingUp className="h-5 w-5 text-orange-600" />
+                  <TrendingUp className="h-5 w-5 text-orange-600 dark:text-orange-400" />
                 )}
                 <p className="text-sm uppercase tracking-wide font-semibold">
                   vs Global Average

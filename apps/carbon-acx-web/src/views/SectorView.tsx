@@ -93,7 +93,7 @@ export default function SectorView() {
                           </button>
                         </CollapsibleTrigger>
                         <CollapsibleContent>
-                          <div className="mt-2 p-3 rounded-lg bg-blue-50 border border-blue-200 space-y-2">
+                          <div className="mt-2 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/30 space-y-2">
                             <p className="text-xs font-medium text-foreground">
                               Activities are emissions sources (building blocks)
                             </p>

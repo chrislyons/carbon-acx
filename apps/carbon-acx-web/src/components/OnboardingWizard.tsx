@@ -107,8 +107,8 @@ function WelcomeStep({ onChoosePath }: { onChoosePath: (path: PathChoice) => voi
       className="space-y-6 py-4"
     >
       <div className="text-center space-y-2">
-        <div className="mx-auto w-16 h-16 rounded-full bg-accent-100 flex items-center justify-center mb-4">
-          <Building2 className="h-8 w-8 text-accent-600" />
+        <div className="mx-auto w-16 h-16 rounded-full bg-accent-100 dark:bg-accent-200 flex items-center justify-center mb-4">
+          <Building2 className="h-8 w-8 text-accent-600 dark:text-accent-400" />
         </div>
         <h2 className="text-2xl font-bold text-foreground">
           Let's calculate your carbon footprint
@@ -137,15 +137,15 @@ function WelcomeStep({ onChoosePath }: { onChoosePath: (path: PathChoice) => voi
             </p>
             <ul className="text-xs text-text-secondary space-y-1.5">
               <li className="flex items-start gap-2">
-                <CheckCircle2 className="h-3.5 w-3.5 text-green-600 mt-0.5 flex-shrink-0" />
+                <CheckCircle2 className="h-3.5 w-3.5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
                 <span>Instant results with commute, diet, energy, and shopping</span>
               </li>
               <li className="flex items-start gap-2">
-                <CheckCircle2 className="h-3.5 w-3.5 text-green-600 mt-0.5 flex-shrink-0" />
+                <CheckCircle2 className="h-3.5 w-3.5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
                 <span>No prior knowledge needed</span>
               </li>
               <li className="flex items-start gap-2">
-                <CheckCircle2 className="h-3.5 w-3.5 text-green-600 mt-0.5 flex-shrink-0" />
+                <CheckCircle2 className="h-3.5 w-3.5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
                 <span>Can refine later with detailed analysis</span>
               </li>
             </ul>
@@ -158,17 +158,17 @@ function WelcomeStep({ onChoosePath }: { onChoosePath: (path: PathChoice) => voi
 
         {/* Detailed Analysis Path */}
         <Card
-          className="border-2 border-accent-500 bg-accent-50/30 hover:border-accent-600 transition-all cursor-pointer group"
+          className="border-2 border-accent-500 bg-accent-50/30 dark:bg-accent-900/20 hover:border-accent-600 transition-all cursor-pointer group"
           onClick={() => onChoosePath('detailed')}
         >
           <CardHeader>
             <div className="flex items-center gap-3 mb-2">
-              <BarChart2 className="h-6 w-6 text-accent-600" />
+              <BarChart2 className="h-6 w-6 text-accent-600 dark:text-accent-400" />
               <CardTitle className="text-lg">Detailed Analysis</CardTitle>
             </div>
             <div className="flex items-center gap-2">
               <Badge variant="secondary" className="w-fit">~10 minutes</Badge>
-              <Badge className="w-fit bg-accent-600">Recommended</Badge>
+              <Badge className="w-fit bg-accent-600 dark:bg-accent-500">Recommended</Badge>
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -177,15 +177,15 @@ function WelcomeStep({ onChoosePath }: { onChoosePath: (path: PathChoice) => voi
             </p>
             <ul className="text-xs text-text-secondary space-y-1.5">
               <li className="flex items-start gap-2">
-                <CheckCircle2 className="h-3.5 w-3.5 text-green-600 mt-0.5 flex-shrink-0" />
+                <CheckCircle2 className="h-3.5 w-3.5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
                 <span>Audit-ready reports with full provenance</span>
               </li>
               <li className="flex items-start gap-2">
-                <CheckCircle2 className="h-3.5 w-3.5 text-green-600 mt-0.5 flex-shrink-0" />
+                <CheckCircle2 className="h-3.5 w-3.5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
                 <span>Activity-level tracking and scenario comparison</span>
               </li>
               <li className="flex items-start gap-2">
-                <CheckCircle2 className="h-3.5 w-3.5 text-green-600 mt-0.5 flex-shrink-0" />
+                <CheckCircle2 className="h-3.5 w-3.5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
                 <span>Most accurate emissions profile</span>
               </li>
             </ul>
@@ -214,8 +214,8 @@ function QuickPathStep({ onNext, onBack }: { onNext: () => void; onBack: () => v
       className="space-y-6 py-4"
     >
       <div className="text-center space-y-2">
-        <div className="mx-auto w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
-          <Calculator className="h-8 w-8 text-green-600" />
+        <div className="mx-auto w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-4">
+          <Calculator className="h-8 w-8 text-green-600 dark:text-green-400" />
         </div>
         <h2 className="text-2xl font-bold text-foreground">
           Quick Calculator
@@ -225,11 +225,11 @@ function QuickPathStep({ onNext, onBack }: { onNext: () => void; onBack: () => v
         </p>
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
+      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/30 rounded-lg p-4 space-y-3">
         <p className="text-sm font-medium text-foreground">What you'll provide:</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="flex items-start gap-2">
-            <div className="w-6 h-6 rounded-full bg-accent-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+            <div className="w-6 h-6 rounded-full bg-accent-600 dark:bg-accent-500 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
               1
             </div>
             <div>
@@ -238,7 +238,7 @@ function QuickPathStep({ onNext, onBack }: { onNext: () => void; onBack: () => v
             </div>
           </div>
           <div className="flex items-start gap-2">
-            <div className="w-6 h-6 rounded-full bg-accent-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+            <div className="w-6 h-6 rounded-full bg-accent-600 dark:bg-accent-500 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
               2
             </div>
             <div>
@@ -247,7 +247,7 @@ function QuickPathStep({ onNext, onBack }: { onNext: () => void; onBack: () => v
             </div>
           </div>
           <div className="flex items-start gap-2">
-            <div className="w-6 h-6 rounded-full bg-accent-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+            <div className="w-6 h-6 rounded-full bg-accent-600 dark:bg-accent-500 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
               3
             </div>
             <div>
@@ -256,7 +256,7 @@ function QuickPathStep({ onNext, onBack }: { onNext: () => void; onBack: () => v
             </div>
           </div>
           <div className="flex items-start gap-2">
-            <div className="w-6 h-6 rounded-full bg-accent-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+            <div className="w-6 h-6 rounded-full bg-accent-600 dark:bg-accent-500 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
               4
             </div>
             <div>
@@ -267,7 +267,7 @@ function QuickPathStep({ onNext, onBack }: { onNext: () => void; onBack: () => v
         </div>
       </div>
 
-      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+      <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30 rounded-lg p-4">
         <p className="text-xs text-foreground">
           <strong>💡 Pro tip:</strong> After seeing your quick estimate, you can always switch to Detailed Analysis for a more precise, audit-ready assessment.
         </p>
@@ -297,8 +297,8 @@ function DetailedStep1({ onNext, onBack }: { onNext: () => void; onBack: () => v
       className="space-y-6 py-4"
     >
       <div className="text-center space-y-2">
-        <div className="mx-auto w-16 h-16 rounded-full bg-accent-100 flex items-center justify-center mb-4">
-          <Building2 className="h-8 w-8 text-accent-600" />
+        <div className="mx-auto w-16 h-16 rounded-full bg-accent-100 dark:bg-accent-200 flex items-center justify-center mb-4">
+          <Building2 className="h-8 w-8 text-accent-600 dark:text-accent-400" />
         </div>
         <h2 className="text-2xl font-bold text-foreground">
           Understanding Activities
@@ -308,7 +308,7 @@ function DetailedStep1({ onNext, onBack }: { onNext: () => void; onBack: () => v
         </p>
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-4">
+      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/30 rounded-lg p-4 space-y-4">
         <div className="space-y-2">
           <p className="text-sm font-medium text-foreground">
             What is an activity?
@@ -319,7 +319,7 @@ function DetailedStep1({ onNext, onBack }: { onNext: () => void; onBack: () => v
           </p>
         </div>
 
-        <div className="border-l-4 border-accent-600 pl-3 space-y-1">
+        <div className="border-l-4 border-accent-600 dark:border-accent-500 pl-3 space-y-1">
           <p className="text-xs font-medium text-foreground">Example: Coffee Shop Owner</p>
           <p className="text-xs text-text-secondary">
             You might select activities like: "Brewed coffee" + "Espresso" + "Milk steaming" + "Store electricity" + "Employee commute"
@@ -339,7 +339,7 @@ function DetailedStep1({ onNext, onBack }: { onNext: () => void; onBack: () => v
         </div>
       </div>
 
-      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+      <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30 rounded-lg p-3">
         <p className="text-xs text-foreground">
           <strong>💡 Don't worry about perfection!</strong> Start with 5-10 activities that match your operations. You can always add more later.
         </p>
@@ -369,8 +369,8 @@ function DetailedStep2({ onNext, onBack }: { onNext: () => void; onBack: () => v
       className="space-y-6 py-4"
     >
       <div className="text-center space-y-2">
-        <div className="mx-auto w-16 h-16 rounded-full bg-accent-100 flex items-center justify-center mb-4">
-          <Zap className="h-8 w-8 text-accent-600" />
+        <div className="mx-auto w-16 h-16 rounded-full bg-accent-100 dark:bg-accent-200 flex items-center justify-center mb-4">
+          <Zap className="h-8 w-8 text-accent-600 dark:text-accent-400" />
         </div>
         <h2 className="text-2xl font-bold text-foreground">
           How to Select Activities
@@ -381,33 +381,33 @@ function DetailedStep2({ onNext, onBack }: { onNext: () => void; onBack: () => v
       </div>
 
       <div className="space-y-4">
-        <div className="bg-gradient-to-r from-accent-50 to-white border border-accent-200 rounded-lg p-4 space-y-3">
+        <div className="bg-gradient-to-r from-accent-50 to-white dark:from-accent-900/30 dark:to-surface border border-accent-200 dark:border-accent-700/30 rounded-lg p-4 space-y-3">
           <p className="text-sm font-medium text-foreground">Step 1: Browse by Sector</p>
           <p className="text-xs text-text-secondary">
             Choose a sector that matches your operations (Transportation, Energy, Food & Agriculture, etc.).
             Each sector contains relevant activities organized by impact.
           </p>
-          <div className="flex items-center gap-2 text-xs text-accent-600 bg-white rounded px-3 py-2">
+          <div className="flex items-center gap-2 text-xs text-accent-600 dark:text-accent-400 bg-white dark:bg-surface-elevated rounded px-3 py-2">
             <BarChart2 className="h-3.5 w-3.5" />
             <span>You'll see activities sorted by carbon intensity by default</span>
           </div>
         </div>
 
-        <div className="bg-gradient-to-r from-accent-50 to-white border border-accent-200 rounded-lg p-4 space-y-3">
+        <div className="bg-gradient-to-r from-accent-50 to-white dark:from-accent-900/30 dark:to-surface border border-accent-200 dark:border-accent-700/30 rounded-lg p-4 space-y-3">
           <p className="text-sm font-medium text-foreground">Step 2: Click to Add</p>
           <p className="text-xs text-text-secondary">
             Click any activity card to add it to your profile. Added activities show a checkmark.
             Don't worry about quantities yet - you'll specify those in the next step.
           </p>
           <div className="flex items-center gap-2">
-            <div className="bg-white border-2 border-accent-500 rounded-lg px-3 py-2 text-xs flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-accent-600" />
+            <div className="bg-white dark:bg-surface-elevated border-2 border-accent-500 rounded-lg px-3 py-2 text-xs flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-accent-600 dark:text-accent-400" />
               <span className="font-medium">Activity Selected</span>
             </div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-r from-accent-50 to-white border border-accent-200 rounded-lg p-4 space-y-3">
+        <div className="bg-gradient-to-r from-accent-50 to-white dark:from-accent-900/30 dark:to-surface border border-accent-200 dark:border-accent-700/30 rounded-lg p-4 space-y-3">
           <p className="text-sm font-medium text-foreground">Step 3: Use Search & Filters</p>
           <p className="text-xs text-text-secondary">
             Use the search bar to find specific activities quickly. Sort by name, impact, or category.
@@ -416,7 +416,7 @@ function DetailedStep2({ onNext, onBack }: { onNext: () => void; onBack: () => v
         </div>
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/30 rounded-lg p-3">
         <p className="text-xs text-foreground">
           <strong>🎯 Goal:</strong> Select 5-20 activities that represent your main emission sources. Quality over quantity!
         </p>
@@ -446,8 +446,8 @@ function DetailedStep3({ onNext, onBack }: { onNext: () => void; onBack: () => v
       className="space-y-6 py-4"
     >
       <div className="text-center space-y-2">
-        <div className="mx-auto w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
-          <CheckCircle2 className="h-8 w-8 text-green-600" />
+        <div className="mx-auto w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-4">
+          <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
         </div>
         <h2 className="text-2xl font-bold text-foreground">
           You're Ready!
@@ -458,9 +458,9 @@ function DetailedStep3({ onNext, onBack }: { onNext: () => void; onBack: () => v
       </div>
 
       <div className="space-y-3">
-        <div className="bg-gradient-to-r from-accent-50 to-white border border-accent-200 rounded-lg p-4">
+        <div className="bg-gradient-to-r from-accent-50 to-white dark:from-accent-900/30 dark:to-surface border border-accent-200 dark:border-accent-700/30 rounded-lg p-4">
           <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-accent-600 text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
+            <div className="w-8 h-8 rounded-full bg-accent-600 dark:bg-accent-500 text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
               1
             </div>
             <div className="flex-1">
@@ -473,9 +473,9 @@ function DetailedStep3({ onNext, onBack }: { onNext: () => void; onBack: () => v
           </div>
         </div>
 
-        <div className="bg-gradient-to-r from-accent-50 to-white border border-accent-200 rounded-lg p-4">
+        <div className="bg-gradient-to-r from-accent-50 to-white dark:from-accent-900/30 dark:to-surface border border-accent-200 dark:border-accent-700/30 rounded-lg p-4">
           <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-accent-600 text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
+            <div className="w-8 h-8 rounded-full bg-accent-600 dark:bg-accent-500 text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
               2
             </div>
             <div className="flex-1">
@@ -488,9 +488,9 @@ function DetailedStep3({ onNext, onBack }: { onNext: () => void; onBack: () => v
           </div>
         </div>
 
-        <div className="bg-gradient-to-r from-accent-50 to-white border border-accent-200 rounded-lg p-4">
+        <div className="bg-gradient-to-r from-accent-50 to-white dark:from-accent-900/30 dark:to-surface border border-accent-200 dark:border-accent-700/30 rounded-lg p-4">
           <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-accent-600 text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
+            <div className="w-8 h-8 rounded-full bg-accent-600 dark:bg-accent-500 text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
               3
             </div>
             <div className="flex-1">
@@ -504,7 +504,7 @@ function DetailedStep3({ onNext, onBack }: { onNext: () => void; onBack: () => v
         </div>
       </div>
 
-      <div className="bg-green-50 border border-green-200 rounded-lg p-4 space-y-2">
+      <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/30 rounded-lg p-4 space-y-2">
         <p className="text-sm font-medium text-foreground">Ready to start?</p>
         <p className="text-xs text-text-secondary">
           You'll be taken to your dashboard where you can browse sectors and select activities.
@@ -512,7 +512,7 @@ function DetailedStep3({ onNext, onBack }: { onNext: () => void; onBack: () => v
         </p>
       </div>
 
-      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+      <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30 rounded-lg p-3">
         <p className="text-xs text-foreground">
           <strong>💡 Remember:</strong> You can re-open this guide anytime from the Help menu if you need a refresher.
         </p>
