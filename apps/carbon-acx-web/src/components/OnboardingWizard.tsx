@@ -71,7 +71,12 @@ export default function OnboardingWizard({ open, onOpenChange }: OnboardingWizar
                 Step {step + 1} of {totalSteps}
               </Badge>
             </div>
-            <Button variant="ghost" size="sm" onClick={handleSkip}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSkip}
+              className="mr-2 focus-visible:ring-2 focus-visible:ring-accent-500/50 focus-visible:ring-offset-2"
+            >
               Skip
             </Button>
           </div>
