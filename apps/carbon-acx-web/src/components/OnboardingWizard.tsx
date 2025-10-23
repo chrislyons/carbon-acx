@@ -392,7 +392,7 @@ function DetailedStep2({ onNext, onBack }: { onNext: () => void; onBack: () => v
             Choose a sector that matches your operations (Transportation, Energy, Food & Agriculture, etc.).
             Each sector contains relevant activities organized by impact.
           </p>
-          <div className="flex items-center gap-2 text-xs text-accent-600 dark:text-accent-400 bg-white dark:bg-surface-elevated rounded px-3 py-2">
+          <div className="flex items-center gap-2 text-xs text-accent-600 dark:text-accent-400 bg-neutral-100 dark:bg-neutral-800/50 rounded px-3 py-2">
             <BarChart2 className="h-3.5 w-3.5" />
             <span>You'll see activities sorted by carbon intensity by default</span>
           </div>
@@ -405,7 +405,7 @@ function DetailedStep2({ onNext, onBack }: { onNext: () => void; onBack: () => v
             Don't worry about quantities yet - you'll specify those in the next step.
           </p>
           <div className="flex items-center gap-2">
-            <div className="bg-white dark:bg-surface-elevated border-2 border-accent-500 rounded-lg px-3 py-2 text-xs flex items-center gap-2">
+            <div className="bg-neutral-100 dark:bg-neutral-800/50 border-2 border-accent-500 rounded-lg px-3 py-2 text-xs flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-accent-600 dark:text-accent-400" />
               <span className="font-medium">Activity Selected</span>
             </div>
