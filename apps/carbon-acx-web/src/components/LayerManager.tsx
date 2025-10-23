@@ -100,7 +100,7 @@ export default function LayerManager({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-10 w-10 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                    className="h-10 w-10 p-0 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
                     onClick={() => {
                       if (confirm(`Remove layer "${layer.name}"?`)) {
                         onRemoveLayer(layer.id);

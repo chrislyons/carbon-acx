@@ -231,7 +231,7 @@ function QuestionFlow({ step, values, onValueChange, onNext, onBack }: QuestionF
                   onClick={() => onValueChange('diet', option.value)}
                   className={`p-4 rounded-xl border-2 text-left transition-all ${
                     values.diet === option.value
-                      ? 'border-accent-500 bg-accent-50'
+                      ? 'border-accent-500 bg-accent-50 dark:bg-accent-900/30'
                       : 'border-border hover:border-accent-300'
                   }`}
                 >
@@ -260,7 +260,7 @@ function QuestionFlow({ step, values, onValueChange, onNext, onBack }: QuestionF
                   onClick={() => onValueChange('energy', option.value)}
                   className={`p-4 rounded-xl border-2 text-left transition-all ${
                     values.energy === option.value
-                      ? 'border-accent-500 bg-accent-50'
+                      ? 'border-accent-500 bg-accent-50 dark:bg-accent-900/30'
                       : 'border-border hover:border-accent-300'
                   }`}
                 >
@@ -289,7 +289,7 @@ function QuestionFlow({ step, values, onValueChange, onNext, onBack }: QuestionF
                   onClick={() => onValueChange('shopping', option.value)}
                   className={`p-4 rounded-xl border-2 text-left transition-all ${
                     values.shopping === option.value
-                      ? 'border-accent-500 bg-accent-50'
+                      ? 'border-accent-500 bg-accent-50 dark:bg-accent-900/30'
                       : 'border-border hover:border-accent-300'
                   }`}
                 >
@@ -327,7 +327,7 @@ function Question({ icon, title, description, children }: QuestionProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-start gap-4">
-        <div className="p-3 rounded-xl bg-accent-50 text-accent-500">
+        <div className="p-3 rounded-xl bg-accent-50 dark:bg-accent-900/30 text-accent-500 dark:text-accent-400">
           {icon}
         </div>
         <div className="flex-1">
@@ -359,22 +359,22 @@ function ResultsView({ footprint, globalAverage, onReset, onSave, onClose }: Res
       animate={{ opacity: 1, scale: 1 }}
       className="space-y-6 text-center py-6"
     >
-      <div className="p-6 rounded-2xl bg-gradient-to-br from-accent-50 to-accent-100/50">
+      <div className="p-6 rounded-2xl bg-gradient-to-br from-accent-50 to-accent-100/50 dark:from-accent-900/30 dark:to-accent-800/20">
         <p className="text-sm font-medium text-text-muted uppercase tracking-wide mb-2">
           Your estimated annual footprint
         </p>
         <div className="flex items-baseline justify-center gap-2">
-          <span className="text-6xl font-bold text-accent-600">{footprint}</span>
+          <span className="text-6xl font-bold text-accent-600 dark:text-accent-400">{footprint}</span>
           <span className="text-2xl text-text-secondary">tonnes CO₂</span>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4 text-left">
-        <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-200">
+        <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800/30 border border-neutral-200 dark:border-neutral-700">
           <p className="text-xs text-text-muted mb-1">Global average</p>
           <p className="text-2xl font-semibold text-foreground">{globalAverage}t</p>
         </div>
-        <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-200">
+        <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800/30 border border-neutral-200 dark:border-neutral-700">
           <p className="text-xs text-text-muted mb-1">You vs average</p>
           <p className={`text-2xl font-semibold ${isAboveAverage ? 'text-accent-danger' : 'text-accent-success'}`}>
             {isAboveAverage ? '+' : ''}{diff.toFixed(1)}t ({percentOfAverage}%)
@@ -382,7 +382,7 @@ function ResultsView({ footprint, globalAverage, onReset, onSave, onClose }: Res
         </div>
       </div>
 
-      <div className="p-4 rounded-xl bg-blue-50 border border-blue-200 text-left">
+      <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/30 text-left">
         <p className="text-sm font-medium text-foreground mb-2">💡 What this means</p>
         <p className="text-sm text-text-secondary">
           {isAboveAverage

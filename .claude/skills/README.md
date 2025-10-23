@@ -44,6 +44,16 @@ Scan for vulnerable dependencies and license issues.
 - "Audit Python dependencies"
 - "Scan for license compliance issues"
 
+### acx.ux.evaluator
+Expert UX evaluation and usability guidance for Carbon ACX interfaces.
+
+**How to use:**
+- "Evaluate the UX of the activity browser"
+- "Perform a cognitive walkthrough for new user onboarding"
+- "Audit the emission calculation flow"
+- "How can I reduce parameter overwhelm on this screen?"
+- "Review the dashboard against Nielsen heuristics"
+
 ## How Skills Work
 
 Skills provide passive guidance as you work. They don't execute tasks automatically—they help you understand requirements and validate your work in real-time.

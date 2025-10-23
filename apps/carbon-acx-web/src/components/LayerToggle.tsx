@@ -148,7 +148,7 @@ export default function LayerToggle() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-10 w-10 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="h-10 w-10 p-0 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
                             onClick={() => handleRemove(layer.id, layer.name)}
                             aria-label={`Remove ${layer.name} layer`}
                             title="Remove layer"
@@ -163,7 +163,7 @@ export default function LayerToggle() {
               </div>
 
               {/* Footer */}
-              <div className="p-3 border-t border-border bg-neutral-50 flex items-center justify-between">
+              <div className="p-3 border-t border-border bg-neutral-50 dark:bg-neutral-800/30 flex items-center justify-between">
                 <p className="text-xs text-text-muted flex-1">
                   {layers.length > 0 ? (
                     'View full comparison on Dashboard'

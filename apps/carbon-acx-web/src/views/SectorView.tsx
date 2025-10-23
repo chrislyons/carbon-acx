@@ -1,13 +1,14 @@
-import { Suspense } from 'react';
+import { Suspense, useState } from 'react';
 import { Await, Link, useLoaderData, useOutletContext } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, BarChart3, Layers } from 'lucide-react';
+import { ArrowRight, BarChart3, HelpCircle, Layers } from 'lucide-react';
 
 import type { ActivitySummary, DatasetSummary, ProfileSummary, SectorSummary } from '../lib/api';
 import { useProfile } from '../contexts/ProfileContext';
 import { Skeleton } from '../components/ui/skeleton';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../components/ui/collapsible';
 import ActivityBadgeGrid from '../components/ActivityBadgeGrid';
 import ComparativeBarChart from '../components/charts/ComparativeBarChart';
 import TimeSeriesChart from '../components/charts/TimeSeriesChart';
@@ -78,9 +79,36 @@ export default function SectorView() {
                       <BarChart3 className="h-4 w-4 text-accent-500" />
                       {sector.name} Activities
                     </CardTitle>
-                    <p className="text-xs text-text-muted">
-                      Select activities to add to your profile.
-                    </p>
+                    <div className="mt-2 space-y-2">
+                      <p className="text-xs text-text-muted">
+                        Select activities to add to your profile.
+                      </p>
+
+                      {/* Collapsible help for mental model explanation */}
+                      <Collapsible>
+                        <CollapsibleTrigger asChild>
+                          <button className="flex items-center gap-1.5 text-xs text-accent-600 hover:underline">
+                            <HelpCircle className="h-3.5 w-3.5" />
+                            How does this work?
+                          </button>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <div className="mt-2 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/30 space-y-2">
+                            <p className="text-xs font-medium text-foreground">
+                              Activities are emissions sources (building blocks)
+                            </p>
+                            <ul className="text-xs text-text-secondary space-y-1 pl-4">
+                              <li>• Each activity = one emissions source (e.g., "12oz coffee")</li>
+                              <li>• Select 5-20 activities that match your operations</li>
+                              <li>• You'll specify quantities next (e.g., "100 coffees/day")</li>
+                            </ul>
+                            <p className="text-xs italic text-text-secondary">
+                              Example: Coffee shop might select "Brewed coffee", "Espresso", "Milk steaming", "Electricity", "Commute"
+                            </p>
+                          </div>
+                        </CollapsibleContent>
+                      </Collapsible>
+                    </div>
                   </CardHeader>
                   <CardContent className="flex-1 overflow-y-auto px-4 pb-4">
                     <ActivityBadgeGrid

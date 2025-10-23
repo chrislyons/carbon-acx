@@ -1,11 +1,12 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowUpDown, Plus, X, Grid3x3, List } from 'lucide-react';
+import { ArrowUpDown, Plus, X, Grid3x3, List, Zap, ArrowDown, Search, SlidersHorizontal } from 'lucide-react';
 
 import type { ActivitySummary } from '../lib/api';
 import { useProfile } from '../contexts/ProfileContext';
 import { useToast } from '../contexts/ToastContext';
 import { Button } from './ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import ActivityBadge from './ActivityBadge';
 import { inferIconType } from '../lib/activityIcons';
 import {
@@ -37,10 +38,25 @@ export default function ActivityBadgeGrid({
   const [sortBy, setSortBy] = useState<'name' | 'impact'>('impact');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [isFirstVisit, setIsFirstVisit] = useState(
+    () => !localStorage.getItem('acx:activity-browser-visited')
+  );
 
   // Dialog state for adding activities
   const [dialogActivity, setDialogActivity] = useState<ActivitySummary | null>(null);
   const [quantity, setQuantity] = useState<string>('1');
+  const [showTopThreePreview, setShowTopThreePreview] = useState(false);
+
+  useEffect(() => {
+    if (isFirstVisit) {
+      localStorage.setItem('acx:activity-browser-visited', 'true');
+      // Auto-dismiss after 10 seconds
+      const timer = setTimeout(() => setIsFirstVisit(false), 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [isFirstVisit]);
 
   // Mock carbon impact data (future: from API)
   const activityImpacts = useMemo(() => {
@@ -53,8 +69,23 @@ export default function ActivityBadgeGrid({
     return impacts;
   }, [activities]);
 
+  // Filter activities by search query
+  const filteredActivities = useMemo(() => {
+    if (!searchQuery.trim()) return activities;
+
+    const query = searchQuery.toLowerCase();
+    return activities.filter((activity) => {
+      return (
+        activity.name?.toLowerCase().includes(query) ||
+        activity.id.toLowerCase().includes(query) ||
+        activity.category?.toLowerCase().includes(query) ||
+        activity.description?.toLowerCase().includes(query)
+      );
+    });
+  }, [activities, searchQuery]);
+
   const sortedActivities = useMemo(() => {
-    const sorted = [...activities].sort((a, b) => {
+    const sorted = [...filteredActivities].sort((a, b) => {
       if (sortBy === 'name') {
         const nameA = a.name || a.id;
         const nameB = b.name || b.id;
@@ -68,7 +99,7 @@ export default function ActivityBadgeGrid({
       }
     });
     return sorted;
-  }, [activities, activityImpacts, sortBy, sortDirection]);
+  }, [filteredActivities, activityImpacts, sortBy, sortDirection]);
 
   const toggleSort = (newSortBy: 'name' | 'impact') => {
     if (sortBy === newSortBy) {
@@ -129,87 +160,168 @@ export default function ActivityBadgeGrid({
   const selectedCount = activities.filter((a) => hasActivity(a.id)).length;
 
   return (
-    <div className="space-y-4">
-      {/* Header with controls */}
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <div className="flex gap-2 flex-wrap">
-          {/* Sort controls */}
-          <Button
-            variant={sortBy === 'impact' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => toggleSort('impact')}
-            className="gap-1"
-          >
-            By impact
-            {sortBy === 'impact' && <ArrowUpDown className="h-3 w-3" />}
-          </Button>
-          <Button
-            variant={sortBy === 'name' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => toggleSort('name')}
-            className="gap-1"
-          >
-            Alphabetical
-            {sortBy === 'name' && <ArrowUpDown className="h-3 w-3" />}
-          </Button>
+    <TooltipProvider>
+      <div className="space-y-4">
+        {/* First-time user guidance */}
+        <AnimatePresence>
+          {isFirstVisit && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/30 relative"
+            >
+              <button
+                onClick={() => setIsFirstVisit(false)}
+                className="absolute top-2 right-2 text-text-muted hover:text-foreground"
+                aria-label="Dismiss"
+              >
+                <X className="h-4 w-4" />
+              </button>
+              <p className="text-sm font-medium text-foreground mb-1">
+                👋 Select activities that match your operations
+              </p>
+              <p className="text-xs text-text-secondary pr-6">
+                Click an activity card to add it to your profile. Don't worry - you can adjust quantities later.
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-          {/* View mode toggle */}
-          <div className="flex gap-1 border border-border rounded-lg p-0.5">
+        {/* Search bar */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
+          <input
+            type="search"
+            placeholder="Search activities..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500 text-sm"
+          />
+          {searchQuery && (
             <button
-              onClick={() => setViewMode('grid')}
-              className={`p-2.5 rounded transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center ${
-                viewMode === 'grid' ? 'bg-accent-500 text-white' : 'hover:bg-surface'
-              }`}
-              title="Grid view"
-              aria-label="Switch to grid view"
-              aria-pressed={viewMode === 'grid'}
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-foreground"
+              aria-label="Clear search"
             >
-              <Grid3x3 className="h-4 w-4" aria-hidden="true" />
+              <X className="h-4 w-4" />
             </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2.5 rounded transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center ${
-                viewMode === 'list' ? 'bg-accent-500 text-white' : 'hover:bg-surface'
-              }`}
-              title="List view"
-              aria-label="Switch to list view"
-              aria-pressed={viewMode === 'list'}
-            >
-              <List className="h-4 w-4" aria-hidden="true" />
-            </button>
-          </div>
-
-          {/* Quick add top 3 */}
-          {selectedCount === 0 && sortedActivities.length >= 3 && (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => {
-                sortedActivities.slice(0, 3).forEach((activity) => {
-                  if (!hasActivity(activity.id)) {
-                    const impact = activityImpacts.get(activity.id) || 100;
-                    const carbonIntensity = impact / 1000;
-                    addActivity({
-                      id: activity.id,
-                      sectorId,
-                      name: activity.name || activity.id,
-                      category: activity.category,
-                      quantity: 1,
-                      unit: activity.defaultUnit || 'unit',
-                      carbonIntensity,
-                      annualEmissions: carbonIntensity,
-                    });
-                  }
-                });
-                showToast('success', 'Added', 'Top 3 activities added to profile');
-              }}
-              className="gap-1"
-            >
-              <Plus className="h-3 w-3" />
-              Add Top 3
-            </Button>
           )}
         </div>
+
+        {/* Show search results count */}
+        {searchQuery && (
+          <p className="text-xs text-text-muted">
+            {filteredActivities.length} {filteredActivities.length === 1 ? 'result' : 'results'} for "{searchQuery}"
+          </p>
+        )}
+
+        {/* Header with controls */}
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex gap-2 flex-wrap">
+            {!showAdvanced ? (
+              /* Simplified view - just show more options button */
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowAdvanced(true)}
+                className="gap-1.5"
+              >
+                <SlidersHorizontal className="h-3.5 w-3.5" />
+                More options
+              </Button>
+            ) : (
+              /* Advanced controls */
+              <>
+                {/* Sort controls */}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant={sortBy === 'impact' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => toggleSort('impact')}
+                      className="gap-1.5"
+                    >
+                      <Zap className="h-3.5 w-3.5" />
+                      Highest impact
+                      {sortBy === 'impact' && (
+                        <ArrowDown className={`h-3 w-3 ${sortDirection === 'asc' ? 'rotate-180' : ''}`} />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Sort by carbon intensity (highest emissions per unit first)</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant={sortBy === 'name' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => toggleSort('name')}
+                      className="gap-1.5"
+                    >
+                      A-Z
+                      {sortBy === 'name' && (
+                        <ArrowDown className={`h-3 w-3 ${sortDirection === 'asc' ? '' : 'rotate-180'}`} />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Sort alphabetically (A-Z or Z-A)</TooltipContent>
+                </Tooltip>
+
+                {/* View mode toggle */}
+                <div className="flex gap-1 border border-border rounded-lg p-0.5">
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className={`px-3 py-2 rounded transition-colors flex items-center gap-1.5 ${
+                      viewMode === 'grid' ? 'bg-accent-500 text-white' : 'hover:bg-surface'
+                    }`}
+                    aria-pressed={viewMode === 'grid'}
+                  >
+                    <Grid3x3 className="h-4 w-4" aria-hidden="true" />
+                    <span className="text-xs font-medium hidden sm:inline">Grid</span>
+                  </button>
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`px-3 py-2 rounded transition-colors flex items-center gap-1.5 ${
+                      viewMode === 'list' ? 'bg-accent-500 text-white' : 'hover:bg-surface'
+                    }`}
+                    aria-pressed={viewMode === 'list'}
+                  >
+                    <List className="h-4 w-4" aria-hidden="true" />
+                    <span className="text-xs font-medium hidden sm:inline">List</span>
+                  </button>
+                </div>
+
+                {/* Quick add top 3 */}
+                {selectedCount === 0 && sortedActivities.length >= 3 && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setShowTopThreePreview(true)}
+                        className="gap-1"
+                      >
+                        <Zap className="h-3 w-3" />
+                        Quick Add Top 3
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Quickly add the 3 highest-impact activities</TooltipContent>
+                  </Tooltip>
+                )}
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowAdvanced(false)}
+                  className="gap-1.5"
+                >
+                  Hide options
+                </Button>
+              </>
+            )}
+          </div>
 
         <p className="text-sm text-text-muted">
           {activities.length} {activities.length === 1 ? 'activity' : 'activities'}
@@ -219,12 +331,13 @@ export default function ActivityBadgeGrid({
 
       {/* Activity browser - Grid (6x2.5) or List view */}
       <div className={viewMode === 'grid' ? 'max-h-[290px] overflow-y-auto' : 'max-h-[400px] overflow-y-auto'}>
-        {viewMode === 'grid' ? (
-          <motion.div
-            layout
-            className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-3"
-          >
-            {sortedActivities.map((activity) => {
+        {sortedActivities.length > 0 ? (
+          viewMode === 'grid' ? (
+            <motion.div
+              layout
+              className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-3"
+            >
+              {sortedActivities.map((activity) => {
               const impact = activityImpacts.get(activity.id) || 0;
               const isSelected = hasActivity(activity.id);
               const iconType = activity.iconType || inferIconType(activity.name, activity.category);
@@ -257,11 +370,11 @@ export default function ActivityBadgeGrid({
                   showEmissions={true}
                 />
               );
-            })}
-          </motion.div>
-        ) : (
-          <div className="space-y-2">
-            {sortedActivities.map((activity, index) => {
+              })}
+            </motion.div>
+          ) : (
+            <div className="space-y-2">
+              {sortedActivities.map((activity, index) => {
               const impact = activityImpacts.get(activity.id) || 0;
               const isSelected = hasActivity(activity.id);
               const iconType = activity.iconType || inferIconType(activity.name, activity.category);
@@ -336,7 +449,16 @@ export default function ActivityBadgeGrid({
                   </div>
                 </motion.div>
               );
-            })}
+              })}
+            </div>
+          )
+        ) : (
+          <div className="text-center py-12 text-text-muted">
+            <Search className="h-12 w-12 mx-auto mb-3 opacity-30" />
+            <p className="text-sm">No activities match "{searchQuery}"</p>
+            <Button variant="ghost" size="sm" onClick={() => setSearchQuery('')} className="mt-2">
+              Clear search
+            </Button>
           </div>
         )}
       </div>
@@ -440,6 +562,65 @@ export default function ActivityBadgeGrid({
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+
+      {/* Top 3 Confirmation Dialog */}
+      <Dialog open={showTopThreePreview} onOpenChange={setShowTopThreePreview}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Top 3 Highest-Impact Activities?</DialogTitle>
+            <DialogDescription>
+              This will add these activities to your profile (default quantity: 1 unit/year):
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2 max-h-[200px] overflow-y-auto">
+            {sortedActivities.slice(0, 3).map((activity, i) => {
+              const impact = activityImpacts.get(activity.id) || 0;
+              return (
+                <div key={activity.id} className="flex items-center gap-3 p-2 rounded-lg border">
+                  <span className="text-lg font-bold text-accent-600">#{i + 1}</span>
+                  <div className="flex-1">
+                    <p className="font-medium text-sm">{activity.name || activity.id}</p>
+                    <p className="text-xs text-text-muted">{impact} g CO₂ per {activity.defaultUnit || 'unit'}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="flex gap-2 pt-2">
+            <Button variant="outline" onClick={() => setShowTopThreePreview(false)} className="flex-1">
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                sortedActivities.slice(0, 3).forEach((activity) => {
+                  if (!hasActivity(activity.id)) {
+                    const impact = activityImpacts.get(activity.id) || 100;
+                    const carbonIntensity = impact / 1000;
+                    addActivity({
+                      id: activity.id,
+                      sectorId,
+                      name: activity.name || activity.id,
+                      category: activity.category,
+                      quantity: 1,
+                      unit: activity.defaultUnit || 'unit',
+                      carbonIntensity,
+                      annualEmissions: carbonIntensity,
+                    });
+                  }
+                });
+                setShowTopThreePreview(false);
+                showToast('success', 'Added to profile', 'Top 3 activities added. You can adjust quantities anytime.');
+              }}
+              className="flex-1"
+            >
+              Add to Profile
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      </div>
+    </TooltipProvider>
   );
 }
