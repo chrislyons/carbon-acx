@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { TrendingDown, TrendingUp, Activity, Trash2, Edit2, Calculator, Users, BarChart2, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 
 import { useProfile, type SelectedActivity } from '../contexts/ProfileContext';
 import { Button } from '../components/ui/button';
@@ -14,6 +14,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../components/ui/dialog';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '../components/ui/tooltip';
 import ExportButton from '../components/ExportButton';
 import ComparativeBarChart from '../components/charts/ComparativeBarChart';
 import TimeSeriesChart from '../components/charts/TimeSeriesChart';
@@ -53,8 +59,8 @@ export default function DashboardView() {
   const [editingActivity, setEditingActivity] = useState<SelectedActivity | null>(null);
   const [editQuantity, setEditQuantity] = useState<string>('');
 
-  // Handle edit activity
-  const handleEditActivity = () => {
+  // Handle edit activity (P1-4: Memoized to prevent unnecessary re-renders)
+  const handleEditActivity = useCallback(() => {
     if (!editingActivity) return;
 
     const parsedQuantity = parseFloat(editQuantity);
@@ -63,7 +69,7 @@ export default function DashboardView() {
       setEditingActivity(null);
       setEditQuantity('');
     }
-  };
+  }, [editingActivity, editQuantity, updateActivityQuantity]);
 
   // Aggregate all activities from visible layers AND legacy activities
   const allActivities = useMemo(() => {
@@ -145,46 +151,39 @@ export default function DashboardView() {
   }
 
   return (
-    <div className="space-y-4">
-      {/* Hero - Total Footprint - COMPACT */}
+    <main className="space-y-4" aria-labelledby="dashboard-title">
+      {/* Screen reader heading for semantic structure (P0-2) */}
+      <h1 id="dashboard-title" className="sr-only">Your Carbon Footprint Dashboard</h1>
+
+      {/* Compact Summary - Total Footprint (P1-1: Reduced prominence) */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative rounded-2xl bg-gradient-to-br from-accent-500/10 via-surface to-accent-600/5 p-4 md:p-6 overflow-hidden"
+        className="relative rounded-xl bg-gradient-to-br from-accent-500/10 via-surface to-accent-600/5 p-3 md:p-4 overflow-hidden"
       >
-        {/* Background decoration */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-0 right-0 h-48 w-48 rounded-full bg-accent-400/30 blur-3xl" />
-          <div className="absolute bottom-0 left-0 h-64 w-64 rounded-full bg-accent-600/20 blur-3xl" />
-        </div>
-
-        {/* Content */}
         <div className="relative z-10">
-          <div className="flex items-start justify-between mb-4">
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground">Your Carbon Footprint</h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-xl md:text-2xl font-bold text-foreground">Your Carbon Footprint</h2>
             <ExportButton />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {/* Total emissions */}
-            <div className="p-4 rounded-xl bg-surface/80 border border-border/50">
+            <div className="p-3 rounded-lg bg-surface/80 border border-border/50">
               <p className="text-xs uppercase tracking-wide text-text-muted mb-1">
                 Annual Emissions
               </p>
               <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-bold text-foreground">
+                <span className="text-3xl font-bold text-foreground">
                   {formatTonnes(totalEmissions, false).split(' ')[0]}
                 </span>
-                <span className="text-lg text-text-muted">tonnes CO₂</span>
+                <span className="text-base text-text-muted">tonnes CO₂</span>
               </div>
-              <p className="text-xs text-text-muted mt-1">
-                {formatKg(totalEmissions)} per year
-              </p>
             </div>
 
-            {/* Comparison to global average */}
+            {/* Comparison to global average (P2-2: Icons provide non-color differentiation) */}
             <div
-              className={`p-4 rounded-xl border ${
+              className={`p-3 rounded-lg border ${
                 isBelowAverage
                   ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800/30'
                   : 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800/30'
@@ -192,28 +191,34 @@ export default function DashboardView() {
             >
               <div className="flex items-center gap-2 mb-1">
                 {isBelowAverage ? (
-                  <TrendingDown className="h-4 w-4 text-green-600 dark:text-green-400" />
+                  <TrendingDown className="h-4 w-4 text-green-600 dark:text-green-400" aria-hidden="true" />
                 ) : (
-                  <TrendingUp className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                  <TrendingUp className="h-4 w-4 text-orange-600 dark:text-orange-400" aria-hidden="true" />
                 )}
                 <p className="text-xs uppercase tracking-wide font-semibold">
                   vs Global Average
                 </p>
               </div>
-              <div className="flex items-baseline gap-2 mb-1">
+              <div className="flex items-baseline gap-2">
                 <span
-                  className={`text-4xl font-bold ${
+                  className={`text-3xl font-bold ${
                     isBelowAverage ? 'text-green-600 dark:text-green-400' : 'text-orange-600 dark:text-orange-400'
                   }`}
                 >
                   {formatPercent(percentOfGlobalAvg)}
                 </span>
               </div>
-              <p className="text-xs text-text-secondary">
+              <p className="text-xs text-text-secondary mt-0.5">
                 {isBelowAverage ? (
-                  <>You're {formatPercent(100 - percentOfGlobalAvg)} below the global average of 4.5t CO₂/year</>
+                  <>
+                    <span className="sr-only">Below average: </span>
+                    {formatPercent(100 - percentOfGlobalAvg)} below 4.5t/year
+                  </>
                 ) : (
-                  <>You're {formatPercent(percentOfGlobalAvg - 100)} above the global average of 4.5t CO₂/year</>
+                  <>
+                    <span className="sr-only">Above average: </span>
+                    {formatPercent(percentOfGlobalAvg - 100)} above 4.5t/year
+                  </>
                 )}
               </p>
             </div>
@@ -224,12 +229,12 @@ export default function DashboardView() {
       {/* VISUALIZATIONS - PRIME REAL ESTATE */}
       {allActivities.length > 0 && (
         <>
-          {/* Emissions Trend */}
+          {/* Emissions Trend (P2-3: Reduced animation delays) */}
           {timeSeriesData.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
+              transition={{ delay: 0.05 }}
             >
               <Card className="relative">
                 <CardHeader className="pb-3">
@@ -266,12 +271,12 @@ export default function DashboardView() {
             </motion.div>
           )}
 
-          {/* Top Activities Comparison */}
+          {/* Top Activities Comparison (P2-3: Reduced animation delays) */}
           {comparativeData.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
+              transition={{ delay: 0.08 }}
             >
               <Card className="relative">
                 <CardHeader className="pb-3">
@@ -303,11 +308,11 @@ export default function DashboardView() {
         </>
       )}
 
-      {/* Breakdown - COMPACT */}
+      {/* Breakdown - COMPACT (P2-3: Reduced animation delays) */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
+        transition={{ delay: 0.1 }}
         className="grid grid-cols-1 md:grid-cols-2 gap-3"
       >
         {/* Sources breakdown */}
@@ -361,12 +366,12 @@ export default function DashboardView() {
         )}
       </motion.div>
 
-      {/* Layer Manager */}
+      {/* Layer Manager (P2-3: Reduced animation delays) */}
       {profile.layers.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
+          transition={{ delay: 0.12 }}
         >
           <LayerManager
             layers={profile.layers}
@@ -377,12 +382,12 @@ export default function DashboardView() {
         </motion.div>
       )}
 
-      {/* Activities list */}
+      {/* Activities list (P2-3: Reduced animation delays) */}
       {profile.activities.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.14 }}
         >
           <Card>
             <CardHeader className="pb-3">
@@ -425,32 +430,46 @@ export default function DashboardView() {
                       </p>
                     </div>
 
-                    {/* Actions */}
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-10 w-10 p-0"
-                        onClick={() => {
-                          setEditingActivity(activity);
-                          setEditQuantity(activity.quantity.toString());
-                        }}
-                        aria-label={`Edit ${activity.name}`}
-                        title={`Edit ${activity.name}`}
-                      >
-                        <Edit2 className="h-4 w-4" aria-hidden="true" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-10 w-10 p-0 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
-                        onClick={() => removeActivity(activity.id)}
-                        aria-label={`Remove ${activity.name}`}
-                        title={`Remove ${activity.name}`}
-                      >
-                        <Trash2 className="h-4 w-4" aria-hidden="true" />
-                      </Button>
-                    </div>
+                    {/* Actions (P1-2: Tooltips added for accessibility) */}
+                    <TooltipProvider>
+                      <div className="flex gap-2">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-10 w-10 p-0"
+                              onClick={() => {
+                                setEditingActivity(activity);
+                                setEditQuantity(activity.quantity.toString());
+                              }}
+                              aria-label={`Edit ${activity.name}`}
+                            >
+                              <Edit2 className="h-4 w-4" aria-hidden="true" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Edit quantity</p>
+                          </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-10 w-10 p-0 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                              onClick={() => removeActivity(activity.id)}
+                              aria-label={`Remove ${activity.name}`}
+                            >
+                              <Trash2 className="h-4 w-4" aria-hidden="true" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Remove activity</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                    </TooltipProvider>
                   </motion.div>
                 ))}
               </div>
@@ -459,12 +478,12 @@ export default function DashboardView() {
         </motion.div>
       )}
 
-      {/* Calculator results */}
+      {/* Calculator results (P2-3: Reduced animation delays) */}
       {profile.calculatorResults.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35 }}
+          transition={{ delay: 0.15 }}
         >
           <Card>
             <CardHeader className="pb-3">
@@ -566,7 +585,7 @@ export default function DashboardView() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </main>
   );
 }
 
@@ -633,12 +652,12 @@ function EmptyState() {
 
         {/* Decision cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* Quick path */}
-          <Link to="/?calculator=true">
+          {/* Quick path (P0-3: Added aria-label for screen readers) */}
+          <Link to="/?calculator=true" aria-label="Start quick calculator - 2 minute estimate with 4 simple questions">
             <Card className="border-2 border-border hover:border-accent-500 transition-all cursor-pointer group h-full">
               <CardHeader>
                 <div className="flex items-center gap-3 mb-2">
-                  <Calculator className="h-6 w-6 text-accent-600" />
+                  <Calculator className="h-6 w-6 text-accent-600" aria-hidden="true" />
                   <CardTitle className="text-lg">Quick Calculator</CardTitle>
                 </div>
                 <Badge variant="secondary" className="w-fit">~2 minutes</Badge>
@@ -655,18 +674,18 @@ function EmptyState() {
                 </ul>
                 <div className="flex items-center gap-2 text-accent-600 text-sm font-medium group-hover:gap-3 transition-all">
                   Start quick calc
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </div>
               </CardContent>
             </Card>
           </Link>
 
-          {/* Detailed path */}
-          <Link to="/">
+          {/* Detailed path (P0-3: Added aria-label for screen readers) */}
+          <Link to="/" aria-label="Browse sectors for detailed analysis - 10 minute activity-level tracking">
             <Card className="border-2 border-border hover:border-accent-500 transition-all cursor-pointer group h-full">
               <CardHeader>
                 <div className="flex items-center gap-3 mb-2">
-                  <BarChart2 className="h-6 w-6 text-accent-600" />
+                  <BarChart2 className="h-6 w-6 text-accent-600" aria-hidden="true" />
                   <CardTitle className="text-lg">Detailed Analysis</CardTitle>
                 </div>
                 <Badge variant="secondary" className="w-fit">~10 minutes</Badge>
@@ -683,7 +702,7 @@ function EmptyState() {
                 </ul>
                 <div className="flex items-center gap-2 text-accent-600 text-sm font-medium group-hover:gap-3 transition-all">
                   Browse sectors
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </div>
               </CardContent>
             </Card>
