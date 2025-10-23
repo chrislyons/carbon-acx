@@ -1,11 +1,12 @@
 import { motion } from 'framer-motion';
-import { TrendingDown, TrendingUp, Activity, Trash2, Edit2, Calculator, Users, BarChart2 } from 'lucide-react';
+import { TrendingDown, TrendingUp, Activity, Trash2, Edit2, Calculator, Users, BarChart2, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useMemo, useState } from 'react';
 
 import { useProfile, type SelectedActivity } from '../contexts/ProfileContext';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
 import {
   Dialog,
   DialogContent,
@@ -610,11 +611,11 @@ function SourceBreakdownItem({
 
 function EmptyState() {
   return (
-    <div className="flex items-center justify-center min-h-[60vh]">
+    <div className="flex items-center justify-center min-h-[60vh] px-4">
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
+        initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="text-center max-w-md space-y-6"
+        className="text-center max-w-2xl space-y-8 w-full"
       >
         <div className="mx-auto w-24 h-24 rounded-full bg-accent-100 flex items-center justify-center">
           <Activity className="h-12 w-12 text-accent-600" />
@@ -622,21 +623,79 @@ function EmptyState() {
 
         <div>
           <h2 className="text-3xl font-bold text-foreground mb-2">
-            Start tracking your carbon footprint
+            Ready to calculate your carbon footprint?
           </h2>
           <p className="text-text-secondary">
-            Add activities from sectors or use the quick calculator to see your personal impact.
+            Choose your preferred approach - both give you a complete emissions profile.
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Button asChild size="lg">
-            <Link to="/">Browse Sectors</Link>
-          </Button>
-          <Button asChild variant="outline" size="lg">
-            <Link to="/?calculator=true">Quick Calculator</Link>
-          </Button>
+        {/* Decision cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Quick path */}
+          <Link to="/?calculator=true">
+            <Card className="border-2 border-border hover:border-accent-500 transition-all cursor-pointer group h-full">
+              <CardHeader>
+                <div className="flex items-center gap-3 mb-2">
+                  <Calculator className="h-6 w-6 text-accent-600" />
+                  <CardTitle className="text-lg">Quick Calculator</CardTitle>
+                </div>
+                <Badge variant="secondary" className="w-fit">~2 minutes</Badge>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-text-secondary mb-4">
+                  Answer 4 simple questions for an instant estimate.
+                </p>
+                <ul className="text-xs text-text-secondary space-y-1 mb-4">
+                  <li>✓ Commute distance</li>
+                  <li>✓ Diet type</li>
+                  <li>✓ Energy usage</li>
+                  <li>✓ Shopping habits</li>
+                </ul>
+                <div className="flex items-center gap-2 text-accent-600 text-sm font-medium group-hover:gap-3 transition-all">
+                  Start quick calc
+                  <ArrowRight className="h-4 w-4" />
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          {/* Detailed path */}
+          <Link to="/">
+            <Card className="border-2 border-border hover:border-accent-500 transition-all cursor-pointer group h-full">
+              <CardHeader>
+                <div className="flex items-center gap-3 mb-2">
+                  <BarChart2 className="h-6 w-6 text-accent-600" />
+                  <CardTitle className="text-lg">Detailed Analysis</CardTitle>
+                </div>
+                <Badge variant="secondary" className="w-fit">~10 minutes</Badge>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-text-secondary mb-4">
+                  Build your profile by selecting specific activities.
+                </p>
+                <ul className="text-xs text-text-secondary space-y-1 mb-4">
+                  <li>✓ Audit-ready reports</li>
+                  <li>✓ Activity-level tracking</li>
+                  <li>✓ Scenario comparison</li>
+                  <li>✓ Full provenance</li>
+                </ul>
+                <div className="flex items-center gap-2 text-accent-600 text-sm font-medium group-hover:gap-3 transition-all">
+                  Browse sectors
+                  <ArrowRight className="h-4 w-4" />
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
+
+        {/* Help link */}
+        <p className="text-xs text-text-muted">
+          Not sure which to choose?{' '}
+          <a href="#" className="text-accent-600 hover:underline">
+            See comparison guide
+          </a>
+        </p>
       </motion.div>
     </div>
   );

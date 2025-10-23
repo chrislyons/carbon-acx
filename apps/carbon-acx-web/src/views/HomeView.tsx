@@ -1,5 +1,6 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { TrendingUp, Zap, Globe, ArrowRight, Play } from 'lucide-react';
+import { TrendingUp, Zap, Globe, ArrowRight, Play, HelpCircle } from 'lucide-react';
 
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
@@ -7,6 +8,7 @@ import TimeSeriesChart from '../components/charts/TimeSeriesChart';
 import ComparativeBarChart from '../components/charts/ComparativeBarChart';
 import FullscreenChart from '../components/FullscreenChart';
 import MetricCard from '../components/MetricCard';
+import OnboardingWizard from '../components/OnboardingWizard';
 import { useProfile } from '../contexts/ProfileContext';
 import { loadDemoProfile, getDemoTimeSeries } from '../lib/demoData';
 import { useLayerChartData } from '../hooks/useLayerChartData';
@@ -15,6 +17,26 @@ export default function HomeView() {
   const { totalEmissions, profile } = useProfile();
   const { chartData } = useLayerChartData();
   const hasData = profile.activities.length > 0 || profile.calculatorResults.length > 0;
+
+  // Onboarding wizard state
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Check if this is the user's first visit
+  useEffect(() => {
+    const hasCompletedOnboarding = localStorage.getItem('acx:onboarding-completed');
+    const hasSkippedOnboarding = localStorage.getItem('acx:onboarding-skipped');
+
+    // Show onboarding if:
+    // 1. User hasn't completed or skipped it
+    // 2. User has no data yet (empty profile)
+    if (!hasCompletedOnboarding && !hasSkippedOnboarding && !hasData) {
+      // Small delay to let the page render first
+      const timer = setTimeout(() => {
+        setShowOnboarding(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [hasData]);
 
   return (
     <div className="space-y-3 -mt-4">
@@ -26,6 +48,16 @@ export default function HomeView() {
             <p className="text-xs text-text-muted">Real-time carbon footprint analysis</p>
           </div>
           <div className="flex items-center gap-3">
+            <Button
+              onClick={() => setShowOnboarding(true)}
+              variant="ghost"
+              size="sm"
+              className="gap-1.5 h-10 text-xs"
+              title="Show getting started guide"
+            >
+              <HelpCircle className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Guide</span>
+            </Button>
             {!hasData && (
               <Button
                 onClick={loadDemoProfile}
@@ -124,6 +156,9 @@ export default function HomeView() {
           Hover over charts for details • Click fullscreen icons to expand • Load demo data to explore features
         </p>
       </div>
+
+      {/* Onboarding Wizard */}
+      <OnboardingWizard open={showOnboarding} onOpenChange={setShowOnboarding} />
     </div>
   );
 }
