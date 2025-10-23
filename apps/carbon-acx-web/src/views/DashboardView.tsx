@@ -19,6 +19,7 @@ import ComparativeBarChart from '../components/charts/ComparativeBarChart';
 import TimeSeriesChart from '../components/charts/TimeSeriesChart';
 import FullscreenChart from '../components/FullscreenChart';
 import LayerManager from '../components/LayerManager';
+import { formatTonnes, formatKg, formatPercent } from '../lib/formatCarbon';
 import type { ComparativeDataPoint } from '../components/charts/ComparativeBarChart';
 import type { TimeSeriesDataPoint } from '../components/charts/TimeSeriesChart';
 
@@ -131,7 +132,7 @@ export default function DashboardView() {
             year: 'numeric',
           }),
           value: totalEmissions,
-          label: `${totalEmissions.toFixed(0)} kg CO₂`,
+          label: formatKg(totalEmissions),
         },
       ];
     }
@@ -172,12 +173,12 @@ export default function DashboardView() {
               </p>
               <div className="flex items-baseline gap-2">
                 <span className="text-4xl font-bold text-foreground">
-                  {(totalEmissions / 1000).toFixed(2)}
+                  {formatTonnes(totalEmissions, false).split(' ')[0]}
                 </span>
                 <span className="text-lg text-text-muted">tonnes CO₂</span>
               </div>
               <p className="text-xs text-text-muted mt-1">
-                {totalEmissions.toFixed(0)} kg CO₂ per year
+                {formatKg(totalEmissions)} per year
               </p>
             </div>
 
@@ -205,14 +206,14 @@ export default function DashboardView() {
                     isBelowAverage ? 'text-green-600 dark:text-green-400' : 'text-orange-600 dark:text-orange-400'
                   }`}
                 >
-                  {percentOfGlobalAvg.toFixed(0)}%
+                  {formatPercent(percentOfGlobalAvg)}
                 </span>
               </div>
               <p className="text-xs text-text-secondary">
                 {isBelowAverage ? (
-                  <>You're {(100 - percentOfGlobalAvg).toFixed(0)}% below the global average of 4.5t CO₂/year</>
+                  <>You're {formatPercent(100 - percentOfGlobalAvg)} below the global average of 4.5t CO₂/year</>
                 ) : (
-                  <>You're {(percentOfGlobalAvg - 100).toFixed(0)}% above the global average of 4.5t CO₂/year</>
+                  <>You're {formatPercent(percentOfGlobalAvg - 100)} above the global average of 4.5t CO₂/year</>
                 )}
               </p>
             </div>
@@ -415,12 +416,12 @@ export default function DashboardView() {
                     <div className="text-right">
                       <div className="flex items-baseline gap-1">
                         <span className="text-2xl font-bold text-foreground">
-                          {activity.annualEmissions.toFixed(2)}
+                          {formatKg(activity.annualEmissions, false).split(' ')[0]}
                         </span>
                         <span className="text-sm text-text-muted">kg CO₂</span>
                       </div>
                       <p className="text-xs text-text-muted">
-                        {((activity.annualEmissions / totalEmissions) * 100).toFixed(1)}% of total
+                        {formatPercent((activity.annualEmissions / totalEmissions) * 100)} of total
                       </p>
                     </div>
 
@@ -486,7 +487,7 @@ export default function DashboardView() {
                     <div className="text-right">
                       <div className="flex items-baseline gap-1">
                         <span className="text-2xl font-bold text-foreground">
-                          {result.annualEmissions.toFixed(2)}
+                          {formatKg(result.annualEmissions, false).split(' ')[0]}
                         </span>
                         <span className="text-sm text-text-muted">kg CO₂</span>
                       </div>
@@ -538,10 +539,10 @@ export default function DashboardView() {
             </div>
 
             {editingActivity && (
-              <div className="p-3 rounded-lg bg-neutral-50 border border-neutral-200">
+              <div className="p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
                 <p className="text-sm text-text-muted mb-1">Estimated annual emissions:</p>
                 <p className="text-2xl font-bold text-foreground">
-                  {(editingActivity.carbonIntensity * parseFloat(editQuantity || '0')).toFixed(2)} kg CO₂
+                  {formatKg(editingActivity.carbonIntensity * parseFloat(editQuantity || '0'))}
                 </p>
               </div>
             )}
@@ -589,7 +590,7 @@ function SourceBreakdownItem({
           {icon && <span className="text-text-muted">{icon}</span>}
           <span className="font-medium text-foreground">{label}</span>
         </div>
-        <span className="text-text-muted">{percentage.toFixed(1)}%</span>
+        <span className="text-text-muted">{formatPercent(percentage)}</span>
       </div>
       <div className="h-2 rounded-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden">
         <motion.div
@@ -601,7 +602,7 @@ function SourceBreakdownItem({
       </div>
       <div className="flex items-baseline gap-1 justify-end">
         <span className="text-base font-bold text-foreground">
-          {emissions.toFixed(2)}
+          {formatKg(emissions, false).split(' ')[0]}
         </span>
         <span className="text-[10px] text-text-muted">kg CO₂/year</span>
       </div>
