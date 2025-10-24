@@ -187,7 +187,7 @@ function WelcomeStep({ onChoosePath }: { onChoosePath: (path: PathChoice) => voi
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="h-3.5 w-3.5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
-                <span>Activity-level tracking and scenario comparison</span>
+                <span>Activity-level analysis and scenario comparison</span>
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="h-3.5 w-3.5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
@@ -309,7 +309,7 @@ function DetailedStep1({ onNext, onBack }: { onNext: () => void; onBack: () => v
           Understanding Activities
         </h2>
         <p className="text-text-secondary text-sm max-w-lg mx-auto">
-          Activities are the building blocks of your carbon footprint
+          Activities are the building blocks of emission profiles
         </p>
       </div>
 

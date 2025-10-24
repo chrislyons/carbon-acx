@@ -187,7 +187,7 @@ export default function NavSidebar({ sectors, onOpenSettings }: NavSidebarProps)
             );
             })}
                 {filtered.length === 0 && (
-                  <li className="nav-sidebar__empty">No sectors match your search.</li>
+                  <li className="nav-sidebar__empty">No sectors match the search.</li>
                 )}
               </ul>
             </ScrollArea>
