@@ -55,6 +55,9 @@ export default function DashboardView() {
     renameLayer,
   } = useProfile();
 
+  // Granularity control for human-scale data
+  const [granularity, setGranularity] = useState<'week' | 'month' | 'year'>('month');
+
   // Edit dialog state
   const [editingActivity, setEditingActivity] = useState<SelectedActivity | null>(null);
   const [editQuantity, setEditQuantity] = useState<string>('');
@@ -70,6 +73,31 @@ export default function DashboardView() {
       setEditQuantity('');
     }
   }, [editingActivity, editQuantity, updateActivityQuantity]);
+
+  // Helper: Convert annual emissions to selected granularity
+  const getEmissionsForGranularity = useCallback((annualEmissions: number): number => {
+    switch (granularity) {
+      case 'week':
+        return annualEmissions / 52;
+      case 'month':
+        return annualEmissions / 12;
+      case 'year':
+      default:
+        return annualEmissions;
+    }
+  }, [granularity]);
+
+  const getGranularityLabel = useCallback((): string => {
+    switch (granularity) {
+      case 'week':
+        return '/week';
+      case 'month':
+        return '/month';
+      case 'year':
+      default:
+        return '/year';
+    }
+  }, [granularity]);
 
   // Aggregate all activities from visible layers AND legacy activities
   const allActivities = useMemo(() => {
@@ -107,19 +135,19 @@ export default function DashboardView() {
                      profile.layers.length > 0;
   const isEmpty = !hasAnyData;
 
-  // Prepare data for visualizations
+  // Prepare data for visualizations (with granularity support)
   const comparativeData: ComparativeDataPoint[] = useMemo(() => {
     return allActivities
       .map((activity) => ({
         category: activity.name,
-        value: activity.annualEmissions,
-        baseline: totalEmissions / allActivities.length, // Average per activity
+        value: getEmissionsForGranularity(activity.annualEmissions),
+        baseline: getEmissionsForGranularity(totalEmissions) / allActivities.length, // Average per activity
         label: `${activity.quantity} ${activity.unit}/year`,
         color: undefined,
       }))
       .sort((a, b) => b.value - a.value)
       .slice(0, 10); // Top 10 activities
-  }, [allActivities, totalEmissions]);
+  }, [allActivities, totalEmissions, getEmissionsForGranularity]);
 
   // Use real historical tracking data
   const timeSeriesData: TimeSeriesDataPoint[] = useMemo(() => {
@@ -162,22 +190,45 @@ export default function DashboardView() {
         className="relative rounded-xl bg-gradient-to-br from-accent-500/10 via-surface to-accent-600/5 p-3 md:p-4 overflow-hidden"
       >
         <div className="relative z-10">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-3 flex-wrap gap-3">
             <h2 className="text-xl md:text-2xl font-bold text-foreground">Your Carbon Footprint</h2>
+
+            {/* Granularity Toggle - Human-scale data */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-text-muted uppercase tracking-wide">View by:</span>
+              <div className="flex gap-1 bg-surface/60 rounded-lg p-1 border border-border/50">
+                {(['week', 'month', 'year'] as const).map((g) => (
+                  <button
+                    key={g}
+                    onClick={() => setGranularity(g)}
+                    className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
+                      granularity === g
+                        ? 'bg-accent-500 text-white shadow-sm'
+                        : 'text-text-muted hover:text-foreground hover:bg-surface/80'
+                    }`}
+                  >
+                    {g.charAt(0).toUpperCase() + g.slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <ExportButton />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {/* Total emissions */}
+            {/* Total emissions (with granularity) */}
             <div className="p-3 rounded-lg bg-surface/80 border border-border/50">
               <p className="text-xs uppercase tracking-wide text-text-muted mb-1">
-                Annual Emissions
+                {granularity === 'week' ? 'Weekly' : granularity === 'month' ? 'Monthly' : 'Annual'} Emissions
               </p>
               <div className="flex items-baseline gap-2">
                 <span className="text-3xl font-bold text-foreground">
-                  {formatTonnes(totalEmissions, false).split(' ')[0]}
+                  {formatKg(getEmissionsForGranularity(totalEmissions), false).split(' ')[0]}
                 </span>
-                <span className="text-base text-text-muted">tonnes CO₂</span>
+                <span className="text-base text-text-muted">
+                  kg CO₂{getGranularityLabel()}
+                </span>
               </div>
             </div>
 
@@ -285,18 +336,18 @@ export default function DashboardView() {
                     Top Activities by Impact
                   </CardTitle>
                   <p className="text-xs text-text-muted mt-1">
-                    Compare your highest-emission activities
+                    Compare your highest-emission activities ({granularity === 'week' ? 'per week' : granularity === 'month' ? 'per month' : 'per year'})
                   </p>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <FullscreenChart title="Top Activities by Impact" description="Compare your highest-emission activities">
+                  <FullscreenChart title="Top Activities by Impact" description={`Compare your highest-emission activities (${granularity === 'week' ? 'per week' : granularity === 'month' ? 'per month' : 'per year'})`}>
                     <ComparativeBarChart
                       data={comparativeData}
                       orientation="horizontal"
                       showDelta={true}
                       sortBy="value"
                       sortDirection="desc"
-                      axisLabel="Annual Emissions (kg CO₂)"
+                      axisLabel={`Emissions (kg CO₂${getGranularityLabel()})`}
                       height={Math.max(400, comparativeData.length * 50)}
                       animated={true}
                     />
