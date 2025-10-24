@@ -82,7 +82,7 @@ export default function HomeView() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
           <MetricCard
             icon={<TrendingUp className="h-3.5 w-3.5" />}
-            label="Your Footprint"
+            label="Emissions Total"
             value={hasData ? `${(totalEmissions / 1000).toFixed(1)}t` : '—'}
             sublabel={hasData ? 'CO₂/year' : 'No data yet'}
             color={hasData && totalEmissions < 4500 ? 'text-green-600' : 'text-orange-600'}
@@ -106,7 +106,7 @@ export default function HomeView() {
       <div className="grid grid-cols-1 gap-3">
         {/* Global Comparison Chart */}
         <Card className="p-3 relative">
-          <FullscreenChart title="Global Carbon Footprint Comparison" description="Compare your emissions against regional and global averages">
+          <FullscreenChart title="Global Emissions Comparison" description="Compare emissions across regions and against global averages">
             <div className="mb-2">
               <h3 className="text-sm font-semibold text-foreground">Profile Comparison</h3>
               <p className="text-xs text-text-muted">Toggle layers in the sidebar to compare emissions • Annual per capita (kg CO₂/year)</p>

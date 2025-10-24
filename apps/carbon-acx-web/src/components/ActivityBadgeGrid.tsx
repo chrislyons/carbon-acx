@@ -585,7 +585,7 @@ export default function ActivityBadgeGrid({
                   </div>
                   <div className="flex-1">
                     <p className="text-xs font-medium text-orange-900 dark:text-orange-200 uppercase tracking-wide">
-                      Your Impact
+                      Estimated Impact
                     </p>
                   </div>
                 </div>
