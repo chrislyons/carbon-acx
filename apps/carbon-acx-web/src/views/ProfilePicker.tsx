@@ -147,7 +147,7 @@ export default function ProfilePicker({ profiles, sectorId, activities }: Profil
       showToast(
         'success',
         'Profile loaded as new layer!',
-        `${layerActivities.length} activities added. You can now compare this with other profiles or manual activities.`,
+        `${layerActivities.length} activities added. Compare with other profiles or manual activities on the dashboard.`,
         6000
       );
     } catch (error) {

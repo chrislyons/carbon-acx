@@ -81,7 +81,7 @@ export default function SectorView() {
                     </CardTitle>
                     <div className="mt-2 space-y-2">
                       <p className="text-xs text-text-muted">
-                        Select activities to add to your profile.
+                        Select activities to add to profile.
                       </p>
 
                       {/* Collapsible help for mental model explanation */}
@@ -99,8 +99,8 @@ export default function SectorView() {
                             </p>
                             <ul className="text-xs text-text-secondary space-y-1 pl-4">
                               <li>• Each activity = one emissions source (e.g., "12oz coffee")</li>
-                              <li>• Select 5-20 activities that match your operations</li>
-                              <li>• You'll specify quantities next (e.g., "100 coffees/day")</li>
+                              <li>• Select 5-20 activities that match the operations</li>
+                              <li>• Specify quantities next (e.g., "100 coffees/day")</li>
                             </ul>
                             <p className="text-xs italic text-text-secondary">
                               Example: Coffee shop might select "Brewed coffee", "Espresso", "Milk steaming", "Electricity", "Commute"
@@ -158,7 +158,7 @@ export default function SectorView() {
                 >
                   <div className="mb-2">
                     <h3 className="text-sm font-semibold text-foreground">Sector Trend</h3>
-                    <p className="text-xs text-text-muted">Demo data: 12-month sector tracking</p>
+                    <p className="text-xs text-text-muted">Demo data: 12-month sector observation</p>
                   </div>
                   <TimeSeriesChart
                     data={getSectorEmissionsTrend(sector.id)}
