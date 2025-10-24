@@ -116,10 +116,10 @@ function WelcomeStep({ onChoosePath }: { onChoosePath: (path: PathChoice) => voi
           <Building2 className="h-8 w-8 text-accent-600 dark:text-accent-400" />
         </div>
         <h2 className="text-2xl font-bold text-foreground">
-          Let's calculate your carbon footprint
+          Learn Carbon Accounting
         </h2>
         <p className="text-text-secondary text-sm max-w-lg mx-auto">
-          Choose your preferred approach. Both methods give you a complete emissions profile with audit-ready reports.
+          Compare emissions across activities and understand carbon data at every scale - from individual activities to global averages.
         </p>
       </div>
 
@@ -226,7 +226,7 @@ function QuickPathStep({ onNext, onBack }: { onNext: () => void; onBack: () => v
           Quick Calculator
         </h2>
         <p className="text-text-secondary text-sm max-w-lg mx-auto">
-          You'll answer 4 simple questions about your daily activities. The calculator uses scientifically-backed emission factors to estimate your annual carbon footprint.
+          Answer 4 simple questions about common activities. The calculator uses scientifically-backed emission factors to estimate annual emissions.
         </p>
       </div>
 
@@ -502,7 +502,7 @@ function DetailedStep3({ onNext, onBack }: { onNext: () => void; onBack: () => v
               <p className="text-sm font-medium text-foreground mb-1">Generate Reports</p>
               <p className="text-xs text-text-secondary">
                 Export audit-ready reports with full data provenance. Every calculation includes citations to
-                peer-reviewed emission factors, making your footprint defensible and transparent.
+                peer-reviewed emission factors, providing auditable and transparent data.
               </p>
             </div>
           </div>

@@ -110,7 +110,7 @@ export default function QuickCalculator() {
           className="gap-2"
         >
           <Calculator className="h-5 w-5" />
-          Calculate my footprint
+          Estimate emissions
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl">
@@ -361,7 +361,7 @@ function ResultsView({ footprint, globalAverage, onReset, onSave, onClose }: Res
     >
       <div className="p-6 rounded-2xl bg-gradient-to-br from-accent-50 to-accent-100/50 dark:from-accent-900/30 dark:to-accent-800/20">
         <p className="text-sm font-medium text-text-muted uppercase tracking-wide mb-2">
-          Your estimated annual footprint
+          Estimated Annual Emissions
         </p>
         <div className="flex items-baseline justify-center gap-2">
           <span className="text-6xl font-bold text-accent-600 dark:text-accent-400">{footprint}</span>
@@ -375,7 +375,7 @@ function ResultsView({ footprint, globalAverage, onReset, onSave, onClose }: Res
           <p className="text-2xl font-semibold text-foreground">{globalAverage}t</p>
         </div>
         <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800/30 border border-neutral-200 dark:border-neutral-700">
-          <p className="text-xs text-text-muted mb-1">You vs average</p>
+          <p className="text-xs text-text-muted mb-1">vs Global Average</p>
           <p className={`text-2xl font-semibold ${isAboveAverage ? 'text-accent-danger' : 'text-accent-success'}`}>
             {isAboveAverage ? '+' : ''}{diff.toFixed(1)}t ({percentOfAverage}%)
           </p>
@@ -383,13 +383,13 @@ function ResultsView({ footprint, globalAverage, onReset, onSave, onClose }: Res
       </div>
 
       <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/30 text-left">
-        <p className="text-sm font-medium text-foreground mb-2">💡 What this means</p>
+        <p className="text-sm font-medium text-foreground mb-2">💡 Context</p>
         <p className="text-sm text-text-secondary">
           {isAboveAverage
-            ? `Your footprint is ${Math.abs(diff).toFixed(1)}t above the global average. Small changes like reducing meat consumption or using public transport can make a significant impact.`
+            ? `This estimate is ${Math.abs(diff).toFixed(1)}t above the global average of ${globalAverage}t/year. The global average combines varying emission levels across different regions and lifestyles.`
             : diff === 0
-            ? `You're right at the global average! Consider ways to reduce further to help meet climate goals.`
-            : `Great! You're ${Math.abs(diff).toFixed(1)}t below the global average. Keep up the sustainable habits!`}
+            ? `This estimate matches the global average of ${globalAverage}t/year.`
+            : `This estimate is ${Math.abs(diff).toFixed(1)}t below the global average of ${globalAverage}t/year.`}
         </p>
       </div>
 

@@ -181,7 +181,7 @@ export default function DashboardView() {
   return (
     <main className="space-y-4" aria-labelledby="dashboard-title">
       {/* Screen reader heading for semantic structure (P0-2) */}
-      <h1 id="dashboard-title" className="sr-only">Your Carbon Footprint Dashboard</h1>
+      <h1 id="dashboard-title" className="sr-only">Emissions Dashboard</h1>
 
       {/* Compact Summary - Total Footprint (P1-1: Reduced prominence) */}
       <motion.div
@@ -191,7 +191,7 @@ export default function DashboardView() {
       >
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-3 flex-wrap gap-3">
-            <h2 className="text-xl md:text-2xl font-bold text-foreground">Your Carbon Footprint</h2>
+            <h2 className="text-xl md:text-2xl font-bold text-foreground">Emissions Overview</h2>
 
             {/* Granularity Toggle - Human-scale data */}
             <div className="flex items-center gap-2">
@@ -300,7 +300,7 @@ export default function DashboardView() {
                   </p>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <FullscreenChart title="Emissions Trend" description="Track your carbon footprint over time">
+                  <FullscreenChart title="Emissions Trend" description="Observe emissions trends over time">
                     <TimeSeriesChart
                       data={timeSeriesData}
                       valueKey="value"
@@ -336,11 +336,11 @@ export default function DashboardView() {
                     Top Activities by Impact
                   </CardTitle>
                   <p className="text-xs text-text-muted mt-1">
-                    Compare your highest-emission activities ({granularity === 'week' ? 'per week' : granularity === 'month' ? 'per month' : 'per year'})
+                    Compare activities by emission intensity ({granularity === 'week' ? 'per week' : granularity === 'month' ? 'per month' : 'per year'})
                   </p>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <FullscreenChart title="Top Activities by Impact" description={`Compare your highest-emission activities (${granularity === 'week' ? 'per week' : granularity === 'month' ? 'per month' : 'per year'})`}>
+                  <FullscreenChart title="Top Activities by Impact" description={`Compare activities by emission intensity (${granularity === 'week' ? 'per week' : granularity === 'month' ? 'per month' : 'per year'})`}>
                     <ComparativeBarChart
                       data={comparativeData}
                       orientation="horizontal"
@@ -442,9 +442,9 @@ export default function DashboardView() {
         >
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">Your Manual Activities</CardTitle>
+              <CardTitle className="text-base">Manual Activities</CardTitle>
               <p className="text-xs text-text-muted mt-1">
-                {profile.activities.length} manual {profile.activities.length === 1 ? 'activity' : 'activities'} tracked
+                {profile.activities.length} manual {profile.activities.length === 1 ? 'activity' : 'activities'} in profile
               </p>
             </CardHeader>
             <CardContent>
@@ -694,10 +694,10 @@ function EmptyState() {
 
         <div>
           <h2 className="text-3xl font-bold text-foreground mb-2">
-            Ready to calculate your carbon footprint?
+            Ready to explore carbon accounting?
           </h2>
           <p className="text-text-secondary">
-            Choose your preferred approach - both give you a complete emissions profile.
+            Compare emissions across activities and sectors. Choose your preferred approach to get started.
           </p>
         </div>
 
