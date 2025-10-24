@@ -47,6 +47,7 @@ export default function ActivityBadgeGrid({
   // Dialog state for adding activities
   const [dialogActivity, setDialogActivity] = useState<ActivitySummary | null>(null);
   const [quantity, setQuantity] = useState<string>('1');
+  const [timeframe, setTimeframe] = useState<'week' | 'month' | 'year'>('week');
   const [showTopThreePreview, setShowTopThreePreview] = useState(false);
 
   useEffect(() => {
@@ -133,15 +134,20 @@ export default function ActivityBadgeGrid({
 
     const impact = activityImpacts.get(dialogActivity.id) || 100;
     const parsedQuantity = parseFloat(quantity) || 1;
+
+    // Convert to annual quantity based on timeframe
+    const multiplier = timeframe === 'week' ? 52 : timeframe === 'month' ? 12 : 1;
+    const annualQuantity = parsedQuantity * multiplier;
+
     const carbonIntensity = impact / 1000; // g to kg
-    const annualEmissions = carbonIntensity * parsedQuantity;
+    const annualEmissions = carbonIntensity * annualQuantity;
 
     addActivity({
       id: dialogActivity.id,
       sectorId,
       name: dialogActivity.name || dialogActivity.id,
       category: dialogActivity.category,
-      quantity: parsedQuantity,
+      quantity: annualQuantity,
       unit: dialogActivity.defaultUnit || 'unit',
       carbonIntensity,
       annualEmissions,
@@ -155,6 +161,7 @@ export default function ActivityBadgeGrid({
 
     setDialogActivity(null);
     setQuantity('1');
+    setTimeframe('week');
   };
 
   const selectedCount = activities.filter((a) => hasActivity(a.id)).length;
@@ -502,20 +509,32 @@ export default function ActivityBadgeGrid({
         )}
       </AnimatePresence>
 
-      {/* Add Activity Dialog */}
+      {/* Add Activity Dialog - Redesigned for better UX */}
       <Dialog open={!!dialogActivity} onOpenChange={(open) => !open && setDialogActivity(null)}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Add to Profile</DialogTitle>
-            <DialogDescription>
-              How much {dialogActivity?.name || 'of this activity'} per year?
+            <DialogTitle className="flex items-center gap-3">
+              {dialogActivity && (
+                <div className="w-10 h-10 rounded-full bg-accent-100 flex items-center justify-center flex-shrink-0">
+                  {dialogActivity.iconUrl ? (
+                    <img src={dialogActivity.iconUrl} alt="" className="w-6 h-6" />
+                  ) : (
+                    <span className="text-xl">{dialogActivity.name?.charAt(0).toUpperCase()}</span>
+                  )}
+                </div>
+              )}
+              <span>Add to Your Profile</span>
+            </DialogTitle>
+            <DialogDescription className="text-base">
+              Tell us about your <span className="font-semibold text-foreground">{dialogActivity?.name || 'activity'}</span>
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 pt-4">
+          <div className="space-y-5 pt-2">
+            {/* Quantity input with better UX */}
             <div>
-              <label htmlFor="quantity" className="block text-sm font-medium text-foreground mb-2">
-                Annual quantity
+              <label htmlFor="quantity" className="block text-sm font-medium text-foreground mb-3">
+                How often do you do this?
               </label>
               <div className="flex gap-2">
                 <input
@@ -523,39 +542,97 @@ export default function ActivityBadgeGrid({
                   type="number"
                   value={quantity}
                   onChange={(e) => setQuantity(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500"
-                  placeholder="Enter quantity"
+                  className="flex-1 px-4 py-3 border-2 border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-accent-500 text-lg font-semibold"
+                  placeholder="0"
                   min="0"
                   step="0.1"
+                  autoFocus
                 />
-                <div className="px-3 py-2 border border-border rounded-lg bg-surface text-text-muted min-w-[80px] flex items-center justify-center">
+                <div className="px-4 py-3 border-2 border-border rounded-lg bg-surface text-text-muted min-w-[100px] flex items-center justify-center font-medium">
                   {dialogActivity?.defaultUnit || 'units'}
                 </div>
               </div>
+
+              {/* Timeframe selector */}
+              <div className="flex gap-2 mt-3">
+                <span className="text-sm text-text-muted self-center">per</span>
+                {(['week', 'month', 'year'] as const).map((tf) => (
+                  <button
+                    key={tf}
+                    onClick={() => setTimeframe(tf)}
+                    className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                      timeframe === tf
+                        ? 'bg-accent-500 text-white shadow-sm'
+                        : 'bg-surface border border-border hover:border-accent-300'
+                    }`}
+                  >
+                    {tf}
+                  </button>
+                ))}
+              </div>
             </div>
 
+            {/* Visual emissions preview */}
             {dialogActivity && (
-              <div className="p-3 rounded-lg bg-neutral-50 border border-neutral-200">
-                <p className="text-sm text-text-muted mb-1">Estimated annual emissions:</p>
-                <p className="text-2xl font-bold text-foreground">
-                  {((activityImpacts.get(dialogActivity.id) || 100) / 1000 * parseFloat(quantity || '1')).toFixed(2)} kg CO₂
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-4 rounded-xl bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border-2 border-orange-200 dark:border-orange-800/30"
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 rounded-full bg-orange-500/20 flex items-center justify-center">
+                    <span className="text-lg">🌍</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs font-medium text-orange-900 dark:text-orange-200 uppercase tracking-wide">
+                      Your Impact
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-4xl font-bold text-orange-600 dark:text-orange-400">
+                    {(() => {
+                      const multiplier = timeframe === 'week' ? 52 : timeframe === 'month' ? 12 : 1;
+                      const annualQty = parseFloat(quantity || '1') * multiplier;
+                      const emissions = ((activityImpacts.get(dialogActivity.id) || 100) / 1000 * annualQty);
+                      return emissions < 1 ? (emissions * 1000).toFixed(0) : emissions.toFixed(1);
+                    })()}
+                  </span>
+                  <span className="text-lg text-orange-700 dark:text-orange-300 font-medium">
+                    {(() => {
+                      const multiplier = timeframe === 'week' ? 52 : timeframe === 'month' ? 12 : 1;
+                      const annualQty = parseFloat(quantity || '1') * multiplier;
+                      const emissions = ((activityImpacts.get(dialogActivity.id) || 100) / 1000 * annualQty);
+                      return emissions < 1 ? 'g' : 'kg';
+                    })()}
+                    {' '}CO₂/year
+                  </span>
+                </div>
+                <p className="text-xs text-orange-700 dark:text-orange-300 mt-1">
+                  That's {parseFloat(quantity || '1')} {dialogActivity?.defaultUnit || 'units'} per {timeframe}
                 </p>
-              </div>
+              </motion.div>
             )}
 
-            <div className="flex gap-2 pt-2">
+            {/* Action buttons */}
+            <div className="flex gap-3 pt-2">
               <Button
                 variant="outline"
                 className="flex-1"
-                onClick={() => setDialogActivity(null)}
+                onClick={() => {
+                  setDialogActivity(null);
+                  setQuantity('1');
+                  setTimeframe('week');
+                }}
               >
                 Cancel
               </Button>
               <Button
-                className="flex-1"
+                className="flex-1 gap-2"
                 onClick={handleAddActivity}
                 disabled={!quantity || parseFloat(quantity) <= 0}
               >
+                <Plus className="h-4 w-4" />
                 Add to Profile
               </Button>
             </div>

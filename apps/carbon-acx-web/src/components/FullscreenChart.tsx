@@ -38,6 +38,8 @@ export default function FullscreenChart({ children, title, description }: Fullsc
       // If the component has a height prop, override it for fullscreen
       if ('height' in child.props) {
         newProps.height = fullscreenHeight;
+        // Also pass isFullscreen flag so ResponsiveContainer can use percentage height
+        newProps.isFullscreen = isFullscreen;
       }
 
       return cloneElement(child as React.ReactElement<any>, newProps);
@@ -119,8 +121,8 @@ export default function FullscreenChart({ children, title, description }: Fullsc
               </div>
 
               {/* Chart content */}
-              <div className="h-[calc(100%-4rem)] w-full rounded-lg bg-white/5 backdrop-blur-md border border-white/10 p-6 overflow-auto">
-                <div className="h-full">
+              <div className="h-[calc(100%-4rem)] w-full rounded-lg bg-white/5 backdrop-blur-md border border-white/10 p-6">
+                <div className="h-full w-full">
                   {cloneChildrenWithFullscreenHeight(children)}
                 </div>
               </div>
