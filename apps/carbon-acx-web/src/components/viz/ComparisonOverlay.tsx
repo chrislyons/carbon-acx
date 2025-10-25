@@ -122,11 +122,14 @@ export const ComparisonOverlay = React.forwardRef<
       baselineInstanceRef.current = baselineChart;
       comparisonInstanceRef.current = comparisonChart;
 
-      // Connect charts for synchronized interactions
-      echarts.connect([baselineChart, comparisonChart]);
+      // Connect charts for synchronized interactions using a shared group ID
+      const groupId = 'comparison-overlay-group';
+      baselineChart.group = groupId;
+      comparisonChart.group = groupId;
+      echarts.connect(groupId);
 
       return () => {
-        echarts.disconnect([baselineChart, comparisonChart]);
+        echarts.disconnect(groupId);
         baselineChart.dispose();
         comparisonChart.dispose();
         baselineInstanceRef.current = null;
@@ -189,7 +192,7 @@ export const ComparisonOverlay = React.forwardRef<
         !showDifference ||
         !baseline.summary ||
         !comparison.summary ||
-        baseline.summary.change === undefined
+        comparison.summary.change === undefined
       ) {
         return null;
       }

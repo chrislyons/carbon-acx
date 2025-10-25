@@ -156,7 +156,9 @@ export function ShareableCard({ type, data, onExport }: ShareableCardProps) {
           {/* Header */}
           <div>
             <div className="flex items-center gap-[var(--space-2)] mb-[var(--space-4)]">
-              <config.icon className="w-8 h-8" style={{ color: config.accentColor }} />
+              <div style={{ color: config.accentColor }}>
+                <config.icon className="w-8 h-8" />
+              </div>
               <h3
                 className="font-bold"
                 style={{

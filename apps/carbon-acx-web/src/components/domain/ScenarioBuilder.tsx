@@ -385,10 +385,9 @@ export function ScenarioBuilder({
       {/* Visual Comparison */}
       <TransitionWrapper type="fade" show={true} delay={200}>
         <ComparisonOverlay
-          leftChart={comparisonCharts.leftOption}
-          rightChart={comparisonCharts.rightOption}
+          baseline={{ label: 'Baseline', option: comparisonCharts.leftOption }}
+          comparison={{ label: 'Scenario', option: comparisonCharts.rightOption }}
           height="400px"
-          syncAxes={false}
         />
       </TransitionWrapper>
 

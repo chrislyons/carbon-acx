@@ -356,7 +356,7 @@ function QuestionCard({ question, value, onChange, currentEmissions }: QuestionC
             backgroundColor: 'var(--color-baseline-bg)',
           }}
         >
-          <Icon className="w-8 h-8" style={{ color: 'var(--color-baseline)' }} />
+          <Icon className="w-8 h-8 text-[var(--color-baseline)]" />
         </div>
         <div className="flex-1">
           <h3
@@ -575,8 +575,10 @@ function RealTimeFeedback({ emissions }: RealTimeFeedbackProps) {
           <GaugeProgress
             value={totalTonnes}
             max={globalAverage * 2}
+            label="Carbon Footprint"
+            unit="t"
             colorScheme="carbon"
-            showValue={false}
+            size={128}
           />
         </div>
       </div>

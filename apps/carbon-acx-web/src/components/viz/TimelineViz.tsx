@@ -260,7 +260,7 @@ export const TimelineViz = React.forwardRef<HTMLDivElement, TimelineVizProps>(
         },
         xAxis: {
           type: 'time',
-          boundaryGap: false,
+          boundaryGap: false as any, // ECharts expects boolean for time axis, but types may be strict
           axisLine: {
             lineStyle: {
               color: 'var(--border-default)',

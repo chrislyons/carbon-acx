@@ -393,9 +393,10 @@ export function GoalTracker({
             value={progress}
             max={100}
             label={achieved ? 'Goal Achieved!' : 'Progress'}
-            size="lg"
-            showValue={true}
-            color={achieved ? 'var(--carbon-low)' : 'var(--color-goal)'}
+            unit="%"
+            size={300}
+            showPercentage={true}
+            colorScheme={achieved ? 'neutral' : 'progress'}
           />
 
           {achieved && (

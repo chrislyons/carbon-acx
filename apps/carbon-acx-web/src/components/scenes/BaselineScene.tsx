@@ -182,9 +182,11 @@ function ManualEntryView({ activityCount, totalEmissions, onContinue }: ManualEn
           <GaugeProgress
             value={activityCount}
             max={targetActivities}
-            colorScheme="goal"
-            label={`${activityCount} / ${targetActivities}`}
-            sublabel="activities added"
+            target={targetActivities}
+            colorScheme="progress"
+            label="activities added"
+            size={256}
+            showPercentage={false}
           />
         </div>
       </div>

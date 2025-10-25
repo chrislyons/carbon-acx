@@ -69,9 +69,10 @@ export function InsightCard({ insight, compact = false }: InsightCardProps) {
           className={`p-[var(--space-2)] rounded-[var(--radius-md)] flex-shrink-0`}
           style={{
             backgroundColor: config.iconBg,
+            color: config.iconColor,
           }}
         >
-          <Icon className="w-5 h-5" style={{ color: config.iconColor }} />
+          <Icon className="w-5 h-5" />
         </div>
         <div className="flex-1 min-w-0">
           <h3
