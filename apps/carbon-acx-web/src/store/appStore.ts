@@ -4,6 +4,7 @@
  * Handles:
  * - UI state (active zones, transitions)
  * - Profile data (activities, layers)
+ * - Goals and scenarios
  * - Settings and preferences
  */
 
@@ -46,10 +47,45 @@ export interface CalculatorResult {
   calculatedAt: string;
 }
 
+export interface CarbonGoal {
+  id: string;
+  name: string;
+  targetEmissions: number; // kg CO₂/year
+  currentEmissions: number; // kg CO₂/year
+  deadline?: string; // ISO date string
+  createdAt: string;
+  updatedAt: string;
+  milestones: {
+    percent: number;
+    achieved: boolean;
+    achievedAt?: string;
+  }[];
+}
+
+export interface Scenario {
+  id: string;
+  name: string;
+  description?: string;
+  changes: {
+    activityId: string;
+    activityName: string;
+    originalQuantity: number;
+    newQuantity: number;
+    quantityDiff: number;
+    emissionsDiff: number;
+  }[];
+  totalImpact: number; // kg CO₂ saved (positive) or added (negative)
+  percentageChange: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ProfileData {
   activities: Activity[];
   calculatorResults: CalculatorResult[];
   layers: ProfileLayer[];
+  goals: CarbonGoal[];
+  scenarios: Scenario[];
   lastUpdated: string;
 }
 
@@ -85,6 +121,16 @@ interface AppStore {
   toggleLayerVisibility: (layerId: string) => void;
   renameLayer: (layerId: string, name: string) => void;
 
+  // Goal Actions
+  addGoal: (goal: Omit<CarbonGoal, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  updateGoal: (goalId: string, updates: Partial<CarbonGoal>) => void;
+  removeGoal: (goalId: string) => void;
+
+  // Scenario Actions
+  addScenario: (scenario: Omit<Scenario, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  updateScenario: (scenarioId: string, updates: Partial<Scenario>) => void;
+  removeScenario: (scenarioId: string) => void;
+
   // Computed Values
   getTotalEmissions: () => number;
 
@@ -92,6 +138,8 @@ interface AppStore {
   get activities(): Activity[];
   get layers(): ProfileLayer[];
   get calculatorResults(): CalculatorResult[];
+  get goals(): CarbonGoal[];
+  get scenarios(): Scenario[];
 }
 
 // ============================================================================
@@ -102,6 +150,8 @@ const initialProfile: ProfileData = {
   activities: [],
   calculatorResults: [],
   layers: [],
+  goals: [],
+  scenarios: [],
   lastUpdated: new Date().toISOString(),
 };
 
@@ -244,6 +294,94 @@ export const useAppStore = create<AppStore>()(
           },
         })),
 
+      // Goal Actions
+      addGoal: (goal) =>
+        set((state) => ({
+          profile: {
+            ...state.profile,
+            goals: [
+              ...state.profile.goals,
+              {
+                ...goal,
+                id: `goal-${Date.now()}`,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+              },
+            ],
+            lastUpdated: new Date().toISOString(),
+          },
+        })),
+
+      updateGoal: (goalId, updates) =>
+        set((state) => ({
+          profile: {
+            ...state.profile,
+            goals: state.profile.goals.map((goal) =>
+              goal.id === goalId
+                ? {
+                    ...goal,
+                    ...updates,
+                    updatedAt: new Date().toISOString(),
+                  }
+                : goal
+            ),
+            lastUpdated: new Date().toISOString(),
+          },
+        })),
+
+      removeGoal: (goalId) =>
+        set((state) => ({
+          profile: {
+            ...state.profile,
+            goals: state.profile.goals.filter((g) => g.id !== goalId),
+            lastUpdated: new Date().toISOString(),
+          },
+        })),
+
+      // Scenario Actions
+      addScenario: (scenario) =>
+        set((state) => ({
+          profile: {
+            ...state.profile,
+            scenarios: [
+              ...state.profile.scenarios,
+              {
+                ...scenario,
+                id: `scenario-${Date.now()}`,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+              },
+            ],
+            lastUpdated: new Date().toISOString(),
+          },
+        })),
+
+      updateScenario: (scenarioId, updates) =>
+        set((state) => ({
+          profile: {
+            ...state.profile,
+            scenarios: state.profile.scenarios.map((scenario) =>
+              scenario.id === scenarioId
+                ? {
+                    ...scenario,
+                    ...updates,
+                    updatedAt: new Date().toISOString(),
+                  }
+                : scenario
+            ),
+            lastUpdated: new Date().toISOString(),
+          },
+        })),
+
+      removeScenario: (scenarioId) =>
+        set((state) => ({
+          profile: {
+            ...state.profile,
+            scenarios: state.profile.scenarios.filter((s) => s.id !== scenarioId),
+            lastUpdated: new Date().toISOString(),
+          },
+        })),
+
       // Computed Values
       getTotalEmissions: () => {
         const state = get();
@@ -276,6 +414,12 @@ export const useAppStore = create<AppStore>()(
       },
       get calculatorResults() {
         return get().profile.calculatorResults;
+      },
+      get goals() {
+        return get().profile.goals;
+      },
+      get scenarios() {
+        return get().profile.scenarios;
       },
     }),
     {
