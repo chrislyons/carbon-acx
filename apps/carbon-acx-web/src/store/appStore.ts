@@ -87,6 +87,11 @@ interface AppStore {
 
   // Computed Values
   getTotalEmissions: () => number;
+
+  // Convenience accessors (for easier component usage)
+  get activities(): Activity[];
+  get layers(): ProfileLayer[];
+  get calculatorResults(): CalculatorResult[];
 }
 
 // ============================================================================
@@ -260,6 +265,17 @@ export const useAppStore = create<AppStore>()(
             return sum + layerEmissions;
           }, 0);
         return activityTotal + calculatorTotal + layerTotal;
+      },
+
+      // Convenience accessors
+      get activities() {
+        return get().profile.activities;
+      },
+      get layers() {
+        return get().profile.layers;
+      },
+      get calculatorResults() {
+        return get().profile.calculatorResults;
       },
     }),
     {
