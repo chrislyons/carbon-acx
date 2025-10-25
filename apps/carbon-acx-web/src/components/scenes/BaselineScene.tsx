@@ -341,8 +341,8 @@ function CelebrationView({
             }}
           >
             {mode === 'calculator'
-              ? 'You've completed the quick calculator. Here's your carbon footprint estimate:'
-              : 'Great work! You've established your baseline with real activity data.'}
+              ? "You've completed the quick calculator. Here's your carbon footprint estimate:"
+              : "Great work! You've established your baseline with real activity data."}
           </p>
         </div>
       </TransitionWrapper>
