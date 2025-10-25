@@ -45,6 +45,20 @@ Carbon ACX is an open reference stack for trustworthy carbon accounting that tra
 - Tests: Vitest (unit), Playwright (e2e)
 - Run: `pnpm dev` from root or `npm run dev` in app directory
 
+**Phase 1 Rebuild Architecture (Branch: `rebuild/canvas-story-engine`):**
+- **Canvas-first layout:** Viewport-aware zones instead of grid constraints
+- **Story-driven UI:** XState machine orchestrating user journey
+- **Design token system:** CSS custom properties for consistent theming
+- **Component tiers:**
+  - Tier 1 (Primitives): Button, Input, Dialog
+  - Tier 2 (Layout): CanvasZone, StoryScene, TransitionWrapper
+  - Tier 3 (Visualizations): HeroChart, TimelineViz, ComparisonOverlay, GaugeProgress
+  - Tier 4 (Domain): OnboardingScene, BaselineScene, ExploreScene
+- **State management:** Zustand (app state) + XState (journey flow)
+- **Visualization:** Apache ECharts 6.0 with canvas rendering (60fps)
+- **Documentation:** See `docs/acx/ACX080.md` for complete rebuild strategy
+- **Examples:** `src/examples/CanvasExample.tsx`, `src/examples/JourneyExample.tsx`
+
 #### Static React Site (`site/`)
 - Vite 5 + Tailwind CSS
 - Mirrors Dash workflow for marketing/investor portals
@@ -82,6 +96,12 @@ Carbon ACX is an open reference stack for trustworthy carbon accounting that tra
 - **Build tools:** Vite 5, TypeScript ~5.5.4
 - **UI frameworks:** React 18, Tailwind CSS 3, Radix UI
 - **Testing:** Vitest (unit), Playwright (e2e)
+- **Phase 1 additions:**
+  - **Visualization:** Apache ECharts 6.0 (canvas rendering, 60fps animations)
+  - **State machines:** XState 5.23 + @xstate/react 6.0 (journey orchestration)
+  - **App state:** Zustand 4.5.4 (simplified state management)
+  - **Server state:** TanStack Query 5.90.5 (data caching)
+  - **Component dev:** Storybook 9.x (visual testing and documentation)
 
 ### Infrastructure
 - **Cloudflare Workers** for edge compute and APIs
@@ -139,6 +159,128 @@ When referencing code locations, use the pattern: `file_path:line_number`
 - `dist/` - Build outputs and artifacts
 - `functions/` - Cloudflare Pages functions
 - `workers/` - Cloudflare Worker source
+
+---
+
+## Phase 1 Development Patterns
+
+### Canvas-First Component Development
+
+When creating new components for the modern web app (Phase 1 architecture):
+
+**1. Use Design Tokens (Required):**
+```typescript
+// ✅ Correct - Using design tokens
+<div className="text-[var(--font-size-lg)] text-[var(--text-primary)]">
+
+// ❌ Wrong - Hardcoded values
+<div className="text-lg text-gray-900">
+```
+
+**Available Design Tokens:**
+- Typography: `--font-size-xs` through `--font-size-5xl` (Major Third scale 1.250)
+- Colors: `--carbon-low`, `--carbon-moderate`, `--carbon-high`, `--carbon-neutral`
+- Story colors: `--color-goal`, `--color-baseline`, `--color-improvement`, `--color-insight`
+- Spacing: `--space-1` through `--space-16` (4px base)
+- Shadows: `--shadow-sm`, `--shadow-md`, `--shadow-lg`
+- Radii: `--radius-sm`, `--radius-md`, `--radius-lg`, `--radius-xl`
+- Motion: `--motion-story-duration` (600ms), `--motion-story-ease`
+- Zone heights: `--zone-hero-height` (70vh), `--zone-insight-height` (20vh), `--zone-detail-height` (10vh)
+
+**2. Follow Component Tiers:**
+- **Tier 1:** Primitives (Button, Input, Dialog) - Design system foundation
+- **Tier 2:** Layout (CanvasZone, StoryScene, TransitionWrapper) - Canvas organization
+- **Tier 3:** Visualizations (HeroChart, TimelineViz, etc.) - ECharts wrappers
+- **Tier 4:** Domain (OnboardingScene, EmissionCalculator, etc.) - Business logic
+
+**3. State Management Patterns:**
+
+**For app/UI state (Zustand):**
+```typescript
+import { useAppStore } from '../../hooks/useAppStore';
+
+// Read state
+const activities = useAppStore((state) => state.activities);
+const totalEmissions = useAppStore((state) => state.getTotalEmissions());
+
+// Update state
+const { addActivity, removeActivity } = useAppStore();
+```
+
+**For journey flow (XState):**
+```typescript
+import { useJourneyMachine } from '../../hooks/useJourneyMachine';
+
+// Check current state
+const { isOnboarding, isExplore, currentScene } = useJourneyMachine();
+
+// Trigger transitions
+const { completeOnboarding, viewInsights } = useJourneyMachine();
+```
+
+**4. Canvas Zone Layout:**
+```typescript
+<StoryScene scene="explore" layout="canvas">
+  <CanvasZone zone="hero" padding="lg" interactionMode="explore">
+    {/* Primary visualization - 70vh */}
+  </CanvasZone>
+
+  <CanvasZone zone="insight" padding="md" interactionMode="compare">
+    {/* Supporting context - 20vh */}
+  </CanvasZone>
+
+  <CanvasZone zone="detail" padding="sm" collapsible interactionMode="drill">
+    {/* Detail drawer - 10vh */}
+  </CanvasZone>
+</StoryScene>
+```
+
+**5. ECharts Visualization Pattern:**
+```typescript
+import { HeroChart } from '../viz/HeroChart';
+import type { EChartsOption } from 'echarts';
+
+const chartOption: EChartsOption = {
+  // Use design token colors
+  color: ['var(--color-baseline)', 'var(--color-goal)'],
+  // ... rest of ECharts config
+};
+
+<HeroChart option={chartOption} height="100%" autoResize />
+```
+
+**6. Animation Patterns:**
+```typescript
+import { TransitionWrapper, StaggerWrapper } from '../canvas/TransitionWrapper';
+
+// Single element transition
+<TransitionWrapper type="story" show={isVisible} delay={300}>
+  {content}
+</TransitionWrapper>
+
+// List animations
+<StaggerWrapper staggerDelay={50} childTransition="slide-up">
+  {items.map(item => <Item key={item.id} {...item} />)}
+</StaggerWrapper>
+```
+
+### Key Architecture Principles
+
+1. **Canvas-first over grid:** Use viewport-aware zones, not fixed grids
+2. **Story-driven over route-driven:** Journey states guide UI, not just URLs
+3. **Design tokens over hardcoding:** All styling uses CSS custom properties
+4. **Composition over inheritance:** Small, reusable components
+5. **Type-safety throughout:** Strict TypeScript, no `any` types
+6. **Accessibility built-in:** ARIA labels, keyboard nav, semantic HTML
+
+### Example Files to Reference
+
+- **Component examples:** `apps/carbon-acx-web/src/examples/CanvasExample.tsx`
+- **Journey integration:** `apps/carbon-acx-web/src/examples/JourneyExample.tsx`
+- **Design tokens:** `apps/carbon-acx-web/src/styles/tokens.css`
+- **State management:** `apps/carbon-acx-web/src/store/appStore.ts`
+- **Journey machine:** `apps/carbon-acx-web/src/machines/journeyMachine.ts`
+- **Documentation:** `apps/carbon-acx-web/src/examples/README.md`
 
 ---
 
@@ -550,7 +692,7 @@ make sbom                   # Generate software bill of materials
 
 ## Last Updated
 
-2025-10-24
+2025-10-25 (Phase 1 architecture patterns added)
 
 ---
 

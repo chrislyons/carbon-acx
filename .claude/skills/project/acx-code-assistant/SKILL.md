@@ -16,6 +16,9 @@ This skill enables Claude to generate production-ready code for Carbon ACX that 
 - Generate test files (Vitest, pytest)
 - Create typed API client code
 - Follow monorepo structure (pnpm workspaces)
+- **NEW:** Generate canvas-first components following Phase 1 architecture
+- **NEW:** Create story-driven UI components with XState integration
+- **NEW:** Build ECharts-based visualizations with design tokens
 
 **Quality Enforcement:**
 - All code passes linters (eslint, prettier, ruff, black)
@@ -23,6 +26,8 @@ This skill enables Claude to generate production-ready code for Carbon ACX that 
 - TypeScript strict mode compliance
 - Includes basic tests
 - Follows AGENTS.md review gates
+- **NEW:** Uses design tokens (CSS custom properties)
+- **NEW:** Follows tier-based component organization (Tier 1-4)
 
 ## When to Use
 
@@ -33,6 +38,10 @@ This skill enables Claude to generate production-ready code for Carbon ACX that 
 - "Write a test for the EmissionCalculator class"
 - "Create a typed API client for the carbon data service"
 - "Generate boilerplate for a new layer in the Dash app"
+- **NEW:** "Create a Tier 2 CanvasZone component for..."
+- **NEW:** "Build a story scene for the baseline flow"
+- **NEW:** "Generate an ECharts visualization for timeline data"
+- **NEW:** "Create a Zustand store slice for..."
 
 **Do NOT Use When:**
 - User asks analytical questions (use `carbon.data.qa`)
@@ -492,15 +501,182 @@ pytest tests/      # Tests
 - Architecture decisions
 - Deployment operations
 
+## Phase 1 Architecture Patterns (NEW)
+
+### Tier-Based Component Generation
+
+**Component Tiers:**
+- **Tier 1 (Primitives):** Button, Input, Dialog, Select, etc.
+- **Tier 2 (Layout):** CanvasZone, StoryScene, TransitionWrapper
+- **Tier 3 (Visualizations):** HeroChart, TimelineViz, ComparisonOverlay, GaugeProgress
+- **Tier 4 (Domain):** EmissionCalculator, ScenarioBuilder, story scenes
+
+### Example 4: Canvas-First Component
+
+**User:** "Create a visualization component showing monthly emissions with a trend line"
+
+**Output:** `apps/carbon-acx-web/src/components/domain/MonthlyTrendViz.tsx`
+```typescript
+/**
+ * MonthlyTrendViz - Domain Component
+ *
+ * Shows monthly emissions trend with goal tracking.
+ * Uses Tier 3 TimelineViz component with canvas rendering.
+ */
+
+import * as React from 'react';
+import { CanvasZone } from '../canvas/CanvasZone';
+import { StoryScene } from '../canvas/StoryScene';
+import { TimelineViz, type TimelineDataPoint } from '../viz/TimelineViz';
+import { useAppStore } from '../../hooks/useAppStore';
+import type { EChartsOption } from 'echarts';
+
+export interface MonthlyTrendVizProps {
+  /**
+   * Show scene
+   */
+  show?: boolean;
+  /**
+   * Goal target in kg CO₂e
+   */
+  goalTarget?: number;
+}
+
+export const MonthlyTrendViz: React.FC<MonthlyTrendVizProps> = ({
+  show = true,
+  goalTarget = 250,
+}) => {
+  const activities = useAppStore((state) => state.activities);
+
+  // Aggregate activities by month
+  const monthlyData: TimelineDataPoint[] = React.useMemo(() => {
+    // Group by month and sum emissions
+    const monthlyMap = new Map<string, number>();
+
+    activities.forEach((activity) => {
+      const date = new Date(activity.timestamp);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      const emissions = activity.quantity * activity.emissionFactor;
+
+      monthlyMap.set(
+        monthKey,
+        (monthlyMap.get(monthKey) || 0) + emissions
+      );
+    });
+
+    // Convert to timeline format
+    return Array.from(monthlyMap.entries())
+      .map(([month, value]) => ({
+        timestamp: `${month}-01`,
+        value,
+        label: month,
+      }))
+      .sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+  }, [activities]);
+
+  return (
+    <StoryScene
+      scene="explore"
+      title="Monthly Trend"
+      description="Track your emissions over time"
+      layout="canvas"
+    >
+      <CanvasZone
+        zoneId="monthly-trend"
+        zone="hero"
+        padding="lg"
+        interactionMode="explore"
+      >
+        <div className="h-full flex flex-col">
+          <h2 className="text-[var(--font-size-3xl)] font-bold text-[var(--text-primary)] mb-4">
+            Monthly Emissions Trend
+          </h2>
+
+          <TimelineViz
+            data={monthlyData}
+            yAxisLabel="Emissions"
+            unit="kg CO₂e"
+            height="100%"
+            enableZoom
+            showArea
+            smooth
+            milestones={[
+              {
+                timestamp: monthlyData[0]?.timestamp || new Date().toISOString(),
+                label: 'Tracking Started',
+                type: 'info',
+              },
+            ]}
+          />
+        </div>
+      </CanvasZone>
+    </StoryScene>
+  );
+};
+```
+
+### Design Token Usage
+
+**Always use design tokens for styling:**
+```typescript
+// ✅ Correct - Using design tokens
+<div className="text-[var(--font-size-lg)] text-[var(--text-primary)]">
+
+// ❌ Wrong - Hardcoded values
+<div className="text-lg text-gray-900">
+
+// ✅ Correct - Using token-based spacing
+<div className="space-y-[var(--space-4)]">
+
+// ❌ Wrong - Hardcoded spacing
+<div className="space-y-4">
+```
+
+**Available Design Tokens:**
+- Typography: `--font-size-xs` through `--font-size-5xl`
+- Colors: `--carbon-low`, `--carbon-moderate`, `--carbon-high`, `--carbon-neutral`
+- Story colors: `--color-goal`, `--color-baseline`, `--color-improvement`, `--color-insight`
+- Spacing: `--space-1` through `--space-16`
+- Shadows: `--shadow-sm`, `--shadow-md`, `--shadow-lg`
+- Radii: `--radius-sm`, `--radius-md`, `--radius-lg`
+- Motion: `--motion-story-duration`, `--motion-story-ease`
+
+### State Management Patterns
+
+**Zustand for app state:**
+```typescript
+import { useAppStore } from '../../hooks/useAppStore';
+
+// Get state
+const activities = useAppStore((state) => state.activities);
+const totalEmissions = useAppStore((state) => state.getTotalEmissions());
+
+// Update state
+const { addActivity, removeActivity } = useAppStore();
+```
+
+**XState for journey flow:**
+```typescript
+import { useJourneyMachine } from '../../hooks/useJourneyMachine';
+
+// Check current state
+const { isOnboarding, isExplore, currentScene } = useJourneyMachine();
+
+// Trigger transitions
+const { completeOnboarding, viewInsights } = useJourneyMachine();
+```
+
 ## Maintenance
 
 **Owner:** ACX Team
 **Review Cycle:** Weekly (high-activity skill)
-**Last Updated:** 2025-10-18
-**Version:** 1.0.0
+**Last Updated:** 2025-10-25
+**Version:** 2.0.0 (Phase 1 architecture update)
 
 **Maintenance Notes:**
 - Update `reference/conventions.md` when coding standards change
 - Review generated code quality monthly
 - Keep examples synchronized with actual codebase patterns
 - Update when tech stack versions change (React, TypeScript, Python)
+- **NEW:** Keep Phase 1 architecture patterns current (canvas-first, design tokens)
+- **NEW:** Update component tier examples as architecture evolves
