@@ -114,8 +114,8 @@ export function InsightScene({ show }: InsightSceneProps) {
   if (!show) return null;
 
   return (
-    <StoryScene scene="insight" layout="canvas">
-      <CanvasZone zone="hero" padding="lg" interactionMode="explore">
+    <StoryScene scene="insight" layout="canvas" title="Insights & Goals">
+      <CanvasZone zone="hero" zoneId="insight-hero" padding="lg" interactionMode="explore">
         {/* Header navigation */}
         <div className="absolute top-8 left-8 right-8 flex items-center justify-between z-10">
           {/* View toggle */}
@@ -413,7 +413,7 @@ export function InsightScene({ show }: InsightSceneProps) {
       </CanvasZone>
 
       {/* Insight bar */}
-      <CanvasZone zone="insight" padding="md" interactionMode="compare">
+      <CanvasZone zone="insight" zoneId="insight-insight" padding="md" interactionMode="compare">
         <div className="flex items-center justify-between">
           <div>
             <div

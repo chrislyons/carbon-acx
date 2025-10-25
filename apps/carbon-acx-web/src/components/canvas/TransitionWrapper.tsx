@@ -16,6 +16,7 @@ export type TransitionType =
   | 'slide-left'
   | 'slide-right'
   | 'scale'
+  | 'zoom' // Alias for scale with more dramatic effect
   | 'story'; // Custom story transition
 
 export interface TransitionWrapperProps {
@@ -84,6 +85,11 @@ const transitionVariants: Record<TransitionType, Variants> = {
     initial: { opacity: 0, scale: 0.95 },
     animate: { opacity: 1, scale: 1 },
     exit: { opacity: 0, scale: 1.05 },
+  },
+  zoom: {
+    initial: { opacity: 0, scale: 0.8 },
+    animate: { opacity: 1, scale: 1 },
+    exit: { opacity: 0, scale: 1.2 },
   },
   story: {
     initial: { opacity: 0, scale: 0.95, y: 20 },

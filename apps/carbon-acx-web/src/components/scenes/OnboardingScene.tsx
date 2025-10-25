@@ -133,8 +133,8 @@ export function OnboardingScene({ show, onComplete, onSkip }: OnboardingScenePro
   if (!show) return null;
 
   return (
-    <StoryScene scene="onboarding" layout="canvas" progress={{ current: step, total: 3 }}>
-      <CanvasZone zone="hero" padding="lg" interactionMode="explore">
+    <StoryScene scene="onboarding" layout="canvas" title="Welcome" progress={step / 3}>
+      <CanvasZone zone="hero" zoneId="onboarding-hero" padding="lg" interactionMode="explore">
         {/* Progress indicator */}
         <div className="absolute top-8 left-0 right-0 flex justify-center gap-[var(--space-2)] z-10">
           {[1, 2, 3].map((i) => (
@@ -365,7 +365,7 @@ function PathCard({ path, onSelect }: PathCardProps) {
             backgroundColor: 'var(--surface-bg)',
           }}
         >
-          <Icon className="w-6 h-6" style={{ color: 'var(--interactive-primary)' }} />
+          <Icon className="w-6 h-6 text-[var(--interactive-primary)]" />
         </div>
         {path.recommended && (
           <span

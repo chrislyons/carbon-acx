@@ -12,9 +12,9 @@
  */
 
 import * as React from 'react';
-import { OnboardingScene } from '../scenes/OnboardingScene';
-import { BaselineScene } from '../scenes/BaselineScene';
-import { ExploreScene } from '../scenes/ExploreScene';
+import { OnboardingScene } from '../components/scenes/OnboardingScene';
+import { BaselineScene } from '../components/scenes/BaselineScene';
+import { ExploreScene } from '../components/scenes/ExploreScene';
 import { useJourneyMachine } from '../hooks/useJourneyMachine';
 import { useAppStore } from '../hooks/useAppStore';
 

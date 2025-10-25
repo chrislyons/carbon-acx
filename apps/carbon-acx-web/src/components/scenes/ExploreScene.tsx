@@ -38,7 +38,7 @@ export interface ExploreSceneProps {
 type ExploreMode = 'timeline' | 'comparison';
 
 interface Milestone {
-  date: string;
+  timestamp: string;
   label: string;
   value: number;
   description?: string;
@@ -73,7 +73,7 @@ export function ExploreScene({ show, initialMode = 'timeline' }: ExploreScenePro
       const value = Math.max(0, totalEmissions + variation);
 
       dataPoints.push({
-        date: dateStr,
+        timestamp: dateStr,
         value,
         breakdown: {
           commute: value * 0.25,
@@ -86,7 +86,7 @@ export function ExploreScene({ show, initialMode = 'timeline' }: ExploreScenePro
       // Add milestone at baseline
       if (i === 11) {
         milestones.push({
-          date: dateStr,
+          timestamp: dateStr,
           label: 'Baseline Established',
           value,
           description: 'Initial carbon footprint calculated',
@@ -96,7 +96,7 @@ export function ExploreScene({ show, initialMode = 'timeline' }: ExploreScenePro
       // Add goal milestone
       if (i === 0) {
         milestones.push({
-          date: dateStr,
+          timestamp: dateStr,
           label: 'Current',
           value,
           description: 'Latest emissions data',
@@ -204,8 +204,8 @@ export function ExploreScene({ show, initialMode = 'timeline' }: ExploreScenePro
   if (!show) return null;
 
   return (
-    <StoryScene scene="explore" layout="canvas">
-      <CanvasZone zone="hero" padding="lg" interactionMode="explore">
+    <StoryScene scene="explore" layout="canvas" title="Explore Emissions">
+      <CanvasZone zone="hero" zoneId="explore-hero" padding="lg" interactionMode="explore">
         {/* Header controls */}
         <div className="absolute top-8 left-8 right-8 flex items-center justify-between z-10">
           {/* Mode toggle */}
@@ -280,10 +280,9 @@ export function ExploreScene({ show, initialMode = 'timeline' }: ExploreScenePro
             <div className="w-full max-w-6xl">
               {comparisonData ? (
                 <ComparisonOverlay
-                  leftChart={comparisonData.leftOption}
-                  rightChart={comparisonData.rightOption}
+                  baseline={{ label: 'Baseline', option: comparisonData.leftOption }}
+                  comparison={{ label: 'Comparison', option: comparisonData.rightOption }}
                   height="500px"
-                  syncAxes={true}
                 />
               ) : (
                 <div className="text-center p-12">
@@ -303,7 +302,7 @@ export function ExploreScene({ show, initialMode = 'timeline' }: ExploreScenePro
       </CanvasZone>
 
       {/* Insight bar */}
-      <CanvasZone zone="insight" padding="md" interactionMode="compare">
+      <CanvasZone zone="insight" zoneId="explore-insight" padding="md" interactionMode="compare">
         <div className="flex items-center justify-between">
           <div>
             <div
@@ -363,7 +362,7 @@ export function ExploreScene({ show, initialMode = 'timeline' }: ExploreScenePro
 
       {/* Detail drawer (collapsible) */}
       {showFilters && (
-        <CanvasZone zone="detail" padding="sm" collapsible interactionMode="drill">
+        <CanvasZone zone="detail" zoneId="explore-detail" padding="sm" collapsible interactionMode="drill">
           <div className="space-y-4">
             <h4
               className="font-semibold"

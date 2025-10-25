@@ -99,8 +99,8 @@ export function BaselineScene({ show, mode = 'calculator', onComplete }: Baselin
   if (!show) return null;
 
   return (
-    <StoryScene scene="baseline" layout="canvas">
-      <CanvasZone zone="hero" padding="lg" interactionMode="explore">
+    <StoryScene scene="baseline" layout="canvas" title="Establish Baseline">
+      <CanvasZone zone="hero" zoneId="baseline-hero" padding="lg" interactionMode="explore">
         {/* Calculator flow */}
         <TransitionWrapper type="fade" show={state === 'calculating'}>
           <div className="min-h-[80vh] flex items-center justify-center">

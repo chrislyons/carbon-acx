@@ -72,6 +72,11 @@ export interface ButtonProps
    */
   loading?: boolean;
   /**
+   * Icon element to display (defaults to left position)
+   * Alias for leftIcon
+   */
+  icon?: React.ReactNode;
+  /**
    * Icon element to display before children
    */
   leftIcon?: React.ReactNode;
@@ -90,6 +95,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       rounded,
       asChild = false,
       loading = false,
+      icon,
       leftIcon,
       rightIcon,
       children,
@@ -99,6 +105,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const Comp = asChild ? Slot : 'button';
+
+    // icon prop is an alias for leftIcon
+    const resolvedLeftIcon = leftIcon || icon;
 
     return (
       <Comp
@@ -130,7 +139,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             />
           </svg>
         )}
-        {!loading && leftIcon && <span aria-hidden="true">{leftIcon}</span>}
+        {!loading && resolvedLeftIcon && <span aria-hidden="true">{resolvedLeftIcon}</span>}
         {children}
         {!loading && rightIcon && <span aria-hidden="true">{rightIcon}</span>}
       </Comp>
