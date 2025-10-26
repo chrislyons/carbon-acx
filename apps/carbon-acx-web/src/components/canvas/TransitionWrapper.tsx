@@ -8,6 +8,7 @@
 import * as React from 'react';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { cn } from '../../lib/cn';
+import { useReducedMotion } from '../../hooks/useAccessibility';
 
 export type TransitionType =
   | 'fade'
@@ -115,14 +116,27 @@ export const TransitionWrapper = React.forwardRef<
     },
     ref
   ) => {
+    const prefersReducedMotion = useReducedMotion();
+
     // Default to design token values
     const transitionConfig = {
-      duration: duration !== undefined ? duration / 1000 : 0.6, // Convert ms to seconds
-      ease: ease || [0.43, 0.13, 0.23, 0.96], // Story easing by default
-      delay: delay / 1000,
+      duration: prefersReducedMotion
+        ? 0.001 // Near-instant for reduced motion
+        : duration !== undefined
+          ? duration / 1000
+          : 0.6, // Convert ms to seconds
+      ease: prefersReducedMotion ? 'linear' : ease || [0.43, 0.13, 0.23, 0.96], // Story easing by default
+      delay: prefersReducedMotion ? 0 : delay / 1000,
     };
 
-    const variants = transitionVariants[type];
+    // Use simpler variants for reduced motion
+    const variants = prefersReducedMotion
+      ? {
+          initial: { opacity: 0 },
+          animate: { opacity: 1 },
+          exit: { opacity: 0 },
+        }
+      : transitionVariants[type];
 
     return (
       <AnimatePresence mode="wait">
@@ -181,16 +195,25 @@ export const StaggerWrapper: React.FC<StaggerWrapperProps> = ({
   className,
   children,
 }) => {
+  const prefersReducedMotion = useReducedMotion();
+
   const containerVariants: Variants = {
     initial: {},
     animate: {
       transition: {
-        staggerChildren: staggerDelay / 1000,
+        staggerChildren: prefersReducedMotion ? 0 : staggerDelay / 1000,
       },
     },
   };
 
-  const childVariants = transitionVariants[childTransition];
+  // Use simpler variants for reduced motion
+  const childVariants = prefersReducedMotion
+    ? {
+        initial: { opacity: 0 },
+        animate: { opacity: 1 },
+        exit: { opacity: 0 },
+      }
+    : transitionVariants[childTransition];
 
   return (
     <AnimatePresence>
