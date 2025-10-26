@@ -42,7 +42,7 @@ export interface CalculatorResults {
 }
 
 interface Question {
-  id: 'commute' | 'diet' | 'energy' | 'shopping';
+  id: 'commute' | 'commuteDistance' | 'diet' | 'energy' | 'shopping';
   icon: React.ComponentType<{ className?: string }>;
   title: string;
   description: string;
@@ -64,12 +64,53 @@ interface Question {
 // Data
 // ============================================================================
 
+// Transport mode emission factors (kg CO₂e per km)
+// Source: data/emission_factors.csv
+const TRANSPORT_MODES = {
+  car: {
+    label: 'Car',
+    factor: 0.18, // TRAN.SCHOOLRUN.CAR.KM
+    activityId: 'TRAN.SCHOOLRUN.CAR.KM',
+  },
+  bus: {
+    label: 'Bus',
+    factor: 0.08662, // TRAN.TTC.BUS.KM
+    activityId: 'TRAN.TTC.BUS.KM',
+  },
+  subway: {
+    label: 'Subway/Train',
+    factor: 0.00476, // TRAN.TTC.SUBWAY.KM (grid-indexed)
+    activityId: 'TRAN.TTC.SUBWAY.KM',
+  },
+  bike: {
+    label: 'Bike/Walk',
+    factor: 0.0, // TRAN.SCHOOLRUN.BIKE.KM
+    activityId: 'TRAN.SCHOOLRUN.BIKE.KM',
+  },
+} as const;
+
+type TransportMode = keyof typeof TRANSPORT_MODES;
+
 const QUESTIONS: Question[] = [
   {
     id: 'commute',
     icon: Car,
+    title: 'How do you commute?',
+    description: 'Select your primary mode of transportation',
+    inputType: 'choice',
+    defaultValue: 'car',
+    options: Object.entries(TRANSPORT_MODES).map(([value, { label, factor }]) => ({
+      value,
+      label,
+      description: `~${(factor * 1000).toFixed(0)}g CO₂/km`,
+      emissions: 0, // Will be calculated based on distance
+    })),
+  },
+  {
+    id: 'commuteDistance',
+    icon: Car,
     title: 'How far do you commute daily?',
-    description: 'One-way distance by car, bus, or other motorized transport',
+    description: 'One-way distance',
     inputType: 'slider',
     unit: 'km',
     min: 0,
@@ -175,7 +216,8 @@ const EMISSIONS_DIFF_MEAL = 2.5; // kg CO₂ difference between meat and plant-b
 export function EmissionCalculator({ onComplete, onCancel }: EmissionCalculatorProps) {
   const [step, setStep] = React.useState(0);
   const [answers, setAnswers] = React.useState<Record<string, number | string>>({
-    commute: 10,
+    commute: 'car',
+    commuteDistance: 10,
     diet: 'mixed',
     energy: 'average',
     shopping: 'moderate',
@@ -186,19 +228,21 @@ export function EmissionCalculator({ onComplete, onCancel }: EmissionCalculatorP
 
   // Calculate emissions in real-time
   const calculateEmissions = React.useCallback(() => {
-    // Commute: ~0.2kg CO₂ per km for average car, 365 days/year
-    const commuteEmissions = (answers.commute as number) * 0.2 * 365;
+    // Commute: transport mode factor × distance × 365 days × 2 (round trip)
+    const transportMode = answers.commute as TransportMode;
+    const distance = answers.commuteDistance as number;
+    const commuteEmissions = TRANSPORT_MODES[transportMode].factor * distance * 365 * 2;
 
     // Diet: from options
-    const dietOption = QUESTIONS[1].options?.find((opt) => opt.value === answers.diet);
+    const dietOption = QUESTIONS[2].options?.find((opt) => opt.value === answers.diet);
     const dietEmissions = dietOption?.emissions || 2500;
 
     // Energy: from options
-    const energyOption = QUESTIONS[2].options?.find((opt) => opt.value === answers.energy);
+    const energyOption = QUESTIONS[3].options?.find((opt) => opt.value === answers.energy);
     const energyEmissions = energyOption?.emissions || 2500;
 
     // Shopping: from options
-    const shoppingOption = QUESTIONS[3].options?.find((opt) => opt.value === answers.shopping);
+    const shoppingOption = QUESTIONS[4].options?.find((opt) => opt.value === answers.shopping);
     const shoppingEmissions = shoppingOption?.emissions || 1000;
 
     const total = commuteEmissions + dietEmissions + energyEmissions + shoppingEmissions;
