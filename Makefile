@@ -15,7 +15,7 @@ CATALOG_PATH := artifacts/catalog.json
 
 .PHONY: install lint test audit ci_build_pages app format validate release build-backend build site package sbom build-static \
         db_init db_import db_export build_csv build_db citations-scan refs-check refs-fetch refs-normalize refs-audit \
-        verify_manifests catalog validate-manifests validate-diff-fixtures build:web
+        verify_manifests catalog validate-manifests validate-diff-fixtures build-web
 
 install:
 	poetry install --with dev --no-root
@@ -84,7 +84,7 @@ site: site_build
 site_dev: site_install
 	cd $(SITE_DIR) && $(SITE_PNPM) run dev -- --host 0.0.0.0
 
-build:web:
+build-web:
 	pnpm run build:web
 
 $(SITE_LAYERS_JSON): $(DATA_LAYERS_CSV) scripts/sync_layers_json.py
@@ -96,7 +96,7 @@ $(PACKAGED_MANIFEST): $(LATEST_BUILD)
 WEB_APP_DIR := apps/carbon-acx-web
 WEB_APP_DIST := $(WEB_APP_DIR)/dist
 
-package: $(PACKAGED_MANIFEST) build:web sbom
+package: $(PACKAGED_MANIFEST) build-web sbom
 	rm -rf $(DIST_SITE_DIR)
 	mkdir -p $(DIST_SITE_DIR)
 	cp -R $(WEB_APP_DIST)/* $(DIST_SITE_DIR)/
