@@ -518,8 +518,11 @@ interface ChoiceInputProps {
 }
 
 function ChoiceInput({ value, onChange, options }: ChoiceInputProps) {
+  // Determine responsive grid columns based on number of options
+  const gridCols = options.length === 4 ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 md:grid-cols-3';
+
   return (
-    <div className="grid gap-[var(--space-3)]">
+    <div className={`grid gap-[var(--space-3)] ${gridCols}`}>
       {options.map((option) => {
         const isSelected = value === option.value;
 
@@ -583,8 +586,8 @@ function RealTimeFeedback({ emissions }: RealTimeFeedbackProps) {
       }}
     >
       {/* Running total with gauge */}
-      <div className="flex items-center justify-between mb-[var(--space-6)]">
-        <div>
+      <div className="flex flex-col md:flex-row items-center justify-between gap-[var(--space-4)] mb-[var(--space-6)]">
+        <div className="text-center md:text-left">
           <div
             className="mb-[var(--space-1)]"
             style={{
@@ -615,7 +618,7 @@ function RealTimeFeedback({ emissions }: RealTimeFeedbackProps) {
           </div>
         </div>
 
-        <div className="w-32 h-32">
+        <div className="w-32 h-32 flex-shrink-0">
           <GaugeProgress
             value={totalTonnes}
             max={globalAverage * 2}
@@ -628,7 +631,7 @@ function RealTimeFeedback({ emissions }: RealTimeFeedbackProps) {
       </div>
 
       {/* Contextual comparisons */}
-      <div className="grid grid-cols-3 gap-[var(--space-4)]">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-[var(--space-4)]">
         <ComparisonCard
           icon={<Plane className="w-5 h-5" />}
           value={emissions.comparisons.flights.toFixed(1)}

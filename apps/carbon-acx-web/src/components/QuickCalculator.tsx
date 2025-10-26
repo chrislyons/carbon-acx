@@ -8,12 +8,40 @@ import type { CalculatorResult } from '../contexts/ProfileContext';
 import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 
+// Transport mode emission factors (kg CO₂e per km)
+// Source: data/emission_factors.csv
+const TRANSPORT_MODES = {
+  car: {
+    label: 'Car',
+    factor: 0.18, // TRAN.SCHOOLRUN.CAR.KM
+    activityId: 'TRAN.SCHOOLRUN.CAR.KM',
+  },
+  bus: {
+    label: 'Bus',
+    factor: 0.08662, // TRAN.TTC.BUS.KM
+    activityId: 'TRAN.TTC.BUS.KM',
+  },
+  subway: {
+    label: 'Subway/Train',
+    factor: 0.00476, // TRAN.TTC.SUBWAY.KM (grid-indexed)
+    activityId: 'TRAN.TTC.SUBWAY.KM',
+  },
+  bike: {
+    label: 'Bike/Walk',
+    factor: 0.0, // TRAN.SCHOOLRUN.BIKE.KM
+    activityId: 'TRAN.SCHOOLRUN.BIKE.KM',
+  },
+} as const;
+
+type TransportMode = keyof typeof TRANSPORT_MODES;
+
 export default function QuickCalculator() {
   const navigate = useNavigate();
   const { saveCalculatorResults } = useProfile();
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState(1);
   const [values, setValues] = useState({
+    transportMode: 'car' as TransportMode,
     commute: 10, // km per day
     diet: 'mixed',
     energy: 'average',
@@ -24,11 +52,13 @@ export default function QuickCalculator() {
     // Simplified carbon calculation (kg CO₂ per year)
     const breakdown: Omit<CalculatorResult, 'calculatedAt'>[] = [];
 
-    // Transport: ~0.2kg CO₂ per km for average car
-    const commuteEmissions = values.commute * 0.2 * 365;
+    // Transport: Use transport-specific emission factor
+    const transportMode = values.transportMode;
+    const transportFactor = TRANSPORT_MODES[transportMode].factor;
+    const commuteEmissions = values.commute * transportFactor * 365 * 2; // Round trip
     breakdown.push({
       category: 'commute',
-      label: `${values.commute}km daily commute`,
+      label: `${values.commute}km daily commute (${TRANSPORT_MODES[transportMode].label})`,
       annualEmissions: commuteEmissions,
     });
 
@@ -122,7 +152,7 @@ export default function QuickCalculator() {
         </DialogHeader>
 
         <div className="mt-6">
-          {step < 5 ? (
+          {step < 6 ? (
             <QuestionFlow
               step={step}
               values={values}
@@ -137,6 +167,7 @@ export default function QuickCalculator() {
               onReset={() => {
                 setStep(1);
                 setValues({
+                  transportMode: 'car' as TransportMode,
                   commute: 10,
                   diet: 'mixed',
                   energy: 'average',
@@ -150,9 +181,9 @@ export default function QuickCalculator() {
         </div>
 
         {/* Progress indicator */}
-        {step < 5 && (
+        {step < 6 && (
           <div className="flex gap-2 mt-6">
-            {[1, 2, 3, 4].map((i) => (
+            {[1, 2, 3, 4, 5].map((i) => (
               <div
                 key={i}
                 className={`h-1 flex-1 rounded-full transition-colors ${
@@ -189,8 +220,35 @@ function QuestionFlow({ step, values, onValueChange, onNext, onBack }: QuestionF
         {step === 1 && (
           <Question
             icon={<Car className="h-8 w-8" />}
+            title="How do you commute?"
+            description="Select your primary mode of transportation"
+          >
+            <div className="grid gap-3 md:grid-cols-2">
+              {Object.entries(TRANSPORT_MODES).map(([value, { label, factor }]) => (
+                <button
+                  key={value}
+                  onClick={() => onValueChange('transportMode', value)}
+                  className={`p-4 rounded-xl border-2 text-left transition-all ${
+                    values.transportMode === value
+                      ? 'border-accent-500 bg-accent-50 dark:bg-accent-900/30'
+                      : 'border-border hover:border-accent-300'
+                  }`}
+                >
+                  <div className="font-semibold text-foreground">{label}</div>
+                  <div className="text-sm text-text-muted">
+                    ~{(factor * 1000).toFixed(0)}g CO₂/km
+                  </div>
+                </button>
+              ))}
+            </div>
+          </Question>
+        )}
+
+        {step === 2 && (
+          <Question
+            icon={<Car className="h-8 w-8" />}
             title="How far do you commute daily?"
-            description="One-way distance by car, bus, or other motorized transport"
+            description="One-way distance"
           >
             <div className="space-y-4">
               <input
@@ -214,13 +272,13 @@ function QuestionFlow({ step, values, onValueChange, onNext, onBack }: QuestionF
           </Question>
         )}
 
-        {step === 2 && (
+        {step === 3 && (
           <Question
             icon={<Utensils className="h-8 w-8" />}
             title="What's your diet like?"
             description="Your typical eating habits"
           >
-            <div className="grid gap-3">
+            <div className="grid gap-3 md:grid-cols-3">
               {[
                 { value: 'vegan', label: 'Vegan', description: 'Plant-based diet' },
                 { value: 'vegetarian', label: 'Vegetarian', description: 'No meat, some dairy/eggs' },
@@ -243,13 +301,13 @@ function QuestionFlow({ step, values, onValueChange, onNext, onBack }: QuestionF
           </Question>
         )}
 
-        {step === 3 && (
+        {step === 4 && (
           <Question
             icon={<Home className="h-8 w-8" />}
             title="How much energy do you use?"
             description="Heating, cooling, electricity usage"
           >
-            <div className="grid gap-3">
+            <div className="grid gap-3 md:grid-cols-3">
               {[
                 { value: 'low', label: 'Low', description: 'Energy-efficient home, minimal use' },
                 { value: 'average', label: 'Average', description: 'Typical household consumption' },
@@ -272,13 +330,13 @@ function QuestionFlow({ step, values, onValueChange, onNext, onBack }: QuestionF
           </Question>
         )}
 
-        {step === 4 && (
+        {step === 5 && (
           <Question
             icon={<ShoppingBag className="h-8 w-8" />}
             title="How much do you shop?"
             description="Clothing, electronics, household goods"
           >
-            <div className="grid gap-3">
+            <div className="grid gap-3 md:grid-cols-3">
               {[
                 { value: 'minimal', label: 'Minimal', description: 'Buy only essentials' },
                 { value: 'moderate', label: 'Moderate', description: 'Regular shopping habits' },
@@ -308,7 +366,7 @@ function QuestionFlow({ step, values, onValueChange, onNext, onBack }: QuestionF
             </Button>
           )}
           <Button onClick={onNext} className="flex-1">
-            {step === 4 ? 'Calculate' : 'Next'}
+            {step === 5 ? 'Calculate' : 'Next'}
           </Button>
         </div>
       </motion.div>
