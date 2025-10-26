@@ -114,9 +114,9 @@ export function ActivityBrowser({ targetActivities = 5, onTargetReached }: Activ
         unit: activity.defaultUnit || 'unit',
         carbonIntensity,
         annualEmissions: carbonIntensity * quantity,
-        iconType: activity.iconType,
-        iconUrl: activity.iconUrl,
-        badgeColor: activity.badgeColor,
+        iconType: activity.iconType ?? undefined,
+        iconUrl: activity.iconUrl ?? undefined,
+        badgeColor: activity.badgeColor ?? undefined,
       });
     }
   };

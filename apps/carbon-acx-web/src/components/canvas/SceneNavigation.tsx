@@ -141,8 +141,7 @@ export function SceneNavigation({
             size="lg"
             onClick={onNext}
             disabled={loading || nextDisabled}
-            icon={<ArrowRight className="w-5 h-5" />}
-            iconPosition="right"
+            rightIcon={<ArrowRight className="w-5 h-5" />}
             aria-label={nextLabel}
             loading={loading}
             style={{ marginLeft: !showBack && !showSkip ? 'auto' : '0' }}
