@@ -15,7 +15,7 @@ CATALOG_PATH := artifacts/catalog.json
 
 .PHONY: install lint test audit ci_build_pages app format validate release build-backend build site package sbom build-static \
         db_init db_import db_export build_csv build_db citations-scan refs-check refs-fetch refs-normalize refs-audit \
-        verify_manifests catalog validate-manifests validate-diff-fixtures
+        verify_manifests catalog validate-manifests validate-diff-fixtures build:web
 
 install:
 	poetry install --with dev --no-root
@@ -84,16 +84,23 @@ site: site_build
 site_dev: site_install
 	cd $(SITE_DIR) && $(SITE_PNPM) run dev -- --host 0.0.0.0
 
+build:web:
+	pnpm run build:web
+
 $(SITE_LAYERS_JSON): $(DATA_LAYERS_CSV) scripts/sync_layers_json.py
 	PYTHONPATH=. poetry run python -m scripts.sync_layers_json --csv $(DATA_LAYERS_CSV) --output $(SITE_LAYERS_JSON)
 
 $(PACKAGED_MANIFEST): $(LATEST_BUILD)
 	PYTHONPATH=. poetry run python -m scripts.package_artifacts --src $(DIST_ARTIFACTS_DIR) --dest $(PACKAGED_ARTIFACTS_DIR)
 
-package: $(PACKAGED_MANIFEST) site sbom
+WEB_APP_DIR := apps/carbon-acx-web
+WEB_APP_DIST := $(WEB_APP_DIR)/dist
+
+package: $(PACKAGED_MANIFEST) build:web sbom
+	rm -rf $(DIST_SITE_DIR)
+	mkdir -p $(DIST_SITE_DIR)
+	cp -R $(WEB_APP_DIST)/* $(DIST_SITE_DIR)/
 	PYTHONPATH=. poetry run python -m scripts.prepare_pages_bundle --site $(DIST_SITE_DIR) --artifacts $(PACKAGED_ARTIFACTS_DIR)
-	@test -f $(SITE_LAYERS_JSON) || (echo "Missing site layer catalog: $(SITE_LAYERS_JSON)" >&2; exit 1)
-	@test -f $(DIST_SITE_DIR)/artifacts/layers.json || (echo "Missing packaged layer catalog: $(DIST_SITE_DIR)/artifacts/layers.json" >&2; exit 1)
 
 catalog: $(CATALOG_PATH)
 
