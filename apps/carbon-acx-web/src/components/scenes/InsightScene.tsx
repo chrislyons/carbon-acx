@@ -26,7 +26,8 @@ import {
   AchievementShareableCard,
 } from '../domain/ShareableCard';
 import { useAppStore } from '../../hooks/useAppStore';
-import { Lightbulb, Target, GitCompare, Share2, X } from 'lucide-react';
+import { useJourneyMachine } from '../../hooks/useJourneyMachine';
+import { Lightbulb, Target, GitCompare, Share2, X, ArrowLeft } from 'lucide-react';
 
 // ============================================================================
 // Types
@@ -45,6 +46,8 @@ type ActiveView = 'insights' | 'scenarios' | 'goals' | 'share';
 export function InsightScene({ show }: InsightSceneProps) {
   const [activeView, setActiveView] = React.useState<ActiveView>('insights');
   const [selectedInsight, setSelectedInsight] = React.useState<Insight | null>(null);
+
+  const { exploreSectors } = useJourneyMachine();
 
   const {
     activities,
@@ -118,6 +121,17 @@ export function InsightScene({ show }: InsightSceneProps) {
       <CanvasZone zone="hero" zoneId="insight-hero" padding="lg" interactionMode="explore">
         {/* Header navigation */}
         <div className="absolute top-8 left-8 right-8 flex items-center justify-between z-10">
+          {/* Back to Explore button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={exploreSectors}
+            icon={<ArrowLeft className="w-4 h-4" />}
+            aria-label="Back to Explore"
+          >
+            Back to Explore
+          </Button>
+
           {/* View toggle */}
           <div
             className="inline-flex rounded-[var(--radius-md)] p-1"

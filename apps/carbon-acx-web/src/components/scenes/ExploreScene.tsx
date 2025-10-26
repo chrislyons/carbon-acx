@@ -23,7 +23,8 @@ import { TimelineViz } from '../viz/TimelineViz';
 import { ComparisonOverlay } from '../viz/ComparisonOverlay';
 import { Button } from '../system/Button';
 import { useAppStore } from '../../hooks/useAppStore';
-import { TrendingUp, GitCompare, Filter, Download } from 'lucide-react';
+import { useJourneyMachine } from '../../hooks/useJourneyMachine';
+import { TrendingUp, GitCompare, Filter, Download, Lightbulb } from 'lucide-react';
 import type { EChartsOption } from 'echarts';
 
 // ============================================================================
@@ -52,6 +53,8 @@ export function ExploreScene({ show, initialMode = 'timeline' }: ExploreScenePro
   const [mode, setMode] = React.useState<ExploreMode>(initialMode);
   const [selectedLayers, setSelectedLayers] = React.useState<string[]>([]);
   const [showFilters, setShowFilters] = React.useState(false);
+
+  const { viewInsights } = useJourneyMachine();
 
   const profile = useAppStore((state) => state.profile);
   const profileLayers = useAppStore((state) => state.profile.layers);
@@ -259,6 +262,14 @@ export function ExploreScene({ show, initialMode = 'timeline' }: ExploreScenePro
               icon={<Download className="w-4 h-4" />}
             >
               Export
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={viewInsights}
+              icon={<Lightbulb className="w-4 h-4" />}
+            >
+              View Insights
             </Button>
           </div>
         </div>
