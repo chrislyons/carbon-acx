@@ -129,7 +129,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || loading}
         {...motionProps}
-        {...props}
+        {...(props as any)}
       >
         {loading && (
           <svg
