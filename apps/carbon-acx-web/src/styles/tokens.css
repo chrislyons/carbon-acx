@@ -44,12 +44,14 @@
   --border: rgba(20, 25, 36, 0.12);
   --border-default: rgba(20, 25, 36, 0.12);
   --border-strong: rgba(20, 25, 36, 0.24);
+  --border-subtle: rgba(20, 25, 36, 0.08);
 
   /* Text */
   --foreground: #171c2a;
   --text-primary: #171c2a;
   --text-secondary: rgba(23, 28, 42, 0.68);
   --text-muted: rgba(23, 28, 42, 0.52);
+  --text-tertiary: rgba(23, 28, 42, 0.40);
 
   /* Accent colors (existing) */
   --accent-50: #eef2ff;
@@ -89,8 +91,13 @@
   /* Story-specific colors - NEW */
   --color-goal: #8b5cf6;          /* Purple - user goals */
   --color-baseline: #3b82f6;      /* Blue - current baseline */
+  --color-baseline-bg: rgba(59, 130, 246, 0.08); /* Blue - baseline background */
   --color-improvement: #10b981;   /* Green - positive change */
   --color-insight: #ec4899;       /* Pink - data insights */
+
+  /* Interactive states - NEW */
+  --interactive-primary: #3558ff; /* Primary interactive color */
+  --surface-bg: #ffffff;          /* Base surface background */
 
   /* Focus states */
   --focus-color: rgba(53, 88, 255, 0.72);
@@ -165,15 +172,18 @@
   --surface-muted: rgba(15, 22, 19, 0.72);
   --surface-elevated: rgba(21, 30, 26, 0.92);
   --surface-hover: rgba(255, 255, 255, 0.08);
+  --surface-bg: #0f1613;
 
   --border: rgba(180, 255, 220, 0.12);
   --border-default: rgba(180, 255, 220, 0.12);
   --border-strong: rgba(180, 255, 220, 0.24);
+  --border-subtle: rgba(180, 255, 220, 0.08);
 
   --foreground: #e8f5f0;
   --text-primary: #e8f5f0;
   --text-secondary: rgba(232, 245, 240, 0.76);
   --text-muted: rgba(232, 245, 240, 0.56);
+  --text-tertiary: rgba(232, 245, 240, 0.40);
 
   /* Forest green accent colors */
   --accent-50: #1a2820;

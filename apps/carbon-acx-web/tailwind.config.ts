@@ -85,6 +85,20 @@ const config: Config = {
         surface: 'var(--surface-default)',
         focus: 'var(--surface-default)',
       },
+      keyframes: {
+        collapse: {
+          from: { height: 'var(--radix-collapsible-content-height)' },
+          to: { height: '0' },
+        },
+        expand: {
+          from: { height: '0' },
+          to: { height: 'var(--radix-collapsible-content-height)' },
+        },
+      },
+      animation: {
+        collapse: 'collapse 200ms ease-out',
+        expand: 'expand 200ms ease-out',
+      },
     },
   },
   plugins: [],

@@ -15,7 +15,8 @@ import * as React from 'react';
 import { TransitionWrapper } from '../canvas/TransitionWrapper';
 import { GaugeProgress } from '../viz/GaugeProgress';
 import { Button } from '../system/Button';
-import { Car, Utensils, Home, ShoppingBag, ArrowRight, ArrowLeft, Plane, Trees, Coffee } from 'lucide-react';
+import { Car, Utensils, Home, ShoppingBag, ArrowRight, ArrowLeft, Plane, Trees, Coffee, ChevronDown, ChevronUp } from 'lucide-react';
+import * as Collapsible from '@radix-ui/react-collapsible';
 
 // ============================================================================
 // Types
@@ -441,6 +442,131 @@ function QuestionCard({ question, value, onChange, currentEmissions }: QuestionC
             options={question.options!}
           />
         )}
+
+        {/* Add contextual detail sections based on question type */}
+        {question.id === 'commute' && (
+          <DetailSection title="Transport emission factors & sources">
+            <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-secondary)' }}>
+              <p className="mb-[var(--space-3)]">
+                Emission factors are sourced from our curated dataset with verified activity-based calculations:
+              </p>
+              <ul className="space-y-[var(--space-2)]">
+                <li className="flex items-start gap-[var(--space-2)]">
+                  <span style={{ color: 'var(--color-baseline)' }}>•</span>
+                  <span><strong>Car:</strong> 180g CO₂/km (TRAN.SCHOOLRUN.CAR.KM)</span>
+                </li>
+                <li className="flex items-start gap-[var(--space-2)]">
+                  <span style={{ color: 'var(--color-baseline)' }}>•</span>
+                  <span><strong>Bus:</strong> 86.6g CO₂/km (TRAN.TTC.BUS.KM)</span>
+                </li>
+                <li className="flex items-start gap-[var(--space-2)]">
+                  <span style={{ color: 'var(--color-baseline)' }}>•</span>
+                  <span><strong>Subway/Train:</strong> 4.76g CO₂/km (TRAN.TTC.SUBWAY.KM)</span>
+                </li>
+                <li className="flex items-start gap-[var(--space-2)]">
+                  <span style={{ color: 'var(--color-baseline)' }}>•</span>
+                  <span><strong>Bike/Walk:</strong> 0g CO₂ - zero direct emissions</span>
+                </li>
+              </ul>
+              <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)' }} className="mt-[var(--space-3)]">
+                Annual emissions = daily distance × 2 (round trip) × 365 days × emission factor
+              </p>
+            </div>
+          </DetailSection>
+        )}
+
+        {question.id === 'diet' && (
+          <DetailSection title="Food category impact breakdown">
+            <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-secondary)' }}>
+              <p className="mb-[var(--space-3)]">
+                Food production accounts for ~25% of global emissions. Here's how different categories compare:
+              </p>
+              <div className="space-y-[var(--space-2)]">
+                <div className="flex justify-between items-center py-[var(--space-2)] border-b" style={{ borderColor: 'var(--border-subtle)' }}>
+                  <span className="font-medium">Beef & Lamb</span>
+                  <span style={{ color: 'var(--carbon-high)' }}>Very High (50-100 kg CO₂/kg)</span>
+                </div>
+                <div className="flex justify-between items-center py-[var(--space-2)] border-b" style={{ borderColor: 'var(--border-subtle)' }}>
+                  <span className="font-medium">Pork & Poultry</span>
+                  <span style={{ color: 'var(--carbon-moderate)' }}>High (5-12 kg CO₂/kg)</span>
+                </div>
+                <div className="flex justify-between items-center py-[var(--space-2)] border-b" style={{ borderColor: 'var(--border-subtle)' }}>
+                  <span className="font-medium">Dairy & Eggs</span>
+                  <span style={{ color: 'var(--carbon-neutral)' }}>Moderate (2-5 kg CO₂/kg)</span>
+                </div>
+                <div className="flex justify-between items-center py-[var(--space-2)] border-b" style={{ borderColor: 'var(--border-subtle)' }}>
+                  <span className="font-medium">Plant-based Foods</span>
+                  <span style={{ color: 'var(--carbon-low)' }}>Low (0.3-2 kg CO₂/kg)</span>
+                </div>
+              </div>
+              <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)' }} className="mt-[var(--space-3)]">
+                Annual diet emissions: Vegan ~1.5t CO₂, Vegetarian ~2.5t CO₂, Mixed ~3.3t CO₂
+              </p>
+            </div>
+          </DetailSection>
+        )}
+
+        {question.id === 'energy' && (
+          <DetailSection title="Appliance & energy breakdown">
+            <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-secondary)' }}>
+              <p className="mb-[var(--space-3)]">
+                Home energy usage varies by appliances, insulation, and grid intensity. Typical annual emissions by appliance:
+              </p>
+              <div className="grid grid-cols-2 gap-[var(--space-3)]">
+                <div className="flex items-center justify-between p-[var(--space-2)] rounded" style={{ backgroundColor: 'var(--surface-bg)' }}>
+                  <span>Heating/Cooling</span>
+                  <span className="font-medium">~800 kg CO₂</span>
+                </div>
+                <div className="flex items-center justify-between p-[var(--space-2)] rounded" style={{ backgroundColor: 'var(--surface-bg)' }}>
+                  <span>Water Heater</span>
+                  <span className="font-medium">~450 kg CO₂</span>
+                </div>
+                <div className="flex items-center justify-between p-[var(--space-2)] rounded" style={{ backgroundColor: 'var(--surface-bg)' }}>
+                  <span>Lighting</span>
+                  <span className="font-medium">~200 kg CO₂</span>
+                </div>
+                <div className="flex items-center justify-between p-[var(--space-2)] rounded" style={{ backgroundColor: 'var(--surface-bg)' }}>
+                  <span>Appliances</span>
+                  <span className="font-medium">~300 kg CO₂</span>
+                </div>
+              </div>
+              <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)' }} className="mt-[var(--space-3)]">
+                Total annual home energy: Low ~1.5t CO₂, Average ~2.5t CO₂, High ~4t CO₂
+              </p>
+            </div>
+          </DetailSection>
+        )}
+
+        {question.id === 'shopping' && (
+          <DetailSection title="Shopping category emissions">
+            <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-secondary)' }}>
+              <p className="mb-[var(--space-3)]">
+                Consumer goods have embedded emissions from manufacturing, shipping, and packaging:
+              </p>
+              <div className="space-y-[var(--space-2)]">
+                <div className="flex items-center justify-between py-[var(--space-2)] border-b" style={{ borderColor: 'var(--border-subtle)' }}>
+                  <span className="font-medium">Electronics (laptop, phone)</span>
+                  <span style={{ color: 'var(--carbon-moderate)' }}>~200-400 kg CO₂ each</span>
+                </div>
+                <div className="flex items-center justify-between py-[var(--space-2)] border-b" style={{ borderColor: 'var(--border-subtle)' }}>
+                  <span className="font-medium">Clothing (fast fashion)</span>
+                  <span style={{ color: 'var(--carbon-neutral)' }}>~5-20 kg CO₂ per item</span>
+                </div>
+                <div className="flex items-center justify-between py-[var(--space-2)] border-b" style={{ borderColor: 'var(--border-subtle)' }}>
+                  <span className="font-medium">Furniture (sofa, table)</span>
+                  <span style={{ color: 'var(--carbon-high)' }}>~100-300 kg CO₂ each</span>
+                </div>
+                <div className="flex items-center justify-between py-[var(--space-2)] border-b" style={{ borderColor: 'var(--border-subtle)' }}>
+                  <span className="font-medium">Books & small goods</span>
+                  <span style={{ color: 'var(--carbon-low)' }}>~1-5 kg CO₂ each</span>
+                </div>
+              </div>
+              <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)' }} className="mt-[var(--space-3)]">
+                Annual shopping emissions: Minimal ~500 kg CO₂, Moderate ~1t CO₂, Frequent ~2t CO₂
+              </p>
+            </div>
+          </DetailSection>
+        )}
       </div>
     </div>
   );
@@ -566,6 +692,68 @@ function ChoiceInput({ value, onChange, options }: ChoiceInputProps) {
         );
       })}
     </div>
+  );
+}
+
+interface DetailSectionProps {
+  title: string;
+  children: React.ReactNode;
+}
+
+function DetailSection({ title, children }: DetailSectionProps) {
+  const [isOpen, setIsOpen] = React.useState(false);
+
+  return (
+    <Collapsible.Root open={isOpen} onOpenChange={setIsOpen} className="mt-[var(--space-4)]">
+      <Collapsible.Trigger asChild>
+        <button
+          className="flex items-center justify-between w-full px-[var(--space-4)] py-[var(--space-3)] rounded-[var(--radius-lg)] border transition-all"
+          style={{
+            borderColor: 'var(--border-default)',
+            backgroundColor: 'transparent',
+          }}
+          aria-label={isOpen ? `Hide ${title}` : `Show ${title}`}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'var(--surface-hover)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'transparent';
+          }}
+        >
+          <span
+            className="font-medium"
+            style={{
+              fontSize: 'var(--font-size-sm)',
+              color: 'var(--text-secondary)',
+            }}
+          >
+            {title}
+          </span>
+          {isOpen ? (
+            <ChevronUp
+              className="w-4 h-4 transition-transform"
+              style={{ color: 'var(--text-tertiary)' }}
+            />
+          ) : (
+            <ChevronDown
+              className="w-4 h-4 transition-transform"
+              style={{ color: 'var(--text-tertiary)' }}
+            />
+          )}
+        </button>
+      </Collapsible.Trigger>
+      <Collapsible.Content className="overflow-hidden data-[state=closed]:animate-collapse data-[state=open]:animate-expand">
+        <div
+          className="px-[var(--space-4)] py-[var(--space-3)] mt-[var(--space-2)] rounded-[var(--radius-lg)] border"
+          style={{
+            backgroundColor: 'var(--surface-elevated)',
+            borderColor: 'var(--border-subtle)',
+          }}
+        >
+          {children}
+        </div>
+      </Collapsible.Content>
+    </Collapsible.Root>
   );
 }
 
