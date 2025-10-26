@@ -8,7 +8,10 @@
 import * as React from 'react';
 import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
+import { motion } from 'framer-motion';
 import { cn } from '../../lib/cn';
+import { tapAnimation, hoverScale } from '../../utils/microInteractions';
+import { useReducedMotion } from '../../hooks/useAccessibility';
 
 const buttonVariants = cva(
   // Base styles using design tokens
@@ -104,16 +107,28 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
-    const Comp = asChild ? Slot : 'button';
+    const prefersReducedMotion = useReducedMotion();
+    const Comp = asChild ? Slot : motion.button;
 
     // icon prop is an alias for leftIcon
     const resolvedLeftIcon = leftIcon || icon;
+
+    // Only apply micro-interactions if motion is not reduced and button is not disabled/loading
+    const motionProps =
+      !prefersReducedMotion && !disabled && !loading
+        ? {
+            whileHover: hoverScale.hover,
+            whileTap: tapAnimation.tap,
+            initial: 'rest',
+          }
+        : {};
 
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, rounded, className }))}
         ref={ref}
         disabled={disabled || loading}
+        {...motionProps}
         {...props}
       >
         {loading && (
