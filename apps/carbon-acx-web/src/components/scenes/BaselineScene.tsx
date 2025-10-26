@@ -393,8 +393,8 @@ function CelebrationView({
             </div>
           </div>
 
-          {/* Context */}
-          <div className="grid grid-cols-2 gap-[var(--space-4)]">
+          {/* Context - responsive grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--space-4)]">
             <div
               className="p-[var(--space-4)] rounded-[var(--radius-lg)]"
               style={{
@@ -468,7 +468,7 @@ function CelebrationView({
             >
               To put this in perspective:
             </h3>
-            <div className="grid grid-cols-3 gap-[var(--space-4)] text-center">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-[var(--space-4)] text-center">
               <ComparisonStat
                 value={calculatorResults.comparisons.flights.toFixed(1)}
                 label="round trip flights"

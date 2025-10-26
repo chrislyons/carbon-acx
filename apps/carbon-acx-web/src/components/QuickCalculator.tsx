@@ -4,8 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Calculator, Car, Home, ShoppingBag, Utensils, X, Save, ChevronDown, ChevronUp } from 'lucide-react';
 import * as Collapsible from '@radix-ui/react-collapsible';
 
-import { useProfile } from '../contexts/ProfileContext';
-import type { CalculatorResult } from '../contexts/ProfileContext';
+import { useAppStore } from '../hooks/useAppStore';
+import type { CalculatorResult } from '../store/appStore';
 import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 
@@ -38,7 +38,7 @@ type TransportMode = keyof typeof TRANSPORT_MODES;
 
 export default function QuickCalculator() {
   const navigate = useNavigate();
-  const { saveCalculatorResults } = useProfile();
+  const saveCalculatorResults = useAppStore((state) => state.saveCalculatorResults);
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState(1);
   const [values, setValues] = useState({
@@ -132,6 +132,11 @@ export default function QuickCalculator() {
     navigate('/dashboard');
   };
 
+  const handleExplore = () => {
+    setIsOpen(false);
+    navigate('/dashboard');
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -177,6 +182,7 @@ export default function QuickCalculator() {
               }}
               onSave={handleSaveToProfile}
               onClose={() => setIsOpen(false)}
+              onExplore={handleExplore}
             />
           )}
         </div>
@@ -557,9 +563,10 @@ interface ResultsViewProps {
   onReset: () => void;
   onSave: () => void;
   onClose: () => void;
+  onExplore: () => void;
 }
 
-function ResultsView({ footprint, globalAverage, onReset, onSave, onClose }: ResultsViewProps) {
+function ResultsView({ footprint, globalAverage, onReset, onSave, onClose, onExplore }: ResultsViewProps) {
   const percentOfAverage = ((footprint / globalAverage) * 100).toFixed(0);
   const diff = footprint - globalAverage;
   const isAboveAverage = diff > 0;
@@ -613,7 +620,7 @@ function ResultsView({ footprint, globalAverage, onReset, onSave, onClose }: Res
           <Button variant="outline" onClick={onReset} className="flex-1">
             Recalculate
           </Button>
-          <Button variant="outline" onClick={onClose} className="flex-1">
+          <Button variant="outline" onClick={onExplore} className="flex-1">
             Explore data
           </Button>
         </div>

@@ -158,7 +158,7 @@ export function ActivityBrowser({ targetActivities = 5, onTargetReached }: Activ
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto space-y-[var(--space-6)]">
+    <div className="w-full max-w-7xl mx-auto space-y-[var(--space-6)]">
       {/* Progress indicator */}
       <div
         className="p-[var(--space-4)] rounded-[var(--radius-lg)]"
@@ -200,65 +200,71 @@ export function ActivityBrowser({ targetActivities = 5, onTargetReached }: Activ
         </div>
       </div>
 
-      {/* Sector tabs */}
-      <div className="flex gap-[var(--space-2)] overflow-x-auto pb-[var(--space-2)]">
-        {loadingState === 'sectors' ? (
-          <div className="flex items-center gap-2" style={{ color: 'var(--text-secondary)' }}>
-            <Loader2 className="w-4 h-4 animate-spin" />
-            <span style={{ fontSize: 'var(--font-size-sm)' }}>Loading sectors...</span>
+      {/* Main content area - horizontal split on desktop */}
+      <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-[var(--space-6)]">
+        {/* Sector sidebar - vertical on desktop, horizontal tabs on mobile */}
+        <div className="lg:space-y-[var(--space-2)]">
+          <div className="flex lg:flex-col gap-[var(--space-2)] overflow-x-auto lg:overflow-x-visible pb-[var(--space-2)] lg:pb-0">
+            {loadingState === 'sectors' ? (
+              <div className="flex items-center gap-2 p-[var(--space-3)]" style={{ color: 'var(--text-secondary)' }}>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span style={{ fontSize: 'var(--font-size-sm)' }}>Loading sectors...</span>
+              </div>
+            ) : (
+              sectors.map((sector) => (
+                <button
+                  key={sector.id}
+                  onClick={() => setSelectedSector(sector.id)}
+                  className="px-[var(--space-4)] py-[var(--space-3)] rounded-[var(--radius-md)] whitespace-nowrap lg:whitespace-normal lg:text-left transition-all"
+                  style={{
+                    backgroundColor:
+                      selectedSector === sector.id
+                        ? 'var(--color-baseline)'
+                        : 'var(--surface-elevated)',
+                    color:
+                      selectedSector === sector.id
+                        ? 'white'
+                        : 'var(--text-primary)',
+                    border: `1px solid ${
+                      selectedSector === sector.id
+                        ? 'var(--color-baseline)'
+                        : 'var(--border-default)'
+                    }`,
+                    fontSize: 'var(--font-size-sm)',
+                  }}
+                >
+                  {sector.name}
+                </button>
+              ))
+            )}
           </div>
-        ) : (
-          sectors.map((sector) => (
-            <button
-              key={sector.id}
-              onClick={() => setSelectedSector(sector.id)}
-              className="px-[var(--space-4)] py-[var(--space-2)] rounded-[var(--radius-md)] whitespace-nowrap transition-all"
+        </div>
+
+        {/* Activity list area */}
+        <div className="space-y-[var(--space-4)]">
+          {/* Search */}
+          <div className="relative">
+            <Search
+              className="absolute left-[var(--space-3)] top-1/2 -translate-y-1/2 w-5 h-5"
+              style={{ color: 'var(--text-tertiary)' }}
+            />
+            <input
+              type="text"
+              placeholder="Search activities..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-[var(--space-10)] pr-[var(--space-4)] py-[var(--space-3)] rounded-[var(--radius-md)] border transition-all"
               style={{
-                backgroundColor:
-                  selectedSector === sector.id
-                    ? 'var(--color-baseline)'
-                    : 'var(--surface-elevated)',
-                color:
-                  selectedSector === sector.id
-                    ? 'white'
-                    : 'var(--text-primary)',
-                border: `1px solid ${
-                  selectedSector === sector.id
-                    ? 'var(--color-baseline)'
-                    : 'var(--border-default)'
-                }`,
-                fontSize: 'var(--font-size-sm)',
+                backgroundColor: 'var(--surface-elevated)',
+                borderColor: 'var(--border-default)',
+                color: 'var(--text-primary)',
+                fontSize: 'var(--font-size-base)',
               }}
-            >
-              {sector.name}
-            </button>
-          ))
-        )}
-      </div>
+            />
+          </div>
 
-      {/* Search */}
-      <div className="relative">
-        <Search
-          className="absolute left-[var(--space-3)] top-1/2 -translate-y-1/2 w-5 h-5"
-          style={{ color: 'var(--text-tertiary)' }}
-        />
-        <input
-          type="text"
-          placeholder="Search activities..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-[var(--space-10)] pr-[var(--space-4)] py-[var(--space-3)] rounded-[var(--radius-md)] border transition-all"
-          style={{
-            backgroundColor: 'var(--surface-elevated)',
-            borderColor: 'var(--border-default)',
-            color: 'var(--text-primary)',
-            fontSize: 'var(--font-size-base)',
-          }}
-        />
-      </div>
-
-      {/* Activity grid */}
-      <div className="space-y-[var(--space-2)]">
+          {/* Activity list */}
+          <div className="space-y-[var(--space-2)]">
         {loadingState === 'activities' ? (
           <div className="flex items-center justify-center p-[var(--space-8)]">
             <Loader2
@@ -384,6 +390,8 @@ export function ActivityBrowser({ targetActivities = 5, onTargetReached }: Activ
             })}
           </AnimatePresence>
         )}
+          </div>
+        </div>
       </div>
 
       {/* Selected activities summary */}

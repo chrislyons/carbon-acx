@@ -209,7 +209,7 @@ export function InsightScene({ show }: InsightSceneProps) {
 
                 {insights.length > 0 ? (
                   <StaggerWrapper staggerDelay={50} childTransition="slide-up">
-                    <div className="grid grid-cols-2 gap-[var(--space-4)]">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[var(--space-4)]">
                       {insights.map((insight) => (
                         <InsightCard key={insight.id} insight={insight} />
                       ))}
