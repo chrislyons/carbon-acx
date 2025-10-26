@@ -10,6 +10,7 @@
 import React from 'react';
 import { useJourneyMachine } from './hooks/useJourneyMachine';
 import { useAppStore } from './hooks/useAppStore';
+import { ErrorBoundary } from './components/system/ErrorBoundary';
 
 // Story Scenes (Tier 5)
 import { OnboardingScene } from './components/scenes/OnboardingScene';
@@ -47,27 +48,35 @@ export default function CanvasApp() {
   return (
     <div className="min-h-screen bg-[var(--surface-bg)]">
       {/* Onboarding Scene */}
-      <OnboardingScene
-        show={isOnboarding}
-        onComplete={handleOnboardingComplete}
-        onSkip={skipOnboarding}
-      />
+      <ErrorBoundary>
+        <OnboardingScene
+          show={isOnboarding}
+          onComplete={handleOnboardingComplete}
+          onSkip={skipOnboarding}
+        />
+      </ErrorBoundary>
 
       {/* Baseline Scene */}
-      <BaselineScene
-        show={isBaseline}
-        mode={baselineMode}
-        onComplete={baselineComplete}
-      />
+      <ErrorBoundary>
+        <BaselineScene
+          show={isBaseline}
+          mode={baselineMode}
+          onComplete={baselineComplete}
+        />
+      </ErrorBoundary>
 
       {/* Explore Scene */}
-      <ExploreScene
-        show={isExplore}
-        initialMode="timeline"
-      />
+      <ErrorBoundary>
+        <ExploreScene
+          show={isExplore}
+          initialMode="timeline"
+        />
+      </ErrorBoundary>
 
       {/* Insight Scene */}
-      <InsightScene show={isInsight} />
+      <ErrorBoundary>
+        <InsightScene show={isInsight} />
+      </ErrorBoundary>
 
       {/* Debug Panel (development only) */}
       {import.meta.env.DEV && (

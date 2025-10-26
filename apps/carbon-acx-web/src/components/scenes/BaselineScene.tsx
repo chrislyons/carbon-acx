@@ -19,9 +19,11 @@ import * as React from 'react';
 import { CanvasZone } from '../canvas/CanvasZone';
 import { StoryScene } from '../canvas/StoryScene';
 import { TransitionWrapper } from '../canvas/TransitionWrapper';
+import { SceneNavigation, SceneNavigationPresets } from '../canvas/SceneNavigation';
 import { GaugeProgress } from '../viz/GaugeProgress';
 import { Button } from '../system/Button';
 import { EmissionCalculator, type CalculatorResults } from '../domain/EmissionCalculator';
+import { ActivityBrowser } from '../domain/ActivityBrowser';
 import { useAppStore } from '../../hooks/useAppStore';
 import { Sparkles, CheckCircle, ArrowRight, Plus, TrendingUp } from 'lucide-react';
 
@@ -43,7 +45,7 @@ type BaselineState = 'choosing' | 'calculating' | 'entering' | 'celebrating';
 
 export function BaselineScene({ show, mode = 'calculator', onComplete }: BaselineSceneProps) {
   const [state, setState] = React.useState<BaselineState>(
-    mode === 'calculator' ? 'calculating' : 'choosing'
+    mode === 'calculator' ? 'calculating' : 'entering'
   );
   const [calculatorResults, setCalculatorResults] = React.useState<CalculatorResults | null>(null);
 
@@ -115,11 +117,10 @@ export function BaselineScene({ show, mode = 'calculator', onComplete }: Baselin
 
         {/* Manual entry flow */}
         <TransitionWrapper type="fade" show={state === 'entering'}>
-          <div className="min-h-[80vh] flex items-center justify-center px-[var(--space-8)]">
-            <ManualEntryView
-              activityCount={activityCount}
-              totalEmissions={totalEmissions}
-              onContinue={handleManualMilestone}
+          <div className="min-h-[80vh] flex items-center justify-center px-[var(--space-8)] py-[var(--space-8)]">
+            <ActivityBrowser
+              targetActivities={5}
+              onTargetReached={handleManualMilestone}
             />
           </div>
         </TransitionWrapper>
