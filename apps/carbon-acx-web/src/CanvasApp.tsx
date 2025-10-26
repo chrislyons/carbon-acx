@@ -31,14 +31,27 @@ export default function CanvasApp() {
     skipOnboarding,
     completeOnboarding,
     baselineComplete,
+    exploreSectors,
   } = useJourneyMachine();
 
-  // Get total emissions for display
+  // Get profile data
   const getTotalEmissions = useAppStore((state) => state.getTotalEmissions);
+  const activities = useAppStore((state) => state.activities);
   const totalEmissions = getTotalEmissions();
 
   // Track chosen path from onboarding
   const [baselineMode, setBaselineMode] = React.useState<'calculator' | 'manual'>('calculator');
+
+  // Smart initialization: If user has data, skip to Explore scene
+  React.useEffect(() => {
+    // Only run once on mount
+    if (isOnboarding && (activities.length > 0 || totalEmissions > 0)) {
+      // User has baseline data - skip to Explore
+      skipOnboarding();
+      baselineComplete();
+      exploreSectors();
+    }
+  }, []); // Empty deps = run once on mount
 
   const handleOnboardingComplete = (pathChoice: 'calculator' | 'manual') => {
     setBaselineMode(pathChoice);
