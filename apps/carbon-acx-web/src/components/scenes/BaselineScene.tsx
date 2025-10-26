@@ -47,7 +47,9 @@ export function BaselineScene({ show, mode = 'calculator', onComplete }: Baselin
   );
   const [calculatorResults, setCalculatorResults] = React.useState<CalculatorResults | null>(null);
 
-  const { saveCalculatorResults, getTotalEmissions, activities } = useAppStore();
+  const saveCalculatorResults = useAppStore((state) => state.saveCalculatorResults);
+  const getTotalEmissions = useAppStore((state) => state.getTotalEmissions);
+  const activities = useAppStore((state) => state.profile.activities);
 
   const totalEmissions = getTotalEmissions();
   const activityCount = activities.length;

@@ -53,7 +53,9 @@ export function ExploreScene({ show, initialMode = 'timeline' }: ExploreScenePro
   const [selectedLayers, setSelectedLayers] = React.useState<string[]>([]);
   const [showFilters, setShowFilters] = React.useState(false);
 
-  const { profile, layers: profileLayers, getTotalEmissions } = useAppStore();
+  const profile = useAppStore((state) => state.profile);
+  const profileLayers = useAppStore((state) => state.profile.layers);
+  const getTotalEmissions = useAppStore((state) => state.getTotalEmissions);
 
   const totalEmissions = getTotalEmissions();
 
