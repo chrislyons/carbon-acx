@@ -80,12 +80,22 @@ export interface Scenario {
   updatedAt: string;
 }
 
+export interface EmissionSnapshot {
+  timestamp: string;
+  totalEmissions: number;
+  activityCount: number;
+  breakdown?: {
+    [category: string]: number;
+  };
+}
+
 export interface ProfileData {
   activities: Activity[];
   calculatorResults: CalculatorResult[];
   layers: ProfileLayer[];
   goals: CarbonGoal[];
   scenarios: Scenario[];
+  emissionsHistory: EmissionSnapshot[];
   lastUpdated: string;
 }
 
@@ -152,12 +162,50 @@ const initialProfile: ProfileData = {
   layers: [],
   goals: [],
   scenarios: [],
+  emissionsHistory: [],
   lastUpdated: new Date().toISOString(),
 };
 
 // ============================================================================
 // Store Implementation
 // ============================================================================
+
+// Helper function to record emissions snapshot
+function recordSnapshot(state: AppStore): EmissionSnapshot[] {
+  const totalEmissions = state.getTotalEmissions();
+  const activityCount = state.profile.activities.length;
+
+  // Calculate breakdown by category
+  const breakdown: { [category: string]: number } = {};
+  state.profile.activities.forEach((activity) => {
+    const category = activity.category || 'Other';
+    breakdown[category] = (breakdown[category] || 0) + activity.annualEmissions;
+  });
+
+  const newSnapshot: EmissionSnapshot = {
+    timestamp: new Date().toISOString(),
+    totalEmissions,
+    activityCount,
+    breakdown,
+  };
+
+  // Keep only last 12 months of snapshots (one per month max)
+  const history = state.profile.emissionsHistory;
+  const oneMonthAgo = new Date();
+  oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
+  // Only add snapshot if it's been at least a month since last one, or if it's the first
+  const shouldRecord = history.length === 0 ||
+    new Date(history[history.length - 1].timestamp) < oneMonthAgo;
+
+  if (shouldRecord) {
+    const updatedHistory = [...history, newSnapshot];
+    // Keep only last 12 snapshots
+    return updatedHistory.slice(-12);
+  }
+
+  return history;
+}
 
 export const useAppStore = create<AppStore>()(
   persist(
@@ -180,33 +228,45 @@ export const useAppStore = create<AppStore>()(
             return state;
           }
 
+          const updatedProfile = {
+            ...state.profile,
+            activities: [
+              ...state.profile.activities,
+              {
+                ...activity,
+                addedAt: new Date().toISOString(),
+              },
+            ],
+            lastUpdated: new Date().toISOString(),
+          };
+
           return {
             profile: {
-              ...state.profile,
-              activities: [
-                ...state.profile.activities,
-                {
-                  ...activity,
-                  addedAt: new Date().toISOString(),
-                },
-              ],
-              lastUpdated: new Date().toISOString(),
+              ...updatedProfile,
+              emissionsHistory: recordSnapshot({ ...state, profile: updatedProfile }),
             },
           };
         }),
 
       removeActivity: (activityId) =>
-        set((state) => ({
-          profile: {
+        set((state) => {
+          const updatedProfile = {
             ...state.profile,
             activities: state.profile.activities.filter((a) => a.id !== activityId),
             lastUpdated: new Date().toISOString(),
-          },
-        })),
+          };
+
+          return {
+            profile: {
+              ...updatedProfile,
+              emissionsHistory: recordSnapshot({ ...state, profile: updatedProfile }),
+            },
+          };
+        }),
 
       updateActivityQuantity: (activityId, quantity) =>
-        set((state) => ({
-          profile: {
+        set((state) => {
+          const updatedProfile = {
             ...state.profile,
             activities: state.profile.activities.map((activity) =>
               activity.id === activityId
@@ -218,8 +278,15 @@ export const useAppStore = create<AppStore>()(
                 : activity
             ),
             lastUpdated: new Date().toISOString(),
-          },
-        })),
+          };
+
+          return {
+            profile: {
+              ...updatedProfile,
+              emissionsHistory: recordSnapshot({ ...state, profile: updatedProfile }),
+            },
+          };
+        }),
 
       clearProfile: () =>
         set({

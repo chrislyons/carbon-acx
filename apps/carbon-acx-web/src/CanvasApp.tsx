@@ -1,19 +1,17 @@
 /**
- * CanvasApp - Simplified Entry Point
+ * CanvasApp - Main Application Entry Point
  *
- * Removed:
- * - XState journey machine (replaced with React Router)
- * - CanvasZone complexity (replaced with simple CSS classes)
- * - Over-engineered state orchestration
+ * Single-router architecture for carbon accounting app.
+ * Consolidates all routes in one place.
  *
  * Uses:
- * - React Router for navigation
+ * - React Router (BrowserRouter) for navigation
  * - Zustand for app state
  * - Simple CSS classes for layout
  */
 
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Navigate, useNavigate } from 'react-router-dom';
 import { useAppStore } from './hooks/useAppStore';
 import { ErrorBoundary } from './components/system/ErrorBoundary';
 
@@ -48,30 +46,94 @@ function RootRedirect() {
   return <Navigate to="/welcome" replace />;
 }
 
-export default function CanvasApp() {
+function AppLayout() {
   return (
     <div className="min-h-screen bg-[var(--surface-bg)]">
-      <BrowserRouter>
-        <ErrorBoundary>
-          <React.Suspense fallback={<LoadingFallback />}>
-            <Routes>
-              <Route path="/" element={<RootRedirect />} />
-              <Route path="/welcome" element={<WelcomePage />} />
-              <Route path="/calculator" element={<CalculatorPage />} />
-              <Route path="/explore" element={<ExplorePage />} />
-              <Route path="/insights" element={<InsightsPage />} />
-
-              {/* Fallback */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </React.Suspense>
-        </ErrorBoundary>
-      </BrowserRouter>
+      <ErrorBoundary>
+        <React.Suspense fallback={<LoadingFallback />}>
+          <RootRedirect />
+        </React.Suspense>
+      </ErrorBoundary>
 
       {/* Debug Panel (development only) */}
       {import.meta.env.DEV && <DebugPanel />}
     </div>
   );
+}
+
+// Unified router configuration
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <AppLayout />,
+    errorElement: (
+      <div className="min-h-screen bg-[var(--surface-bg)] flex items-center justify-center">
+        <div style={{ color: 'var(--text-primary)' }}>
+          An error occurred. Please refresh the page.
+        </div>
+      </div>
+    ),
+  },
+  {
+    path: '/welcome',
+    element: (
+      <div className="min-h-screen bg-[var(--surface-bg)]">
+        <ErrorBoundary>
+          <React.Suspense fallback={<LoadingFallback />}>
+            <WelcomePage />
+          </React.Suspense>
+        </ErrorBoundary>
+        {import.meta.env.DEV && <DebugPanel />}
+      </div>
+    ),
+  },
+  {
+    path: '/calculator',
+    element: (
+      <div className="min-h-screen bg-[var(--surface-bg)]">
+        <ErrorBoundary>
+          <React.Suspense fallback={<LoadingFallback />}>
+            <CalculatorPage />
+          </React.Suspense>
+        </ErrorBoundary>
+        {import.meta.env.DEV && <DebugPanel />}
+      </div>
+    ),
+  },
+  {
+    path: '/explore',
+    element: (
+      <div className="min-h-screen bg-[var(--surface-bg)]">
+        <ErrorBoundary>
+          <React.Suspense fallback={<LoadingFallback />}>
+            <ExplorePage />
+          </React.Suspense>
+        </ErrorBoundary>
+        {import.meta.env.DEV && <DebugPanel />}
+      </div>
+    ),
+  },
+  {
+    path: '/insights',
+    element: (
+      <div className="min-h-screen bg-[var(--surface-bg)]">
+        <ErrorBoundary>
+          <React.Suspense fallback={<LoadingFallback />}>
+            <InsightsPage />
+          </React.Suspense>
+        </ErrorBoundary>
+        {import.meta.env.DEV && <DebugPanel />}
+      </div>
+    ),
+  },
+  {
+    path: '*',
+    element: <Navigate to="/" replace />,
+  },
+]);
+
+export default function CanvasApp() {
+  return <RouterProvider router={router} />;
 }
 
 function DebugPanel() {

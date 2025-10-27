@@ -14,10 +14,18 @@
 
 import * as React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, Plus, Search, TrendingUp, Loader2 } from 'lucide-react';
+import { Check, Plus, Search, TrendingUp, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '../system/Button';
 import { useAppStore } from '../../hooks/useAppStore';
-import { loadSectors, loadActivities, type ActivitySummary, type SectorSummary } from '../../lib/api';
+import { loadSectors, loadActivities, loadEmissionFactors, type ActivitySummary, type SectorSummary, type EmissionFactor } from '../../lib/api';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '../system/Dialog';
 
 // ============================================================================
 // Types
@@ -39,8 +47,16 @@ export function ActivityBrowser({ targetActivities = 5, onTargetReached }: Activ
   const [selectedSector, setSelectedSector] = React.useState<string | null>(null);
   const [activities, setActivities] = React.useState<ActivitySummary[]>([]);
   const [searchQuery, setSearchQuery] = React.useState('');
-  const [loadingState, setLoadingState] = React.useState<'sectors' | 'activities' | 'idle'>('idle');
+  const [loadingState, setLoadingState] = React.useState<'sectors' | 'activities' | 'factors' | 'idle'>('idle');
   const [error, setError] = React.useState<string | null>(null);
+  const [emissionFactors, setEmissionFactors] = React.useState<EmissionFactor[]>([]);
+  const [emissionFactorsLoaded, setEmissionFactorsLoaded] = React.useState(false);
+
+  // Quantity dialog state
+  const [quantityDialogOpen, setQuantityDialogOpen] = React.useState(false);
+  const [selectedActivityForQuantity, setSelectedActivityForQuantity] = React.useState<ActivitySummary | null>(null);
+  const [quantity, setQuantity] = React.useState(1);
+  const [quantityError, setQuantityError] = React.useState<string | null>(null);
 
   // Store actions
   const addActivity = useAppStore((state) => state.addActivity);
@@ -49,6 +65,22 @@ export function ActivityBrowser({ targetActivities = 5, onTargetReached }: Activ
 
   const activityCount = profileActivities.length;
   const progress = Math.min(activityCount / targetActivities, 1);
+
+  // Load emission factors on mount
+  React.useEffect(() => {
+    setLoadingState('factors');
+    loadEmissionFactors()
+      .then((data) => {
+        setEmissionFactors(data);
+        setEmissionFactorsLoaded(true);
+        setLoadingState('idle');
+      })
+      .catch((err) => {
+        console.error('Failed to load emission factors:', err);
+        setEmissionFactorsLoaded(true); // Mark as loaded even on error to continue
+        setLoadingState('idle');
+      });
+  }, []);
 
   // Load sectors on mount
   React.useEffect(() => {
@@ -92,6 +124,34 @@ export function ActivityBrowser({ targetActivities = 5, onTargetReached }: Activ
     }
   }, [activityCount, targetActivities, onTargetReached]);
 
+  // Helper to find emission factor for an activity
+  const getEmissionFactor = (activity: ActivitySummary): { carbonIntensity: number; warning?: string } => {
+    // Try to find matching emission factor by activityId and sectorId
+    const factor = emissionFactors.find(
+      (ef) => ef.activityId === activity.id && ef.sectorId === activity.sectorId
+    );
+
+    if (factor && factor.valueGPerUnit != null) {
+      // Convert g CO₂ to kg CO₂
+      return { carbonIntensity: factor.valueGPerUnit / 1000 };
+    }
+
+    // Fallback to sector-level factor if no exact match
+    const sectorFactor = emissionFactors.find((ef) => ef.sectorId === activity.sectorId);
+    if (sectorFactor && sectorFactor.valueGPerUnit != null) {
+      return {
+        carbonIntensity: sectorFactor.valueGPerUnit / 1000,
+        warning: 'Using sector average (activity-specific factor not available)',
+      };
+    }
+
+    // Default fallback
+    return {
+      carbonIntensity: 0.5,
+      warning: 'Using default estimate (emission factor not available)',
+    };
+  };
+
   // Activity selection
   const hasActivity = (activityId: string) => {
     return profileActivities.some((a) => a.id === activityId);
@@ -101,24 +161,51 @@ export function ActivityBrowser({ targetActivities = 5, onTargetReached }: Activ
     if (hasActivity(activity.id)) {
       removeActivity(activity.id);
     } else {
-      // Simple mock emission factor (in real app, fetch from emission-factors.json)
-      const carbonIntensity = 0.5; // kg CO₂ per unit
-      const quantity = 1;
-
-      addActivity({
-        id: activity.id,
-        sectorId: activity.sectorId,
-        name: activity.name || activity.id,
-        category: activity.category,
-        quantity,
-        unit: activity.defaultUnit || 'unit',
-        carbonIntensity,
-        annualEmissions: carbonIntensity * quantity,
-        iconType: activity.iconType ?? undefined,
-        iconUrl: activity.iconUrl ?? undefined,
-        badgeColor: activity.badgeColor ?? undefined,
-      });
+      // Open quantity dialog instead of immediately adding
+      setSelectedActivityForQuantity(activity);
+      setQuantity(1);
+      setQuantityError(null);
+      setQuantityDialogOpen(true);
     }
+  };
+
+  const handleConfirmQuantity = () => {
+    if (!selectedActivityForQuantity) return;
+
+    // Validate quantity
+    if (quantity <= 0) {
+      setQuantityError('Quantity must be greater than 0');
+      return;
+    }
+
+    if (quantity < 0.1) {
+      setQuantityError('Quantity must be at least 0.1');
+      return;
+    }
+
+    const { carbonIntensity, warning } = getEmissionFactor(selectedActivityForQuantity);
+
+    if (warning) {
+      console.warn(`Activity ${selectedActivityForQuantity.id}: ${warning}`);
+    }
+
+    addActivity({
+      id: selectedActivityForQuantity.id,
+      sectorId: selectedActivityForQuantity.sectorId,
+      name: selectedActivityForQuantity.name || selectedActivityForQuantity.id,
+      category: selectedActivityForQuantity.category,
+      quantity,
+      unit: selectedActivityForQuantity.defaultUnit || 'unit',
+      carbonIntensity,
+      annualEmissions: carbonIntensity * quantity,
+      iconType: selectedActivityForQuantity.iconType ?? undefined,
+      iconUrl: selectedActivityForQuantity.iconUrl ?? undefined,
+      badgeColor: selectedActivityForQuantity.badgeColor ?? undefined,
+    });
+
+    // Close dialog
+    setQuantityDialogOpen(false);
+    setSelectedActivityForQuantity(null);
   };
 
   // Filter activities by search
@@ -440,6 +527,161 @@ export function ActivityBrowser({ targetActivities = 5, onTargetReached }: Activ
           </div>
         </motion.div>
       )}
+
+      {/* Quantity Input Dialog */}
+      <Dialog open={quantityDialogOpen} onOpenChange={setQuantityDialogOpen}>
+        <DialogContent size="md">
+          <DialogHeader>
+            <DialogTitle>Add Activity</DialogTitle>
+            <DialogDescription>
+              Specify how much of this activity you perform annually
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-[var(--space-4)]">
+            {/* Activity name */}
+            <div>
+              <p
+                className="font-semibold"
+                style={{
+                  fontSize: 'var(--font-size-base)',
+                  color: 'var(--text-primary)',
+                }}
+              >
+                {selectedActivityForQuantity?.name || selectedActivityForQuantity?.id}
+              </p>
+              {selectedActivityForQuantity?.description && (
+                <p
+                  style={{
+                    fontSize: 'var(--font-size-sm)',
+                    color: 'var(--text-secondary)',
+                    marginTop: 'var(--space-1)',
+                  }}
+                >
+                  {selectedActivityForQuantity.description}
+                </p>
+              )}
+            </div>
+
+            {/* Quantity input */}
+            <div>
+              <label
+                htmlFor="quantity-input"
+                className="block mb-[var(--space-2)]"
+                style={{
+                  fontSize: 'var(--font-size-sm)',
+                  fontWeight: 500,
+                  color: 'var(--text-primary)',
+                }}
+              >
+                Quantity per year
+              </label>
+              <div className="flex gap-[var(--space-2)] items-start">
+                <input
+                  id="quantity-input"
+                  type="number"
+                  min="0.1"
+                  step="0.1"
+                  value={quantity}
+                  onChange={(e) => {
+                    setQuantity(parseFloat(e.target.value) || 0);
+                    setQuantityError(null);
+                  }}
+                  className="flex-1 px-[var(--space-3)] py-[var(--space-2)] rounded-[var(--radius-md)] border"
+                  style={{
+                    backgroundColor: 'var(--surface-elevated)',
+                    borderColor: quantityError ? 'var(--carbon-high)' : 'var(--border-default)',
+                    color: 'var(--text-primary)',
+                    fontSize: 'var(--font-size-base)',
+                  }}
+                  autoFocus
+                />
+                <span
+                  className="px-[var(--space-3)] py-[var(--space-2)] rounded-[var(--radius-md)]"
+                  style={{
+                    backgroundColor: 'var(--surface-bg)',
+                    color: 'var(--text-secondary)',
+                    fontSize: 'var(--font-size-base)',
+                  }}
+                >
+                  {selectedActivityForQuantity?.defaultUnit || 'unit'}
+                </span>
+              </div>
+              {quantityError && (
+                <div className="flex items-center gap-[var(--space-1)] mt-[var(--space-2)]">
+                  <AlertCircle className="w-4 h-4" style={{ color: 'var(--carbon-high)' }} />
+                  <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--carbon-high)' }}>
+                    {quantityError}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Emission preview */}
+            {selectedActivityForQuantity && emissionFactorsLoaded && (
+              <div
+                className="p-[var(--space-3)] rounded-[var(--radius-md)]"
+                style={{
+                  backgroundColor: 'var(--carbon-neutral-bg)',
+                  border: '1px solid var(--border-subtle)',
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: 'var(--font-size-xs)',
+                    color: 'var(--text-secondary)',
+                    marginBottom: 'var(--space-1)',
+                  }}
+                >
+                  Estimated annual emissions
+                </p>
+                <p
+                  className="font-bold"
+                  style={{
+                    fontSize: 'var(--font-size-lg)',
+                    color: 'var(--text-primary)',
+                  }}
+                >
+                  {(getEmissionFactor(selectedActivityForQuantity).carbonIntensity * quantity).toFixed(2)} kg CO₂
+                </p>
+                {getEmissionFactor(selectedActivityForQuantity).warning && (
+                  <div className="flex items-start gap-[var(--space-1)] mt-[var(--space-2)]">
+                    <AlertCircle
+                      className="w-3 h-3 flex-shrink-0 mt-0.5"
+                      style={{ color: 'var(--text-tertiary)' }}
+                    />
+                    <p
+                      style={{
+                        fontSize: 'var(--font-size-xs)',
+                        color: 'var(--text-tertiary)',
+                      }}
+                    >
+                      {getEmissionFactor(selectedActivityForQuantity).warning}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={() => setQuantityDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              size="md"
+              onClick={handleConfirmQuantity}
+            >
+              Add Activity
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

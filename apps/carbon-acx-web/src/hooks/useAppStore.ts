@@ -15,4 +15,5 @@ export type {
   ProfileData,
   CanvasZone,
   TransitionState,
+  EmissionSnapshot,
 } from '../store/appStore';

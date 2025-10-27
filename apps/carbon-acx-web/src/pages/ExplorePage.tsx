@@ -13,6 +13,7 @@ import { Button } from '../components/system/Button';
 import { useAppStore } from '../hooks/useAppStore';
 import { TrendingUp, GitCompare, Filter, Download, Lightbulb, Globe } from 'lucide-react';
 import type { EChartsOption } from 'echarts';
+import { exportToCSV } from '../lib/exportUtils';
 
 // Use wrapper that prevents Three.js imports during SSR/build
 import { DataUniverse } from '../components/viz/DataUniverseWrapper';
@@ -37,16 +38,49 @@ export default function ExplorePage() {
   const profileLayers = useAppStore((state) => state.profile.layers);
   const getTotalEmissions = useAppStore((state) => state.getTotalEmissions);
   const activities = useAppStore((state) => state.activities);
+  const emissionsHistory = useAppStore((state) => state.profile.emissionsHistory);
 
   const totalEmissions = getTotalEmissions();
 
-  // Generate sample timeline data
+  // Use real emissions history or generate mock data if history is empty
   const timelineData = React.useMemo(() => {
-    const now = new Date();
-    const dataPoints = [];
     const milestones: Milestone[] = [];
 
-    // Generate 12 months of data
+    // If we have real history, use it
+    if (emissionsHistory.length > 0) {
+      const dataPoints = emissionsHistory.map((snapshot) => ({
+        timestamp: snapshot.timestamp.split('T')[0],
+        value: snapshot.totalEmissions,
+        breakdown: snapshot.breakdown || {},
+      }));
+
+      // Add milestones for first and last entries
+      if (dataPoints.length > 0) {
+        milestones.push({
+          timestamp: dataPoints[0].timestamp,
+          label: 'Baseline Established',
+          value: dataPoints[0].value,
+          description: 'Initial carbon footprint calculated',
+        });
+
+        if (dataPoints.length > 1) {
+          const lastPoint = dataPoints[dataPoints.length - 1];
+          milestones.push({
+            timestamp: lastPoint.timestamp,
+            label: 'Current',
+            value: lastPoint.value,
+            description: 'Latest emissions data',
+          });
+        }
+      }
+
+      return { dataPoints, milestones };
+    }
+
+    // Fallback: Generate sample timeline data if no history
+    const now = new Date();
+    const dataPoints = [];
+
     for (let i = 11; i >= 0; i--) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const dateStr = date.toISOString().split('T')[0];
@@ -85,7 +119,7 @@ export default function ExplorePage() {
     }
 
     return { dataPoints, milestones };
-  }, [totalEmissions]);
+  }, [emissionsHistory, totalEmissions]);
 
   // Generate comparison data
   const comparisonData = React.useMemo(() => {
@@ -182,7 +216,12 @@ export default function ExplorePage() {
   }, [selectedLayers, profileLayers, totalEmissions]);
 
   const handleExport = () => {
-    console.log('Exporting visualization...');
+    try {
+      exportToCSV(activities, totalEmissions);
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert('Failed to export data. Please try again.');
+    }
   };
 
   return (

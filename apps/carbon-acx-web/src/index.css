@@ -36,13 +36,36 @@
     max-width: 100vw;
   }
 
-  :focus-visible {
+  /* Remove default browser focus outline */
+  :focus {
     outline: none;
   }
 
+  /* Add custom focus-visible styles for keyboard navigation */
   :focus-visible:not(.focus-ring-off) {
-    box-shadow: 0 0 0 2px var(--surface-background), 0 0 0 4px var(--focus-color);
+    outline: 2px solid var(--interactive-primary);
+    outline-offset: 2px;
     border-radius: inherit;
+  }
+
+  /* Enhanced focus for interactive elements */
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible,
+  [role="button"]:focus-visible,
+  [role="link"]:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid var(--interactive-primary);
+    outline-offset: 2px;
+  }
+
+  /* Special styling for dialog close buttons and critical actions */
+  button[aria-label*="Close"]:focus-visible,
+  button[type="submit"]:focus-visible {
+    outline: 2px solid var(--color-goal);
+    outline-offset: 2px;
   }
 
   a {
