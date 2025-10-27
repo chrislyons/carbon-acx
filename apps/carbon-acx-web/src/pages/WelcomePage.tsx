@@ -1,35 +1,15 @@
 /**
- * OnboardingScene - Canvas-first onboarding experience
+ * WelcomePage - Onboarding experience
  *
- * Three-step welcome flow introducing users to Carbon ACX:
- * 1. Welcome & value proposition
- * 2. Choose path (Quick Calculator vs Manual Entry)
- * 3. Getting started guidance
- *
- * Features:
- * - Canvas-first layout using CanvasZone
- * - Story-driven transitions using TransitionWrapper
- * - Keyboard navigation support
- * - Skip option with state preservation
- * - Design token consistency
+ * Simplified from OnboardingScene - removed XState, CanvasZone complexity.
+ * Uses React Router navigation instead of journey state machine.
  */
 
 import * as React from 'react';
-import { CanvasZone } from '../canvas/CanvasZone';
-import { StoryScene } from '../canvas/StoryScene';
-import { TransitionWrapper } from '../canvas/TransitionWrapper';
-import { Button } from '../system/Button';
+import { useNavigate } from 'react-router-dom';
+import { TransitionWrapper } from '../components/system/Transition';
+import { Button } from '../components/system/Button';
 import { Calculator, FileText, ArrowRight, Sparkles } from 'lucide-react';
-
-// ============================================================================
-// Types
-// ============================================================================
-
-export interface OnboardingSceneProps {
-  show: boolean;
-  onComplete: (pathChoice: 'calculator' | 'manual') => void;
-  onSkip: () => void;
-}
 
 type OnboardingStep = 1 | 2 | 3;
 
@@ -42,10 +22,6 @@ interface PathChoice {
   benefits: string[];
   recommended?: boolean;
 }
-
-// ============================================================================
-// Data
-// ============================================================================
 
 const PATH_CHOICES: PathChoice[] = [
   {
@@ -76,39 +52,10 @@ const PATH_CHOICES: PathChoice[] = [
   },
 ];
 
-// ============================================================================
-// Component
-// ============================================================================
-
-export function OnboardingScene({ show, onComplete, onSkip }: OnboardingSceneProps) {
+export default function WelcomePage() {
+  const navigate = useNavigate();
   const [step, setStep] = React.useState<OnboardingStep>(1);
   const [selectedPath, setSelectedPath] = React.useState<'calculator' | 'manual' | null>(null);
-
-  // Reset on mount
-  React.useEffect(() => {
-    if (show) {
-      setStep(1);
-      setSelectedPath(null);
-    }
-  }, [show]);
-
-  // Keyboard navigation
-  React.useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (!show) return;
-
-      if (e.key === 'Escape') {
-        onSkip();
-      }
-
-      if (e.key === 'Enter' && step === 3 && selectedPath) {
-        onComplete(selectedPath);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [show, step, selectedPath, onComplete, onSkip]);
 
   const handlePathSelect = (pathId: 'calculator' | 'manual') => {
     setSelectedPath(pathId);
@@ -125,64 +72,63 @@ export function OnboardingScene({ show, onComplete, onSkip }: OnboardingScenePro
   };
 
   const handleComplete = () => {
-    if (selectedPath) {
-      onComplete(selectedPath);
-    }
+    // Navigate to calculator page based on selected path
+    navigate('/calculator', { state: { mode: selectedPath } });
   };
 
-  if (!show) return null;
+  const handleSkip = () => {
+    navigate('/explore');
+  };
 
   return (
-    <StoryScene scene="onboarding" layout="canvas" title="Welcome" progress={step / 3}>
-      <CanvasZone zone="hero" zoneId="onboarding-hero" padding="lg" interactionMode="explore">
-        {/* Progress indicator */}
-        <div className="absolute top-8 left-0 right-0 flex justify-center gap-[var(--space-2)] z-10">
-          {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="h-1 w-16 rounded-full transition-colors duration-300"
-              style={{
-                backgroundColor:
-                  i <= step ? 'var(--interactive-primary)' : 'var(--border-subtle)',
-              }}
-              role="progressbar"
-              aria-valuenow={step}
-              aria-valuemin={1}
-              aria-valuemax={3}
-            />
-          ))}
-        </div>
+    <div className="canvas-hero">
+      {/* Progress indicator */}
+      <div className="absolute top-8 left-0 right-0 flex justify-center gap-[var(--space-2)] z-10">
+        {[1, 2, 3].map((i) => (
+          <div
+            key={i}
+            className="h-1 w-16 rounded-full transition-colors duration-300"
+            style={{
+              backgroundColor:
+                i <= step ? 'var(--interactive-primary)' : 'var(--border-subtle)',
+            }}
+            role="progressbar"
+            aria-valuenow={step}
+            aria-valuemin={1}
+            aria-valuemax={3}
+          />
+        ))}
+      </div>
 
-        {/* Skip button */}
-        <button
-          onClick={onSkip}
-          className="absolute top-8 right-8 text-[var(--font-size-sm)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors z-10"
-          aria-label="Skip onboarding"
-        >
-          Skip for now →
-        </button>
+      {/* Skip button */}
+      <button
+        onClick={handleSkip}
+        className="absolute top-8 right-8 text-[var(--font-size-sm)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors z-10"
+        aria-label="Skip onboarding"
+      >
+        Skip for now →
+      </button>
 
-        {/* Step content */}
-        <div className="flex items-center justify-center min-h-[80vh] px-[var(--space-8)]">
-          <TransitionWrapper type="story" show={step === 1} delay={0}>
-            <WelcomeStep onNext={() => setStep(2)} />
-          </TransitionWrapper>
+      {/* Step content */}
+      <div className="flex items-center justify-center min-h-[80vh] px-[var(--space-8)]">
+        <TransitionWrapper type="story" show={step === 1} delay={0}>
+          <WelcomeStep onNext={() => setStep(2)} />
+        </TransitionWrapper>
 
-          <TransitionWrapper type="story" show={step === 2} delay={0}>
-            <PathSelectionStep paths={PATH_CHOICES} onSelect={handlePathSelect} onBack={handleBack} />
-          </TransitionWrapper>
+        <TransitionWrapper type="story" show={step === 2} delay={0}>
+          <PathSelectionStep paths={PATH_CHOICES} onSelect={handlePathSelect} onBack={handleBack} />
+        </TransitionWrapper>
 
-          <TransitionWrapper type="story" show={step === 3} delay={0}>
-            <GettingStartedStep
-              selectedPath={selectedPath}
-              paths={PATH_CHOICES}
-              onBack={handleBack}
-              onComplete={handleComplete}
-            />
-          </TransitionWrapper>
-        </div>
-      </CanvasZone>
-    </StoryScene>
+        <TransitionWrapper type="story" show={step === 3} delay={0}>
+          <GettingStartedStep
+            selectedPath={selectedPath}
+            paths={PATH_CHOICES}
+            onBack={handleBack}
+            onComplete={handleComplete}
+          />
+        </TransitionWrapper>
+      </div>
+    </div>
   );
 }
 
@@ -197,40 +143,29 @@ interface WelcomeStepProps {
 function WelcomeStep({ onNext }: WelcomeStepProps) {
   return (
     <div className="max-w-3xl mx-auto text-center space-y-[var(--space-8)]">
-      {/* Hero icon */}
       <div
         className="mx-auto w-24 h-24 rounded-full flex items-center justify-center"
-        style={{
-          backgroundColor: 'var(--color-baseline-bg)',
-        }}
+        style={{ backgroundColor: 'var(--color-baseline-bg)' }}
       >
         <Sparkles className="w-12 h-12" style={{ color: 'var(--color-baseline)' }} />
       </div>
 
-      {/* Headline */}
       <div className="space-y-[var(--space-4)]">
         <h1
           className="font-bold"
-          style={{
-            fontSize: 'var(--font-size-4xl)',
-            color: 'var(--text-primary)',
-          }}
+          style={{ fontSize: 'var(--font-size-4xl)', color: 'var(--text-primary)' }}
         >
           Welcome to Carbon ACX
         </h1>
         <p
           className="max-w-2xl mx-auto"
-          style={{
-            fontSize: 'var(--font-size-lg)',
-            color: 'var(--text-secondary)',
-          }}
+          style={{ fontSize: 'var(--font-size-lg)', color: 'var(--text-secondary)' }}
         >
           A literacy tool for carbon accounting. Compare emissions across activities, understand
           data at every scale, and build audit-ready reports.
         </p>
       </div>
 
-      {/* Value props */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-[var(--space-6)] max-w-4xl mx-auto">
         <ValueProp
           emoji="📊"
@@ -249,7 +184,6 @@ function WelcomeStep({ onNext }: WelcomeStepProps) {
         />
       </div>
 
-      {/* CTA */}
       <div className="pt-[var(--space-8)]">
         <Button variant="primary" size="lg" onClick={onNext} icon={<ArrowRight className="w-5 h-5" />}>
           Get Started
@@ -271,19 +205,11 @@ function ValueProp({ emoji, title, description }: ValuePropProps) {
       <div className="text-4xl mb-[var(--space-3)]">{emoji}</div>
       <h3
         className="font-semibold"
-        style={{
-          fontSize: 'var(--font-size-base)',
-          color: 'var(--text-primary)',
-        }}
+        style={{ fontSize: 'var(--font-size-base)', color: 'var(--text-primary)' }}
       >
         {title}
       </h3>
-      <p
-        style={{
-          fontSize: 'var(--font-size-sm)',
-          color: 'var(--text-secondary)',
-        }}
-      >
+      <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-secondary)' }}>
         {description}
       </p>
     </div>
@@ -299,36 +225,27 @@ interface PathSelectionStepProps {
 function PathSelectionStep({ paths, onSelect, onBack }: PathSelectionStepProps) {
   return (
     <div className="max-w-5xl mx-auto space-y-[var(--space-8)]">
-      {/* Header */}
       <div className="text-center space-y-[var(--space-4)]">
         <h2
           className="font-bold"
-          style={{
-            fontSize: 'var(--font-size-3xl)',
-            color: 'var(--text-primary)',
-          }}
+          style={{ fontSize: 'var(--font-size-3xl)', color: 'var(--text-primary)' }}
         >
           Choose Your Starting Point
         </h2>
         <p
           className="max-w-2xl mx-auto"
-          style={{
-            fontSize: 'var(--font-size-base)',
-            color: 'var(--text-secondary)',
-          }}
+          style={{ fontSize: 'var(--font-size-base)', color: 'var(--text-secondary)' }}
         >
           Don't worry — you can always switch methods later
         </p>
       </div>
 
-      {/* Path cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-[var(--space-6)]">
         {paths.map((path) => (
           <PathCard key={path.id} path={path} onSelect={() => onSelect(path.id)} />
         ))}
       </div>
 
-      {/* Back button */}
       <div className="flex justify-center pt-[var(--space-4)]">
         <Button variant="ghost" size="md" onClick={onBack}>
           ← Back
@@ -357,13 +274,10 @@ function PathCard({ path, onSelect }: PathCardProps) {
           : 'var(--surface-elevated)',
       }}
     >
-      {/* Header */}
       <div className="flex items-start justify-between mb-[var(--space-4)]">
         <div
           className="p-[var(--space-3)] rounded-[var(--radius-lg)]"
-          style={{
-            backgroundColor: 'var(--surface-bg)',
-          }}
+          style={{ backgroundColor: 'var(--surface-bg)' }}
         >
           <Icon className="w-6 h-6 text-[var(--interactive-primary)]" />
         </div>
@@ -380,46 +294,30 @@ function PathCard({ path, onSelect }: PathCardProps) {
         )}
       </div>
 
-      {/* Title & description */}
       <div className="space-y-[var(--space-2)] mb-[var(--space-4)]">
         <h3
           className="font-bold"
-          style={{
-            fontSize: 'var(--font-size-xl)',
-            color: 'var(--text-primary)',
-          }}
+          style={{ fontSize: 'var(--font-size-xl)', color: 'var(--text-primary)' }}
         >
           {path.title}
         </h3>
-        <p
-          style={{
-            fontSize: 'var(--font-size-sm)',
-            color: 'var(--text-secondary)',
-          }}
-        >
+        <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-secondary)' }}>
           {path.description}
         </p>
         <p
           className="font-medium"
-          style={{
-            fontSize: 'var(--font-size-xs)',
-            color: 'var(--text-tertiary)',
-          }}
+          style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)' }}
         >
           {path.duration}
         </p>
       </div>
 
-      {/* Benefits */}
       <ul className="space-y-[var(--space-2)]">
         {path.benefits.map((benefit, index) => (
           <li
             key={index}
             className="flex items-start gap-[var(--space-2)]"
-            style={{
-              fontSize: 'var(--font-size-sm)',
-              color: 'var(--text-secondary)',
-            }}
+            style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-secondary)' }}
           >
             <span style={{ color: 'var(--carbon-low)' }}>✓</span>
             {benefit}
@@ -427,7 +325,6 @@ function PathCard({ path, onSelect }: PathCardProps) {
         ))}
       </ul>
 
-      {/* CTA */}
       <div className="mt-[var(--space-6)] flex items-center gap-[var(--space-2)] font-medium" style={{ color: 'var(--interactive-primary)' }}>
         Choose this path
         <ArrowRight className="w-4 h-4" />
@@ -460,33 +357,23 @@ function GettingStartedStep({ selectedPath, paths, onBack, onComplete }: Getting
 
   return (
     <div className="max-w-3xl mx-auto text-center space-y-[var(--space-8)]">
-      {/* Icon */}
       <div
         className="mx-auto w-20 h-20 rounded-full flex items-center justify-center"
-        style={{
-          backgroundColor: 'var(--carbon-low-bg)',
-        }}
+        style={{ backgroundColor: 'var(--carbon-low-bg)' }}
       >
         <Icon className="w-10 h-10" style={{ color: 'var(--carbon-low)' }} />
       </div>
 
-      {/* Headline */}
       <div className="space-y-[var(--space-4)]">
         <h2
           className="font-bold"
-          style={{
-            fontSize: 'var(--font-size-3xl)',
-            color: 'var(--text-primary)',
-          }}
+          style={{ fontSize: 'var(--font-size-3xl)', color: 'var(--text-primary)' }}
         >
           You're Ready!
         </h2>
         <p
           className="max-w-2xl mx-auto"
-          style={{
-            fontSize: 'var(--font-size-base)',
-            color: 'var(--text-secondary)',
-          }}
+          style={{ fontSize: 'var(--font-size-base)', color: 'var(--text-secondary)' }}
         >
           {path.id === 'calculator'
             ? 'Answer 4 simple questions to get your baseline emissions estimate.'
@@ -494,41 +381,6 @@ function GettingStartedStep({ selectedPath, paths, onBack, onComplete }: Getting
         </p>
       </div>
 
-      {/* What's next */}
-      <div
-        className="p-[var(--space-6)] rounded-[var(--radius-lg)] text-left space-y-[var(--space-4)]"
-        style={{
-          backgroundColor: 'var(--surface-elevated)',
-          border: '1px solid var(--border-default)',
-        }}
-      >
-        <h3
-          className="font-semibold"
-          style={{
-            fontSize: 'var(--font-size-lg)',
-            color: 'var(--text-primary)',
-          }}
-        >
-          What happens next:
-        </h3>
-        <ol className="space-y-[var(--space-3)]">
-          {path.id === 'calculator' ? (
-            <>
-              <StepItem number={1} text="Answer 4 questions about your daily activities" />
-              <StepItem number={2} text="See your instant emissions estimate with comparisons" />
-              <StepItem number={3} text="Refine with detailed activities or export your baseline" />
-            </>
-          ) : (
-            <>
-              <StepItem number={1} text="Browse activities organized by sector and impact" />
-              <StepItem number={2} text="Select 5-20 activities that match your operations" />
-              <StepItem number={3} text="Specify quantities and see your full emissions breakdown" />
-            </>
-          )}
-        </ol>
-      </div>
-
-      {/* CTAs */}
       <div className="flex flex-col sm:flex-row items-center justify-center gap-[var(--space-4)] pt-[var(--space-4)]">
         <Button variant="ghost" size="md" onClick={onBack}>
           ← Change path
@@ -538,44 +390,9 @@ function GettingStartedStep({ selectedPath, paths, onBack, onComplete }: Getting
         </Button>
       </div>
 
-      {/* Hint */}
-      <p
-        style={{
-          fontSize: 'var(--font-size-xs)',
-          color: 'var(--text-tertiary)',
-        }}
-      >
+      <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)' }}>
         💡 Tip: Your progress is saved automatically as you go
       </p>
     </div>
-  );
-}
-
-interface StepItemProps {
-  number: number;
-  text: string;
-}
-
-function StepItem({ number, text }: StepItemProps) {
-  return (
-    <li className="flex items-start gap-[var(--space-3)]">
-      <span
-        className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center font-bold text-white"
-        style={{
-          backgroundColor: 'var(--interactive-primary)',
-          fontSize: 'var(--font-size-xs)',
-        }}
-      >
-        {number}
-      </span>
-      <span
-        style={{
-          fontSize: 'var(--font-size-sm)',
-          color: 'var(--text-secondary)',
-        }}
-      >
-        {text}
-      </span>
-    </li>
   );
 }

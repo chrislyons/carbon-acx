@@ -1,0 +1,93 @@
+/**
+ * Canvas Layout Styles
+ *
+ * Simplified canvas layout with viewport-based zones.
+ * Replaces complex CanvasZone component with simple CSS classes.
+ */
+
+/* ============================================================================
+ * Zone Heights (Viewport-based)
+ * ============================================================================ */
+
+.canvas-hero {
+  min-height: 70vh;
+  display: grid;
+  place-items: center;
+  padding: var(--space-8);
+}
+
+.canvas-insight {
+  min-height: 20vh;
+  background: var(--surface-subtle);
+  padding: var(--space-6);
+  border-top: 1px solid var(--border-default);
+}
+
+.canvas-detail {
+  min-height: 10vh;
+  padding: var(--space-4);
+  background: var(--surface-elevated);
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* ============================================================================
+ * Padding Variants
+ * ============================================================================ */
+
+.canvas-hero--compact {
+  padding: var(--space-4);
+}
+
+.canvas-hero--expanded {
+  padding: var(--space-12);
+}
+
+.canvas-insight--compact {
+  padding: var(--space-4);
+}
+
+.canvas-insight--expanded {
+  padding: var(--space-8);
+}
+
+.canvas-detail--compact {
+  padding: var(--space-2);
+}
+
+.canvas-detail--expanded {
+  padding: var(--space-6);
+}
+
+/* ============================================================================
+ * Interaction Modes (for future interactivity)
+ * ============================================================================ */
+
+.canvas-zone--interactive {
+  cursor: pointer;
+  transition: background-color var(--motion-story-duration) var(--motion-story-ease);
+}
+
+.canvas-zone--interactive:hover {
+  background-color: var(--surface-hover);
+}
+
+/* ============================================================================
+ * Responsive Adjustments
+ * ============================================================================ */
+
+@media (max-width: 768px) {
+  .canvas-hero {
+    min-height: 60vh;
+    padding: var(--space-4);
+  }
+
+  .canvas-insight {
+    min-height: 25vh;
+    padding: var(--space-4);
+  }
+
+  .canvas-detail {
+    min-height: 15vh;
+    padding: var(--space-3);
+  }
+}

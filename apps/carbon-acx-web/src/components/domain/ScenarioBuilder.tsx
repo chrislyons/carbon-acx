@@ -16,7 +16,7 @@ import * as React from 'react';
 import { Button } from '../system/Button';
 import { Input } from '../system/Input';
 import { ComparisonOverlay } from '../viz/ComparisonOverlay';
-import { TransitionWrapper } from '../canvas/TransitionWrapper';
+import { TransitionWrapper } from '../system/Transition';
 import { Plus, Minus, Save, X, RefreshCw, TrendingDown } from 'lucide-react';
 import type { EChartsOption } from 'echarts';
 

@@ -1,133 +1,104 @@
 /**
- * CanvasApp - Phase 1 Rebuild Entry Point
+ * CanvasApp - Simplified Entry Point
  *
- * Canvas-first, story-driven application architecture.
- * Uses XState journey machine + Zustand app store.
+ * Removed:
+ * - XState journey machine (replaced with React Router)
+ * - CanvasZone complexity (replaced with simple CSS classes)
+ * - Over-engineered state orchestration
  *
- * This is the new application - the old grid-based app is in legacy/
+ * Uses:
+ * - React Router for navigation
+ * - Zustand for app state
+ * - Simple CSS classes for layout
  */
 
 import React from 'react';
-import { useJourneyMachine } from './hooks/useJourneyMachine';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAppStore } from './hooks/useAppStore';
 import { ErrorBoundary } from './components/system/ErrorBoundary';
 
-// Story Scenes (Tier 5)
-import { OnboardingScene } from './components/scenes/OnboardingScene';
-import { BaselineScene } from './components/scenes/BaselineScene';
-import { ExploreScene } from './components/scenes/ExploreScene';
-import { InsightScene } from './components/scenes/InsightScene';
+// Lazy-loaded pages
+const WelcomePage = React.lazy(() => import('./pages/WelcomePage'));
+const CalculatorPage = React.lazy(() => import('./pages/CalculatorPage'));
+const ExplorePage = React.lazy(() => import('./pages/ExplorePage'));
+const InsightsPage = React.lazy(() => import('./pages/InsightsPage'));
 
 // Styles
 import './styles/tokens.css';
+import './styles/canvas.css';
 import './index.css';
 
-export default function CanvasApp() {
-  const {
-    isOnboarding,
-    isBaseline,
-    isExplore,
-    isInsight,
-    skipOnboarding,
-    completeOnboarding,
-    baselineComplete,
-    exploreSectors,
-  } = useJourneyMachine();
+function LoadingFallback() {
+  return (
+    <div className="canvas-hero">
+      <div style={{ color: 'var(--text-secondary)' }}>Loading...</div>
+    </div>
+  );
+}
 
-  // Get profile data
-  const getTotalEmissions = useAppStore((state) => state.getTotalEmissions);
+function RootRedirect() {
   const activities = useAppStore((state) => state.activities);
-  const totalEmissions = getTotalEmissions();
+  const getTotalEmissions = useAppStore((state) => state.getTotalEmissions);
 
-  // Track chosen path from onboarding
-  const [baselineMode, setBaselineMode] = React.useState<'calculator' | 'manual'>('calculator');
+  // If user has data, go to explore; otherwise show welcome
+  if (activities.length > 0 || getTotalEmissions() > 0) {
+    return <Navigate to="/explore" replace />;
+  }
 
-  // Smart initialization: If user has data, skip to Explore scene
-  React.useEffect(() => {
-    // Only run once on mount
-    if (isOnboarding && (activities.length > 0 || totalEmissions > 0)) {
-      // User has baseline data - skip to Explore
-      skipOnboarding();
-      baselineComplete();
-      exploreSectors();
-    }
-  }, []); // Empty deps = run once on mount
+  return <Navigate to="/welcome" replace />;
+}
 
-  const handleOnboardingComplete = (pathChoice: 'calculator' | 'manual') => {
-    setBaselineMode(pathChoice);
-    completeOnboarding();
-  };
-
+export default function CanvasApp() {
   return (
     <div className="min-h-screen bg-[var(--surface-bg)]">
-      {/* Onboarding Scene */}
-      <ErrorBoundary>
-        <OnboardingScene
-          show={isOnboarding}
-          onComplete={handleOnboardingComplete}
-          onSkip={skipOnboarding}
-        />
-      </ErrorBoundary>
+      <BrowserRouter>
+        <ErrorBoundary>
+          <React.Suspense fallback={<LoadingFallback />}>
+            <Routes>
+              <Route path="/" element={<RootRedirect />} />
+              <Route path="/welcome" element={<WelcomePage />} />
+              <Route path="/calculator" element={<CalculatorPage />} />
+              <Route path="/explore" element={<ExplorePage />} />
+              <Route path="/insights" element={<InsightsPage />} />
 
-      {/* Baseline Scene */}
-      <ErrorBoundary>
-        <BaselineScene
-          show={isBaseline}
-          mode={baselineMode}
-          onComplete={baselineComplete}
-        />
-      </ErrorBoundary>
-
-      {/* Explore Scene */}
-      <ErrorBoundary>
-        <ExploreScene
-          show={isExplore}
-          initialMode="timeline"
-        />
-      </ErrorBoundary>
-
-      {/* Insight Scene */}
-      <ErrorBoundary>
-        <InsightScene show={isInsight} />
-      </ErrorBoundary>
+              {/* Fallback */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </React.Suspense>
+        </ErrorBoundary>
+      </BrowserRouter>
 
       {/* Debug Panel (development only) */}
-      {import.meta.env.DEV && (
-        <div
-          className="fixed bottom-4 right-4 p-4 rounded-lg shadow-lg"
-          style={{
-            backgroundColor: 'var(--surface-elevated)',
-            border: '1px solid var(--border-default)',
-            fontSize: 'var(--font-size-xs)',
-            color: 'var(--text-secondary)',
-            maxWidth: '300px',
-            zIndex: 9999,
-          }}
-        >
-          <div className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
-            🎨 Canvas App Debug
-          </div>
-          <div className="space-y-1">
-            <div>State: {isOnboarding ? 'Onboarding' : isBaseline ? 'Baseline' : isExplore ? 'Explore' : 'Insight'}</div>
-            <div>Emissions: {(totalEmissions / 1000).toFixed(1)}t CO₂/yr</div>
-            <div className="pt-2 mt-2 border-t border-[var(--border-subtle)]">
-              <div className="font-medium mb-1">Quick Actions:</div>
-              <button
-                onClick={skipOnboarding}
-                className="block w-full text-left px-2 py-1 rounded hover:bg-[var(--surface-hover)]"
-              >
-                → Skip to Baseline
-              </button>
-              <button
-                onClick={baselineComplete}
-                className="block w-full text-left px-2 py-1 rounded hover:bg-[var(--surface-hover)]"
-              >
-                → Skip to Explore
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {import.meta.env.DEV && <DebugPanel />}
+    </div>
+  );
+}
+
+function DebugPanel() {
+  const getTotalEmissions = useAppStore((state) => state.getTotalEmissions);
+  const activities = useAppStore((state) => state.activities);
+
+  const totalEmissions = getTotalEmissions();
+
+  return (
+    <div
+      className="fixed bottom-4 right-4 p-4 rounded-lg shadow-lg"
+      style={{
+        backgroundColor: 'var(--surface-elevated)',
+        border: '1px solid var(--border-default)',
+        fontSize: 'var(--font-size-xs)',
+        color: 'var(--text-secondary)',
+        maxWidth: '300px',
+        zIndex: 9999,
+      }}
+    >
+      <div className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
+        Debug Info
+      </div>
+      <div className="space-y-1">
+        <div>Activities: {activities.length}</div>
+        <div>Emissions: {(totalEmissions / 1000).toFixed(1)}t CO₂/yr</div>
+      </div>
     </div>
   );
 }

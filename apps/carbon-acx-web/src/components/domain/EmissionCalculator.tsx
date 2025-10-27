@@ -12,7 +12,7 @@
  */
 
 import * as React from 'react';
-import { TransitionWrapper } from '../canvas/TransitionWrapper';
+import { TransitionWrapper } from '../system/Transition';
 import { GaugeProgress } from '../viz/GaugeProgress';
 import { Button } from '../system/Button';
 import { Car, Utensils, Home, ShoppingBag, ArrowRight, ArrowLeft, Plane, Trees, Coffee, ChevronDown, ChevronUp } from 'lucide-react';

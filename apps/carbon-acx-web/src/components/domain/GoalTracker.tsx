@@ -16,7 +16,7 @@ import * as React from 'react';
 import { Button } from '../system/Button';
 import { Input } from '../system/Input';
 import { GaugeProgress } from '../viz/GaugeProgress';
-import { TransitionWrapper } from '../canvas/TransitionWrapper';
+import { TransitionWrapper } from '../system/Transition';
 import { Target, Calendar, TrendingDown, Award, Sparkles, Edit2, Check, X } from 'lucide-react';
 
 // ============================================================================
