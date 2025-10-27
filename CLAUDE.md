@@ -40,7 +40,8 @@ Open reference stack for trustworthy carbon accounting — manifest-first archit
 - State: Zustand only (simplified from dual-store pattern)
 - Viz: Apache ECharts 6.0 (2D charts) + Three.js (3D universe)
 - 2D+3D Hybrid: Citations, methodology, activity management in 2D overlays
-- Camera choreography: Intro animations, click-to-fly (in progress)
+- Camera choreography: Intro animations, hover glow, click-to-fly infrastructure
+- SSR safety: Lazy-loaded DataUniverse with React.Suspense for Cloudflare Pages
 - Docs: `docs/acx/ACX084.md` (supersedes ACX080.md)
 
 **Static React Site (`site/`):**
@@ -166,17 +167,32 @@ navigate('/explore'); // Simple, direct navigation
 
 ### 3D Visualization Pattern
 
-**DataUniverse Component:**
+**DataUniverse Component (Lazy-Loaded for SSR Safety):**
 ```typescript
-import { DataUniverse } from '../components/viz/DataUniverse';
+// IMPORTANT: Must use React.lazy() to prevent Three.js SSR errors
+const DataUniverse = React.lazy(() =>
+  import('../components/viz/DataUniverse').then((module) => ({
+    default: module.DataUniverse,
+  }))
+);
 
-<DataUniverse
-  totalEmissions={totalEmissions}           // kg CO₂ (central sphere size)
-  activities={activities}                    // Array of Activity objects
-  onActivityClick={handleActivityClick}     // Click handler
-  enableIntroAnimation={true}                // Zoom animation on mount
-  enableClickToFly={true}                    // Camera flies to clicked sphere
-/>
+// Wrap in Suspense with fallback
+<React.Suspense
+  fallback={
+    <div className="w-full h-full flex items-center justify-center"
+         style={{ background: '#0a0e27', color: '#fff' }}>
+      Loading 3D Universe...
+    </div>
+  }
+>
+  <DataUniverse
+    totalEmissions={totalEmissions}           // kg CO₂ (central sphere size)
+    activities={activities}                    // Array of Activity objects
+    onActivityClick={handleActivityClick}     // Click handler
+    enableIntroAnimation={true}                // Zoom animation on mount
+    enableClickToFly={true}                    // Camera flies to clicked sphere
+  />
+</React.Suspense>
 ```
 
 **Activity Data Shape:**

@@ -10,11 +10,13 @@ This is the modern, production-ready web application for Carbon ACX, built with 
 
 Carbon ACX Web is the primary web interface for exploring carbon accounting data, visualizations, and disclosures. It provides:
 
+- **3D data visualization** using Three.js and React Three Fiber for immersive emissions exploration
 - **Interactive data exploration** with agency breakdowns and layer catalogues
-- **High-performance visualization** using Recharts and optimized data fetching
+- **High-performance visualization** using Apache ECharts (2D charts) and Three.js (3D universe)
+- **2D+3D hybrid architecture** with transparency overlays (citations, methodology, activity management)
 - **Responsive design** with Tailwind CSS and Radix UI components
 - **Type-safe development** with comprehensive TypeScript coverage
-- **Production-ready builds** optimized for Cloudflare Pages deployment
+- **Production-ready builds** optimized for Cloudflare Pages deployment with SSR safety
 
 ---
 
@@ -51,10 +53,16 @@ Carbon ACX Web is the primary web interface for exploring carbon accounting data
 - **class-variance-authority** - Variant-based component styling
 - **Framer Motion 11** - Animation library
 
+### 3D Visualization
+- **Three.js ^0.180.0** - 3D graphics library
+- **React Three Fiber ^9.4.0** - React renderer for Three.js
+- **React Three Drei ^10.7.6** - Helper components (OrbitControls, Stars, Html)
+
 ### Data & State
-- **SWR 2.3** - Data fetching and caching
+- **Zustand 4.5.4** - Lightweight state management
+- **TanStack Query 5.90.5** - Data fetching and server state
 - **React Router 6.28** - Client-side routing
-- **Recharts 2.12** - Charting library
+- **Apache ECharts 6.0** - High-performance 2D charting library
 
 ### Virtualization
 - **@tanstack/react-virtual** - Efficient rendering of large lists
@@ -206,9 +214,41 @@ This is run from the root package.json and generates TypeScript types for the Ca
 
 ## Architecture Notes
 
+### 3D Universe Architecture
+
+The application uses a **3D+2D hybrid architecture** (see `docs/acx/ACX084.md` for full details):
+
+**3D Visualization (DataUniverse):**
+- Central sphere representing total annual emissions
+- Orbiting spheres for individual activities (size = log scale of emissions)
+- Color-coded by emission level (green/amber/red)
+- Camera choreography with intro animations and smooth transitions
+- Hover effects with glow and enhanced labels
+- SSR-safe with React.lazy() and Suspense
+
+**2D Transparency Overlays:**
+- CitationPanel - Emission factor sources and provenance
+- MethodologyModal - Calculation methodology documentation
+- ActivityManagement - Activity editing and management table
+- All overlays use Radix UI Dialog for accessible modals
+
+**Design Token System:**
+- CSS custom properties for consistency (`--font-size-*`, `--carbon-*`, `--space-*`)
+- Major Third typography scale (1.250 ratio)
+- 4px base spacing system
+- Semantic color tokens for carbon intensity levels
+
+### State Management
+
+**Zustand** for application state:
+- Single store pattern (`useAppStore`)
+- Activities, profile, emissions calculations
+- Simple, predictable state updates
+- No complex state machines
+
 ### Data Fetching Strategy
 
-This app uses **SWR** (stale-while-revalidate) for data fetching:
+**TanStack Query** (formerly React Query) for server state:
 - Automatic caching and revalidation
 - Optimistic UI updates
 - Built-in error retry logic
@@ -216,18 +256,22 @@ This app uses **SWR** (stale-while-revalidate) for data fetching:
 
 ### Routing
 
-**React Router 6** provides client-side routing:
-- Code-splitting at route level for optimal bundle sizes
-- Nested routes for layout composition
-- Type-safe route parameters
+**React Router 6** provides simple, direct navigation:
+- No XState journey machine (simplified from Phase 1)
+- Page-based structure: Welcome → Calculator → Explore → Insights
+- Code-splitting at page level for optimal bundle sizes
+- SSR-safe lazy loading for 3D components
 
 ### Component Patterns
 
 Components follow these patterns:
-- **Radix UI primitives** for accessible, unstyled components
-- **CVA (class-variance-authority)** for variant-based styling
-- **Tailwind utility classes** for custom styling
-- **Composition over inheritance** for component reusability
+- **Tier 1: Primitives** - Radix UI components (Button, Input, Dialog)
+- **Tier 2: Visualizations** - DataUniverse (3D), ECharts wrappers (2D)
+- **Tier 3: Domain** - CitationPanel, ActivityManagement, EmissionCalculator
+- **Tier 4: Pages** - WelcomePage, CalculatorPage, ExplorePage, InsightsPage
+- **Design tokens over hardcoding** - Always use CSS custom properties
+- **Composition over inheritance** - Component reusability through composition
+- **SSR safety** - React.lazy() for Three.js components
 
 ### Build Optimization
 
@@ -386,5 +430,6 @@ npm run test -- --reporter=verbose
 ---
 
 **Status:** Active development (primary production interface)
+**Current Branch:** `feature/3d-universe` (3D Universe Foundation Sprint complete)
 **Maintainer:** Carbon ACX Core Team
-**Last Updated:** 2025-10-12
+**Last Updated:** 2025-10-27
