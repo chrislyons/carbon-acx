@@ -16,14 +16,18 @@ import {
   GoalShareableCard,
   AchievementShareableCard,
 } from '../components/domain/ShareableCard';
+import { DataUniverse } from '../components/viz/DataUniverse';
 import { useAppStore } from '../hooks/useAppStore';
-import { Lightbulb, Target, GitCompare, Share2, X, ArrowLeft } from 'lucide-react';
+import { Lightbulb, Target, GitCompare, Share2, X, ArrowLeft, Globe, List } from 'lucide-react';
 
 type ActiveView = 'insights' | 'scenarios' | 'goals' | 'share';
+type InsightDisplayMode = 'cards' | 'universe';
 
 export default function InsightsPage() {
   const navigate = useNavigate();
   const [activeView, setActiveView] = React.useState<ActiveView>('insights');
+  const [displayMode, setDisplayMode] = React.useState<InsightDisplayMode>('cards');
+  const [selectedActivity, setSelectedActivity] = React.useState<any>(null);
 
   const {
     activities,
@@ -177,23 +181,53 @@ export default function InsightsPage() {
         {/* Insights view */}
         {activeView === 'insights' && (
           <div>
-            <h2
-              className="font-bold mb-[var(--space-6)]"
-              style={{
-                fontSize: 'var(--font-size-2xl)',
-                color: 'var(--text-primary)',
-              }}
-            >
-              Your Carbon Insights
-            </h2>
+            <div className="flex items-center justify-between mb-[var(--space-6)]">
+              <h2
+                className="font-bold"
+                style={{
+                  fontSize: 'var(--font-size-2xl)',
+                  color: 'var(--text-primary)',
+                }}
+              >
+                Your Carbon Insights
+              </h2>
 
-            {insights.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[var(--space-4)]">
-                {insights.map((insight) => (
-                  <InsightCard key={insight.id} insight={insight} />
-                ))}
-              </div>
-            ) : (
+              {/* Display mode toggle */}
+              {activities.length > 0 && (
+                <div
+                  className="inline-flex rounded-[var(--radius-md)] p-1"
+                  style={{
+                    backgroundColor: 'var(--surface-elevated)',
+                    border: '1px solid var(--border-default)',
+                  }}
+                >
+                  <button
+                    onClick={() => setDisplayMode('cards')}
+                    className="px-3 py-2 rounded-[var(--radius-sm)] flex items-center gap-2 transition-colors"
+                    style={{
+                      backgroundColor: displayMode === 'cards' ? 'var(--interactive-primary)' : 'transparent',
+                      color: displayMode === 'cards' ? 'white' : 'var(--text-secondary)',
+                    }}
+                  >
+                    <List className="w-4 h-4" />
+                    <span style={{ fontSize: 'var(--font-size-sm)' }}>Cards</span>
+                  </button>
+                  <button
+                    onClick={() => setDisplayMode('universe')}
+                    className="px-3 py-2 rounded-[var(--radius-sm)] flex items-center gap-2 transition-colors"
+                    style={{
+                      backgroundColor: displayMode === 'universe' ? 'var(--interactive-primary)' : 'transparent',
+                      color: displayMode === 'universe' ? 'white' : 'var(--text-secondary)',
+                    }}
+                  >
+                    <Globe className="w-4 h-4" />
+                    <span style={{ fontSize: 'var(--font-size-sm)' }}>3D View</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {activities.length === 0 ? (
               <div
                 className="text-center py-12 rounded-[var(--radius-lg)]"
                 style={{
@@ -203,6 +237,185 @@ export default function InsightsPage() {
                 }}
               >
                 Add activities to your baseline to generate insights
+              </div>
+            ) : displayMode === 'cards' ? (
+              <>
+                {insights.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[var(--space-4)]">
+                    {insights.map((insight) => (
+                      <InsightCard key={insight.id} insight={insight} />
+                    ))}
+                  </div>
+                ) : (
+                  <div
+                    className="text-center py-12 rounded-[var(--radius-lg)]"
+                    style={{
+                      backgroundColor: 'var(--surface-elevated)',
+                      fontSize: 'var(--font-size-lg)',
+                      color: 'var(--text-secondary)',
+                    }}
+                  >
+                    No insights detected yet. Add more activities to unlock insights.
+                  </div>
+                )}
+              </>
+            ) : (
+              // 3D Universe Mode with Sidebar
+              <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-[var(--space-6)]">
+                {/* 3D Universe */}
+                <div
+                  className="rounded-[var(--radius-lg)] overflow-hidden"
+                  style={{
+                    backgroundColor: 'var(--surface-elevated)',
+                    border: '1px solid var(--border-default)',
+                    height: '600px',
+                  }}
+                >
+                  <DataUniverse
+                    totalEmissions={totalEmissions}
+                    activities={activities.map((a) => ({
+                      id: a.id,
+                      name: a.name,
+                      annualEmissions: a.annualEmissions,
+                      category: a.category ?? undefined,
+                    }))}
+                    onActivityClick={setSelectedActivity}
+                  />
+                </div>
+
+                {/* Insights Sidebar */}
+                <div className="space-y-[var(--space-4)]">
+                  {selectedActivity ? (
+                    // Activity Detail
+                    <div
+                      className="p-[var(--space-4)] rounded-[var(--radius-lg)]"
+                      style={{
+                        backgroundColor: 'var(--surface-elevated)',
+                        border: '1px solid var(--border-default)',
+                      }}
+                    >
+                      <h4
+                        className="font-semibold mb-[var(--space-2)]"
+                        style={{
+                          fontSize: 'var(--font-size-base)',
+                          color: 'var(--text-primary)',
+                        }}
+                      >
+                        Selected Activity
+                      </h4>
+                      <h3
+                        className="font-bold mb-[var(--space-3)]"
+                        style={{
+                          fontSize: 'var(--font-size-lg)',
+                          color: 'var(--text-primary)',
+                        }}
+                      >
+                        {selectedActivity.name}
+                      </h3>
+                      <div className="flex items-baseline gap-[var(--space-2)] mb-[var(--space-3)]">
+                        <span
+                          className="font-bold"
+                          style={{
+                            fontSize: 'var(--font-size-2xl)',
+                            color: 'var(--color-baseline)',
+                          }}
+                        >
+                          {(selectedActivity.annualEmissions / 1000).toFixed(2)}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: 'var(--font-size-sm)',
+                            color: 'var(--text-secondary)',
+                          }}
+                        >
+                          tonnes CO₂/year
+                        </span>
+                      </div>
+                      {selectedActivity.category && (
+                        <div
+                          className="inline-block px-[var(--space-2)] py-[var(--space-1)] rounded-full"
+                          style={{
+                            backgroundColor: 'var(--surface-bg)',
+                            color: 'var(--text-tertiary)',
+                            fontSize: 'var(--font-size-xs)',
+                          }}
+                        >
+                          {selectedActivity.category}
+                        </div>
+                      )}
+                      <button
+                        onClick={() => setSelectedActivity(null)}
+                        className="mt-[var(--space-4)] w-full text-center text-[var(--font-size-sm)] underline hover:no-underline"
+                        style={{ color: 'var(--text-tertiary)' }}
+                      >
+                        Clear selection
+                      </button>
+                    </div>
+                  ) : (
+                    // Insights List
+                    <div
+                      className="p-[var(--space-4)] rounded-[var(--radius-lg)]"
+                      style={{
+                        backgroundColor: 'var(--surface-elevated)',
+                        border: '1px solid var(--border-default)',
+                      }}
+                    >
+                      <h4
+                        className="font-semibold mb-[var(--space-3)]"
+                        style={{
+                          fontSize: 'var(--font-size-base)',
+                          color: 'var(--text-primary)',
+                        }}
+                      >
+                        Key Insights
+                      </h4>
+                      <p
+                        className="mb-[var(--space-3)]"
+                        style={{
+                          fontSize: 'var(--font-size-sm)',
+                          color: 'var(--text-secondary)',
+                        }}
+                      >
+                        Click a sphere to view details, or explore insights below
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Compact Insights List */}
+                  {insights.length > 0 && (
+                    <div className="space-y-[var(--space-2)]">
+                      {insights.slice(0, 3).map((insight) => (
+                        <div
+                          key={insight.id}
+                          className="p-[var(--space-3)] rounded-[var(--radius-md)]"
+                          style={{
+                            backgroundColor: 'var(--color-insight-bg)',
+                            border: '1px solid var(--border-subtle)',
+                          }}
+                        >
+                          <div
+                            className="font-medium mb-[var(--space-1)]"
+                            style={{
+                              fontSize: 'var(--font-size-sm)',
+                              color: 'var(--text-primary)',
+                            }}
+                          >
+                            {insight.title}
+                          </div>
+                          <p
+                            style={{
+                              fontSize: 'var(--font-size-xs)',
+                              color: 'var(--text-secondary)',
+                              lineHeight: 1.4,
+                            }}
+                          >
+                            {insight.description}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 

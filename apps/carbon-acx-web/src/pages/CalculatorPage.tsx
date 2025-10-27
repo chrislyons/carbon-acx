@@ -10,8 +10,9 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '../components/system/Button';
 import { EmissionCalculator, type CalculatorResults } from '../components/domain/EmissionCalculator';
 import { ActivityBrowser } from '../components/domain/ActivityBrowser';
+import { DataUniverse } from '../components/viz/DataUniverse';
 import { useAppStore } from '../hooks/useAppStore';
-import { Sparkles, CheckCircle, ArrowRight, TrendingUp } from 'lucide-react';
+import { Sparkles, CheckCircle, ArrowRight, TrendingUp, Globe } from 'lucide-react';
 
 type BaselineState = 'choosing' | 'calculating' | 'entering' | 'celebrating';
 
@@ -75,8 +76,14 @@ export default function CalculatorPage() {
     }
   }, [activityCount, state]);
 
+  const [show3D, setShow3D] = React.useState(false);
+
   const handleComplete = () => {
     navigate('/explore');
+  };
+
+  const handleReveal3D = () => {
+    setShow3D(true);
   };
 
   return (
@@ -112,6 +119,9 @@ export default function CalculatorPage() {
             mode={mode}
             totalEmissions={totalEmissions}
             calculatorResults={calculatorResults}
+            activityCount={activityCount}
+            show3D={show3D}
+            onReveal3D={handleReveal3D}
             onComplete={handleComplete}
           />
         )}
@@ -128,6 +138,9 @@ interface CelebrationViewProps {
   mode: 'calculator' | 'manual';
   totalEmissions: number;
   calculatorResults: CalculatorResults | null;
+  activityCount: number;
+  show3D: boolean;
+  onReveal3D: () => void;
   onComplete: () => void;
 }
 
@@ -135,6 +148,9 @@ function CelebrationView({
   mode,
   totalEmissions,
   calculatorResults,
+  activityCount,
+  show3D,
+  onReveal3D,
   onComplete,
 }: CelebrationViewProps) {
   const emissions = calculatorResults ? calculatorResults.total : totalEmissions;
@@ -142,8 +158,13 @@ function CelebrationView({
   const globalAverage = 4.5;
   const percentOfAverage = ((totalTonnes / globalAverage) * 100).toFixed(0);
 
+  const activities = useAppStore((state) => state.activities);
+
   return (
-    <div className="max-w-4xl mx-auto text-center space-y-[var(--space-8)]">
+    <div className="max-w-7xl mx-auto space-y-[var(--space-8)]">
+      {!show3D ? (
+        // 2D Results Display
+        <div className="max-w-4xl mx-auto text-center space-y-[var(--space-8)]">
       {/* Celebration icon */}
       <div
         className="mx-auto w-32 h-32 rounded-full flex items-center justify-center"
@@ -361,16 +382,81 @@ function CelebrationView({
       </div>
 
       {/* CTA */}
-      <div className="pt-[var(--space-4)]">
+      <div className="pt-[var(--space-4)] flex flex-col items-center gap-[var(--space-3)]">
         <Button
           variant="primary"
           size="lg"
-          onClick={onComplete}
-          icon={<ArrowRight className="w-5 h-5" />}
+          onClick={onReveal3D}
+          icon={<Globe className="w-5 h-5" />}
         >
-          Explore Your Data
+          See in 3D Universe
         </Button>
+        <button
+          onClick={onComplete}
+          className="text-[var(--font-size-sm)] underline hover:no-underline"
+          style={{ color: 'var(--text-tertiary)' }}
+        >
+          Skip to exploration →
+        </button>
       </div>
+    </div>
+      ) : (
+        // 3D Universe Reveal
+        <div className="space-y-[var(--space-6)]">
+          <div className="text-center">
+            <h2
+              className="font-bold mb-[var(--space-2)]"
+              style={{
+                fontSize: 'var(--font-size-3xl)',
+                color: 'var(--text-primary)',
+              }}
+            >
+              Your Carbon Universe
+            </h2>
+            <p
+              style={{
+                fontSize: 'var(--font-size-base)',
+                color: 'var(--text-secondary)',
+              }}
+            >
+              Each sphere represents an activity. Larger = higher emissions. Explore your data in 3D!
+            </p>
+          </div>
+
+          <div
+            className="rounded-[var(--radius-lg)] overflow-hidden"
+            style={{
+              backgroundColor: 'var(--surface-elevated)',
+              border: '1px solid var(--border-default)',
+              height: '600px',
+            }}
+          >
+            <DataUniverse
+              totalEmissions={totalEmissions}
+              activities={activities.map((a) => ({
+                id: a.id,
+                name: a.name,
+                annualEmissions: a.annualEmissions,
+                category: a.category ?? undefined,
+              }))}
+              onActivityClick={(activity) => {
+                console.log('Selected activity:', activity);
+              }}
+            />
+          </div>
+
+          <div className="flex justify-center">
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={onComplete}
+              icon={<ArrowRight className="w-5 h-5" />}
+            >
+              Continue to Full Exploration
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
