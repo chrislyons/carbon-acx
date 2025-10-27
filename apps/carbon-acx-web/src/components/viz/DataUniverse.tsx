@@ -16,6 +16,9 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Stars, Html } from '@react-three/drei';
 import * as THREE from 'three';
 
+// Client-side only flag
+const isClient = typeof window !== 'undefined';
+
 // ============================================================================
 // Types
 // ============================================================================
@@ -39,6 +42,13 @@ export interface DataUniverseProps {
 // ============================================================================
 
 export function DataUniverse({ totalEmissions, activities, onActivityClick }: DataUniverseProps) {
+  const [isReady, setIsReady] = React.useState(false);
+
+  // Only render on client-side after mount
+  React.useEffect(() => {
+    setIsReady(true);
+  }, []);
+
   // Calculate sphere size based on emissions (logarithmic scale for better visual distribution)
   const getEmissionSize = (emissions: number) => {
     // Base size + log scale to prevent huge size differences
@@ -57,61 +67,126 @@ export function DataUniverse({ totalEmissions, activities, onActivityClick }: Da
 
   const centralSize = getEmissionSize(totalEmissions);
 
+  // Show loading state during SSR or initial mount
+  if (!isClient || !isReady) {
+    return (
+      <div className="w-full h-full min-h-[600px] flex items-center justify-center" style={{ background: '#0a0e27' }}>
+        <div style={{ color: '#fff', fontSize: '16px' }}>Loading 3D Universe...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full h-full min-h-[600px]">
-      <Canvas
-        camera={{ position: [15, 15, 15], fov: 50 }}
-        style={{ background: '#0a0e27' }}
-      >
-        {/* Lighting */}
-        <ambientLight intensity={0.4} />
-        <pointLight position={[10, 10, 10]} intensity={1.5} />
-        <pointLight position={[-10, -10, -10]} intensity={0.5} />
+      <ErrorBoundary>
+        <Canvas
+          camera={{ position: [15, 15, 15], fov: 50 }}
+          style={{ background: '#0a0e27' }}
+          gl={{
+            antialias: true,
+            alpha: false,
+            powerPreference: 'high-performance'
+          }}
+          onCreated={({ gl }) => {
+            gl.setClearColor('#0a0e27');
+          }}
+        >
+          {/* Lighting */}
+          <ambientLight intensity={0.4} />
+          <pointLight position={[10, 10, 10]} intensity={1.5} />
+          <pointLight position={[-10, -10, -10]} intensity={0.5} />
 
-        {/* Starfield background */}
-        <Stars
-          radius={100}
-          depth={50}
-          count={5000}
-          factor={4}
-          saturation={0}
-          fade
-          speed={0.5}
-        />
-
-        {/* Central emission sphere */}
-        <CentralSphere
-          size={centralSize}
-          emissions={totalEmissions}
-          color={getEmissionColor(totalEmissions)}
-        />
-
-        {/* Activity orbits */}
-        {activities.map((activity, index) => (
-          <OrbitingActivity
-            key={activity.id}
-            activity={activity}
-            index={index}
-            totalActivities={activities.length}
-            size={getEmissionSize(activity.annualEmissions)}
-            color={getEmissionColor(activity.annualEmissions)}
-            orbitRadius={centralSize + 4 + index * 0.5}
-            onClick={onActivityClick}
+          {/* Starfield background */}
+          <Stars
+            radius={100}
+            depth={50}
+            count={5000}
+            factor={4}
+            saturation={0}
+            fade
+            speed={0.5}
           />
-        ))}
 
-        {/* Camera controls */}
-        <OrbitControls
-          enablePan={true}
-          enableZoom={true}
-          enableRotate={true}
-          minDistance={5}
-          maxDistance={50}
-          autoRotate={false}
-        />
-      </Canvas>
+          {/* Central emission sphere */}
+          <CentralSphere
+            size={centralSize}
+            emissions={totalEmissions}
+            color={getEmissionColor(totalEmissions)}
+          />
+
+          {/* Activity orbits */}
+          {activities.map((activity, index) => (
+            <OrbitingActivity
+              key={activity.id}
+              activity={activity}
+              index={index}
+              totalActivities={activities.length}
+              size={getEmissionSize(activity.annualEmissions)}
+              color={getEmissionColor(activity.annualEmissions)}
+              orbitRadius={centralSize + 4 + index * 0.5}
+              onClick={onActivityClick}
+            />
+          ))}
+
+          {/* Camera controls */}
+          <OrbitControls
+            enablePan={true}
+            enableZoom={true}
+            enableRotate={true}
+            minDistance={5}
+            maxDistance={50}
+            autoRotate={false}
+          />
+        </Canvas>
+      </ErrorBoundary>
     </div>
   );
+}
+
+// ============================================================================
+// Error Boundary
+// ============================================================================
+
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean; error?: Error }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('DataUniverse Error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div
+          className="w-full h-full flex items-center justify-center flex-col gap-4"
+          style={{ background: '#0a0e27', color: '#fff' }}
+        >
+          <div style={{ fontSize: '18px', fontWeight: '600' }}>3D Visualization Unavailable</div>
+          <div style={{ fontSize: '14px', opacity: 0.7, maxWidth: '400px', textAlign: 'center' }}>
+            Your browser may not support WebGL, or there was an error loading the 3D scene.
+            Try switching to Timeline or Comparison view.
+          </div>
+          {this.state.error && (
+            <div style={{ fontSize: '12px', opacity: 0.5, fontFamily: 'monospace' }}>
+              {this.state.error.message}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
 }
 
 // ============================================================================
