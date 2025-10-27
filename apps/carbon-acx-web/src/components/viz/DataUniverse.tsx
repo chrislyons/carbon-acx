@@ -78,6 +78,16 @@ export function DataUniverse({
     setIsReady(true);
   }, []);
 
+  // Clear selected activity after animation completes (2 seconds)
+  React.useEffect(() => {
+    if (selectedActivityId && enableClickToFly) {
+      const timer = setTimeout(() => {
+        setSelectedActivityId(null);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [selectedActivityId, enableClickToFly]);
+
   // Calculate sphere size based on emissions (logarithmic scale for better visual distribution)
   const getEmissionSize = (emissions: number) => {
     // Base size + log scale to prevent huge size differences
@@ -153,7 +163,14 @@ export function DataUniverse({
               size={getEmissionSize(activity.annualEmissions)}
               color={getEmissionColor(activity.annualEmissions)}
               orbitRadius={centralSize + 4 + index * 0.5}
-              onClick={onActivityClick}
+              onClick={(act) => {
+                // Update local state for camera animation
+                if (enableClickToFly) {
+                  setSelectedActivityId(act.id);
+                }
+                // Chain to external callback
+                onActivityClick?.(act);
+              }}
               isHovered={hoveredActivityId === activity.id}
               onHoverChange={(hovered) => setHoveredActivityId(hovered ? activity.id : null)}
             />
