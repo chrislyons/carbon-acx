@@ -8,6 +8,7 @@ import { loadDataset, loadDatasets, loadSector, loadSectors } from './lib/api';
 const Layout = lazy(() => import('./views/Layout'));
 const HomeView = lazy(() => import('./views/HomeView'));
 const DashboardView = lazy(() => import('./views/DashboardView'));
+const CanvasApp = lazy(() => import('./CanvasApp'));
 const SectorView = lazy(() => import('./views/SectorView'));
 const DatasetView = lazy(() => import('./views/DatasetView'));
 const ErrorView = lazy(() => import('./views/ErrorView'));
@@ -46,7 +47,11 @@ export const router = createBrowserRouter([
       },
       {
         path: 'dashboard',
-        element: suspenseElement(<DashboardView />, 'Loading your dashboard…'),
+        element: suspenseElement(<CanvasApp />, 'Loading your dashboard…'),
+      },
+      {
+        path: 'dashboard-legacy',
+        element: suspenseElement(<DashboardView />, 'Loading legacy dashboard…'),
       },
       {
         id: 'sector',

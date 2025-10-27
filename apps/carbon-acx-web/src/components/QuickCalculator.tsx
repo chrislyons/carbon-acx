@@ -1,19 +1,48 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calculator, Car, Home, ShoppingBag, Utensils, X, Save } from 'lucide-react';
+import { Calculator, Car, Home, ShoppingBag, Utensils, X, Save, ChevronDown, ChevronUp } from 'lucide-react';
+import * as Collapsible from '@radix-ui/react-collapsible';
 
-import { useProfile } from '../contexts/ProfileContext';
-import type { CalculatorResult } from '../contexts/ProfileContext';
+import { useAppStore } from '../hooks/useAppStore';
+import type { CalculatorResult } from '../store/appStore';
 import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 
+// Transport mode emission factors (kg CO₂e per km)
+// Source: data/emission_factors.csv
+const TRANSPORT_MODES = {
+  car: {
+    label: 'Car',
+    factor: 0.18, // TRAN.SCHOOLRUN.CAR.KM
+    activityId: 'TRAN.SCHOOLRUN.CAR.KM',
+  },
+  bus: {
+    label: 'Bus',
+    factor: 0.08662, // TRAN.TTC.BUS.KM
+    activityId: 'TRAN.TTC.BUS.KM',
+  },
+  subway: {
+    label: 'Subway/Train',
+    factor: 0.00476, // TRAN.TTC.SUBWAY.KM (grid-indexed)
+    activityId: 'TRAN.TTC.SUBWAY.KM',
+  },
+  bike: {
+    label: 'Bike/Walk',
+    factor: 0.0, // TRAN.SCHOOLRUN.BIKE.KM
+    activityId: 'TRAN.SCHOOLRUN.BIKE.KM',
+  },
+} as const;
+
+type TransportMode = keyof typeof TRANSPORT_MODES;
+
 export default function QuickCalculator() {
   const navigate = useNavigate();
-  const { saveCalculatorResults } = useProfile();
+  const saveCalculatorResults = useAppStore((state) => state.saveCalculatorResults);
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState(1);
   const [values, setValues] = useState({
+    transportMode: 'car' as TransportMode,
     commute: 10, // km per day
     diet: 'mixed',
     energy: 'average',
@@ -24,11 +53,13 @@ export default function QuickCalculator() {
     // Simplified carbon calculation (kg CO₂ per year)
     const breakdown: Omit<CalculatorResult, 'calculatedAt'>[] = [];
 
-    // Transport: ~0.2kg CO₂ per km for average car
-    const commuteEmissions = values.commute * 0.2 * 365;
+    // Transport: Use transport-specific emission factor
+    const transportMode = values.transportMode;
+    const transportFactor = TRANSPORT_MODES[transportMode].factor;
+    const commuteEmissions = values.commute * transportFactor * 365 * 2; // Round trip
     breakdown.push({
       category: 'commute',
-      label: `${values.commute}km daily commute`,
+      label: `${values.commute}km daily commute (${TRANSPORT_MODES[transportMode].label})`,
       annualEmissions: commuteEmissions,
     });
 
@@ -101,6 +132,11 @@ export default function QuickCalculator() {
     navigate('/dashboard');
   };
 
+  const handleExplore = () => {
+    setIsOpen(false);
+    navigate('/dashboard');
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -122,7 +158,7 @@ export default function QuickCalculator() {
         </DialogHeader>
 
         <div className="mt-6">
-          {step < 5 ? (
+          {step < 6 ? (
             <QuestionFlow
               step={step}
               values={values}
@@ -137,6 +173,7 @@ export default function QuickCalculator() {
               onReset={() => {
                 setStep(1);
                 setValues({
+                  transportMode: 'car' as TransportMode,
                   commute: 10,
                   diet: 'mixed',
                   energy: 'average',
@@ -145,14 +182,15 @@ export default function QuickCalculator() {
               }}
               onSave={handleSaveToProfile}
               onClose={() => setIsOpen(false)}
+              onExplore={handleExplore}
             />
           )}
         </div>
 
         {/* Progress indicator */}
-        {step < 5 && (
+        {step < 6 && (
           <div className="flex gap-2 mt-6">
-            {[1, 2, 3, 4].map((i) => (
+            {[1, 2, 3, 4, 5].map((i) => (
               <div
                 key={i}
                 className={`h-1 flex-1 rounded-full transition-colors ${
@@ -189,8 +227,62 @@ function QuestionFlow({ step, values, onValueChange, onNext, onBack }: QuestionF
         {step === 1 && (
           <Question
             icon={<Car className="h-8 w-8" />}
+            title="How do you commute?"
+            description="Select your primary mode of transportation"
+          >
+            <div className="grid gap-3 md:grid-cols-2">
+              {Object.entries(TRANSPORT_MODES).map(([value, { label, factor }]) => (
+                <button
+                  key={value}
+                  onClick={() => onValueChange('transportMode', value)}
+                  className={`p-4 rounded-xl border-2 text-left transition-all ${
+                    values.transportMode === value
+                      ? 'border-accent-500 bg-accent-50 dark:bg-accent-900/30'
+                      : 'border-border hover:border-accent-300'
+                  }`}
+                >
+                  <div className="font-semibold text-foreground">{label}</div>
+                  <div className="text-sm text-text-muted">
+                    ~{(factor * 1000).toFixed(0)}g CO₂/km
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            <DetailSection title="How we calculate transport emissions">
+              <p className="text-sm text-text-secondary mb-3">
+                Emission factors are sourced from our curated dataset, which includes verified activity-based calculations:
+              </p>
+              <ul className="space-y-2 text-sm text-text-secondary">
+                <li className="flex items-start gap-2">
+                  <span className="text-accent-500 mt-0.5">•</span>
+                  <span><strong>Car:</strong> 180g CO₂/km based on average gasoline vehicle (TRAN.SCHOOLRUN.CAR.KM)</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-accent-500 mt-0.5">•</span>
+                  <span><strong>Bus:</strong> 86.6g CO₂/km accounting for passenger load (TRAN.TTC.BUS.KM)</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-accent-500 mt-0.5">•</span>
+                  <span><strong>Subway/Train:</strong> 4.76g CO₂/km with grid-indexed electricity (TRAN.TTC.SUBWAY.KM)</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-accent-500 mt-0.5">•</span>
+                  <span><strong>Bike/Walk:</strong> 0g CO₂ - zero direct emissions</span>
+                </li>
+              </ul>
+              <p className="text-xs text-text-muted mt-3">
+                Annual emissions = daily distance × 2 (round trip) × 365 days × emission factor
+              </p>
+            </DetailSection>
+          </Question>
+        )}
+
+        {step === 2 && (
+          <Question
+            icon={<Car className="h-8 w-8" />}
             title="How far do you commute daily?"
-            description="One-way distance by car, bus, or other motorized transport"
+            description="One-way distance"
           >
             <div className="space-y-4">
               <input
@@ -214,13 +306,13 @@ function QuestionFlow({ step, values, onValueChange, onNext, onBack }: QuestionF
           </Question>
         )}
 
-        {step === 2 && (
+        {step === 3 && (
           <Question
             icon={<Utensils className="h-8 w-8" />}
             title="What's your diet like?"
             description="Your typical eating habits"
           >
-            <div className="grid gap-3">
+            <div className="grid gap-3 md:grid-cols-3">
               {[
                 { value: 'vegan', label: 'Vegan', description: 'Plant-based diet' },
                 { value: 'vegetarian', label: 'Vegetarian', description: 'No meat, some dairy/eggs' },
@@ -240,16 +332,45 @@ function QuestionFlow({ step, values, onValueChange, onNext, onBack }: QuestionF
                 </button>
               ))}
             </div>
+
+            <DetailSection title="Food category impact breakdown">
+              <div className="space-y-3 text-sm text-text-secondary">
+                <p className="mb-3">
+                  Food production accounts for ~25% of global emissions. Here's how different categories compare:
+                </p>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center py-2 border-b border-border">
+                    <span className="font-medium">Beef & Lamb</span>
+                    <span className="text-accent-danger">Very High (50-100 kg CO₂/kg)</span>
+                  </div>
+                  <div className="flex justify-between items-center py-2 border-b border-border">
+                    <span className="font-medium">Pork & Poultry</span>
+                    <span className="text-accent-warning">High (5-12 kg CO₂/kg)</span>
+                  </div>
+                  <div className="flex justify-between items-center py-2 border-b border-border">
+                    <span className="font-medium">Dairy & Eggs</span>
+                    <span className="text-neutral-500">Moderate (2-5 kg CO₂/kg)</span>
+                  </div>
+                  <div className="flex justify-between items-center py-2 border-b border-border">
+                    <span className="font-medium">Plant-based Foods</span>
+                    <span className="text-accent-success">Low (0.3-2 kg CO₂/kg)</span>
+                  </div>
+                </div>
+                <p className="text-xs text-text-muted mt-3">
+                  Annual diet emissions: Vegan ~1.5t CO₂, Vegetarian ~2.5t CO₂, Mixed ~3.3t CO₂
+                </p>
+              </div>
+            </DetailSection>
           </Question>
         )}
 
-        {step === 3 && (
+        {step === 4 && (
           <Question
             icon={<Home className="h-8 w-8" />}
             title="How much energy do you use?"
             description="Heating, cooling, electricity usage"
           >
-            <div className="grid gap-3">
+            <div className="grid gap-3 md:grid-cols-3">
               {[
                 { value: 'low', label: 'Low', description: 'Energy-efficient home, minimal use' },
                 { value: 'average', label: 'Average', description: 'Typical household consumption' },
@@ -269,16 +390,48 @@ function QuestionFlow({ step, values, onValueChange, onNext, onBack }: QuestionF
                 </button>
               ))}
             </div>
+
+            <DetailSection title="Appliance & energy breakdown">
+              <div className="space-y-3 text-sm text-text-secondary">
+                <p className="mb-3">
+                  Home energy usage varies widely by appliances, insulation, and grid intensity. Typical annual emissions by appliance:
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex items-center justify-between p-2 rounded bg-neutral-50 dark:bg-neutral-800/30">
+                    <span>Heating/Cooling</span>
+                    <span className="font-medium">~800 kg CO₂</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2 rounded bg-neutral-50 dark:bg-neutral-800/30">
+                    <span>Water Heater</span>
+                    <span className="font-medium">~450 kg CO₂</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2 rounded bg-neutral-50 dark:bg-neutral-800/30">
+                    <span>Lighting</span>
+                    <span className="font-medium">~200 kg CO₂</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2 rounded bg-neutral-50 dark:bg-neutral-800/30">
+                    <span>Appliances</span>
+                    <span className="font-medium">~300 kg CO₂</span>
+                  </div>
+                </div>
+                <p className="text-xs text-text-muted mt-3">
+                  Total annual home energy: Low ~1.5t CO₂, Average ~2.5t CO₂, High ~4t CO₂
+                </p>
+                <p className="text-xs text-text-muted">
+                  Note: Emissions depend on your local grid's fuel mix (coal vs. renewables)
+                </p>
+              </div>
+            </DetailSection>
           </Question>
         )}
 
-        {step === 4 && (
+        {step === 5 && (
           <Question
             icon={<ShoppingBag className="h-8 w-8" />}
             title="How much do you shop?"
             description="Clothing, electronics, household goods"
           >
-            <div className="grid gap-3">
+            <div className="grid gap-3 md:grid-cols-3">
               {[
                 { value: 'minimal', label: 'Minimal', description: 'Buy only essentials' },
                 { value: 'moderate', label: 'Moderate', description: 'Regular shopping habits' },
@@ -298,6 +451,38 @@ function QuestionFlow({ step, values, onValueChange, onNext, onBack }: QuestionF
                 </button>
               ))}
             </div>
+
+            <DetailSection title="Shopping category emissions">
+              <div className="space-y-3 text-sm text-text-secondary">
+                <p className="mb-3">
+                  Consumer goods have embedded emissions from manufacturing, shipping, and packaging. Typical emissions by category:
+                </p>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between py-2 border-b border-border">
+                    <span className="font-medium">Electronics (laptop, phone)</span>
+                    <span className="text-accent-warning">~200-400 kg CO₂ each</span>
+                  </div>
+                  <div className="flex items-center justify-between py-2 border-b border-border">
+                    <span className="font-medium">Clothing (fast fashion)</span>
+                    <span className="text-neutral-500">~5-20 kg CO₂ per item</span>
+                  </div>
+                  <div className="flex items-center justify-between py-2 border-b border-border">
+                    <span className="font-medium">Furniture (sofa, table)</span>
+                    <span className="text-accent-danger">~100-300 kg CO₂ each</span>
+                  </div>
+                  <div className="flex items-center justify-between py-2 border-b border-border">
+                    <span className="font-medium">Books & small goods</span>
+                    <span className="text-accent-success">~1-5 kg CO₂ each</span>
+                  </div>
+                </div>
+                <p className="text-xs text-text-muted mt-3">
+                  Annual shopping emissions: Minimal ~500 kg CO₂, Moderate ~1t CO₂, Frequent ~2t CO₂
+                </p>
+                <p className="text-xs text-text-muted">
+                  Tip: Buying used, repairing items, and choosing durable goods reduces impact significantly
+                </p>
+              </div>
+            </DetailSection>
           </Question>
         )}
 
@@ -308,7 +493,7 @@ function QuestionFlow({ step, values, onValueChange, onNext, onBack }: QuestionF
             </Button>
           )}
           <Button onClick={onNext} className="flex-1">
-            {step === 4 ? 'Calculate' : 'Next'}
+            {step === 5 ? 'Calculate' : 'Next'}
           </Button>
         </div>
       </motion.div>
@@ -340,15 +525,48 @@ function Question({ icon, title, description, children }: QuestionProps) {
   );
 }
 
+interface DetailSectionProps {
+  title: string;
+  children: React.ReactNode;
+}
+
+function DetailSection({ title, children }: DetailSectionProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <Collapsible.Root open={isOpen} onOpenChange={setIsOpen} className="mt-4">
+      <Collapsible.Trigger asChild>
+        <button
+          className="flex items-center justify-between w-full px-4 py-3 rounded-lg border border-border hover:bg-neutral-50 dark:hover:bg-neutral-800/30 transition-colors"
+          aria-label={isOpen ? `Hide ${title}` : `Show ${title}`}
+        >
+          <span className="text-sm font-medium text-text-secondary">{title}</span>
+          {isOpen ? (
+            <ChevronUp className="h-4 w-4 text-text-muted transition-transform" />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-text-muted transition-transform" />
+          )}
+        </button>
+      </Collapsible.Trigger>
+      <Collapsible.Content className="overflow-hidden data-[state=closed]:animate-collapse data-[state=open]:animate-expand">
+        <div className="px-4 py-3 mt-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/30 border border-border">
+          {children}
+        </div>
+      </Collapsible.Content>
+    </Collapsible.Root>
+  );
+}
+
 interface ResultsViewProps {
   footprint: number;
   globalAverage: number;
   onReset: () => void;
   onSave: () => void;
   onClose: () => void;
+  onExplore: () => void;
 }
 
-function ResultsView({ footprint, globalAverage, onReset, onSave, onClose }: ResultsViewProps) {
+function ResultsView({ footprint, globalAverage, onReset, onSave, onClose, onExplore }: ResultsViewProps) {
   const percentOfAverage = ((footprint / globalAverage) * 100).toFixed(0);
   const diff = footprint - globalAverage;
   const isAboveAverage = diff > 0;
@@ -402,7 +620,7 @@ function ResultsView({ footprint, globalAverage, onReset, onSave, onClose }: Res
           <Button variant="outline" onClick={onReset} className="flex-1">
             Recalculate
           </Button>
-          <Button variant="outline" onClick={onClose} className="flex-1">
+          <Button variant="outline" onClick={onExplore} className="flex-1">
             Explore data
           </Button>
         </div>
