@@ -16,9 +16,9 @@ This skill enables Claude to generate production-ready code for Carbon ACX that 
 - Generate test files (Vitest, pytest)
 - Create typed API client code
 - Follow monorepo structure (pnpm workspaces)
-- **NEW:** Generate canvas-first components following Phase 1 architecture
-- **NEW:** Create story-driven UI components with XState integration
-- **NEW:** Build ECharts-based visualizations with design tokens
+- **NEW:** Generate 3D visualization components with Three.js/React Three Fiber
+- **NEW:** Create 2D overlay components (modals, panels) for transparency
+- **NEW:** Build Apache ECharts visualizations with design tokens
 
 **Quality Enforcement:**
 - All code passes linters (eslint, prettier, ruff, black)
@@ -27,7 +27,7 @@ This skill enables Claude to generate production-ready code for Carbon ACX that 
 - Includes basic tests
 - Follows AGENTS.md review gates
 - **NEW:** Uses design tokens (CSS custom properties)
-- **NEW:** Follows tier-based component organization (Tier 1-4)
+- **NEW:** Follows 3D+2D hybrid architecture (viz in canvas, transparency in overlays)
 
 ## When to Use
 
@@ -38,8 +38,8 @@ This skill enables Claude to generate production-ready code for Carbon ACX that 
 - "Write a test for the EmissionCalculator class"
 - "Create a typed API client for the carbon data service"
 - "Generate boilerplate for a new layer in the Dash app"
-- **NEW:** "Create a Tier 2 CanvasZone component for..."
-- **NEW:** "Build a story scene for the baseline flow"
+- **NEW:** "Create a 3D sphere visualization component for..."
+- **NEW:** "Build a citation panel modal for emission factor sources"
 - **NEW:** "Generate an ECharts visualization for timeline data"
 - **NEW:** "Create a Zustand store slice for..."
 
@@ -501,118 +501,309 @@ pytest tests/      # Tests
 - Architecture decisions
 - Deployment operations
 
-## Phase 1 Architecture Patterns (NEW)
+## 3D Universe Patterns (NEW)
 
-### Tier-Based Component Generation
+### Architecture Overview
 
-**Component Tiers:**
-- **Tier 1 (Primitives):** Button, Input, Dialog, Select, etc.
-- **Tier 2 (Layout):** CanvasZone, StoryScene, TransitionWrapper
-- **Tier 3 (Visualizations):** HeroChart, TimelineViz, ComparisonOverlay, GaugeProgress
-- **Tier 4 (Domain):** EmissionCalculator, ScenarioBuilder, story scenes
+**3D+2D Hybrid Approach:**
+- **3D Canvas:** Interactive data visualization with Three.js/React Three Fiber
+- **2D Overlays:** Modals, panels, and forms for transparency and data entry
+- **Design Tokens:** CSS custom properties for consistent styling
+- **State Management:** Single Zustand store (simplified from dual-store pattern)
 
-### Example 4: Canvas-First Component
+### Component Organization
 
-**User:** "Create a visualization component showing monthly emissions with a trend line"
+**Component Types:**
+- **System Primitives:** Button, Input, Dialog, Transition (Tier 1)
+- **3D Visualizations:** DataUniverse, CentralSphere, OrbitingActivity (Tier 3)
+- **2D Overlays:** CitationPanel, MethodologyModal, ActivityManagement (Tier 4)
+- **Domain Pages:** CalculatorPage, InsightsPage, ExplorePage (Tier 4)
 
-**Output:** `apps/carbon-acx-web/src/components/domain/MonthlyTrendViz.tsx`
+### Example 4: 3D Visualization Component
+
+**User:** "Create a component for visualizing activity emissions as orbiting spheres"
+
+**Output:** `apps/carbon-acx-web/src/components/viz/ActivitySphere.tsx`
 ```typescript
 /**
- * MonthlyTrendViz - Domain Component
+ * ActivitySphere - 3D Visualization Component
  *
- * Shows monthly emissions trend with goal tracking.
- * Uses Tier 3 TimelineViz component with canvas rendering.
+ * Renders an individual activity as an orbiting sphere in the DataUniverse.
+ * Size based on emissions (logarithmic scale), color based on intensity.
  */
 
 import * as React from 'react';
-import { CanvasZone } from '../canvas/CanvasZone';
-import { StoryScene } from '../canvas/StoryScene';
-import { TimelineViz, type TimelineDataPoint } from '../viz/TimelineViz';
-import { useAppStore } from '../../hooks/useAppStore';
-import type { EChartsOption } from 'echarts';
+import { useFrame } from '@react-three/fiber';
+import { Html } from '@react-three/drei';
+import * as THREE from 'three';
 
-export interface MonthlyTrendVizProps {
-  /**
-   * Show scene
-   */
-  show?: boolean;
-  /**
-   * Goal target in kg CO₂e
-   */
-  goalTarget?: number;
+interface ActivitySphereProps {
+  activity: {
+    id: string;
+    name: string;
+    annualEmissions: number;  // kg CO₂
+    category?: string;
+  };
+  orbitRadius: number;
+  orbitSpeed: number;
+  phaseOffset: number;
+  onClick?: () => void;
 }
 
-export const MonthlyTrendViz: React.FC<MonthlyTrendVizProps> = ({
-  show = true,
-  goalTarget = 250,
-}) => {
-  const activities = useAppStore((state) => state.activities);
+export function ActivitySphere({
+  activity,
+  orbitRadius,
+  orbitSpeed,
+  phaseOffset,
+  onClick,
+}: ActivitySphereProps) {
+  const meshRef = React.useRef<THREE.Mesh>(null);
+  const groupRef = React.useRef<THREE.Group>(null);
+  const [hovered, setHovered] = React.useState(false);
 
-  // Aggregate activities by month
-  const monthlyData: TimelineDataPoint[] = React.useMemo(() => {
-    // Group by month and sum emissions
-    const monthlyMap = new Map<string, number>();
+  // Calculate size (logarithmic scale)
+  const size = 0.5 + Math.log10(Math.max(activity.annualEmissions, 1)) * 0.3;
 
-    activities.forEach((activity) => {
-      const date = new Date(activity.timestamp);
-      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-      const emissions = activity.quantity * activity.emissionFactor;
+  // Calculate color based on intensity
+  const color = React.useMemo(() => {
+    const tonnes = activity.annualEmissions / 1000;
+    if (tonnes < 1) return '#10b981';  // green (low)
+    if (tonnes < 5) return '#f59e0b';  // amber (moderate)
+    return '#ef4444';                  // red (high)
+  }, [activity.annualEmissions]);
 
-      monthlyMap.set(
-        monthKey,
-        (monthlyMap.get(monthKey) || 0) + emissions
-      );
-    });
+  // Orbital motion animation
+  useFrame(() => {
+    if (!groupRef.current) return;
 
-    // Convert to timeline format
-    return Array.from(monthlyMap.entries())
-      .map(([month, value]) => ({
-        timestamp: `${month}-01`,
-        value,
-        label: month,
-      }))
-      .sort((a, b) => a.timestamp.localeCompare(b.timestamp));
-  }, [activities]);
+    const time = Date.now() * orbitSpeed;
+    const angle = time + phaseOffset;
+    const x = Math.cos(angle) * orbitRadius;
+    const z = Math.sin(angle) * orbitRadius;
+    const y = Math.sin(time * 2) * 2;  // vertical wobble
+
+    groupRef.current.position.set(x, y, z);
+  });
 
   return (
-    <StoryScene
-      scene="explore"
-      title="Monthly Trend"
-      description="Track your emissions over time"
-      layout="canvas"
-    >
-      <CanvasZone
-        zoneId="monthly-trend"
-        zone="hero"
-        padding="lg"
-        interactionMode="explore"
+    <group ref={groupRef}>
+      <mesh
+        ref={meshRef}
+        onClick={onClick}
+        onPointerOver={() => setHovered(true)}
+        onPointerOut={() => setHovered(false)}
       >
-        <div className="h-full flex flex-col">
-          <h2 className="text-[var(--font-size-3xl)] font-bold text-[var(--text-primary)] mb-4">
-            Monthly Emissions Trend
-          </h2>
+        <sphereGeometry args={[size, 16, 16]} />
+        <meshStandardMaterial
+          color={color}
+          emissive={color}
+          emissiveIntensity={hovered ? 0.8 : 0.2}
+          metalness={0.6}
+          roughness={0.3}
+        />
+      </mesh>
 
-          <TimelineViz
-            data={monthlyData}
-            yAxisLabel="Emissions"
-            unit="kg CO₂e"
-            height="100%"
-            enableZoom
-            showArea
-            smooth
-            milestones={[
-              {
-                timestamp: monthlyData[0]?.timestamp || new Date().toISOString(),
-                label: 'Tracking Started',
-                type: 'info',
-              },
-            ]}
-          />
-        </div>
-      </CanvasZone>
-    </StoryScene>
+      {/* Hover label */}
+      {hovered && (
+        <Html position={[0, size + 0.8, 0]} center>
+          <div
+            className="px-3 py-2 rounded-lg pointer-events-none"
+            style={{
+              backgroundColor: 'rgba(10, 14, 39, 0.95)',
+              border: `1px solid ${color}`,
+              color: 'white',
+              fontSize: 'var(--font-size-xs)',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            <div style={{ fontWeight: 600, marginBottom: '4px' }}>
+              {activity.name}
+            </div>
+            <div style={{ opacity: 0.8 }}>
+              {(activity.annualEmissions / 1000).toFixed(2)}t CO₂/yr
+            </div>
+          </div>
+        </Html>
+      )}
+    </group>
   );
-};
+}
+```
+
+### Example 5: 2D Overlay Component
+
+**User:** "Create a modal for displaying emission factor citations"
+
+**Output:** `apps/carbon-acx-web/src/components/domain/CitationModal.tsx`
+```typescript
+/**
+ * CitationModal - 2D Overlay Component
+ *
+ * Displays emission factor source information with transparency.
+ * Uses Radix Dialog for accessibility.
+ */
+
+import * as React from 'react';
+import * as Dialog from '@radix-ui/react-dialog';
+import { X, ExternalLink } from 'lucide-react';
+import { Button } from '../system/Button';
+
+interface Citation {
+  activityId: string;
+  activityName: string;
+  emissionFactor: number;
+  unit: string;
+  source: string;
+  sourceUrl?: string;
+  methodology?: string;
+  lastUpdated?: string;
+}
+
+interface CitationModalProps {
+  citation: Citation | null;
+  open: boolean;
+  onClose: () => void;
+}
+
+export function CitationModal({ citation, open, onClose }: CitationModalProps) {
+  if (!citation) return null;
+
+  return (
+    <Dialog.Root open={open} onOpenChange={onClose}>
+      <Dialog.Portal>
+        <Dialog.Overlay
+          className="fixed inset-0 z-50"
+          style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            backdropFilter: 'blur(4px)',
+          }}
+        />
+        <Dialog.Content
+          className="fixed top-[50%] left-[50%] z-50 max-h-[85vh] w-[90vw] max-w-[600px] translate-x-[-50%] translate-y-[-50%] rounded-[var(--radius-xl)] p-[var(--space-6)] shadow-xl overflow-y-auto"
+          style={{
+            backgroundColor: 'var(--surface-elevated)',
+            border: '1px solid var(--border-default)',
+          }}
+        >
+          {/* Header */}
+          <div className="flex items-start justify-between mb-[var(--space-6)]">
+            <Dialog.Title
+              className="font-bold"
+              style={{
+                fontSize: 'var(--font-size-2xl)',
+                color: 'var(--text-primary)',
+              }}
+            >
+              Emission Factor Source
+            </Dialog.Title>
+            <Dialog.Close asChild>
+              <button
+                className="p-[var(--space-2)] rounded-[var(--radius-md)]"
+                style={{ color: 'var(--text-tertiary)' }}
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </Dialog.Close>
+          </div>
+
+          {/* Activity Info */}
+          <div className="space-y-[var(--space-4)]">
+            <div>
+              <div
+                className="font-semibold mb-[var(--space-1)]"
+                style={{
+                  fontSize: 'var(--font-size-sm)',
+                  color: 'var(--text-tertiary)',
+                }}
+              >
+                Activity
+              </div>
+              <div style={{ color: 'var(--text-primary)' }}>
+                {citation.activityName}
+              </div>
+            </div>
+
+            <div>
+              <div
+                className="font-semibold mb-[var(--space-1)]"
+                style={{
+                  fontSize: 'var(--font-size-sm)',
+                  color: 'var(--text-tertiary)',
+                }}
+              >
+                Emission Factor
+              </div>
+              <div
+                className="font-mono"
+                style={{
+                  fontSize: 'var(--font-size-lg)',
+                  color: 'var(--text-primary)',
+                }}
+              >
+                {citation.emissionFactor} kg CO₂e/{citation.unit}
+              </div>
+            </div>
+
+            <div>
+              <div
+                className="font-semibold mb-[var(--space-1)]"
+                style={{
+                  fontSize: 'var(--font-size-sm)',
+                  color: 'var(--text-tertiary)',
+                }}
+              >
+                Source
+              </div>
+              <div style={{ color: 'var(--text-primary)' }}>
+                {citation.source}
+              </div>
+              {citation.sourceUrl && (
+                <a
+                  href={citation.sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-[var(--space-1)] mt-[var(--space-2)] text-[var(--font-size-sm)]"
+                  style={{ color: 'var(--interactive-primary)' }}
+                >
+                  View source <ExternalLink className="w-4 h-4" />
+                </a>
+              )}
+            </div>
+
+            {citation.methodology && (
+              <div>
+                <div
+                  className="font-semibold mb-[var(--space-1)]"
+                  style={{
+                    fontSize: 'var(--font-size-sm)',
+                    color: 'var(--text-tertiary)',
+                  }}
+                >
+                  Methodology
+                </div>
+                <div
+                  style={{
+                    fontSize: 'var(--font-size-sm)',
+                    color: 'var(--text-secondary)',
+                  }}
+                >
+                  {citation.methodology}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Actions */}
+          <div className="flex justify-end mt-[var(--space-6)] pt-[var(--space-4)] border-t" style={{ borderColor: 'var(--border-subtle)' }}>
+            <Button variant="primary" onClick={onClose}>
+              Close
+            </Button>
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+}
 ```
 
 ### Design Token Usage
@@ -633,17 +824,17 @@ export const MonthlyTrendViz: React.FC<MonthlyTrendVizProps> = ({
 ```
 
 **Available Design Tokens:**
-- Typography: `--font-size-xs` through `--font-size-5xl`
+- Typography: `--font-size-xs` through `--font-size-5xl` (Major Third scale 1.250)
 - Colors: `--carbon-low`, `--carbon-moderate`, `--carbon-high`, `--carbon-neutral`
 - Story colors: `--color-goal`, `--color-baseline`, `--color-improvement`, `--color-insight`
-- Spacing: `--space-1` through `--space-16`
+- Spacing: `--space-1` through `--space-16` (4px base)
 - Shadows: `--shadow-sm`, `--shadow-md`, `--shadow-lg`
-- Radii: `--radius-sm`, `--radius-md`, `--radius-lg`
-- Motion: `--motion-story-duration`, `--motion-story-ease`
+- Radii: `--radius-sm`, `--radius-md`, `--radius-lg`, `--radius-xl`
+- Motion: `--motion-story-duration` (600ms), `--motion-story-ease`
 
-### State Management Patterns
+### State Management Pattern
 
-**Zustand for app state:**
+**Zustand for all app state:**
 ```typescript
 import { useAppStore } from '../../hooks/useAppStore';
 
@@ -653,30 +844,36 @@ const totalEmissions = useAppStore((state) => state.getTotalEmissions());
 
 // Update state
 const { addActivity, removeActivity } = useAppStore();
-```
 
-**XState for journey flow:**
-```typescript
-import { useJourneyMachine } from '../../hooks/useJourneyMachine';
+// Store example structure:
+interface AppState {
+  // Profile data
+  profile: {
+    activities: Activity[];
+    goals: Goal[];
+  };
 
-// Check current state
-const { isOnboarding, isExplore, currentScene } = useJourneyMachine();
+  // UI state
+  selectedActivityId: string | null;
 
-// Trigger transitions
-const { completeOnboarding, viewInsights } = useJourneyMachine();
+  // Actions
+  addActivity: (activity: Activity) => void;
+  removeActivity: (id: string) => void;
+  getTotalEmissions: () => number;
+}
 ```
 
 ## Maintenance
 
 **Owner:** ACX Team
 **Review Cycle:** Weekly (high-activity skill)
-**Last Updated:** 2025-10-25
-**Version:** 2.0.0 (Phase 1 architecture update)
+**Last Updated:** 2025-10-27
+**Version:** 2.1.0 (3D Universe architecture update)
 
 **Maintenance Notes:**
 - Update `reference/conventions.md` when coding standards change
 - Review generated code quality monthly
 - Keep examples synchronized with actual codebase patterns
-- Update when tech stack versions change (React, TypeScript, Python)
-- **NEW:** Keep Phase 1 architecture patterns current (canvas-first, design tokens)
-- **NEW:** Update component tier examples as architecture evolves
+- Update when tech stack versions change (React, TypeScript, Python, Three.js)
+- **NEW:** Keep 3D Universe patterns current (Three.js, React Three Fiber, Drei helpers)
+- **NEW:** Update component examples as hybrid 2D+3D architecture evolves

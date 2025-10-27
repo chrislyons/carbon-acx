@@ -71,6 +71,7 @@ export function DataUniverse({
 }: DataUniverseProps) {
   const [isReady, setIsReady] = React.useState(false);
   const [selectedActivityId, setSelectedActivityId] = React.useState<string | null>(null);
+  const [hoveredActivityId, setHoveredActivityId] = React.useState<string | null>(null);
 
   // Only render on client-side after mount
   React.useEffect(() => {
@@ -153,6 +154,8 @@ export function DataUniverse({
               color={getEmissionColor(activity.annualEmissions)}
               orbitRadius={centralSize + 4 + index * 0.5}
               onClick={onActivityClick}
+              isHovered={hoveredActivityId === activity.id}
+              onHoverChange={(hovered) => setHoveredActivityId(hovered ? activity.id : null)}
             />
           ))}
 
@@ -309,6 +312,8 @@ interface OrbitingActivityProps {
   color: string;
   orbitRadius: number;
   onClick?: (activity: Activity) => void;
+  isHovered?: boolean;
+  onHoverChange?: (hovered: boolean) => void;
 }
 
 function OrbitingActivity({
@@ -319,10 +324,14 @@ function OrbitingActivity({
   color,
   orbitRadius,
   onClick,
+  isHovered = false,
+  onHoverChange,
 }: OrbitingActivityProps) {
   const meshRef = React.useRef<THREE.Mesh>(null);
   const groupRef = React.useRef<THREE.Group>(null);
-  const [hovered, setHovered] = React.useState(false);
+  const [localHovered, setLocalHovered] = React.useState(false);
+
+  const hovered = isHovered || localHovered;
 
   // Orbital motion
   React.useEffect(() => {
@@ -354,23 +363,48 @@ function OrbitingActivity({
     onClick?.(activity);
   };
 
+  const handlePointerOver = (e: any) => {
+    e.stopPropagation?.();
+    setLocalHovered(true);
+    onHoverChange?.(true);
+  };
+
+  const handlePointerOut = (e: any) => {
+    e.stopPropagation?.();
+    setLocalHovered(false);
+    onHoverChange?.(false);
+  };
+
   return (
     <group ref={groupRef}>
       <mesh
         ref={meshRef}
         onClick={handleClick}
-        onPointerOver={() => setHovered(true)}
-        onPointerOut={() => setHovered(false)}
+        onPointerOver={handlePointerOver}
+        onPointerOut={handlePointerOut}
       >
         <sphereGeometry args={[size, 16, 16]} />
         <meshStandardMaterial
           color={color}
           emissive={color}
-          emissiveIntensity={hovered ? 0.8 : 0.2}
+          emissiveIntensity={hovered ? 1.0 : 0.2}
           metalness={0.6}
           roughness={0.3}
         />
       </mesh>
+
+      {/* Outer glow effect on hover */}
+      {hovered && (
+        <mesh>
+          <sphereGeometry args={[size * 1.2, 16, 16]} />
+          <meshBasicMaterial
+            color={color}
+            transparent
+            opacity={0.3}
+            depthWrite={false}
+          />
+        </mesh>
+      )}
 
       {/* Orbit path visualization (thin ring) */}
       <mesh rotation={[Math.PI / 2, 0, 0]}>
@@ -378,28 +412,38 @@ function OrbitingActivity({
         <meshBasicMaterial color={color} opacity={0.1} transparent side={THREE.DoubleSide} />
       </mesh>
 
-      {/* Label on hover */}
+      {/* Compact label on hover */}
       {hovered && (
         <Html position={[0, size + 0.8, 0]} center>
           <div
-            className="px-3 py-2 rounded-lg pointer-events-none"
+            className="px-3 py-2 rounded-lg pointer-events-none transition-all duration-300"
             style={{
               backgroundColor: 'rgba(10, 14, 39, 0.95)',
-              border: `1px solid ${color}`,
+              border: `2px solid ${color}`,
+              boxShadow: `0 0 20px ${color}40`,
               color: 'white',
               fontSize: '12px',
-              maxWidth: '200px',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
+              maxWidth: '250px',
             }}
           >
-            <div style={{ fontWeight: '600', marginBottom: '4px' }}>{activity.name}</div>
-            <div style={{ opacity: 0.8, fontSize: '11px' }}>
-              {(activity.annualEmissions / 1000).toFixed(2)}t CO₂/yr
+            <div style={{ fontWeight: '600', marginBottom: '4px', fontSize: '14px' }}>
+              {activity.name}
+            </div>
+            <div style={{ opacity: 0.9, fontSize: '13px', marginBottom: '2px' }}>
+              <strong>{(activity.annualEmissions / 1000).toFixed(2)}t</strong> CO₂/yr
             </div>
             {activity.category && (
-              <div style={{ opacity: 0.6, fontSize: '10px', marginTop: '2px' }}>
+              <div
+                style={{
+                  opacity: 0.7,
+                  fontSize: '10px',
+                  marginTop: '4px',
+                  padding: '2px 6px',
+                  background: `${color}30`,
+                  borderRadius: '4px',
+                  display: 'inline-block',
+                }}
+              >
                 {activity.category}
               </div>
             )}

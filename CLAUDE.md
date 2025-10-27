@@ -32,14 +32,16 @@ Open reference stack for trustworthy carbon accounting — manifest-first archit
 - Tests: Vitest (unit), Playwright (e2e)
 - Run: `pnpm dev`
 
-**Phase 1 Rebuild Architecture (Branch: `rebuild/canvas-story-engine`):**
-- Canvas-first layout (viewport zones, not grids)
-- Story-driven UI (XState journey orchestration)
+**3D Universe Architecture (Current - Branch: `feature/3d-universe`):**
+- Simplified navigation (React Router only, no XState)
+- 3D visualization (Three.js, React Three Fiber, Drei helpers)
 - Design token system (CSS custom properties)
-- Component tiers: Primitives → Layout → Visualizations → Domain
-- State: Zustand (app state) + XState (journey flow)
-- Viz: Apache ECharts 6.0 (canvas rendering, 60fps)
-- Docs: `docs/acx/ACX080.md`
+- Component tiers: Primitives → Visualizations → Domain
+- State: Zustand only (simplified from dual-store pattern)
+- Viz: Apache ECharts 6.0 (2D charts) + Three.js (3D universe)
+- 2D+3D Hybrid: Citations, methodology, activity management in 2D overlays
+- Camera choreography: Intro animations, click-to-fly (in progress)
+- Docs: `docs/acx/ACX084.md` (supersedes ACX080.md)
 
 **Static React Site (`site/`):**
 - Vite 5 + Tailwind CSS
@@ -73,7 +75,8 @@ Open reference stack for trustworthy carbon accounting — manifest-first archit
 - **Build:** Vite 5, TypeScript ~5.5.4
 - **UI:** React 18, Tailwind CSS 3, Radix UI
 - **Tests:** Vitest (unit), Playwright (e2e)
-- **Phase 1:** Apache ECharts 6.0, XState 5.23, Zustand 4.5.4, TanStack Query 5.90.5
+- **3D Visualization:** Three.js ^0.180.0, React Three Fiber ^9.4.0, Drei ^10.7.6
+- **State & Data:** Zustand 4.5.4, TanStack Query 5.90.5, Apache ECharts 6.0
 
 ### Infrastructure
 - Cloudflare Workers (edge compute and APIs)
@@ -112,7 +115,7 @@ wrangler deploy               # Deploy Worker API
 
 ---
 
-## Phase 1 Development Patterns
+## 3D Universe Development Patterns
 
 ### Design Tokens (Required)
 
@@ -131,59 +134,97 @@ wrangler deploy               # Deploy Worker API
 - Story: `--color-goal`, `--color-baseline`, `--color-improvement`, `--color-insight`
 - Spacing: `--space-1` through `--space-16` (4px base)
 - Motion: `--motion-story-duration` (600ms), `--motion-story-ease`
-- Zones: `--zone-hero-height` (70vh), `--zone-insight-height` (20vh), `--zone-detail-height` (10vh)
 
 ### Component Tiers
 
-- **Tier 1:** Primitives (Button, Input, Dialog)
-- **Tier 2:** Layout (CanvasZone, StoryScene, TransitionWrapper)
-- **Tier 3:** Visualizations (HeroChart, TimelineViz, ECharts wrappers)
-- **Tier 4:** Domain (OnboardingScene, EmissionCalculator, business logic)
+- **Tier 1:** Primitives (Button, Input, Dialog from Radix UI)
+- **Tier 2:** Visualizations (DataUniverse, TimelineViz, ComparisonOverlay, ECharts wrappers)
+- **Tier 3:** Domain (CitationPanel, ActivityManagement, MethodologyModal, EmissionCalculator, etc.)
+- **Tier 4:** Pages (WelcomePage, CalculatorPage, ExplorePage, InsightsPage)
 
 ### State Management
 
-**App/UI state (Zustand):**
+**Single store (Zustand):**
 ```typescript
 import { useAppStore } from '../../hooks/useAppStore';
 
+// Access state
 const activities = useAppStore((state) => state.activities);
-const { addActivity, removeActivity } = useAppStore();
+const totalEmissions = useAppStore((state) => state.getTotalEmissions());
+
+// Access actions
+const { addActivity, removeActivity, updateActivityQuantity } = useAppStore();
 ```
 
-**Journey flow (XState):**
+**No journey machine** - Navigation via React Router:
 ```typescript
-import { useJourneyMachine } from '../../hooks/useJourneyMachine';
+import { useNavigate } from 'react-router-dom';
 
-const { isOnboarding, currentScene } = useJourneyMachine();
-const { completeOnboarding, viewInsights } = useJourneyMachine();
+const navigate = useNavigate();
+navigate('/explore'); // Simple, direct navigation
 ```
 
-### Canvas Zone Layout
+### 3D Visualization Pattern
 
+**DataUniverse Component:**
 ```typescript
-<StoryScene scene="explore" layout="canvas">
-  <CanvasZone zone="hero" padding="lg" interactionMode="explore">
-    {/* Primary viz - 70vh */}
-  </CanvasZone>
+import { DataUniverse } from '../components/viz/DataUniverse';
 
-  <CanvasZone zone="insight" padding="md" interactionMode="compare">
-    {/* Context - 20vh */}
-  </CanvasZone>
+<DataUniverse
+  totalEmissions={totalEmissions}           // kg CO₂ (central sphere size)
+  activities={activities}                    // Array of Activity objects
+  onActivityClick={handleActivityClick}     // Click handler
+  enableIntroAnimation={true}                // Zoom animation on mount
+  enableClickToFly={true}                    // Camera flies to clicked sphere
+/>
+```
 
-  <CanvasZone zone="detail" padding="sm" collapsible interactionMode="drill">
-    {/* Detail - 10vh */}
-  </CanvasZone>
-</StoryScene>
+**Activity Data Shape:**
+```typescript
+interface Activity {
+  id: string;
+  name: string;
+  annualEmissions: number; // kg CO₂
+  category?: string;
+  color?: string;
+}
+```
+
+### 2D Overlay Pattern
+
+**Citations, Methodology, Activity Management:**
+```typescript
+// 2D panels use Radix UI Dialog for modal overlays
+import { CitationPanel } from '../components/domain/CitationPanel';
+import { MethodologyModal } from '../components/domain/MethodologyModal';
+import { ActivityManagement } from '../components/domain/ActivityManagement';
+
+// Open citation for activity
+<CitationPanel
+  citation={citationData}
+  open={showCitation}
+  onClose={() => setShowCitation(false)}
+/>
+
+// Show methodology docs
+<MethodologyModal
+  open={showMethodology}
+  onClose={() => setShowMethodology(false)}
+/>
+
+// Manage activities in table view
+<ActivityManagement />
 ```
 
 ### Architecture Principles
 
-1. Canvas-first over grid
-2. Story-driven over route-driven
+1. Simplicity over abstraction (removed XState, CanvasZone complexity)
+2. 2D+3D hybrid (transparency + visualization)
 3. Design tokens over hardcoding
 4. Composition over inheritance
 5. Type-safety throughout
 6. Accessibility built-in
+7. Performance-first (SSR safety, lazy loading, error boundaries)
 
 ---
 
@@ -323,10 +364,11 @@ make sbom                   # Software bill of materials
 - `AGENTS.md` — AI assistant policies, review gates
 - `docs/WHAT_RUNS_WHERE.md` — Environment expectations
 - `docs/TESTING_NOTES.md` — QA expectations
-- `docs/acx/ACX080.md` — Phase 1 rebuild strategy
+- `docs/acx/ACX080.md` — Phase 1 rebuild strategy (superseded by ACX084)
+- `docs/acx/ACX084.md` — 3D Universe Foundation Sprint (current architecture)
 - `apps/carbon-acx-web/src/examples/README.md` — Component examples
 
 ---
 
-**Version:** 2.0
-**Last Updated:** 2025-10-26
+**Version:** 2.1
+**Last Updated:** 2025-10-27
