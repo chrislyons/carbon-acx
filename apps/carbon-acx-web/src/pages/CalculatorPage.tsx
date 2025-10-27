@@ -442,6 +442,8 @@ function CelebrationView({
               onActivityClick={(activity) => {
                 console.log('Selected activity:', activity);
               }}
+              enableIntroAnimation={true}
+              enableClickToFly={true}
             />
           </div>
 

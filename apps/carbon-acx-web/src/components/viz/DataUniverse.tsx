@@ -12,12 +12,29 @@
  */
 
 import * as React from 'react';
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Stars, Html } from '@react-three/drei';
 import * as THREE from 'three';
 
 // Client-side only flag
 const isClient = typeof window !== 'undefined';
+
+// ============================================================================
+// Camera Animation Types
+// ============================================================================
+
+interface CameraTarget {
+  position: [number, number, number];
+  target: [number, number, number];
+  duration?: number;
+}
+
+interface CameraAnimationState {
+  isAnimating: boolean;
+  progress: number;
+  from: CameraTarget | null;
+  to: CameraTarget | null;
+}
 
 // ============================================================================
 // Types
@@ -35,14 +52,25 @@ export interface DataUniverseProps {
   totalEmissions: number; // kg CO₂
   activities: Activity[];
   onActivityClick?: (activity: Activity) => void;
+  /** Enable intro zoom animation */
+  enableIntroAnimation?: boolean;
+  /** Enable click-to-fly camera movements */
+  enableClickToFly?: boolean;
 }
 
 // ============================================================================
 // Component
 // ============================================================================
 
-export function DataUniverse({ totalEmissions, activities, onActivityClick }: DataUniverseProps) {
+export function DataUniverse({
+  totalEmissions,
+  activities,
+  onActivityClick,
+  enableIntroAnimation = false,
+  enableClickToFly = true
+}: DataUniverseProps) {
   const [isReady, setIsReady] = React.useState(false);
+  const [selectedActivityId, setSelectedActivityId] = React.useState<string | null>(null);
 
   // Only render on client-side after mount
   React.useEffect(() => {
@@ -137,6 +165,16 @@ export function DataUniverse({ totalEmissions, activities, onActivityClick }: Da
             maxDistance={50}
             autoRotate={false}
           />
+
+          {/* Camera Animator */}
+          {enableIntroAnimation && <CameraAnimator introAnimation />}
+          {enableClickToFly && selectedActivityId && (
+            <CameraAnimator
+              activityId={selectedActivityId}
+              activities={activities}
+              centralSize={centralSize}
+            />
+          )}
         </Canvas>
       </ErrorBoundary>
     </div>
@@ -370,4 +408,112 @@ function OrbitingActivity({
       )}
     </group>
   );
+}
+
+// ============================================================================
+// Camera Animator
+// ============================================================================
+
+interface CameraAnimatorProps {
+  introAnimation?: boolean;
+  activityId?: string;
+  activities?: Activity[];
+  centralSize?: number;
+}
+
+function CameraAnimator({ introAnimation, activityId, activities, centralSize }: CameraAnimatorProps) {
+  const { camera } = useThree();
+  const [animationState, setAnimationState] = React.useState<CameraAnimationState>({
+    isAnimating: false,
+    progress: 0,
+    from: null,
+    to: null,
+  });
+
+  // Intro zoom animation: Start far out, zoom in
+  React.useEffect(() => {
+    if (introAnimation && !animationState.isAnimating) {
+      setAnimationState({
+        isAnimating: true,
+        progress: 0,
+        from: {
+          position: [50, 50, 50],
+          target: [0, 0, 0],
+        },
+        to: {
+          position: [15, 15, 15],
+          target: [0, 0, 0],
+        },
+      });
+    }
+  }, [introAnimation]);
+
+  // Click-to-fly animation: Fly to selected activity
+  React.useEffect(() => {
+    if (activityId && activities && centralSize !== undefined) {
+      const activity = activities.find((a) => a.id === activityId);
+      if (!activity) return;
+
+      const index = activities.indexOf(activity);
+      const orbitRadius = centralSize + 4 + index * 0.5;
+
+      // Calculate activity position (using same logic as OrbitingActivity)
+      const time = Date.now() * (0.0005 + index * 0.0001);
+      const phaseOffset = (index / activities.length) * Math.PI * 2;
+      const angle = time + phaseOffset;
+      const x = Math.cos(angle) * orbitRadius;
+      const z = Math.sin(angle) * orbitRadius;
+      const y = Math.sin(time * 2) * 2;
+
+      // Camera position: approach from the side at an angle
+      const cameraDistance = 8;
+      const cameraX = x + Math.cos(angle + Math.PI / 4) * cameraDistance;
+      const cameraZ = z + Math.sin(angle + Math.PI / 4) * cameraDistance;
+      const cameraY = y + 3;
+
+      setAnimationState({
+        isAnimating: true,
+        progress: 0,
+        from: {
+          position: [camera.position.x, camera.position.y, camera.position.z],
+          target: [0, 0, 0],
+        },
+        to: {
+          position: [cameraX, cameraY, cameraZ],
+          target: [x, y, z],
+        },
+      });
+    }
+  }, [activityId, activities, centralSize]);
+
+  // Animate camera movement
+  useFrame((_state, delta) => {
+    if (!animationState.isAnimating || !animationState.from || !animationState.to) return;
+
+    const newProgress = Math.min(animationState.progress + delta * 0.8, 1);
+    setAnimationState((prev) => ({ ...prev, progress: newProgress }));
+
+    // Ease-in-out interpolation
+    const t = newProgress < 0.5
+      ? 2 * newProgress * newProgress
+      : -1 + (4 - 2 * newProgress) * newProgress;
+
+    // Interpolate camera position
+    camera.position.x = THREE.MathUtils.lerp(animationState.from.position[0], animationState.to.position[0], t);
+    camera.position.y = THREE.MathUtils.lerp(animationState.from.position[1], animationState.to.position[1], t);
+    camera.position.z = THREE.MathUtils.lerp(animationState.from.position[2], animationState.to.position[2], t);
+
+    // Interpolate look-at target
+    const targetX = THREE.MathUtils.lerp(animationState.from.target[0], animationState.to.target[0], t);
+    const targetY = THREE.MathUtils.lerp(animationState.from.target[1], animationState.to.target[1], t);
+    const targetZ = THREE.MathUtils.lerp(animationState.from.target[2], animationState.to.target[2], t);
+    camera.lookAt(targetX, targetY, targetZ);
+
+    // End animation
+    if (newProgress >= 1) {
+      setAnimationState((prev) => ({ ...prev, isAnimating: false }));
+    }
+  });
+
+  return null; // This component doesn't render anything visible
 }
