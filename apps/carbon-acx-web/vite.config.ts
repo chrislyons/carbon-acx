@@ -174,4 +174,13 @@ export default defineConfig({
   server: {
     port: 5173,
   },
+  ssr: {
+    // Exclude Three.js and related packages from SSR
+    noExternal: [],
+    external: ['three', '@react-three/fiber', '@react-three/drei'],
+  },
+  optimizeDeps: {
+    // Exclude Three.js from pre-bundling during development
+    exclude: ['three', '@react-three/fiber', '@react-three/drei'],
+  },
 });

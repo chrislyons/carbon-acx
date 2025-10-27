@@ -19,12 +19,8 @@ import {
 import { useAppStore } from '../hooks/useAppStore';
 import { Lightbulb, Target, GitCompare, Share2, X, ArrowLeft, Globe, List } from 'lucide-react';
 
-// Lazy load DataUniverse to avoid SSR issues with Three.js
-const DataUniverse = React.lazy(() =>
-  import('../components/viz/DataUniverse').then((module) => ({
-    default: module.DataUniverse,
-  }))
-);
+// Use wrapper that prevents Three.js imports during SSR/build
+import { DataUniverse } from '../components/viz/DataUniverseWrapper';
 
 type ActiveView = 'insights' | 'scenarios' | 'goals' | 'share';
 type InsightDisplayMode = 'cards' | 'universe';
@@ -277,27 +273,16 @@ export default function InsightsPage() {
                     height: '600px',
                   }}
                 >
-                  <React.Suspense
-                    fallback={
-                      <div
-                        className="w-full h-full flex items-center justify-center"
-                        style={{ background: '#0a0e27', color: '#fff' }}
-                      >
-                        Loading 3D Universe...
-                      </div>
-                    }
-                  >
-                    <DataUniverse
-                      totalEmissions={totalEmissions}
-                      activities={activities.map((a) => ({
-                        id: a.id,
-                        name: a.name,
-                        annualEmissions: a.annualEmissions,
-                        category: a.category ?? undefined,
-                      }))}
-                      onActivityClick={setSelectedActivity}
-                    />
-                  </React.Suspense>
+                  <DataUniverse
+                    totalEmissions={totalEmissions}
+                    activities={activities.map((a) => ({
+                      id: a.id,
+                      name: a.name,
+                      annualEmissions: a.annualEmissions,
+                      category: a.category ?? undefined,
+                    }))}
+                    onActivityClick={setSelectedActivity}
+                  />
                 </div>
 
                 {/* Insights Sidebar */}
