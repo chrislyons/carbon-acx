@@ -180,7 +180,8 @@ export default defineConfig({
     external: ['three', '@react-three/fiber', '@react-three/drei'],
   },
   optimizeDeps: {
-    // Exclude Three.js from pre-bundling during development
-    exclude: ['three', '@react-three/fiber', '@react-three/drei'],
+    // Include Three.js packages for proper dependency optimization
+    // This ensures React Three Fiber can properly share React context
+    include: ['three', '@react-three/fiber', '@react-three/drei'],
   },
 });
