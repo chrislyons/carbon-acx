@@ -216,6 +216,12 @@ export default function ExplorePage() {
   }, [selectedLayers, profileLayers, totalEmissions]);
 
   const handleExport = () => {
+    // BUG FIX: Check if there are activities before trying to export
+    if (activities.length === 0) {
+      alert('No activities to export. Add some activities first!');
+      return;
+    }
+
     try {
       exportToCSV(activities, totalEmissions);
     } catch (error) {
@@ -324,16 +330,52 @@ export default function ExplorePage() {
               height: '600px',
             }}
           >
-            <DataUniverse
-              totalEmissions={totalEmissions}
-              activities={activities.map((a) => ({
-                id: a.id,
-                name: a.name,
-                annualEmissions: a.annualEmissions,
-                category: a.category ?? undefined,
-              }))}
-              onActivityClick={setSelectedActivity}
-            />
+            {activities.length === 0 ? (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center max-w-md px-8">
+                  <Globe
+                    className="w-16 h-16 mx-auto mb-4 opacity-30"
+                    style={{ color: 'var(--text-tertiary)' }}
+                  />
+                  <h3
+                    className="font-semibold mb-2"
+                    style={{
+                      fontSize: 'var(--font-size-lg)',
+                      color: 'var(--text-primary)',
+                    }}
+                  >
+                    No Activities to Visualize
+                  </h3>
+                  <p
+                    className="mb-6"
+                    style={{
+                      fontSize: 'var(--font-size-sm)',
+                      color: 'var(--text-secondary)',
+                    }}
+                  >
+                    Add activities to your baseline to see them visualized in 3D space. Each activity will appear as an orbiting sphere.
+                  </p>
+                  <Button
+                    variant="primary"
+                    size="md"
+                    onClick={() => navigate('/calculator')}
+                  >
+                    Add Activities
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <DataUniverse
+                totalEmissions={totalEmissions}
+                activities={activities.map((a) => ({
+                  id: a.id,
+                  name: a.name,
+                  annualEmissions: a.annualEmissions,
+                  category: a.category ?? undefined,
+                }))}
+                onActivityClick={setSelectedActivity}
+              />
+            )}
           </div>
         )}
 

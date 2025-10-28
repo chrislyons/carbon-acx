@@ -160,7 +160,48 @@ function CelebrationView({
   const globalAverage = 4.5;
   const percentOfAverage = ((totalTonnes / globalAverage) * 100).toFixed(0);
 
-  const activities = useAppStore((state) => state.activities);
+  const manualActivities = useAppStore((state) => state.activities);
+  const calculatorBreakdown = calculatorResults ? calculatorResults.breakdown : null;
+
+  // Generate activities array for DataUniverse based on mode
+  const activitiesForViz = React.useMemo(() => {
+    if (mode === 'calculator' && calculatorBreakdown) {
+      // Convert calculator results to activity-like objects for visualization
+      return [
+        {
+          id: 'commute',
+          name: 'Daily Commute',
+          annualEmissions: calculatorBreakdown.commute,
+          category: 'Transport',
+        },
+        {
+          id: 'diet',
+          name: 'Diet',
+          annualEmissions: calculatorBreakdown.diet,
+          category: 'Food',
+        },
+        {
+          id: 'energy',
+          name: 'Home Energy',
+          annualEmissions: calculatorBreakdown.energy,
+          category: 'Energy',
+        },
+        {
+          id: 'shopping',
+          name: 'Shopping',
+          annualEmissions: calculatorBreakdown.shopping,
+          category: 'Consumption',
+        },
+      ].filter((a) => a.annualEmissions > 0);
+    }
+    // Manual mode: use actual activities from store
+    return manualActivities.map((a) => ({
+      id: a.id,
+      name: a.name,
+      annualEmissions: a.annualEmissions,
+      category: a.category ?? undefined,
+    }));
+  }, [mode, calculatorBreakdown, manualActivities]);
 
   return (
     <div className="max-w-7xl mx-auto space-y-[var(--space-8)]">
@@ -434,13 +475,8 @@ function CelebrationView({
             }}
           >
             <DataUniverse
-              totalEmissions={totalEmissions}
-              activities={activities.map((a) => ({
-                id: a.id,
-                name: a.name,
-                annualEmissions: a.annualEmissions,
-                category: a.category ?? undefined,
-              }))}
+              totalEmissions={emissions}
+              activities={activitiesForViz}
               onActivityClick={(activity) => {
                 console.log('Selected activity:', activity);
               }}
