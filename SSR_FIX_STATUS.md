@@ -264,3 +264,13 @@ Client Hydration:
 **Fix Commit:** 24d7e4a
 **Rebuild Trigger:** 0c6855e
 **Expected Resolution:** 3-5 minutes from rebuild trigger
+
+---
+
+## ACX090 – DataUniverse 3D runtime regression (2025-10-27)
+
+- **Root cause identified:** A – Version incompatibility between React 18.3.1 and the 2024 major releases of `three@0.180.0` / `@react-three/fiber@9.4.0` / `@react-three/drei@10.7.6`. The newer stack pulled a second copy of React/ReactDOM into the lazy DataUniverse chunk under Cloudflare's production build, leaving `ReactSharedInternals` undefined at module evaluation time.
+- **Solution implemented:** Pinned the visualization stack to the last known good trio (`three@0.168.0`, `@react-three/fiber@8.17.10`, `@react-three/drei@9.114.3`) and aligned the typings package to `@types/three@0.168.0`.
+- **Verification steps taken:** `pnpm build` within `apps/carbon-acx-web` (reproduces Cloudflare's production target) and confirmed the resulting `DataUniverse-*.js` chunk excludes duplicated React internals.
+- **Commit hash(es):** 89fa3a2 (feature/ACX090-datauniverse-fix).
+- **Recommended prevention measures:** Add a compatibility matrix for Three.js/R3F/Drei in `/docs`, gate upgrades behind Cloudflare preview smoke tests, and extend CI to assert no React runtime code ships inside lazily loaded visualization chunks.
