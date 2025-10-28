@@ -178,13 +178,6 @@ export default defineConfig({
   server: {
     port: 5173,
   },
-  build: {
-    commonjsOptions: {
-      // Ensure proper handling of React dependencies
-      include: [/node_modules/],
-      transformMixedEsModules: true,
-    },
-  },
   ssr: {
     // Exclude Three.js and related packages from SSR
     noExternal: [],
