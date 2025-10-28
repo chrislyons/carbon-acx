@@ -174,6 +174,23 @@ export default defineConfig({
   server: {
     port: 5173,
   },
+  build: {
+    rollupOptions: {
+      output: {
+        // Ensure React Three Fiber and React share the same React instance
+        manualChunks(id) {
+          // Keep Three.js ecosystem together in same chunk
+          if (id.includes('three') || id.includes('@react-three')) {
+            return 'three-vendor';
+          }
+          // Keep React ecosystem together
+          if (id.includes('react') || id.includes('react-dom')) {
+            return 'react-vendor';
+          }
+        },
+      },
+    },
+  },
   ssr: {
     // Exclude Three.js and related packages from SSR
     noExternal: [],
