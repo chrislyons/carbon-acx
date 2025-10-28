@@ -30,8 +30,14 @@ jobs:
       - name: Determine required Node version
         id: node_engine
         run: |
-          cmd="require('./package.json').engines?.node || '20.19.4'"
-          node_version=$(node -pe "$cmd")
+          node_version=$(python3 - <<'PY'
+import json
+with open('package.json') as f:
+    pj = json.load(f)
+node = pj.get('engines', {}).get('node', '20.19.4')
+print(node)
+PY
+)
           echo "node_version=$node_version" >> $GITHUB_OUTPUT
 
       - name: Setup Node (use package.json engines)
@@ -124,8 +130,14 @@ jobs:
       - name: Determine required Node version
         id: node_engine
         run: |
-          cmd="require('./package.json').engines?.node || '20.19.4'"
-          node_version=$(node -pe "$cmd")
+          node_version=$(python3 - <<'PY'
+import json
+with open('package.json') as f:
+    pj = json.load(f)
+node = pj.get('engines', {}).get('node', '20.19.4')
+print(node)
+PY
+)
           echo "node_version=$node_version" >> $GITHUB_OUTPUT
 
       - name: Setup Node (use package.json engines)
