@@ -6,6 +6,16 @@ Open reference stack for trustworthy carbon accounting — manifest-first archit
 
 ---
 
+## Quick Command Reference
+
+**Full command list:** `docs/repo-commands.html` (click-to-copy commands for dev, build, test, deploy)
+
+**Common commands:** `pnpm dev` | `pnpm build` | `pnpm test` | `pnpm typecheck`
+
+For all commands, see `docs/repo-commands.html` (open in browser for full reference)
+
+---
+
 ## Architecture Layers
 
 ### 1. Data Layer (`data/`)
