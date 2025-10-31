@@ -47,3 +47,6 @@ refs/normalized/
 
 # macOS files
 .DS_Store
+
+# Scratch space (temporary notes, drafts, experiments)
+.claude/scratch/
