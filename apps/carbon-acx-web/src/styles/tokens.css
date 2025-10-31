@@ -1,8 +1,38 @@
+/**
+ * Design Tokens - Carbon ACX Web Application
+ * Canvas-first, story-driven visual system
+ */
+
 :root {
   color-scheme: light;
+
+  /* Fonts */
   --font-sans: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, monospace;
 
+  /* Typography Scale - Major Third (1.250 ratio) for stronger hierarchy */
+  --font-size-xs: 0.64rem;      /* 10.24px */
+  --font-size-sm: 0.8rem;       /* 12.8px */
+  --font-size-base: 1rem;       /* 16px */
+  --font-size-lg: 1.25rem;      /* 20px */
+  --font-size-xl: 1.563rem;     /* 25px */
+  --font-size-2xl: 1.953rem;    /* 31.25px */
+  --font-size-3xl: 2.441rem;    /* 39.06px */
+  --font-size-4xl: 3.052rem;    /* 48.83px */
+  --font-size-5xl: 3.815rem;    /* 61.04px */
+
+  /* Font weights */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Line heights */
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+
+  /* Surfaces (keep existing for compatibility) */
   --surface-background: #f4f6fb;
   --surface-default: #ffffff;
   --surface: #ffffff;
@@ -10,15 +40,20 @@
   --surface-elevated: rgba(255, 255, 255, 0.92);
   --surface-hover: rgba(0, 0, 0, 0.04);
 
+  /* Borders */
   --border: rgba(20, 25, 36, 0.12);
   --border-default: rgba(20, 25, 36, 0.12);
   --border-strong: rgba(20, 25, 36, 0.24);
+  --border-subtle: rgba(20, 25, 36, 0.08);
 
+  /* Text */
   --foreground: #171c2a;
   --text-primary: #171c2a;
   --text-secondary: rgba(23, 28, 42, 0.68);
   --text-muted: rgba(23, 28, 42, 0.52);
+  --text-tertiary: rgba(23, 28, 42, 0.40);
 
+  /* Accent colors (existing) */
   --accent-50: #eef2ff;
   --accent-100: #dbe4ff;
   --accent-200: #bac7ff;
@@ -30,6 +65,7 @@
   --accent-800: #182c8c;
   --accent-900: #152472;
 
+  /* Neutrals (existing) */
   --neutral-50: #f5f6f9;
   --neutral-100: #eceef3;
   --neutral-200: #d9dce5;
@@ -41,22 +77,59 @@
   --neutral-800: #222838;
   --neutral-900: #141924;
 
+  /* Semantic (existing) */
   --accent-success: #27ae60;
   --accent-warning: #f39c12;
   --accent-danger: #e74c3c;
 
+  /* Carbon intensity colors - NEW */
+  --carbon-low: #10b981;          /* Green - < 100 kg CO₂ */
+  --carbon-moderate: #f59e0b;     /* Amber - 100-250 kg CO₂ */
+  --carbon-high: #ef4444;         /* Red - > 250 kg CO₂ */
+  --carbon-neutral: #6b7280;      /* Gray - baseline/neutral */
+
+  /* Story-specific colors - NEW */
+  --color-goal: #8b5cf6;          /* Purple - user goals */
+  --color-baseline: #3b82f6;      /* Blue - current baseline */
+  --color-baseline-bg: rgba(59, 130, 246, 0.08); /* Blue - baseline background */
+  --color-improvement: #10b981;   /* Green - positive change */
+  --color-insight: #ec4899;       /* Pink - data insights */
+
+  /* Interactive states - NEW */
+  --interactive-primary: #3558ff; /* Primary interactive color */
+  --surface-bg: #ffffff;          /* Base surface background */
+
+  /* Focus states */
   --focus-color: rgba(53, 88, 255, 0.72);
   --focus-ring: rgba(53, 88, 255, 0.24);
 
+  /* Shadows */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-sm: 0 1px 2px 0 rgba(12, 21, 42, 0.08);
-  --shadow-md: 0 12px 24px -16px rgba(12, 21, 42, 0.24);
-  --shadow-lg: 0 32px 64px -32px rgba(12, 21, 42, 0.32);
+  --shadow-md: 0 4px 6px -1px rgba(12, 21, 42, 0.1), 0 2px 4px -1px rgba(12, 21, 42, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(12, 21, 42, 0.1), 0 4px 6px -2px rgba(12, 21, 42, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(12, 21, 42, 0.1), 0 10px 10px -5px rgba(12, 21, 42, 0.04);
 
+  /* Border radius */
+  --radius-sm: 0.25rem;
   --radius-base: 0.625rem;
   --radius-md: 0.875rem;
   --radius-lg: 1.25rem;
   --radius-xl: 1.75rem;
+  --radius-2xl: 1.5rem;
+  --radius-full: 9999px;
 
+  /* Spacing scale - 4px base */
+  --space-1: 0.25rem;     /* 4px */
+  --space-2: 0.5rem;      /* 8px */
+  --space-3: 0.75rem;     /* 12px */
+  --space-4: 1rem;        /* 16px */
+  --space-6: 1.5rem;      /* 24px */
+  --space-8: 2rem;        /* 32px */
+  --space-12: 3rem;       /* 48px */
+  --space-16: 4rem;       /* 64px */
+
+  /* Legacy spacing (keep for compatibility) */
   --space-xs: 0.375rem;
   --space-sm: 0.75rem;
   --space-md: 1rem;
@@ -64,10 +137,30 @@
   --space-xl: 2rem;
   --space-2xl: 3rem;
 
+  /* Motion & Animation */
   --motion-duration-fast: 120ms;
   --motion-duration: 180ms;
   --motion-duration-slow: 280ms;
   --motion-ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Story transitions - NEW */
+  --motion-story-duration: 600ms;
+  --motion-story-ease: cubic-bezier(0.43, 0.13, 0.23, 0.96);
+
+  /* Canvas zones - NEW */
+  --zone-hero-height: 70vh;
+  --zone-insight-height: 20vh;
+  --zone-detail-height: 10vh;
+
+  /* Z-index scale - NEW */
+  --z-base: 0;
+  --z-dropdown: 1000;
+  --z-sticky: 1100;
+  --z-fixed: 1200;
+  --z-modal-backdrop: 1300;
+  --z-modal: 1400;
+  --z-popover: 1500;
+  --z-tooltip: 1600;
 }
 
 [data-theme='dark'] {
@@ -79,15 +172,18 @@
   --surface-muted: rgba(15, 22, 19, 0.72);
   --surface-elevated: rgba(21, 30, 26, 0.92);
   --surface-hover: rgba(255, 255, 255, 0.08);
+  --surface-bg: #0f1613;
 
   --border: rgba(180, 255, 220, 0.12);
   --border-default: rgba(180, 255, 220, 0.12);
   --border-strong: rgba(180, 255, 220, 0.24);
+  --border-subtle: rgba(180, 255, 220, 0.08);
 
   --foreground: #e8f5f0;
   --text-primary: #e8f5f0;
   --text-secondary: rgba(232, 245, 240, 0.76);
   --text-muted: rgba(232, 245, 240, 0.56);
+  --text-tertiary: rgba(232, 245, 240, 0.40);
 
   /* Forest green accent colors */
   --accent-50: #1a2820;

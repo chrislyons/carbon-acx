@@ -21,7 +21,7 @@ BANNED_TOKENS: Mapping[str, str] = {
 # Specific documents that are permitted to reference otherwise banned tokens.
 # This is useful for retrospective docs that must quote prior incidents.
 ALLOWED_TOKEN_PATHS: Mapping[str, Set[Path]] = {
-    "fastapi": {Path("docs/pr_history_review.md")},
+    "fastapi": {Path("docs/audits/pr_history_review.md")},
 }
 
 
@@ -38,7 +38,7 @@ def scan_file(path: Path) -> list[str]:
     """Return a list of lint errors for the provided Markdown file."""
     errors: list[str] = []
     try:
-        text = path.read_text(encoding="utf-8")
+        text = path.read_text(encoding="utf-8", errors="replace")
     except FileNotFoundError:
         errors.append(f"Missing file: {path}")
         return errors

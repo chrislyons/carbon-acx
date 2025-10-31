@@ -171,7 +171,21 @@ export default defineConfig({
     compression({ threshold: 1024, algorithm: 'brotliCompress', ext: '.br' }),
   ],
   envPrefix: ['VITE_', 'ACX_'],
+  resolve: {
+    // Ensure single instance of React and Three.js dependencies
+    dedupe: ['react', 'react-dom', 'three', '@react-three/fiber'],
+  },
   server: {
     port: 5173,
+  },
+  ssr: {
+    // Exclude Three.js and related packages from SSR
+    noExternal: [],
+    external: ['three', '@react-three/fiber', '@react-three/drei'],
+  },
+  optimizeDeps: {
+    // Include Three.js packages for proper dependency optimization
+    // This ensures React Three Fiber can properly share React context
+    include: ['three', '@react-three/fiber', '@react-three/drei'],
   },
 });

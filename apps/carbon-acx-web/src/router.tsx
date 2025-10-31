@@ -45,8 +45,8 @@ export const router = createBrowserRouter([
         element: suspenseElement(<HomeView />, 'Preparing home view…'),
       },
       {
-        path: 'dashboard',
-        element: suspenseElement(<DashboardView />, 'Loading your dashboard…'),
+        path: 'dashboard-legacy',
+        element: suspenseElement(<DashboardView />, 'Loading legacy dashboard…'),
       },
       {
         id: 'sector',

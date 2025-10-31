@@ -102,8 +102,8 @@ export default function HomeView() {
         </div>
       </div>
 
-      {/* Live Visualizations Stack - ALWAYS VISIBLE */}
-      <div className="grid grid-cols-1 gap-3">
+      {/* Live Visualizations - Horizontal on Desktop */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {/* Global Comparison Chart */}
         <Card className="p-3 relative">
           <FullscreenChart title="Global Emissions Comparison" description="Compare emissions across regions and against global averages">
