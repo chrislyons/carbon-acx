@@ -1,0 +1,40 @@
+{
+  "version": "1.0.0",
+  "description": "Carbon ACX skills configuration with template references",
+  "templates": {
+    "schema-linter": {
+      "source": "~/dev/.claude/skill-templates/schema-linter",
+      "enabled": true,
+      "filePatterns": ["**/*.{json,yaml,yml,toml}"],
+      "excludePatterns": ["node_modules/**", "dist/**", ".venv/**"]
+    },
+    "dependency-audit": {
+      "source": "~/dev/.claude/skill-templates/dependency-audit",
+      "enabled": true,
+      "filePatterns": ["package.json", "pyproject.toml", "poetry.lock", "package-lock.json"],
+      "triggerOnChange": true
+    },
+    "ci-troubleshooter": {
+      "source": "~/dev/.claude/skill-templates/ci-troubleshooter",
+      "enabled": true,
+      "filePatterns": [".github/workflows/**/*.yml"],
+      "lazyLoad": true
+    },
+    "test-analyzer": {
+      "source": "~/dev/.claude/skill-templates/test-analyzer",
+      "enabled": true,
+      "filePatterns": ["tests/**/*", "**/*.test.ts", "**/*.test.py"],
+      "lazyLoad": true
+    },
+    "doc-standards": {
+      "source": "~/dev/.claude/skill-templates/doc-standards",
+      "enabled": true,
+      "filePatterns": ["docs/acx/**/*.{md,mdx}"],
+      "lazyLoad": true
+    }
+  },
+  "projectSkills": {
+    "location": ".claude/skills/project",
+    "description": "Project-specific skills unique to Carbon ACX"
+  }
+}

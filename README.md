@@ -163,6 +163,21 @@ See `docs/TESTING_NOTES.md` and `docs/WHAT_RUNS_WHERE.md` for deeper guidance on
 
 ---
 
+## Documentation
+
+**PREFIX:** ACX
+**Next Doc:** ACX091.md
+**Location:** `docs/acx/`
+
+**Discovery command:**
+```bash
+ls -1 docs/acx/ | grep -E "^ACX[0-9]{3,4}\.(md|mdx)$" | sort
+```
+
+Documentation follows workspace pattern `docs/<prefix>/<PREFIX><NUM>.(md|mdx)` — see `~/chrislyons/dev/CLAUDE.md` for full conventions.
+
+---
+
 ## FAQ & tips
 
 - Artefacts live under `dist/artifacts/<hash>`; update `ACX_ARTIFACT_DIR` if you need the Dash app to point at a custom bundle.【F:calc/derive.py†L52-L92】【F:app/app.py†L41-L158】

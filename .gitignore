@@ -47,3 +47,6 @@ refs/normalized/
 
 # macOS files
 .DS_Store
+
+# Claude Code scratch space (temporary notes, not tracked)
+.claude/scratch/

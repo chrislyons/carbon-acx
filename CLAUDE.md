@@ -330,6 +330,25 @@ import { ActivityManagement } from '../components/domain/ActivityManagement';
 
 ---
 
+## Documentation Indexing
+
+**Active Documentation:**
+- `docs/acx/` — All files matching `ACX[0-9]{3,4}.(md|mdx)` pattern
+- `docs/acx/INDEX.md` — Active documentation catalog and next document number
+- `README.md`, `AGENTS.md`, and other root-level docs
+
+**Excluded from Indexing:**
+- `docs/acx/archive/**` — Archived documentation (180+ days old)
+- `docs/deprecated/**` — Deprecated documentation
+- `*.draft.md` — Draft documents
+
+**Archival Policy:**
+- Documents older than 90 days are automatically moved to `docs/acx/archive/` via `~/dev/scripts/archive-old-docs.sh`
+- Run manually: `bash ~/dev/scripts/archive-old-docs.sh carbon-acx ACX`
+- Archived docs remain accessible but are excluded from active indexing
+
+---
+
 ## Monorepo Structure
 
 **pnpm workspaces:**
@@ -386,5 +405,25 @@ make sbom                   # Software bill of materials
 
 ---
 
-**Version:** 2.1
-**Last Updated:** 2025-10-27
+## Skill Loading (Context-Aware)
+
+Skills are lazy-loaded based on file patterns to reduce context overhead:
+
+**Template-Based Skills** (from `~/dev/.claude/skill-templates/`):
+- **schema.linter** → `**/*.{json,yaml,yml,toml}` (excludes node_modules, dist, .venv)
+- **dependency.audit** → `package.json`, `pyproject.toml`, lockfiles (triggers on change)
+- **ci.troubleshooter** → `.github/workflows/**/*.yml` (lazy-loaded)
+- **test.analyzer** → `tests/**/*`, `**/*.test.{ts,py}` (lazy-loaded)
+- **doc.standards** → `docs/acx/**/*.{md,mdx}` (lazy-loaded)
+
+**Skip Skills For:**
+- Quick edits (<5 min, single file changes)
+- Read-only exploration
+- Docs-only sessions without code changes
+
+**Config:** See `.claude/skills.json` for file pattern mappings and template references.
+
+---
+
+**Version:** 2.2
+**Last Updated:** 2025-10-30
