@@ -156,9 +156,9 @@ function CelebrationView({
   onComplete,
 }: CelebrationViewProps) {
   const emissions = calculatorResults ? calculatorResults.total : totalEmissions;
-  const totalTonnes = emissions / 1000;
+  const totalTonnes = (emissions || 0) / 1000;
   const globalAverage = 4.5;
-  const percentOfAverage = ((totalTonnes / globalAverage) * 100).toFixed(0);
+  const percentOfAverage = (totalTonnes > 0 ? ((totalTonnes / globalAverage) * 100) : 0).toFixed(0);
 
   const manualActivities = useAppStore((state) => state.activities);
   const calculatorBreakdown = calculatorResults ? calculatorResults.breakdown : null;
