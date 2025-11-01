@@ -1,7 +1,7 @@
 # ACX Documentation Index
 
-**Prefix:** ACX (Carbon ACX)  
-**Next Available Number:** ACX091
+**Prefix:** ACX (Carbon ACX)
+**Next Available Number:** ACX092
 
 ## Active Documentation
 
@@ -24,6 +24,7 @@ Recent documents (ACX075-ACX090):
 - [ACX088](./ACX088.md)
 - [ACX089](./ACX089.md)
 - [ACX090](./ACX090.md)
+- [ACX091](./ACX091%20Frontend%20Enhancement%20Sprint.md) — Frontend data surfacing & presentation improvements
 
 For complete list, see: `ls -1 docs/acx/ACX*.md`
 
