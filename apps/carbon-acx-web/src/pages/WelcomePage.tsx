@@ -9,6 +9,7 @@ import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TransitionWrapper } from '../components/system/Transition';
 import { Button } from '../components/system/Button';
+import { DataSummaryCard } from '../components/domain/DataSummaryCard';
 import { Calculator, FileText, ArrowRight, Sparkles } from 'lucide-react';
 
 type OnboardingStep = 1 | 2 | 3;
@@ -184,7 +185,12 @@ function WelcomeStep({ onNext }: WelcomeStepProps) {
         />
       </div>
 
-      <div className="pt-[var(--space-8)]">
+      {/* Data showcase */}
+      <div className="max-w-4xl mx-auto">
+        <DataSummaryCard />
+      </div>
+
+      <div className="pt-[var(--space-4)]">
         <Button variant="primary" size="lg" onClick={onNext} icon={<ArrowRight className="w-5 h-5" />}>
           Get Started
         </Button>
