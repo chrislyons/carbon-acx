@@ -7,7 +7,7 @@
   color-scheme: light;
 
   /* Fonts */
-  --font-sans: 'Epilogue', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, monospace;
 
   /* Typography Scale - Major Third (1.250 ratio) for stronger hierarchy */
