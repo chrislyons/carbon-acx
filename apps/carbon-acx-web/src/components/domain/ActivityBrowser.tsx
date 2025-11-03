@@ -336,7 +336,7 @@ export function ActivityBrowser({ targetActivities = 5, onTargetReached }: Activ
           {/* Search */}
           <div className="relative z-10">
             <Search
-              className="absolute left-[var(--space-3)] top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none"
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none"
               style={{ color: 'var(--text-tertiary)' }}
             />
             <input
@@ -344,7 +344,7 @@ export function ActivityBrowser({ targetActivities = 5, onTargetReached }: Activ
               placeholder="Search activities..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-[var(--space-10)] pr-[var(--space-4)] py-[var(--space-3)] rounded-[var(--radius-md)] border transition-all"
+              className="w-full pl-12 pr-4 py-3 rounded-[var(--radius-md)] border transition-all"
               style={{
                 backgroundColor: 'var(--surface-elevated)',
                 borderColor: 'var(--border-default)',
