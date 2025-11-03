@@ -31,6 +31,11 @@ export default function InsightsPage() {
   const [displayMode, setDisplayMode] = React.useState<InsightDisplayMode>('cards');
   const [selectedActivity, setSelectedActivity] = React.useState<any>(null);
 
+  // Clear selection when switching display modes to avoid confusion
+  React.useEffect(() => {
+    setSelectedActivity(null);
+  }, [displayMode]);
+
   const {
     activities,
     goals,
@@ -45,7 +50,10 @@ export default function InsightsPage() {
   const totalEmissions = getTotalEmissions();
   const currentGoal = goals.length > 0 ? goals[0] : undefined;
 
-  // Generate insights from current data
+  // Get emissions history from store
+  const profile = useAppStore((state) => state.profile);
+
+  // Generate insights from current data using REAL history only
   const insights = React.useMemo(() => {
     const breakdown: Record<string, number> = {};
     activities.forEach((activity) => {
@@ -53,11 +61,16 @@ export default function InsightsPage() {
       breakdown[category] = (breakdown[category] || 0) + activity.annualEmissions;
     });
 
-    const history = [
-      { date: '2024-01-01', value: totalEmissions * 1.1 },
-      { date: '2024-02-01', value: totalEmissions * 1.05 },
-      { date: '2024-03-01', value: totalEmissions },
-    ];
+    // Use actual emissions history from store
+    const history = profile.emissionsHistory.map((snapshot) => ({
+      date: snapshot.timestamp,
+      value: snapshot.totalEmissions,
+    }));
+
+    // Only generate insights if we have sufficient data
+    if (activities.length === 0) {
+      return [];
+    }
 
     return detectInsights({
       total: totalEmissions,
@@ -70,7 +83,7 @@ export default function InsightsPage() {
         category: a.category || 'Other',
       })),
     });
-  }, [activities, totalEmissions]);
+  }, [activities, totalEmissions, profile.emissionsHistory]);
 
   const handleScenarioSave = (scenario: any) => {
     addScenario(scenario);

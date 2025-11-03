@@ -51,6 +51,7 @@ export function ActivityBrowser({ targetActivities = 5, onTargetReached }: Activ
   const [error, setError] = React.useState<string | null>(null);
   const [emissionFactors, setEmissionFactors] = React.useState<EmissionFactor[]>([]);
   const [emissionFactorsLoaded, setEmissionFactorsLoaded] = React.useState(false);
+  const [hasEverReachedTarget, setHasEverReachedTarget] = React.useState(false);
 
   // Quantity dialog state
   const [quantityDialogOpen, setQuantityDialogOpen] = React.useState(false);
@@ -119,8 +120,11 @@ export function ActivityBrowser({ targetActivities = 5, onTargetReached }: Activ
 
   // Check if target reached
   React.useEffect(() => {
-    if (activityCount >= targetActivities && onTargetReached) {
-      onTargetReached();
+    if (activityCount >= targetActivities) {
+      setHasEverReachedTarget(true);
+      if (onTargetReached) {
+        onTargetReached();
+      }
     }
   }, [activityCount, targetActivities, onTargetReached]);
 
@@ -375,6 +379,9 @@ export function ActivityBrowser({ targetActivities = 5, onTargetReached }: Activ
             {filteredActivities.map((activity, index) => {
               const isSelected = hasActivity(activity.id);
 
+              const factorInfo = getEmissionFactor(activity);
+              const hasWarning = !!factorInfo.warning;
+
               return (
                 <motion.div
                   key={activity.id}
@@ -384,7 +391,7 @@ export function ActivityBrowser({ targetActivities = 5, onTargetReached }: Activ
                   transition={{ delay: index * 0.03, duration: 0.2 }}
                   whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.98 }}
-                  className="group p-[var(--space-4)] rounded-[var(--radius-lg)] border-2 cursor-pointer transition-all"
+                  className="group relative p-[var(--space-4)] rounded-[var(--radius-lg)] border-2 cursor-pointer transition-all"
                   style={{
                     backgroundColor: isSelected
                       ? 'var(--color-baseline-bg)'
@@ -395,6 +402,28 @@ export function ActivityBrowser({ targetActivities = 5, onTargetReached }: Activ
                   }}
                   onClick={() => handleActivityToggle(activity)}
                 >
+                  {/* Warning badge for estimated factors */}
+                  {hasWarning && !isSelected && (
+                    <div
+                      className="absolute top-2 right-2 px-[var(--space-2)] py-[var(--space-1)] rounded-full flex items-center gap-[var(--space-1)]"
+                      style={{
+                        backgroundColor: 'rgba(255, 171, 0, 0.15)',
+                        border: '1px solid rgba(255, 171, 0, 0.4)',
+                      }}
+                    >
+                      <AlertCircle className="w-3 h-3" style={{ color: '#FFab00' }} />
+                      <span
+                        style={{
+                          fontSize: 'var(--font-size-xs)',
+                          fontWeight: 500,
+                          color: '#FFab00',
+                        }}
+                      >
+                        Estimated
+                      </span>
+                    </div>
+                  )}
+
                   <div className="flex items-center gap-[var(--space-4)]">
                     {/* Selection indicator */}
                     <div
@@ -511,15 +540,18 @@ export function ActivityBrowser({ targetActivities = 5, onTargetReached }: Activ
               >
                 {activityCount >= targetActivities
                   ? "You've reached the target! Continue to establish your baseline."
+                  : hasEverReachedTarget && activityCount < targetActivities
+                  ? `Add ${targetActivities - activityCount} more to continue (you had ${targetActivities} before)`
                   : `Add ${targetActivities - activityCount} more to continue`}
               </p>
             </div>
-            {activityCount >= targetActivities && (
+            {(activityCount >= targetActivities || hasEverReachedTarget) && (
               <Button
                 variant="primary"
                 size="md"
                 onClick={onTargetReached}
                 icon={<Check className="w-5 h-5" />}
+                disabled={activityCount < targetActivities}
               >
                 Continue
               </Button>
@@ -619,48 +651,82 @@ export function ActivityBrowser({ targetActivities = 5, onTargetReached }: Activ
 
             {/* Emission preview */}
             {selectedActivityForQuantity && emissionFactorsLoaded && (
-              <div
-                className="p-[var(--space-3)] rounded-[var(--radius-md)]"
-                style={{
-                  backgroundColor: 'var(--carbon-neutral-bg)',
-                  border: '1px solid var(--border-subtle)',
-                }}
-              >
-                <p
+              <>
+                <div
+                  className="p-[var(--space-3)] rounded-[var(--radius-md)]"
                   style={{
-                    fontSize: 'var(--font-size-xs)',
-                    color: 'var(--text-secondary)',
-                    marginBottom: 'var(--space-1)',
+                    backgroundColor: 'var(--carbon-neutral-bg)',
+                    border: '1px solid var(--border-subtle)',
                   }}
                 >
-                  Estimated annual emissions
-                </p>
-                <p
-                  className="font-bold"
-                  style={{
-                    fontSize: 'var(--font-size-lg)',
-                    color: 'var(--text-primary)',
-                  }}
-                >
-                  {(getEmissionFactor(selectedActivityForQuantity).carbonIntensity * quantity).toFixed(2)} kg CO₂
-                </p>
+                  <p
+                    style={{
+                      fontSize: 'var(--font-size-xs)',
+                      color: 'var(--text-secondary)',
+                      marginBottom: 'var(--space-1)',
+                    }}
+                  >
+                    Estimated annual emissions
+                  </p>
+                  <p
+                    className="font-bold"
+                    style={{
+                      fontSize: 'var(--font-size-lg)',
+                      color: 'var(--text-primary)',
+                    }}
+                  >
+                    {(getEmissionFactor(selectedActivityForQuantity).carbonIntensity * quantity).toFixed(2)} kg CO₂
+                  </p>
+                </div>
+
+                {/* Enhanced warning for fallback factors */}
                 {getEmissionFactor(selectedActivityForQuantity).warning && (
-                  <div className="flex items-start gap-[var(--space-1)] mt-[var(--space-2)]">
-                    <AlertCircle
-                      className="w-3 h-3 flex-shrink-0 mt-0.5"
-                      style={{ color: 'var(--text-tertiary)' }}
-                    />
-                    <p
-                      style={{
-                        fontSize: 'var(--font-size-xs)',
-                        color: 'var(--text-tertiary)',
-                      }}
-                    >
-                      {getEmissionFactor(selectedActivityForQuantity).warning}
-                    </p>
+                  <div
+                    className="p-[var(--space-3)] rounded-[var(--radius-md)]"
+                    style={{
+                      backgroundColor: 'rgba(255, 171, 0, 0.1)',
+                      border: '1px solid rgba(255, 171, 0, 0.3)',
+                    }}
+                  >
+                    <div className="flex items-start gap-[var(--space-2)]">
+                      <AlertCircle
+                        className="w-5 h-5 flex-shrink-0 mt-0.5"
+                        style={{ color: '#FFab00' }}
+                      />
+                      <div className="flex-1">
+                        <p
+                          className="font-semibold mb-1"
+                          style={{
+                            fontSize: 'var(--font-size-sm)',
+                            color: '#CC8A00',
+                          }}
+                        >
+                          Data Quality Notice
+                        </p>
+                        <p
+                          style={{
+                            fontSize: 'var(--font-size-xs)',
+                            color: '#CC8A00',
+                            lineHeight: 1.4,
+                          }}
+                        >
+                          {getEmissionFactor(selectedActivityForQuantity).warning}
+                        </p>
+                        <p
+                          className="mt-2"
+                          style={{
+                            fontSize: 'var(--font-size-xs)',
+                            color: '#CC8A00',
+                            lineHeight: 1.4,
+                          }}
+                        >
+                          This estimate may be less accurate than activity-specific data. Consider this when making reduction decisions.
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 )}
-              </div>
+              </>
             )}
           </div>
 

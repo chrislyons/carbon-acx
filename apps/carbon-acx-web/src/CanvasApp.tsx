@@ -14,6 +14,7 @@ import React from 'react';
 import { createBrowserRouter, RouterProvider, Navigate, useNavigate } from 'react-router-dom';
 import { useAppStore } from './hooks/useAppStore';
 import { ErrorBoundary } from './components/system/ErrorBoundary';
+import { Toaster } from 'sonner';
 
 // Lazy-loaded pages
 const WelcomePage = React.lazy(() => import('./pages/WelcomePage'));
@@ -61,18 +62,78 @@ function AppLayout() {
   );
 }
 
+// Enhanced error fallback component
+function RouterErrorFallback() {
+  const navigate = useNavigate();
+
+  return (
+    <div className="min-h-screen bg-[var(--surface-bg)] flex items-center justify-center p-8">
+      <div className="max-w-md text-center">
+        <div
+          className="w-16 h-16 mx-auto mb-6 rounded-full flex items-center justify-center"
+          style={{ backgroundColor: 'var(--carbon-high-bg)' }}
+        >
+          <svg
+            className="w-8 h-8"
+            style={{ color: 'var(--carbon-high)' }}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            />
+          </svg>
+        </div>
+        <h1
+          className="font-bold mb-4"
+          style={{ fontSize: 'var(--font-size-2xl)', color: 'var(--text-primary)' }}
+        >
+          Something Went Wrong
+        </h1>
+        <p
+          className="mb-8"
+          style={{ fontSize: 'var(--font-size-base)', color: 'var(--text-secondary)' }}
+        >
+          We encountered an unexpected error. Don't worry, your data is safe. Try reloading the page or returning home.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-3 rounded-lg font-medium transition-all hover:opacity-90"
+            style={{
+              backgroundColor: 'var(--interactive-primary)',
+              color: 'white',
+            }}
+          >
+            Reload Page
+          </button>
+          <button
+            onClick={() => navigate('/')}
+            className="px-6 py-3 rounded-lg font-medium transition-all"
+            style={{
+              backgroundColor: 'var(--surface-elevated)',
+              color: 'var(--text-primary)',
+              border: '1px solid var(--border-default)',
+            }}
+          >
+            Go Home
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Unified router configuration
 const router = createBrowserRouter([
   {
     path: '/',
     element: <AppLayout />,
-    errorElement: (
-      <div className="min-h-screen bg-[var(--surface-bg)] flex items-center justify-center">
-        <div style={{ color: 'var(--text-primary)' }}>
-          An error occurred. Please refresh the page.
-        </div>
-      </div>
-    ),
+    errorElement: <RouterErrorFallback />,
   },
   {
     path: '/welcome',
@@ -133,7 +194,22 @@ const router = createBrowserRouter([
 ]);
 
 export default function CanvasApp() {
-  return <RouterProvider router={router} />;
+  return (
+    <>
+      <RouterProvider router={router} />
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          style: {
+            background: 'var(--surface-elevated)',
+            color: 'var(--text-primary)',
+            border: '1px solid var(--border-default)',
+            fontSize: 'var(--font-size-sm)',
+          },
+        }}
+      />
+    </>
+  );
 }
 
 function DebugPanel() {

@@ -14,6 +14,7 @@ import { useAppStore } from '../hooks/useAppStore';
 import { TrendingUp, GitCompare, Filter, Download, Lightbulb, Globe } from 'lucide-react';
 import type { EChartsOption } from 'echarts';
 import { exportToCSV } from '../lib/exportUtils';
+import { toast } from 'sonner';
 
 // Use wrapper that prevents Three.js imports during SSR/build
 import { DataUniverse } from '../components/viz/DataUniverseWrapper';
@@ -42,84 +43,52 @@ export default function ExplorePage() {
 
   const totalEmissions = getTotalEmissions();
 
-  // Use real emissions history or generate mock data if history is empty
+  // Use real emissions history only - no fake data
   const timelineData = React.useMemo(() => {
     const milestones: Milestone[] = [];
 
-    // If we have real history, use it
-    if (emissionsHistory.length > 0) {
-      const dataPoints = emissionsHistory.map((snapshot) => ({
-        timestamp: snapshot.timestamp.split('T')[0],
-        value: snapshot.totalEmissions,
-        breakdown: snapshot.breakdown || {},
-      }));
-
-      // Add milestones for first and last entries
-      if (dataPoints.length > 0) {
-        milestones.push({
-          timestamp: dataPoints[0].timestamp,
-          label: 'Baseline Established',
-          value: dataPoints[0].value,
-          description: 'Initial carbon footprint calculated',
-        });
-
-        if (dataPoints.length > 1) {
-          const lastPoint = dataPoints[dataPoints.length - 1];
-          milestones.push({
-            timestamp: lastPoint.timestamp,
-            label: 'Current',
-            value: lastPoint.value,
-            description: 'Latest emissions data',
-          });
-        }
-      }
-
-      return { dataPoints, milestones };
+    if (emissionsHistory.length === 0) {
+      return { dataPoints: [], milestones: [] };
     }
 
-    // Fallback: Generate sample timeline data if no history
-    const now = new Date();
-    const dataPoints = [];
+    // Map real history to timeline format
+    const dataPoints = emissionsHistory.map((snapshot) => ({
+      timestamp: snapshot.timestamp.split('T')[0],
+      value: snapshot.totalEmissions,
+      breakdown: snapshot.breakdown || {},
+    }));
 
-    for (let i = 11; i >= 0; i--) {
-      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const dateStr = date.toISOString().split('T')[0];
-
-      const variation = Math.sin(i / 2) * 500;
-      const value = Math.max(0, totalEmissions + variation);
-
-      dataPoints.push({
-        timestamp: dateStr,
-        value,
-        breakdown: {
-          commute: value * 0.25,
-          diet: value * 0.35,
-          energy: value * 0.25,
-          shopping: value * 0.15,
-        },
+    // Add milestones for first and last entries
+    if (dataPoints.length > 0) {
+      milestones.push({
+        timestamp: dataPoints[0].timestamp,
+        label: 'Baseline Established',
+        value: dataPoints[0].value,
+        description: 'Initial carbon footprint calculated',
       });
 
-      if (i === 11) {
+      if (dataPoints.length > 1) {
+        const lastPoint = dataPoints[dataPoints.length - 1];
         milestones.push({
-          timestamp: dateStr,
-          label: 'Baseline Established',
-          value,
-          description: 'Initial carbon footprint calculated',
-        });
-      }
-
-      if (i === 0) {
-        milestones.push({
-          timestamp: dateStr,
+          timestamp: lastPoint.timestamp,
           label: 'Current',
-          value,
+          value: lastPoint.value,
           description: 'Latest emissions data',
         });
       }
     }
 
     return { dataPoints, milestones };
-  }, [emissionsHistory, totalEmissions]);
+  }, [emissionsHistory]);
+
+  // Calculate 12-month change from real history
+  const twelveMonthChange = React.useMemo(() => {
+    if (timelineData.dataPoints.length < 2) return null;
+    const oldest = timelineData.dataPoints[0].value;
+    const newest = timelineData.dataPoints[timelineData.dataPoints.length - 1].value;
+    if (oldest === 0) return null;
+    return ((newest - oldest) / oldest) * 100;
+  }, [timelineData.dataPoints]);
 
   // Generate comparison data
   const comparisonData = React.useMemo(() => {
@@ -218,15 +187,16 @@ export default function ExplorePage() {
   const handleExport = () => {
     // BUG FIX: Check if there are activities before trying to export
     if (activities.length === 0) {
-      alert('No activities to export. Add some activities first!');
+      toast.error('No activities to export. Add some activities first!');
       return;
     }
 
     try {
       exportToCSV(activities, totalEmissions);
+      toast.success('Data exported successfully!');
     } catch (error) {
       console.error('Export failed:', error);
-      alert('Failed to export data. Please try again.');
+      toast.error('Failed to export data. Please try again.');
     }
   };
 
@@ -388,12 +358,48 @@ export default function ExplorePage() {
               border: '1px solid var(--border-default)',
             }}
           >
-            <TimelineViz
-              data={timelineData.dataPoints}
-              milestones={timelineData.milestones}
-              height="500px"
-              enableZoom={true}
-            />
+            {timelineData.dataPoints.length === 0 ? (
+              <div className="flex items-center justify-center py-24">
+                <div className="text-center max-w-md px-8">
+                  <TrendingUp
+                    className="w-16 h-16 mx-auto mb-4 opacity-30"
+                    style={{ color: 'var(--text-tertiary)' }}
+                  />
+                  <h3
+                    className="font-semibold mb-2"
+                    style={{
+                      fontSize: 'var(--font-size-lg)',
+                      color: 'var(--text-primary)',
+                    }}
+                  >
+                    No Emissions History Yet
+                  </h3>
+                  <p
+                    className="mb-6"
+                    style={{
+                      fontSize: 'var(--font-size-sm)',
+                      color: 'var(--text-secondary)',
+                    }}
+                  >
+                    Activity changes will be tracked over time. Add or modify activities to start building your emissions history.
+                  </p>
+                  <Button
+                    variant="primary"
+                    size="md"
+                    onClick={() => navigate('/calculator')}
+                  >
+                    Add Activities
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <TimelineViz
+                data={timelineData.dataPoints}
+                milestones={timelineData.milestones}
+                height="500px"
+                enableZoom={true}
+              />
+            )}
           </div>
         )}
 
@@ -494,7 +500,7 @@ export default function ExplorePage() {
               </div>
             )}
 
-            {mode === 'timeline' && timelineData.dataPoints.length > 1 && (
+            {mode === 'timeline' && twelveMonthChange !== null && (
               <div className="text-right">
                 <div
                   className="mb-1"
@@ -503,16 +509,16 @@ export default function ExplorePage() {
                     color: 'var(--text-secondary)',
                   }}
                 >
-                  Change (12mo)
+                  Change (since start)
                 </div>
                 <div
                   className="font-bold"
                   style={{
                     fontSize: 'var(--font-size-xl)',
-                    color: 'var(--carbon-low)',
+                    color: twelveMonthChange < 0 ? 'var(--carbon-low)' : 'var(--carbon-high)',
                   }}
                 >
-                  -5.2%
+                  {twelveMonthChange > 0 ? '+' : ''}{twelveMonthChange.toFixed(1)}%
                 </div>
               </div>
             )}

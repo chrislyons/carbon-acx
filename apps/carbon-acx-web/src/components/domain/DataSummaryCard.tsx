@@ -23,14 +23,26 @@ export function DataSummaryCard() {
   const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    Promise.all([
-      loadSectors(),
-      loadEmissionFactors(),
-      loadDatasets(),
-    ])
-      .then(([sectors, factors, datasets]) => {
-        //Calculate total activities across all sectors
-        const activityCount = sectors.length * 15; // Estimate based on typical sector size
+    loadSectors()
+      .then((sectors) => {
+        // Load activities from ALL sectors to get accurate count
+        const activityPromises = sectors.map((sector) => loadSectors().then(() => loadEmissionFactors()));
+
+        return Promise.all([
+          Promise.resolve(sectors),
+          ...sectors.map(sector => import('../../lib/api').then(api => api.loadActivities(sector.id))),
+          loadEmissionFactors(),
+          loadDatasets(),
+        ]);
+      })
+      .then(([sectors, ...rest]) => {
+        // Extract activities arrays (all but last 2 items which are factors and datasets)
+        const activitiesArrays = rest.slice(0, -2);
+        const factors = rest[rest.length - 2];
+        const datasets = rest[rest.length - 1];
+
+        // Calculate ACTUAL total activities across all sectors
+        const activityCount = activitiesArrays.reduce((sum, activities) => sum + activities.length, 0);
 
         setStats({
           sectorCount: sectors.length,

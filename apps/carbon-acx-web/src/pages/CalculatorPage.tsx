@@ -192,7 +192,7 @@ function CelebrationView({
           annualEmissions: calculatorBreakdown.shopping,
           category: 'Consumption',
         },
-      ].filter((a) => a.annualEmissions > 0);
+      ].filter((a) => a.annualEmissions > 0.1); // Keep activities with at least 0.1kg CO2
     }
     // Manual mode: use actual activities from store
     return manualActivities.map((a) => ({
@@ -200,7 +200,7 @@ function CelebrationView({
       name: a.name,
       annualEmissions: a.annualEmissions,
       category: a.category ?? undefined,
-    }));
+    })).filter((a) => a.annualEmissions > 0.1); // Keep activities with at least 0.1kg CO2
   }, [mode, calculatorBreakdown, manualActivities]);
 
   return (
@@ -474,15 +474,57 @@ function CelebrationView({
               height: '600px',
             }}
           >
-            <DataUniverse
-              totalEmissions={emissions}
-              activities={activitiesForViz}
-              onActivityClick={(activity) => {
-                console.log('Selected activity:', activity);
-              }}
-              enableIntroAnimation={true}
-              enableClickToFly={true}
-            />
+            {activitiesForViz.length === 0 ? (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center max-w-md px-8">
+                  <div
+                    className="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center"
+                    style={{ backgroundColor: 'var(--carbon-low-bg)' }}
+                  >
+                    <span style={{ fontSize: '48px' }}>🎉</span>
+                  </div>
+                  <h3
+                    className="font-bold mb-4"
+                    style={{
+                      fontSize: 'var(--font-size-2xl)',
+                      color: 'var(--text-primary)',
+                    }}
+                  >
+                    Amazing! Nearly Zero Footprint
+                  </h3>
+                  <p
+                    className="mb-6"
+                    style={{
+                      fontSize: 'var(--font-size-base)',
+                      color: 'var(--text-secondary)',
+                    }}
+                  >
+                    Your carbon footprint is incredibly low! This is excellent for the environment. Keep up the great work!
+                  </p>
+                  <div
+                    className="p-4 rounded-lg mb-6"
+                    style={{
+                      backgroundColor: 'var(--carbon-low-bg)',
+                      border: '1px solid var(--carbon-low)',
+                    }}
+                  >
+                    <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-primary)' }}>
+                      <strong>{(emissions / 1000).toFixed(2)}t CO₂/year</strong> is well below the global average of 4.5t!
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <DataUniverse
+                totalEmissions={emissions}
+                activities={activitiesForViz}
+                onActivityClick={(activity) => {
+                  console.log('Selected activity:', activity);
+                }}
+                enableIntroAnimation={true}
+                enableClickToFly={true}
+              />
+            )}
           </div>
 
           <div className="flex justify-center">
