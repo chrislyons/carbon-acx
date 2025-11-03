@@ -124,10 +124,22 @@ export function DataUniverse({
           gl={{
             antialias: true,
             alpha: false,
-            powerPreference: 'high-performance'
+            powerPreference: 'high-performance',
+            failIfMajorPerformanceCaveat: false,
           }}
           onCreated={({ gl }) => {
             gl.setClearColor('#0a0e27');
+
+            // Handle WebGL context loss
+            const canvas = gl.domElement;
+            canvas.addEventListener('webglcontextlost', (event) => {
+              event.preventDefault();
+              console.warn('WebGL context lost, attempting to restore...');
+            });
+
+            canvas.addEventListener('webglcontextrestored', () => {
+              console.log('WebGL context restored');
+            });
           }}
         >
           {/* Lighting */}
@@ -226,19 +238,35 @@ class ErrorBoundary extends React.Component<
     if (this.state.hasError) {
       return (
         <div
-          className="w-full h-full flex items-center justify-center flex-col gap-4"
+          className="w-full h-full min-h-[600px] flex items-center justify-center flex-col gap-4 p-8"
           style={{ background: '#0a0e27', color: '#fff' }}
         >
           <div style={{ fontSize: '18px', fontWeight: '600' }}>3D Visualization Unavailable</div>
           <div style={{ fontSize: '14px', opacity: 0.7, maxWidth: '400px', textAlign: 'center' }}>
-            Your browser may not support WebGL, or there was an error loading the 3D scene.
-            Try switching to Timeline or Comparison view.
+            WebGL context was lost or your browser doesn't support 3D graphics.
+            Try refreshing the page or use a different visualization mode.
           </div>
           {this.state.error && (
-            <div style={{ fontSize: '12px', opacity: 0.5, fontFamily: 'monospace' }}>
+            <div style={{ fontSize: '12px', opacity: 0.5, fontFamily: 'monospace', marginTop: '8px' }}>
               {this.state.error.message}
             </div>
           )}
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              marginTop: '16px',
+              padding: '12px 24px',
+              background: '#3b82f6',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '14px',
+              fontWeight: '500',
+              cursor: 'pointer',
+            }}
+          >
+            Reload Page
+          </button>
         </div>
       );
     }

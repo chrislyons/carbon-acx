@@ -334,9 +334,9 @@ export function ActivityBrowser({ targetActivities = 5, onTargetReached }: Activ
         {/* Activity list area */}
         <div className="space-y-[var(--space-4)]">
           {/* Search */}
-          <div className="relative">
+          <div className="relative z-10">
             <Search
-              className="absolute left-[var(--space-3)] top-1/2 -translate-y-1/2 w-5 h-5"
+              className="absolute left-[var(--space-3)] top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none"
               style={{ color: 'var(--text-tertiary)' }}
             />
             <input
@@ -355,7 +355,7 @@ export function ActivityBrowser({ targetActivities = 5, onTargetReached }: Activ
           </div>
 
           {/* Activity list */}
-          <div className="space-y-[var(--space-2)]">
+          <div className="space-y-[var(--space-2)] relative">
         {loadingState === 'activities' ? (
           <div className="flex items-center justify-center p-[var(--space-8)]">
             <Loader2
@@ -389,9 +389,9 @@ export function ActivityBrowser({ targetActivities = 5, onTargetReached }: Activ
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ delay: index * 0.03, duration: 0.2 }}
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="group relative p-[var(--space-4)] rounded-[var(--radius-lg)] border-2 cursor-pointer transition-all"
+                  whileHover={{ scale: 1.005 }}
+                  whileTap={{ scale: 0.995 }}
+                  className="group relative p-[var(--space-4)] rounded-[var(--radius-lg)] border-2 cursor-pointer transition-all isolate"
                   style={{
                     backgroundColor: isSelected
                       ? 'var(--color-baseline-bg)'
