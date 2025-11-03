@@ -305,7 +305,7 @@ export function EmissionCalculator({ onComplete, onCancel }: EmissionCalculatorP
   }, [onCancel]);
 
   return (
-    <div className="max-w-4xl mx-auto px-[var(--space-8)]">
+    <div className="max-w-4xl mx-auto px-[var(--space-8)] min-h-[600px]">
       {/* Progress indicator */}
       <div className="flex justify-center gap-[var(--space-2)] mb-[var(--space-12)]">
         {QUESTIONS.map((q, i) => (
@@ -320,7 +320,7 @@ export function EmissionCalculator({ onComplete, onCancel }: EmissionCalculatorP
       </div>
 
       {/* Question */}
-      <TransitionWrapper type="slide-up" show={true} delay={100}>
+      <TransitionWrapper type="slide-up" show={true} delay={0}>
         <QuestionCard
           question={currentQuestion}
           value={answers[currentQuestion.id]}
@@ -330,7 +330,7 @@ export function EmissionCalculator({ onComplete, onCancel }: EmissionCalculatorP
       </TransitionWrapper>
 
       {/* Real-time feedback */}
-      <TransitionWrapper type="fade" show={true} delay={300}>
+      <TransitionWrapper type="fade" show={true} delay={0}>
         <div className="mt-[var(--space-8)]">
           <RealTimeFeedback emissions={emissions} />
         </div>

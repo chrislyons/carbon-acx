@@ -339,7 +339,7 @@ export function ActivityBrowser({ targetActivities = 5, onTargetReached }: Activ
               className="absolute top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none"
               style={{
                 color: 'var(--text-tertiary)',
-                left: 'var(--space-3)'
+                left: '12px'
               }}
             />
             <input
@@ -353,7 +353,7 @@ export function ActivityBrowser({ targetActivities = 5, onTargetReached }: Activ
                 borderColor: 'var(--border-default)',
                 color: 'var(--text-primary)',
                 fontSize: 'var(--font-size-base)',
-                paddingLeft: 'calc(var(--space-3) + 20px + var(--space-3))',
+                paddingLeft: '48px',
                 paddingRight: 'var(--space-4)',
                 paddingTop: 'var(--space-3)',
                 paddingBottom: 'var(--space-3)',
