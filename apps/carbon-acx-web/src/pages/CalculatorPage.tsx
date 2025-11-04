@@ -192,7 +192,7 @@ function CelebrationView({
           annualEmissions: calculatorBreakdown.shopping,
           category: 'Consumption',
         },
-      ].filter((a) => a.annualEmissions > 0.1); // Keep activities with at least 0.1kg CO2
+      ].filter((a) => a.annualEmissions > 0.01); // Keep activities with at least 0.01kg CO2 (10g)
     }
     // Manual mode: use actual activities from store
     return manualActivities.map((a) => ({
@@ -200,7 +200,7 @@ function CelebrationView({
       name: a.name,
       annualEmissions: a.annualEmissions,
       category: a.category ?? undefined,
-    })).filter((a) => a.annualEmissions > 0.1); // Keep activities with at least 0.1kg CO2
+    })).filter((a) => a.annualEmissions > 0.01); // Keep activities with at least 0.01kg CO2 (10g)
   }, [mode, calculatorBreakdown, manualActivities]);
 
   return (
@@ -512,6 +512,17 @@ function CelebrationView({
                       <strong>{(emissions / 1000).toFixed(2)}t CO₂/year</strong> is well below the global average of 4.5t!
                     </p>
                   </div>
+                  <p
+                    style={{
+                      fontSize: 'var(--font-size-xs)',
+                      color: 'var(--text-tertiary)',
+                    }}
+                  >
+                    {mode === 'manual' && activityCount > 0 ?
+                      `You have ${activityCount} ${activityCount === 1 ? 'activity' : 'activities'} with very low emissions.` :
+                      'Continue to exploration to see more details.'
+                    }
+                  </p>
                 </div>
               </div>
             ) : (

@@ -233,12 +233,12 @@ export default function ExplorePage() {
               Export
             </Button>
             <Button
-              variant="primary"
+              variant="secondary"
               size="sm"
               onClick={() => navigate('/insights')}
               icon={<Lightbulb className="w-4 h-4" />}
             >
-              View Insights
+              Insights & Goals
             </Button>
           </div>
         </div>

@@ -28,7 +28,7 @@ type InsightDisplayMode = 'cards' | 'universe';
 export default function InsightsPage() {
   const navigate = useNavigate();
   const [activeView, setActiveView] = React.useState<ActiveView>('insights');
-  const [displayMode, setDisplayMode] = React.useState<InsightDisplayMode>('cards');
+  const [displayMode, setDisplayMode] = React.useState<InsightDisplayMode>('universe');
   const [selectedActivity, setSelectedActivity] = React.useState<any>(null);
 
   // Clear selection when switching display modes to avoid confusion
