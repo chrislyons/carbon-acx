@@ -10,8 +10,9 @@ import { useNavigate } from 'react-router-dom';
 import { TimelineViz } from '../components/viz/TimelineViz';
 import { ComparisonOverlay } from '../components/viz/ComparisonOverlay';
 import { Button } from '../components/system/Button';
+import { AppHeader } from '../components/system/AppHeader';
 import { useAppStore } from '../hooks/useAppStore';
-import { TrendingUp, GitCompare, Filter, Download, Lightbulb, Globe } from 'lucide-react';
+import { TrendingUp, GitCompare, Filter, Download, Lightbulb, Globe, Plus } from 'lucide-react';
 import type { EChartsOption } from 'echarts';
 import { exportToCSV } from '../lib/exportUtils';
 import { toast } from 'sonner';
@@ -201,47 +202,51 @@ export default function ExplorePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--surface-bg)] p-[var(--space-8)]">
-      {/* Header */}
-      <div className="max-w-7xl mx-auto mb-[var(--space-8)]">
-        <div className="flex items-center justify-between mb-[var(--space-6)]">
-          <h1
-            className="font-bold"
-            style={{
-              fontSize: 'var(--font-size-3xl)',
-              color: 'var(--text-primary)',
-            }}
-          >
-            Explore Emissions
-          </h1>
+    <div className="min-h-screen bg-[var(--surface-bg)]">
+      {/* Persistent Navigation Header */}
+      <AppHeader />
 
-          <div className="flex items-center gap-[var(--space-2)]">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowFilters(!showFilters)}
-              icon={<Filter className="w-4 h-4" />}
+      <div className="p-[var(--space-8)]">
+        {/* Page Header */}
+        <div className="max-w-7xl mx-auto mb-[var(--space-8)]">
+          <div className="flex items-center justify-between mb-[var(--space-6)]">
+            <h1
+              className="font-bold"
+              style={{
+                fontSize: 'var(--font-size-3xl)',
+                color: 'var(--text-primary)',
+              }}
             >
-              Filters
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleExport}
-              icon={<Download className="w-4 h-4" />}
-            >
-              Export
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => navigate('/insights')}
-              icon={<Lightbulb className="w-4 h-4" />}
-            >
-              Insights & Goals
-            </Button>
+              Explore Emissions
+            </h1>
+
+            <div className="flex items-center gap-[var(--space-2)]">
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => navigate('/calculator')}
+                icon={<Plus className="w-4 h-4" />}
+              >
+                Add Activities
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowFilters(!showFilters)}
+                icon={<Filter className="w-4 h-4" />}
+              >
+                Filters
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleExport}
+                icon={<Download className="w-4 h-4" />}
+              >
+                Export
+              </Button>
+            </div>
           </div>
-        </div>
 
         {/* Mode toggle */}
         <div
@@ -613,6 +618,7 @@ export default function ExplorePage() {
             )}
           </div>
         )}
+      </div>
       </div>
     </div>
   );

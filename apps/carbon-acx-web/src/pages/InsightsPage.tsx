@@ -8,6 +8,7 @@
 import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/system/Button';
+import { AppHeader } from '../components/system/AppHeader';
 import { InsightCard, detectInsights, type Insight } from '../components/domain/InsightCard';
 import { ScenarioBuilder } from '../components/domain/ScenarioBuilder';
 import { GoalTracker } from '../components/domain/GoalTracker';
@@ -17,7 +18,7 @@ import {
   AchievementShareableCard,
 } from '../components/domain/ShareableCard';
 import { useAppStore } from '../hooks/useAppStore';
-import { Lightbulb, Target, GitCompare, Share2, X, ArrowLeft, Globe, List } from 'lucide-react';
+import { Lightbulb, Target, GitCompare, Share2, X, Globe, List } from 'lucide-react';
 
 // Use wrapper that prevents Three.js imports during SSR/build
 import { DataUniverse } from '../components/viz/DataUniverseWrapper';
@@ -107,19 +108,14 @@ export default function InsightsPage() {
     : 0;
 
   return (
-    <div className="min-h-screen bg-[var(--surface-bg)] p-[var(--space-8)]">
-      {/* Header */}
-      <div className="max-w-7xl mx-auto mb-[var(--space-8)]">
-        <div className="flex items-center justify-between mb-[var(--space-6)]">
-          <div className="flex items-center gap-[var(--space-4)]">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/explore')}
-              icon={<ArrowLeft className="w-4 h-4" />}
-            >
-              Back to Explore
-            </Button>
+    <div className="min-h-screen bg-[var(--surface-bg)]">
+      {/* Persistent Navigation Header */}
+      <AppHeader />
+
+      <div className="p-[var(--space-8)]">
+        {/* Page Header */}
+        <div className="max-w-7xl mx-auto mb-[var(--space-8)]">
+          <div className="flex items-center justify-between mb-[var(--space-6)]">
             <h1
               className="font-bold"
               style={{
@@ -129,67 +125,66 @@ export default function InsightsPage() {
             >
               Insights & Goals
             </h1>
-          </div>
 
-          {/* View toggle */}
-          <div
-            className="inline-flex rounded-[var(--radius-md)] p-1"
-            style={{
-              backgroundColor: 'var(--surface-elevated)',
-              border: '1px solid var(--border-default)',
-            }}
-          >
-            <button
-              onClick={() => setActiveView('insights')}
-              className="px-4 py-2 rounded-[var(--radius-sm)] flex items-center gap-2 transition-colors"
+            {/* View toggle */}
+            <div
+              className="inline-flex rounded-[var(--radius-md)] p-1"
               style={{
-                backgroundColor:
-                  activeView === 'insights' ? 'var(--interactive-primary)' : 'transparent',
-                color: activeView === 'insights' ? 'white' : 'var(--text-secondary)',
+                backgroundColor: 'var(--surface-elevated)',
+                border: '1px solid var(--border-default)',
               }}
             >
-              <Lightbulb className="w-4 h-4" />
-              <span style={{ fontSize: 'var(--font-size-sm)' }}>Insights</span>
-            </button>
-            <button
-              onClick={() => setActiveView('scenarios')}
-              className="px-4 py-2 rounded-[var(--radius-sm)] flex items-center gap-2 transition-colors"
-              style={{
-                backgroundColor:
-                  activeView === 'scenarios' ? 'var(--interactive-primary)' : 'transparent',
-                color: activeView === 'scenarios' ? 'white' : 'var(--text-secondary)',
-              }}
-            >
-              <GitCompare className="w-4 h-4" />
-              <span style={{ fontSize: 'var(--font-size-sm)' }}>Scenarios</span>
-            </button>
-            <button
-              onClick={() => setActiveView('goals')}
-              className="px-4 py-2 rounded-[var(--radius-sm)] flex items-center gap-2 transition-colors"
-              style={{
-                backgroundColor:
-                  activeView === 'goals' ? 'var(--interactive-primary)' : 'transparent',
-                color: activeView === 'goals' ? 'white' : 'var(--text-secondary)',
-              }}
-            >
-              <Target className="w-4 h-4" />
-              <span style={{ fontSize: 'var(--font-size-sm)' }}>Goals</span>
-            </button>
-            <button
-              onClick={() => setActiveView('share')}
-              className="px-4 py-2 rounded-[var(--radius-sm)] flex items-center gap-2 transition-colors"
-              style={{
-                backgroundColor:
-                  activeView === 'share' ? 'var(--interactive-primary)' : 'transparent',
-                color: activeView === 'share' ? 'white' : 'var(--text-secondary)',
-              }}
-            >
-              <Share2 className="w-4 h-4" />
-              <span style={{ fontSize: 'var(--font-size-sm)' }}>Share</span>
-            </button>
+              <button
+                onClick={() => setActiveView('insights')}
+                className="px-4 py-2 rounded-[var(--radius-sm)] flex items-center gap-2 transition-colors"
+                style={{
+                  backgroundColor:
+                    activeView === 'insights' ? 'var(--interactive-primary)' : 'transparent',
+                  color: activeView === 'insights' ? 'white' : 'var(--text-secondary)',
+                }}
+              >
+                <Lightbulb className="w-4 h-4" />
+                <span style={{ fontSize: 'var(--font-size-sm)' }}>Insights</span>
+              </button>
+              <button
+                onClick={() => setActiveView('scenarios')}
+                className="px-4 py-2 rounded-[var(--radius-sm)] flex items-center gap-2 transition-colors"
+                style={{
+                  backgroundColor:
+                    activeView === 'scenarios' ? 'var(--interactive-primary)' : 'transparent',
+                  color: activeView === 'scenarios' ? 'white' : 'var(--text-secondary)',
+                }}
+              >
+                <GitCompare className="w-4 h-4" />
+                <span style={{ fontSize: 'var(--font-size-sm)' }}>Scenarios</span>
+              </button>
+              <button
+                onClick={() => setActiveView('goals')}
+                className="px-4 py-2 rounded-[var(--radius-sm)] flex items-center gap-2 transition-colors"
+                style={{
+                  backgroundColor:
+                    activeView === 'goals' ? 'var(--interactive-primary)' : 'transparent',
+                  color: activeView === 'goals' ? 'white' : 'var(--text-secondary)',
+                }}
+              >
+                <Target className="w-4 h-4" />
+                <span style={{ fontSize: 'var(--font-size-sm)' }}>Goals</span>
+              </button>
+              <button
+                onClick={() => setActiveView('share')}
+                className="px-4 py-2 rounded-[var(--radius-sm)] flex items-center gap-2 transition-colors"
+                style={{
+                  backgroundColor:
+                    activeView === 'share' ? 'var(--interactive-primary)' : 'transparent',
+                  color: activeView === 'share' ? 'white' : 'var(--text-secondary)',
+                }}
+              >
+                <Share2 className="w-4 h-4" />
+                <span style={{ fontSize: 'var(--font-size-sm)' }}>Share</span>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
       {/* Main content */}
       <div className="max-w-7xl mx-auto">
@@ -683,6 +678,7 @@ export default function InsightsPage() {
             )}
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

@@ -8,6 +8,7 @@
 import * as React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '../components/system/Button';
+import { AppHeader } from '../components/system/AppHeader';
 import { EmissionCalculator, type CalculatorResults } from '../components/domain/EmissionCalculator';
 import { ActivityBrowser } from '../components/domain/ActivityBrowser';
 import { useAppStore } from '../hooks/useAppStore';
@@ -89,44 +90,49 @@ export default function CalculatorPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--surface-bg)] p-[var(--space-4)]">
-      <div className="max-w-7xl mx-auto">
-        {/* Calculator flow */}
-        {state === 'calculating' && (
-          <EmissionCalculator
-            onComplete={handleCalculatorComplete}
-            onCancel={() => navigate('/welcome')}
-          />
-        )}
+    <div className="min-h-screen bg-[var(--surface-bg)]">
+      {/* Minimal header for calculator flow */}
+      {(state === 'calculating' || state === 'entering') && <AppHeader minimal />}
 
-        {/* Manual entry flow */}
-        {state === 'entering' && (
-          <div>
-            <h1
-              className="font-bold mb-[var(--space-6)]"
-              style={{
-                fontSize: 'var(--font-size-3xl)',
-                color: 'var(--text-primary)',
-              }}
-            >
-              Build Your Baseline
-            </h1>
-            <ActivityBrowser targetActivities={5} onTargetReached={handleManualMilestone} />
-          </div>
-        )}
+      <div className="p-[var(--space-4)]">
+        <div className="max-w-7xl mx-auto">
+          {/* Calculator flow */}
+          {state === 'calculating' && (
+            <EmissionCalculator
+              onComplete={handleCalculatorComplete}
+              onCancel={() => navigate('/welcome')}
+            />
+          )}
 
-        {/* Celebration */}
-        {state === 'celebrating' && (
-          <CelebrationView
-            mode={mode}
-            totalEmissions={totalEmissions}
-            calculatorResults={calculatorResults}
-            activityCount={activityCount}
-            show3D={show3D}
-            onReveal3D={handleReveal3D}
-            onComplete={handleComplete}
-          />
-        )}
+          {/* Manual entry flow */}
+          {state === 'entering' && (
+            <div>
+              <h1
+                className="font-bold mb-[var(--space-6)]"
+                style={{
+                  fontSize: 'var(--font-size-3xl)',
+                  color: 'var(--text-primary)',
+                }}
+              >
+                Build Your Baseline
+              </h1>
+              <ActivityBrowser targetActivities={5} onTargetReached={handleManualMilestone} />
+            </div>
+          )}
+
+          {/* Celebration */}
+          {state === 'celebrating' && (
+            <CelebrationView
+              mode={mode}
+              totalEmissions={totalEmissions}
+              calculatorResults={calculatorResults}
+              activityCount={activityCount}
+              show3D={show3D}
+              onReveal3D={handleReveal3D}
+              onComplete={handleComplete}
+            />
+          )}
+        </div>
       </div>
     </div>
   );
