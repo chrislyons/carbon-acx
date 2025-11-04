@@ -89,7 +89,7 @@ export default function CalculatorPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--surface-bg)] p-[var(--space-8)]">
+    <div className="min-h-screen bg-[var(--surface-bg)] p-[var(--space-4)]">
       <div className="max-w-7xl mx-auto">
         {/* Calculator flow */}
         {state === 'calculating' && (
