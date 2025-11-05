@@ -1,7 +1,7 @@
 # ACX Documentation Index
 
 **Prefix:** ACX (Carbon ACX)
-**Next Available Number:** ACX093
+**Next Available Number:** ACX095
 
 ## Active Documentation
 
@@ -25,7 +25,9 @@ Recent documents (ACX075-ACX090):
 - [ACX089](./ACX089.md)
 - [ACX090](./ACX090.md)
 - [ACX091](./ACX091%20Frontend%20Enhancement%20Sprint.md) — Frontend data surfacing & presentation improvements
-- [ACX092](./ACX092%20Strategic%20Frontend%20Rebuild%20Specification.md) — Strategic rebuild recommendation and comprehensive specification
+- [ACX092](./ACX092%20Frontend%20Rock-Solid%20Sprint%20Report.md) — Rock-solid sprint completion report
+- [ACX093](./ACX093%20Strategic%20Frontend%20Rebuild%20Specification.md) — Strategic rebuild specification (Next.js 15, 6-phase plan)
+- [ACX094](./ACX094%20Phase%203%203D%20Visualization%20Implementation%20Report.md) — DataUniverse 3D port to Next.js 15
 
 For complete list, see: `ls -1 docs/acx/ACX*.md`
 
@@ -51,8 +53,8 @@ View archived docs: `ls -1 docs/ACX/archive/`
 
 ## Creating New Documents
 
-1. Use next available number: **ACX091**
-2. Follow naming pattern: `ACX091 Title Here.md` or `ACX091.md`
+1. Use next available number: **ACX095**
+2. Follow naming pattern: `ACX095 Title Here.md` or `ACX095.md`
 3. Use IEEE citation style for references
 4. Update this INDEX.md with the new document
 5. Increment "Next Available Number" above
