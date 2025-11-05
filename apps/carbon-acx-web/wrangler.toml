@@ -1,0 +1,11 @@
+# Wrangler configuration for Cloudflare Pages
+name = "carbon-acx-web"
+compatibility_date = "2025-01-01"
+pages_build_output_dir = ".next"
+
+[env.production]
+routes = [
+  { pattern = "carbon-acx.pages.dev", custom_domain = true }
+]
+
+[env.preview]
