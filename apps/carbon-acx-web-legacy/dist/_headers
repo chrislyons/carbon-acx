@@ -1,0 +1,18 @@
+/*
+  Cache-Control: public, max-age=600
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+
+# CSS files
+/assets/*.css
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: text/css; charset=utf-8
+
+# JavaScript files
+/assets/*.js
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: application/javascript; charset=utf-8
+
+# Other assets
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
