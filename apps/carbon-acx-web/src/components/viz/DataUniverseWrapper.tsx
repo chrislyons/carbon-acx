@@ -16,12 +16,22 @@ export interface Activity {
   color?: string;
 }
 
+export interface ManifestInfo {
+  datasetId?: string;
+  title?: string;
+  manifestPath?: string;
+  manifestSha256?: string;
+  generatedAt?: string;
+  description?: string;
+}
+
 export interface DataUniverseProps {
   totalEmissions: number;
   activities: Activity[];
   onActivityClick?: (activity: Activity) => void;
   enableIntroAnimation?: boolean;
   enableClickToFly?: boolean;
+  manifest?: ManifestInfo;
 }
 
 function LoadingFallback() {

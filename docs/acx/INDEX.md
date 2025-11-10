@@ -1,13 +1,13 @@
 # ACX Documentation Index
 
 **Prefix:** ACX (Carbon ACX)
-**Next Available Number:** ACX092
+**Next Available Number:** ACX094
 
 ## Active Documentation
 
 Current, frequently-referenced documents. See individual files for full titles.
 
-Recent documents (ACX075-ACX090):
+Recent documents (ACX075-ACX093):
 - [ACX075](./ACX075.md)
 - [ACX076](./ACX076.md)
 - [ACX077](./ACX077.md)
@@ -23,8 +23,10 @@ Recent documents (ACX075-ACX090):
 - [ACX087](./ACX087.md)
 - [ACX088](./ACX088.md)
 - [ACX089](./ACX089.md)
-- [ACX090](./ACX090.md)
+- [ACX090](./ACX090.md) — DataUniverse runtime error investigation
 - [ACX091](./ACX091%20Frontend%20Enhancement%20Sprint.md) — Frontend data surfacing & presentation improvements
+- [ACX092](./ACX092%20Frontend%20Rock-Solid%20Sprint%20Report.md) — Frontend rock-solid sprint (eliminate fake data, modernize UX)
+- [ACX093](./ACX093%20Phase%204%20DataUniverse%20Manifest%20API%20Integration.md) — DataUniverse manifest API integration for data transparency
 
 For complete list, see: `ls -1 docs/acx/ACX*.md`
 
@@ -50,8 +52,8 @@ View archived docs: `ls -1 docs/ACX/archive/`
 
 ## Creating New Documents
 
-1. Use next available number: **ACX091**
-2. Follow naming pattern: `ACX091 Title Here.md` or `ACX091.md`
+1. Use next available number: **ACX094**
+2. Follow naming pattern: `ACX094 Title Here.md` or `ACX094.md`
 3. Use IEEE citation style for references
 4. Update this INDEX.md with the new document
 5. Increment "Next Available Number" above

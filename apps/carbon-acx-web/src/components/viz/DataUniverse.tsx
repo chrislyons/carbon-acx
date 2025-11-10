@@ -48,6 +48,15 @@ export interface Activity {
   color?: string;
 }
 
+export interface ManifestInfo {
+  datasetId?: string;
+  title?: string;
+  manifestPath?: string;
+  manifestSha256?: string;
+  generatedAt?: string;
+  description?: string;
+}
+
 export interface DataUniverseProps {
   totalEmissions: number; // kg CO₂
   activities: Activity[];
@@ -56,6 +65,8 @@ export interface DataUniverseProps {
   enableIntroAnimation?: boolean;
   /** Enable click-to-fly camera movements */
   enableClickToFly?: boolean;
+  /** Dataset manifest information for transparency */
+  manifest?: ManifestInfo;
 }
 
 // ============================================================================
@@ -67,11 +78,13 @@ export function DataUniverse({
   activities,
   onActivityClick,
   enableIntroAnimation = false,
-  enableClickToFly = true
+  enableClickToFly = true,
+  manifest
 }: DataUniverseProps) {
   const [isReady, setIsReady] = React.useState(false);
   const [selectedActivityId, setSelectedActivityId] = React.useState<string | null>(null);
   const [hoveredActivityId, setHoveredActivityId] = React.useState<string | null>(null);
+  const [showManifest, setShowManifest] = React.useState(false);
 
   // Only render on client-side after mount
   React.useEffect(() => {
@@ -208,6 +221,183 @@ export function DataUniverse({
             />
           )}
         </Canvas>
+
+        {/* Manifest Info Button and Panel */}
+        {manifest && (
+          <>
+            <button
+              onClick={() => setShowManifest(!showManifest)}
+              style={{
+                position: 'absolute',
+                bottom: '20px',
+                right: '20px',
+                padding: '10px 16px',
+                background: 'rgba(10, 14, 39, 0.9)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                borderRadius: '8px',
+                color: 'white',
+                fontSize: '13px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                zIndex: 10,
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(10, 14, 39, 0.95)';
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(10, 14, 39, 0.9)';
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+                <polyline points="10 9 9 9 8 9" />
+              </svg>
+              Data Manifest
+            </button>
+
+            {showManifest && (
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: '70px',
+                  right: '20px',
+                  width: '380px',
+                  maxHeight: '400px',
+                  background: 'rgba(10, 14, 39, 0.98)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  borderRadius: '12px',
+                  padding: '20px',
+                  color: 'white',
+                  zIndex: 10,
+                  overflow: 'auto',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '16px' }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: '600', margin: 0 }}>
+                    Dataset Manifest
+                  </h3>
+                  <button
+                    onClick={() => setShowManifest(false)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'rgba(255, 255, 255, 0.6)',
+                      cursor: 'pointer',
+                      fontSize: '20px',
+                      lineHeight: '1',
+                      padding: 0,
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+
+                <div style={{ fontSize: '13px', lineHeight: '1.6' }}>
+                  {manifest.title && (
+                    <div style={{ marginBottom: '16px' }}>
+                      <div style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '11px', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        Title
+                      </div>
+                      <div style={{ color: 'white' }}>{manifest.title}</div>
+                    </div>
+                  )}
+
+                  {manifest.datasetId && (
+                    <div style={{ marginBottom: '16px' }}>
+                      <div style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '11px', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        Dataset ID
+                      </div>
+                      <div style={{ color: 'white', fontFamily: 'monospace', fontSize: '12px' }}>
+                        {manifest.datasetId}
+                      </div>
+                    </div>
+                  )}
+
+                  {manifest.manifestPath && (
+                    <div style={{ marginBottom: '16px' }}>
+                      <div style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '11px', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        Manifest Path
+                      </div>
+                      <div style={{
+                        color: '#10b981',
+                        fontFamily: 'monospace',
+                        fontSize: '11px',
+                        background: 'rgba(16, 185, 129, 0.1)',
+                        padding: '6px 10px',
+                        borderRadius: '6px',
+                        wordBreak: 'break-all',
+                      }}>
+                        {manifest.manifestPath}
+                      </div>
+                    </div>
+                  )}
+
+                  {manifest.manifestSha256 && (
+                    <div style={{ marginBottom: '16px' }}>
+                      <div style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '11px', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        SHA-256 Hash
+                      </div>
+                      <div style={{
+                        color: '#f59e0b',
+                        fontFamily: 'monospace',
+                        fontSize: '10px',
+                        background: 'rgba(245, 158, 11, 0.1)',
+                        padding: '6px 10px',
+                        borderRadius: '6px',
+                        wordBreak: 'break-all',
+                      }}>
+                        {manifest.manifestSha256}
+                      </div>
+                    </div>
+                  )}
+
+                  {manifest.generatedAt && (
+                    <div style={{ marginBottom: '16px' }}>
+                      <div style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '11px', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        Generated At
+                      </div>
+                      <div style={{ color: 'white' }}>
+                        {new Date(manifest.generatedAt).toLocaleString()}
+                      </div>
+                    </div>
+                  )}
+
+                  {manifest.description && (
+                    <div style={{ marginBottom: '16px' }}>
+                      <div style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '11px', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        Description
+                      </div>
+                      <div style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                        {manifest.description}
+                      </div>
+                    </div>
+                  )}
+
+                  <div style={{
+                    marginTop: '20px',
+                    paddingTop: '16px',
+                    borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+                    fontSize: '11px',
+                    color: 'rgba(255, 255, 255, 0.5)',
+                    lineHeight: '1.5',
+                  }}>
+                    <strong style={{ color: 'rgba(255, 255, 255, 0.7)' }}>Manifest Transparency:</strong> This data visualization is derived from verified emission factor datasets. The manifest provides cryptographic proof of data provenance via SHA-256 hash verification.
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </ErrorBoundary>
     </div>
   );

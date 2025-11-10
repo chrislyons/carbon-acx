@@ -15,9 +15,11 @@ import { TrendingUp, GitCompare, Filter, Download, Lightbulb, Globe } from 'luci
 import type { EChartsOption } from 'echarts';
 import { exportToCSV } from '../lib/exportUtils';
 import { toast } from 'sonner';
+import { loadDatasets } from '../lib/api';
+import type { DatasetSummary } from '../lib/api';
 
 // Use wrapper that prevents Three.js imports during SSR/build
-import { DataUniverse } from '../components/viz/DataUniverseWrapper';
+import { DataUniverse, type ManifestInfo } from '../components/viz/DataUniverseWrapper';
 
 type ExploreMode = 'timeline' | 'comparison' | 'universe';
 
@@ -34,6 +36,7 @@ export default function ExplorePage() {
   const [selectedLayers, setSelectedLayers] = React.useState<string[]>([]);
   const [showFilters, setShowFilters] = React.useState(false);
   const [selectedActivity, setSelectedActivity] = React.useState<any>(null);
+  const [manifestInfo, setManifestInfo] = React.useState<ManifestInfo | undefined>(undefined);
 
   const profile = useAppStore((state) => state.profile);
   const profileLayers = useAppStore((state) => state.profile.layers);
@@ -42,6 +45,33 @@ export default function ExplorePage() {
   const emissionsHistory = useAppStore((state) => state.profile.emissionsHistory);
 
   const totalEmissions = getTotalEmissions();
+
+  // Load manifest data from datasets API
+  React.useEffect(() => {
+    loadDatasets()
+      .then((datasets: DatasetSummary[]) => {
+        // Use the first dataset with manifest info, or primary emissions dataset
+        const primaryDataset = datasets.find(d =>
+          d.datasetId?.toLowerCase().includes('emission') ||
+          d.manifestPath
+        ) || datasets[0];
+
+        if (primaryDataset) {
+          setManifestInfo({
+            datasetId: primaryDataset.datasetId,
+            title: primaryDataset.title || undefined,
+            manifestPath: primaryDataset.manifestPath || undefined,
+            manifestSha256: primaryDataset.manifestSha256 || undefined,
+            generatedAt: primaryDataset.generatedAt || undefined,
+            description: 'Carbon emissions data derived from verified emission factor datasets with cryptographic provenance tracking.',
+          });
+        }
+      })
+      .catch((error) => {
+        console.warn('Failed to load manifest data:', error);
+        // Continue without manifest info - not critical for basic functionality
+      });
+  }, []);
 
   // Use real emissions history only - no fake data
   const timelineData = React.useMemo(() => {
@@ -344,6 +374,7 @@ export default function ExplorePage() {
                   category: a.category ?? undefined,
                 }))}
                 onActivityClick={setSelectedActivity}
+                manifest={manifestInfo}
               />
             )}
           </div>
