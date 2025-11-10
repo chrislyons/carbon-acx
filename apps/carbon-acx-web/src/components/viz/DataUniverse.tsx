@@ -34,9 +34,19 @@ export interface Activity {
   manifestId?: string // NEW: Link to manifest
 }
 
+export interface ManifestInfo {
+  datasetId?: string
+  title?: string
+  manifestPath?: string
+  manifestSha256?: string
+  generatedAt?: string
+  description?: string
+}
+
 export interface DataUniverseProps {
   totalEmissions: number // kg CO₂
   activities: Activity[]
+  manifest?: ManifestInfo
   onActivityClick?: (activity: Activity) => void
   enableIntroAnimation?: boolean
   enableClickToFly?: boolean
@@ -61,6 +71,7 @@ interface CameraAnimationState {
 export function DataUniverse({
   totalEmissions,
   activities,
+  manifest,
   onActivityClick,
   enableIntroAnimation = false,
   enableClickToFly = true,
@@ -68,6 +79,7 @@ export function DataUniverse({
   const [isReady, setIsReady] = React.useState(false)
   const [selectedActivityId, setSelectedActivityId] = React.useState<string | null>(null)
   const [hoveredActivityId, setHoveredActivityId] = React.useState<string | null>(null)
+  const [isManifestPanelOpen, setIsManifestPanelOpen] = React.useState(false)
 
   // Only render after client-side mount
   React.useEffect(() => {
@@ -168,6 +180,148 @@ export function DataUniverse({
           )}
         </Canvas>
       </ErrorBoundary>
+
+      {/* Floating Manifest Info Panel */}
+      {manifest && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '20px',
+            right: '20px',
+            zIndex: 1000,
+          }}
+        >
+          {/* Manifest Button */}
+          <button
+            onClick={() => setIsManifestPanelOpen(!isManifestPanelOpen)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '12px 16px',
+              backgroundColor: 'rgba(10, 14, 39, 0.9)',
+              color: 'white',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '600',
+              transition: 'all 0.2s',
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.3)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(10, 14, 39, 1)'
+              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.4)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(10, 14, 39, 0.9)'
+              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)'
+            }}
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+              <polyline points="10 9 9 9 8 9" />
+            </svg>
+            Data Manifest
+            <span
+              style={{
+                transform: isManifestPanelOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.2s',
+              }}
+            >
+              ▼
+            </span>
+          </button>
+
+          {/* Expandable Panel */}
+          {isManifestPanelOpen && (
+            <div
+              style={{
+                marginTop: '8px',
+                padding: '16px',
+                backgroundColor: 'rgba(10, 14, 39, 0.95)',
+                color: 'white',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                borderRadius: '8px',
+                fontSize: '13px',
+                minWidth: '320px',
+                maxWidth: '400px',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
+              }}
+            >
+              <div style={{ marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                <div style={{ fontSize: '11px', textTransform: 'uppercase', opacity: 0.6, marginBottom: '4px' }}>
+                  Dataset ID
+                </div>
+                <div style={{ fontWeight: '600', fontFamily: 'monospace' }}>
+                  {manifest.datasetId || 'N/A'}
+                </div>
+              </div>
+
+              {manifest.title && (
+                <div style={{ marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                  <div style={{ fontSize: '11px', textTransform: 'uppercase', opacity: 0.6, marginBottom: '4px' }}>
+                    Title
+                  </div>
+                  <div style={{ fontWeight: '500' }}>
+                    {manifest.title}
+                  </div>
+                </div>
+              )}
+
+              <div style={{ marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                <div style={{ fontSize: '11px', textTransform: 'uppercase', opacity: 0.6, marginBottom: '4px' }}>
+                  Manifest Path
+                </div>
+                <div style={{ fontWeight: '500', fontFamily: 'monospace', fontSize: '12px', color: '#10b981', wordBreak: 'break-all' }}>
+                  {manifest.manifestPath || 'N/A'}
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                <div style={{ fontSize: '11px', textTransform: 'uppercase', opacity: 0.6, marginBottom: '4px' }}>
+                  SHA-256 Hash
+                </div>
+                <div style={{ fontWeight: '500', fontFamily: 'monospace', fontSize: '12px', color: '#f59e0b', wordBreak: 'break-all' }}>
+                  {manifest.manifestSha256 || 'N/A'}
+                </div>
+              </div>
+
+              <div>
+                <div style={{ fontSize: '11px', textTransform: 'uppercase', opacity: 0.6, marginBottom: '4px' }}>
+                  Generated At
+                </div>
+                <div style={{ fontWeight: '500', fontFamily: 'monospace', fontSize: '12px' }}>
+                  {manifest.generatedAt ? new Date(manifest.generatedAt).toLocaleString() : 'N/A'}
+                </div>
+              </div>
+
+              {manifest.description && (
+                <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                  <div style={{ fontSize: '11px', textTransform: 'uppercase', opacity: 0.6, marginBottom: '4px' }}>
+                    Description
+                  </div>
+                  <div style={{ fontSize: '12px', opacity: 0.8, lineHeight: '1.5' }}>
+                    {manifest.description}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
