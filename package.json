@@ -10,8 +10,7 @@
   "scripts": {
     "schema:gen": "tsx apps/carbon-acx-web/schema/semantic-model.ts",
     "dev": "pnpm --filter carbon-acx-web dev",
-    "prebuild:web": "pnpm --filter carbon-acx-web run prebuild",
-    "build:web": "pnpm --filter carbon-acx-web install --frozen-lockfile && pnpm run prebuild:web && pnpm --filter carbon-acx-web run build",
+    "build:web": "pnpm --filter carbon-acx-web install --frozen-lockfile && pnpm --filter carbon-acx-web run build",
     "preview:web": "pnpm --filter carbon-acx-web preview"
   },
   "devDependencies": {
