@@ -30,9 +30,6 @@ const nextConfig: NextConfig = {
     unoptimized: process.env.CF_PAGES === '1',
   },
 
-  // Output configuration for Cloudflare Pages
-  output: process.env.CF_PAGES === '1' ? 'export' : undefined,
-
   // Disable telemetry
   productionBrowserSourceMaps: false,
 }
