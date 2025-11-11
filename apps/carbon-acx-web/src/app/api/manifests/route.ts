@@ -6,6 +6,10 @@
 import { NextResponse } from 'next/server'
 import { getManifests } from '@/lib/manifests'
 
+// Force static generation at build time
+export const dynamic = 'force-static'
+export const revalidate = false
+
 export async function GET() {
   try {
     const manifests = await getManifests()

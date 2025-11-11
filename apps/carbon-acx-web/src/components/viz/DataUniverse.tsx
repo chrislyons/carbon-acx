@@ -34,9 +34,19 @@ export interface Activity {
   manifestId?: string // NEW: Link to manifest
 }
 
+export interface ManifestInfo {
+  datasetId?: string
+  title?: string
+  manifestPath?: string
+  manifestSha256?: string
+  generatedAt?: string
+  description?: string
+}
+
 export interface DataUniverseProps {
   totalEmissions: number // kg CO₂
   activities: Activity[]
+  manifest?: ManifestInfo
   onActivityClick?: (activity: Activity) => void
   enableIntroAnimation?: boolean
   enableClickToFly?: boolean
@@ -61,6 +71,7 @@ interface CameraAnimationState {
 export function DataUniverse({
   totalEmissions,
   activities,
+  manifest,
   onActivityClick,
   enableIntroAnimation = false,
   enableClickToFly = true,
@@ -68,6 +79,7 @@ export function DataUniverse({
   const [isReady, setIsReady] = React.useState(false)
   const [selectedActivityId, setSelectedActivityId] = React.useState<string | null>(null)
   const [hoveredActivityId, setHoveredActivityId] = React.useState<string | null>(null)
+  const [manifestPanelExpanded, setManifestPanelExpanded] = React.useState(false)
 
   // Only render after client-side mount
   React.useEffect(() => {
@@ -108,7 +120,7 @@ export function DataUniverse({
   }
 
   return (
-    <div className="w-full h-full min-h-[600px]">
+    <div className="w-full h-full min-h-[600px] relative">
       <ErrorBoundary>
         <Canvas
           camera={{ position: [15, 15, 15], fov: 50 }}
@@ -168,6 +180,87 @@ export function DataUniverse({
           )}
         </Canvas>
       </ErrorBoundary>
+
+      {/* Manifest Info Panel */}
+      {manifest && (
+        <div className="absolute top-4 right-4 z-10">
+          {!manifestPanelExpanded ? (
+            <button
+              onClick={() => setManifestPanelExpanded(true)}
+              className="px-4 py-2 bg-[#0a0e27]/90 text-white rounded-lg border border-white/20 hover:border-white/40 transition-all duration-200 text-sm font-medium backdrop-blur-sm"
+              aria-label="Show manifest information"
+            >
+              ℹ️ Data Info
+            </button>
+          ) : (
+            <div className="bg-[#0a0e27]/95 text-white rounded-lg border border-white/20 backdrop-blur-sm p-4 min-w-[300px] max-w-[400px] shadow-xl">
+              <div className="flex items-start justify-between mb-3">
+                <h3 className="text-base font-semibold">Dataset Information</h3>
+                <button
+                  onClick={() => setManifestPanelExpanded(false)}
+                  className="text-white/60 hover:text-white transition-colors text-lg leading-none"
+                  aria-label="Close manifest information"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="space-y-2.5 text-sm">
+                {manifest.datasetId && (
+                  <div>
+                    <div className="text-white/60 text-xs uppercase tracking-wide mb-0.5">Dataset ID</div>
+                    <div className="font-mono font-semibold">{manifest.datasetId}</div>
+                  </div>
+                )}
+
+                {manifest.title && (
+                  <div>
+                    <div className="text-white/60 text-xs uppercase tracking-wide mb-0.5">Title</div>
+                    <div>{manifest.title}</div>
+                  </div>
+                )}
+
+                {manifest.manifestPath && (
+                  <div>
+                    <div className="text-white/60 text-xs uppercase tracking-wide mb-0.5">Manifest Path</div>
+                    <div className="font-mono text-[#10b981] text-xs break-all">{manifest.manifestPath}</div>
+                  </div>
+                )}
+
+                {manifest.manifestSha256 && (
+                  <div>
+                    <div className="text-white/60 text-xs uppercase tracking-wide mb-0.5">SHA-256 Hash</div>
+                    <div className="font-mono text-[#f59e0b] text-xs break-all">{manifest.manifestSha256}</div>
+                  </div>
+                )}
+
+                {manifest.generatedAt && (
+                  <div>
+                    <div className="text-white/60 text-xs uppercase tracking-wide mb-0.5">Generated</div>
+                    <div className="text-xs">
+                      {new Date(manifest.generatedAt).toLocaleString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        timeZoneName: 'short',
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {manifest.description && (
+                  <div>
+                    <div className="text-white/60 text-xs uppercase tracking-wide mb-0.5">Description</div>
+                    <div className="text-xs leading-relaxed">{manifest.description}</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
