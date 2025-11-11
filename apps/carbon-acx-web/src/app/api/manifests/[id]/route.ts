@@ -6,6 +6,9 @@
 import { NextResponse } from 'next/server'
 import { getManifest, verifyManifest } from '@/lib/manifests'
 
+// Mark as dynamic - this route requires server-side execution
+export const dynamic = 'force-dynamic'
+
 interface RouteParams {
   params: Promise<{ id: string }>
 }

@@ -6,10 +6,10 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:cloudflare": "CF_PAGES=1 next build",
+    "postbuild": "rm -rf .next/cache",
     "start": "next start",
     "preview": "wrangler pages dev .next",
-    "deploy": "pnpm build:cloudflare && wrangler pages deploy .next",
+    "deploy": "pnpm build && wrangler pages deploy .next",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "vitest",

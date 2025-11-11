@@ -16,7 +16,7 @@
 
 import * as React from 'react'
 import Link from 'next/link'
-import type { Activity } from '@/components/viz/DataUniverse'
+import type { Activity, ManifestInfo } from '@/components/viz/DataUniverse'
 
 // Force dynamic rendering (no static generation)
 // Required because Three.js needs browser APIs (WebGL)
@@ -94,6 +94,7 @@ export default function ThreeDVisualizationPage() {
   const [selectedActivity, setSelectedActivity] = React.useState<string | null>(null)
   const [DataUniverse, setDataUniverse] = React.useState<React.ComponentType<any> | null>(null)
   const [isClient, setIsClient] = React.useState(false)
+  const [manifest, setManifest] = React.useState<ManifestInfo | null>(null)
 
   // Client-side only mount
   React.useEffect(() => {
@@ -102,6 +103,25 @@ export default function ThreeDVisualizationPage() {
     import('@/components/viz/DataUniverse').then((mod) => {
       setDataUniverse(() => mod.DataUniverse)
     })
+  }, [])
+
+  // Fetch manifest data
+  React.useEffect(() => {
+    fetch('/api/manifests')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.manifests && data.manifests.length > 0) {
+          const m = data.manifests[0]
+          setManifest({
+            datasetId: m.id,
+            title: m.figure_id,
+            manifestPath: m.manifest_path,
+            manifestSha256: m.hash_prefix,
+            generatedAt: m.generated_at,
+          })
+        }
+      })
+      .catch((err) => console.error('Failed to load manifest:', err))
   }, [])
 
   // Calculate total emissions
@@ -192,6 +212,7 @@ export default function ThreeDVisualizationPage() {
           <DataUniverse
             totalEmissions={totalEmissions}
             activities={SAMPLE_ACTIVITIES}
+            manifest={manifest || undefined}
             onActivityClick={handleActivityClick}
             enableIntroAnimation={true}
             enableClickToFly={true}
