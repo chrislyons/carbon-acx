@@ -11,6 +11,7 @@ Project documentation index for carbon-acx.
 - [[ACX098 Bloat Remediation Recommendations]]
 - [[ACX099 World Labs and Blender MCP Integration Handoff]]
 - [[ACX100 World Labs 3D World Integration Specification]]
+- [[ACX101 World Labs Integration and Calculator Implementation Sprint]]
 
 ## All Documents
 
@@ -39,6 +40,7 @@ Project documentation index for carbon-acx.
 - [[ACX098 Bloat Remediation Recommendations]]
 - [[ACX099 World Labs and Blender MCP Integration Handoff]]
 - [[ACX100 World Labs 3D World Integration Specification]]
+- [[ACX101 World Labs Integration and Calculator Implementation Sprint]]
 
 ## Archived Documents
 
