@@ -12,7 +12,7 @@ export default function ExplorePage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white border border-gray-200 rounded-lg p-8">
           <div className="text-center">
             <div className="text-5xl mb-4">📊</div>
@@ -42,6 +42,24 @@ export default function ExplorePage() {
             </p>
             <span className="inline-block px-3 py-1 bg-green-100 text-green-800 text-xs rounded-full font-medium">
               ✓ Live Now
+            </span>
+          </div>
+        </Link>
+
+        <Link
+          href="/explore/worlds"
+          className="bg-white border border-gray-200 rounded-lg p-8 hover:border-purple-500 hover:shadow-lg transition-all cursor-pointer"
+        >
+          <div className="text-center">
+            <div className="text-5xl mb-4">🌍</div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              Carbon Worlds
+            </h2>
+            <p className="text-gray-600 text-sm mb-4">
+              AI-generated 3D worlds showing carbon scenarios (World Labs)
+            </p>
+            <span className="inline-block px-3 py-1 bg-purple-100 text-purple-800 text-xs rounded-full font-medium">
+              New
             </span>
           </div>
         </Link>

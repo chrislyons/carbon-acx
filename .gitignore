@@ -44,9 +44,15 @@ refs/normalized/
 .env
 .env.*
 !.env.example
+.mcp.json
 
 # macOS files
 .DS_Store
 
 # Scratch space (temporary notes, drafts, experiments)
+.claude/scratch/
+
+# Claude Code local overrides
+.claude/settings.local.json
+.claude/CLAUDE.local.md
 .claude/scratch/

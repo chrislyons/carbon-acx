@@ -10,6 +10,7 @@ Project documentation index for carbon-acx.
 - [[ACX097 Recent Documentation Audit - Planning vs Execution Alignment]]
 - [[ACX098 Bloat Remediation Recommendations]]
 - [[ACX099 World Labs and Blender MCP Integration Handoff]]
+- [[ACX100 World Labs 3D World Integration Specification]]
 
 ## All Documents
 
@@ -37,6 +38,7 @@ Project documentation index for carbon-acx.
 - [[ACX097 Recent Documentation Audit - Planning vs Execution Alignment]]
 - [[ACX098 Bloat Remediation Recommendations]]
 - [[ACX099 World Labs and Blender MCP Integration Handoff]]
+- [[ACX100 World Labs 3D World Integration Specification]]
 
 ## Archived Documents
 
