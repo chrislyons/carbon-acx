@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import {
   ACTIVITIES,
@@ -13,12 +13,45 @@ import {
   type CalculatorSummary,
 } from '@/lib/calculator'
 
+const STORAGE_KEY = 'carbon-acx-calculator-inputs'
+
 type Step = 'input' | 'results'
 
 export default function CalculatorPage() {
   const [step, setStep] = useState<Step>('input')
   const [activeCategory, setActiveCategory] = useState<ActivityCategory>('transport')
   const [inputs, setInputs] = useState<Record<string, number>>({})
+  const [isLoaded, setIsLoaded] = useState(false)
+
+  // Load saved inputs from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY)
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (typeof parsed === 'object' && parsed !== null) {
+          setInputs(parsed)
+        }
+      }
+    } catch {
+      // Ignore localStorage errors
+    }
+    setIsLoaded(true)
+  }, [])
+
+  // Save inputs to localStorage when they change
+  useEffect(() => {
+    if (!isLoaded) return
+    try {
+      if (Object.keys(inputs).length > 0) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(inputs))
+      } else {
+        localStorage.removeItem(STORAGE_KEY)
+      }
+    } catch {
+      // Ignore localStorage errors
+    }
+  }, [inputs, isLoaded])
 
   // Calculate results
   const summary = useMemo(() => {
@@ -41,6 +74,11 @@ export default function CalculatorPage() {
   const handleReset = () => {
     setInputs({})
     setStep('input')
+    try {
+      localStorage.removeItem(STORAGE_KEY)
+    } catch {
+      // Ignore localStorage errors
+    }
   }
 
   const categories = Object.keys(CATEGORY_INFO) as ActivityCategory[]
@@ -173,13 +211,25 @@ export default function CalculatorPage() {
 
       {/* Info Box */}
       <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <h3 className="text-sm font-semibold text-blue-900 mb-1">
-          About This Calculator
-        </h3>
-        <p className="text-sm text-blue-800">
-          Emission factors sourced from ECCC National Inventory Report, IPCC, EPA,
-          and peer-reviewed literature. All values are CO₂ equivalent using GWP100 (AR6).
-        </p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h3 className="text-sm font-semibold text-blue-900 mb-1">
+              About This Calculator
+            </h3>
+            <p className="text-sm text-blue-800">
+              Emission factors sourced from ECCC National Inventory Report, IPCC, EPA,
+              and peer-reviewed literature. All values are CO₂ equivalent using GWP100 (AR6).
+            </p>
+          </div>
+          {hasInputs && (
+            <div className="flex items-center gap-1.5 text-xs text-green-700 whitespace-nowrap">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              Auto-saved
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
