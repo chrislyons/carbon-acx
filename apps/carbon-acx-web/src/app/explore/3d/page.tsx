@@ -8,6 +8,7 @@
  * - Dynamic import for SSR safety (Three.js requires browser APIs)
  * - Suspense boundary for loading state
  * - Sample emissions data from common activities
+ * - User calculator data integration
  * - Manifest integration for provenance tracking
  *
  * NOTE: This page is client-only and cannot be statically rendered
@@ -17,6 +18,18 @@
 import * as React from 'react'
 import Link from 'next/link'
 import type { Activity, ManifestInfo } from '@/components/viz/DataUniverse'
+import { ACTIVITIES as CALCULATOR_ACTIVITIES, CATEGORY_INFO } from '@/lib/calculator'
+
+const STORAGE_KEY = 'carbon-acx-calculator-inputs'
+
+// Map calculator categories to colors
+const CATEGORY_COLORS: Record<string, string> = {
+  transport: '#3b82f6', // blue
+  food: '#22c55e',      // green
+  digital: '#a855f7',   // purple
+  home: '#f59e0b',      // amber
+  shopping: '#ec4899',  // pink
+}
 
 // Force dynamic rendering (no static generation)
 // Required because Three.js needs browser APIs (WebGL)
@@ -90,11 +103,16 @@ const SAMPLE_ACTIVITIES = [
   },
 ]
 
+type DataSource = 'sample' | 'calculator'
+
 export default function ThreeDVisualizationPage() {
   const [selectedActivity, setSelectedActivity] = React.useState<string | null>(null)
   const [DataUniverse, setDataUniverse] = React.useState<React.ComponentType<any> | null>(null)
   const [isClient, setIsClient] = React.useState(false)
   const [manifest, setManifest] = React.useState<ManifestInfo | null>(null)
+  const [dataSource, setDataSource] = React.useState<DataSource>('sample')
+  const [calculatorInputs, setCalculatorInputs] = React.useState<Record<string, number>>({})
+  const [hasCalculatorData, setHasCalculatorData] = React.useState(false)
 
   // Client-side only mount
   React.useEffect(() => {
@@ -103,6 +121,24 @@ export default function ThreeDVisualizationPage() {
     import('@/components/viz/DataUniverse').then((mod) => {
       setDataUniverse(() => mod.DataUniverse)
     })
+
+    // Load calculator data from localStorage
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY)
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (typeof parsed === 'object' && parsed !== null) {
+          const hasData = Object.values(parsed).some((v) => (v as number) > 0)
+          if (hasData) {
+            setCalculatorInputs(parsed)
+            setHasCalculatorData(true)
+            setDataSource('calculator') // Auto-select if user has data
+          }
+        }
+      }
+    } catch {
+      // Ignore localStorage errors
+    }
   }, [])
 
   // Fetch manifest data
@@ -124,8 +160,31 @@ export default function ThreeDVisualizationPage() {
       .catch((err) => console.error('Failed to load manifest:', err))
   }, [])
 
+  // Convert calculator inputs to activities for 3D visualization
+  const calculatorActivities: Activity[] = React.useMemo(() => {
+    return Object.entries(calculatorInputs)
+      .filter(([_, qty]) => qty > 0)
+      .map(([activityId, quantity]) => {
+        const activity = CALCULATOR_ACTIVITIES.find((a) => a.id === activityId)
+        if (!activity) return null
+        // Calculator uses grams, DataUniverse uses kg
+        const emissionsKg = (activity.emissionFactor * quantity) / 1000
+        return {
+          id: activity.id,
+          name: activity.name,
+          annualEmissions: emissionsKg,
+          category: CATEGORY_INFO[activity.category].name,
+          color: CATEGORY_COLORS[activity.category],
+        }
+      })
+      .filter((a): a is Activity => a !== null)
+  }, [calculatorInputs])
+
+  // Select which activities to display based on source
+  const displayActivities = dataSource === 'calculator' ? calculatorActivities : SAMPLE_ACTIVITIES
+
   // Calculate total emissions
-  const totalEmissions = SAMPLE_ACTIVITIES.reduce(
+  const totalEmissions = displayActivities.reduce(
     (sum, activity) => sum + activity.annualEmissions,
     0
   )
@@ -167,32 +226,82 @@ export default function ThreeDVisualizationPage() {
       {/* Stats Bar */}
       <div className="bg-gray-50 border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <div className="text-xs text-gray-600 uppercase tracking-wide mb-1">
-                Total Annual Emissions
-              </div>
-              <div className="text-2xl font-bold text-gray-900">
-                {(totalEmissions / 1000).toFixed(1)} t CO₂
-              </div>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            {/* Data Source Toggle */}
+            <div className="flex items-center gap-2 p-1 bg-gray-200 rounded-lg">
+              <button
+                onClick={() => setDataSource('sample')}
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                  dataSource === 'sample'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Sample Data
+              </button>
+              <button
+                onClick={() => setDataSource('calculator')}
+                disabled={!hasCalculatorData}
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                  dataSource === 'calculator'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : hasCalculatorData
+                      ? 'text-gray-600 hover:text-gray-900'
+                      : 'text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                My Footprint
+                {hasCalculatorData && (
+                  <span className="ml-1.5 w-2 h-2 bg-green-500 rounded-full inline-block" />
+                )}
+              </button>
             </div>
-            <div>
-              <div className="text-xs text-gray-600 uppercase tracking-wide mb-1">
-                Activities Tracked
+
+            {/* Stats */}
+            <div className="flex-1 grid grid-cols-3 gap-4">
+              <div>
+                <div className="text-xs text-gray-600 uppercase tracking-wide mb-1">
+                  Total Emissions
+                </div>
+                <div className="text-xl font-bold text-gray-900">
+                  {totalEmissions >= 1000
+                    ? `${(totalEmissions / 1000).toFixed(1)} t`
+                    : `${totalEmissions.toFixed(0)} kg`} CO₂
+                </div>
               </div>
-              <div className="text-2xl font-bold text-gray-900">
-                {SAMPLE_ACTIVITIES.length}
+              <div>
+                <div className="text-xs text-gray-600 uppercase tracking-wide mb-1">
+                  Activities
+                </div>
+                <div className="text-xl font-bold text-gray-900">
+                  {displayActivities.length}
+                </div>
               </div>
-            </div>
-            <div>
-              <div className="text-xs text-gray-600 uppercase tracking-wide mb-1">
-                Visualization
-              </div>
-              <div className="text-2xl font-bold text-gray-900">
-                Live 3D
+              <div>
+                <div className="text-xs text-gray-600 uppercase tracking-wide mb-1">
+                  Data Source
+                </div>
+                <div className="text-xl font-bold text-gray-900">
+                  {dataSource === 'calculator' ? 'Personal' : 'Sample'}
+                </div>
               </div>
             </div>
           </div>
+
+          {/* CTA if no calculator data */}
+          {!hasCalculatorData && (
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+              <span className="text-sm text-blue-800">
+                Want to see your own carbon footprint in 3D?
+              </span>
+              <Link
+                href="/calculator"
+                className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Calculate Your Footprint →
+              </Link>
+            </div>
+          )}
         </div>
       </div>
 
@@ -211,7 +320,7 @@ export default function ThreeDVisualizationPage() {
         ) : (
           <DataUniverse
             totalEmissions={totalEmissions}
-            activities={SAMPLE_ACTIVITIES}
+            activities={displayActivities}
             manifest={manifest || undefined}
             onActivityClick={handleActivityClick}
             enableIntroAnimation={true}
@@ -246,21 +355,22 @@ export default function ThreeDVisualizationPage() {
         </div>
       </div>
 
-      {/* Selected Activity Panel (Future: Modal with manifest details) */}
+      {/* Selected Activity Panel */}
       {selectedActivity && (
         <div className="fixed bottom-4 right-4 bg-white border border-gray-300 rounded-lg shadow-xl p-4 max-w-sm">
           <div className="text-xs text-gray-600 uppercase tracking-wide mb-2">
             Selected Activity
           </div>
           <div className="font-semibold text-gray-900 mb-1">
-            {SAMPLE_ACTIVITIES.find((a) => a.id === selectedActivity)?.name}
+            {displayActivities.find((a) => a.id === selectedActivity)?.name}
           </div>
           <div className="text-sm text-gray-700">
-            {(
-              (SAMPLE_ACTIVITIES.find((a) => a.id === selectedActivity)
-                ?.annualEmissions ?? 0) / 1000
-            ).toFixed(2)}{' '}
-            t CO₂/yr
+            {(() => {
+              const emissions = displayActivities.find((a) => a.id === selectedActivity)?.annualEmissions ?? 0
+              return emissions >= 1000
+                ? `${(emissions / 1000).toFixed(2)} t CO₂`
+                : `${emissions.toFixed(1)} kg CO₂`
+            })()}
           </div>
           <button
             onClick={() => setSelectedActivity(null)}
