@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useMemo, useEffect, useCallback } from 'react'
+import { useState, useMemo, useEffect, useCallback, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import {
   ACTIVITIES,
@@ -17,27 +18,98 @@ const STORAGE_KEY = 'carbon-acx-calculator-inputs'
 
 type Step = 'input' | 'results'
 
+// Encode inputs to a compact URL-safe string
+function encodeInputs(inputs: Record<string, number>): string {
+  const entries = Object.entries(inputs).filter(([_, v]) => v > 0)
+  if (entries.length === 0) return ''
+  const data = entries.map(([k, v]) => `${k}:${v}`).join(',')
+  return btoa(data)
+}
+
+// Decode inputs from URL string
+function decodeInputs(encoded: string): Record<string, number> {
+  try {
+    const data = atob(encoded)
+    const result: Record<string, number> = {}
+    data.split(',').forEach((pair) => {
+      const [key, val] = pair.split(':')
+      const num = parseFloat(val)
+      if (key && !isNaN(num) && num > 0) {
+        result[key] = num
+      }
+    })
+    return result
+  } catch {
+    return {}
+  }
+}
+
 export default function CalculatorPage() {
+  return (
+    <Suspense fallback={<CalculatorSkeleton />}>
+      <CalculatorContent />
+    </Suspense>
+  )
+}
+
+function CalculatorSkeleton() {
+  return (
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="animate-pulse">
+        <div className="h-8 bg-gray-200 rounded w-48 mb-4" />
+        <div className="h-4 bg-gray-200 rounded w-64 mb-8" />
+        <div className="flex gap-2 mb-6">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="h-10 bg-gray-200 rounded-lg w-24" />
+          ))}
+        </div>
+        <div className="bg-gray-100 rounded-xl p-6 mb-6">
+          <div className="space-y-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-16 bg-gray-200 rounded" />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function CalculatorContent() {
+  const searchParams = useSearchParams()
   const [step, setStep] = useState<Step>('input')
   const [activeCategory, setActiveCategory] = useState<ActivityCategory>('transport')
   const [inputs, setInputs] = useState<Record<string, number>>({})
   const [isLoaded, setIsLoaded] = useState(false)
+  const [isShared, setIsShared] = useState(false)
 
-  // Load saved inputs from localStorage on mount
+  // Load inputs from URL params or localStorage on mount
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY)
-      if (saved) {
-        const parsed = JSON.parse(saved)
-        if (typeof parsed === 'object' && parsed !== null) {
-          setInputs(parsed)
-        }
+    const sharedData = searchParams.get('data')
+    if (sharedData) {
+      // Load from shared URL
+      const decoded = decodeInputs(sharedData)
+      if (Object.keys(decoded).length > 0) {
+        setInputs(decoded)
+        setIsShared(true)
+        setStep('results') // Go directly to results for shared links
       }
-    } catch {
-      // Ignore localStorage errors
+    } else {
+      // Load from localStorage
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY)
+        if (saved) {
+          const parsed = JSON.parse(saved)
+          if (typeof parsed === 'object' && parsed !== null) {
+            setInputs(parsed)
+          }
+        }
+      } catch {
+        // Ignore localStorage errors
+      }
     }
     setIsLoaded(true)
-  }, [])
+  }, [searchParams])
 
   // Save inputs to localStorage when they change
   useEffect(() => {
@@ -84,7 +156,15 @@ export default function CalculatorPage() {
   const categories = Object.keys(CATEGORY_INFO) as ActivityCategory[]
 
   if (step === 'results') {
-    return <ResultsView summary={summary} onBack={() => setStep('input')} onReset={handleReset} />
+    return (
+      <ResultsView
+        summary={summary}
+        inputs={inputs}
+        isShared={isShared}
+        onBack={() => setStep('input')}
+        onReset={handleReset}
+      />
+    )
   }
 
   return (
@@ -241,11 +321,14 @@ export default function CalculatorPage() {
 
 interface ResultsViewProps {
   summary: CalculatorSummary
+  inputs: Record<string, number>
+  isShared: boolean
   onBack: () => void
   onReset: () => void
 }
 
-function ResultsView({ summary, onBack, onReset }: ResultsViewProps) {
+function ResultsView({ summary, inputs, isShared, onBack, onReset }: ResultsViewProps) {
+  const [copied, setCopied] = useState(false)
   const categories = Object.keys(CATEGORY_INFO) as ActivityCategory[]
 
   // Sort categories by emissions for the chart
@@ -255,8 +338,35 @@ function ResultsView({ summary, onBack, onReset }: ResultsViewProps) {
 
   const maxCategoryEmissions = Math.max(...Object.values(summary.byCategory))
 
+  const handleShare = async () => {
+    const encoded = encodeInputs(inputs)
+    const url = `${window.location.origin}/calculator?data=${encoded}`
+    try {
+      await navigator.clipboard.writeText(url)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // Fallback for older browsers
+      const input = document.createElement('input')
+      input.value = url
+      document.body.appendChild(input)
+      input.select()
+      document.execCommand('copy')
+      document.body.removeChild(input)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
+
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Shared Banner */}
+      {isShared && (
+        <div className="mb-6 p-3 bg-purple-50 border border-purple-200 rounded-lg text-sm text-purple-800">
+          You're viewing a shared carbon footprint. Click "Edit inputs" to modify and save your own.
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
@@ -268,12 +378,34 @@ function ResultsView({ summary, onBack, onReset }: ResultsViewProps) {
           </button>
           <h1 className="text-3xl font-bold text-gray-900">Your Carbon Footprint</h1>
         </div>
-        <button
-          onClick={onReset}
-          className="px-4 py-2 text-gray-600 hover:text-gray-900 text-sm font-medium"
-        >
-          Start Over
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handleShare}
+            className="px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5"
+          >
+            {copied ? (
+              <>
+                <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                Copied!
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+                Share
+              </>
+            )}
+          </button>
+          <button
+            onClick={onReset}
+            className="px-4 py-2 text-gray-600 hover:text-gray-900 text-sm font-medium"
+          >
+            Start Over
+          </button>
+        </div>
       </div>
 
       {/* Total Card */}
