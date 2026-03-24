@@ -1,21 +1,17 @@
+import path from 'node:path'
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
 
-  // TypeScript configuration
-  // TEMPORARY: Ignore build errors due to React Three Fiber + React 19 type compatibility
-  // TODO: Remove once @react-three/fiber fully supports React 19 types
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-
   // ESLint configuration
   eslint: {
     // Allow production builds to complete even with ESLint errors
     ignoreDuringBuilds: false,
   },
+
+  outputFileTracingRoot: path.join(__dirname, '../..'),
 
   // Environment variables
   env: {

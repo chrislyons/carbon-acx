@@ -6,7 +6,7 @@
 
 > **Current dataset version:** v1.2【F:calc/outputs/sprint_status.txt†L1-L18】
 
-Carbon ACX is an open reference stack for trustworthy carbon accounting. It turns auditable CSV inputs into a reproducible dataset, then ships the same disclosures through interactive Dash tooling, a static React experience, and Cloudflare delivery surfaces so teams can communicate climate performance with confidence.【F:calc/derive.py†L52-L92】【F:app/app.py†L12-L158】【F:site/src/App.tsx†L1-L160】【F:functions/carbon-acx/[[path]].ts†L1-L160】【F:workers/compute/index.ts†L1-L123】
+Carbon ACX is an open reference stack for trustworthy carbon accounting. It turns auditable CSV inputs into a reproducible dataset, then publishes that data through a primary Next.js web app, a Python analyst surface, and packaged Cloudflare delivery bundles so teams can communicate climate performance with confidence. The legacy Vite site and `scripts/build_site.py` remain in the repository as frozen compatibility code, while `workers/compute` is retained only as an experimental parity path until it matches the canonical Python contract.【F:calc/derive.py†L52-L92】【F:app/app.py†L12-L158】【F:functions/carbon-acx/[[path]].ts†L1-L160】【F:workers/compute/index.ts†L1-L123】
 
 ---
 
@@ -21,8 +21,8 @@ Every chart, layer catalogue, and disclosure ships from a manifest that records 
 Carbon ACX is designed as a product-quality example of carbon accounting operations:
 
 - **Measurement you can inspect.** The Python derivation engine keeps validation logic, figure generation, references, and manifests in the same code path so every published number carries lineage and checksums.【F:calc/derive.py†L52-L92】【F:calc/derive.py†L1702-L1779】
-- **Storytelling without divergence.** Dash and the static site load identical artefacts, giving stakeholder demos and public embeds the same numbers, charts, and citations without bespoke rebuilds.【F:app/app.py†L12-L158】【F:site/src/App.tsx†L1-L160】
-- **Delivery that fits modern stacks.** Cloudflare Pages serves packaged artefacts, while the Worker API powers on-demand calculations with strict input hygiene for programmatic integrations.【F:functions/carbon-acx/[[path]].ts†L1-L160】【F:workers/compute/index.ts†L1-L123】
+- **Storytelling without divergence.** Dash and the web surfaces load identical artefacts, giving stakeholder demos and public embeds the same numbers, charts, and citations without bespoke rebuilds.【F:app/app.py†L12-L158】
+- **Delivery that fits modern stacks.** Cloudflare Pages serves packaged artefacts through stable read-only routes, while experimental compute surfaces stay secondary until they are parity-tested against Python.【F:functions/carbon-acx/[[path]].ts†L1-L160】【F:workers/compute/index.ts†L1-L123】
 
 Together these pieces model how organisations can move from raw operational activity to production-ready climate disclosures without sacrificing reproducibility or clarity.
 
@@ -35,8 +35,9 @@ Together these pieces model how organisations can move from raw operational acti
 | **Source-of-truth data** | Canonical CSVs for activities, emission factors, schedules, grid intensity, and more live under `data/`, ready for rebuilds and audits.【F:data/activities.csv†L1-L10】 |
 | **Derivation toolkit** | `python -m calc.derive` validates inputs, composes emissions, exports intensity matrices, and emits immutable manifests with hashed figures in `dist/artifacts/<hash>`.【F:calc/derive.py†L52-L92】【F:calc/derive.py†L1702-L1779】 |
 | **Dash operations client** | `app/` houses the Dash experience used for analyst walkthroughs, including agency breakdowns, scenario toggles, and provenance-aware reference handling.【F:app/app.py†L12-L158】 |
-| **Static React site** | `site/` contains a Vite + Tailwind build that mirrors the Dash workflow for marketing or investor portals while reading the same manifest catalogue.【F:site/src/App.tsx†L1-L160】 |
-| **Edge delivery surfaces** | `functions/` provides the Cloudflare Pages function that hardens artefact serving, and `workers/` exposes a JSON API for compute scenarios and health checks.【F:functions/carbon-acx/[[path]].ts†L1-L160】【F:workers/compute/index.ts†L1-L123】 |
+| **Primary web app** | `apps/carbon-acx-web/` contains the Next.js application that now serves as the public product surface for manifests, calculator flows, and supporting exploration routes. |
+| **Legacy compatibility site** | `site/` and `scripts/build_site.py` remain available for compatibility and migration work, but they are frozen and not part of the required release path. |
+| **Edge delivery surfaces** | `functions/` provides the Cloudflare Pages function that hardens artefact serving, and `workers/compute` remains experimental until it is parity-tested against `calc.service.compute_profile`.【F:functions/carbon-acx/[[path]].ts†L1-L160】【F:workers/compute/index.ts†L1-L123】 |
 | **Packaging automation** | Make targets and helper scripts assemble reproducible releases, sync layer catalogues, and prepare static bundles with deployment metadata.【F:Makefile†L1-L120】【F:scripts/prepare_pages_bundle.py†L1-L100】 |
 
 ## At-a-glance layers
@@ -64,8 +65,8 @@ Layer descriptions, types, and activities are sourced directly from `data/layers
 
 1. **Curate data.** Update CSV inputs in `data/` and describe schema evolution in Git for transparent change tracking.【F:data/activities.csv†L1-L10】
 2. **Derive & validate.** Run `python -m calc.derive` (or `make build`) to compute emissions, layer views, manifests, and intensity matrices guarded by repeatable validation rules.【F:calc/derive.py†L52-L92】【F:calc/derive.py†L1702-L1779】
-3. **Bundle outputs.** `make package` copies artefacts into `dist/site/artifacts`, writes Cloudflare headers/redirects, and records byte-level inventories for downstream integrity checks.【F:Makefile†L1-L120】【F:scripts/prepare_pages_bundle.py†L42-L100】
-4. **Serve everywhere.** Dash reads from local artefacts, the static site consumes packaged JSON, and Cloudflare Functions/Workers deliver the same payload to browsers and APIs.【F:app/app.py†L41-L158】【F:site/src/App.tsx†L1-L160】【F:functions/carbon-acx/[[path]].ts†L1-L160】【F:workers/compute/index.ts†L1-L123】
+3. **Bundle outputs.** `make package` assembles the Next.js web bundle with packaged artefacts, writes Cloudflare headers/redirects, and records byte-level inventories for downstream integrity checks.【F:Makefile†L1-L120】【F:scripts/prepare_pages_bundle.py†L42-L100】
+4. **Serve everywhere.** Dash reads from local artefacts, the primary web app consumes packaged JSON, and Cloudflare Pages Functions deliver the same payload to browsers and APIs. Legacy and experimental surfaces stay out of the required release path.【F:app/app.py†L41-L158】【F:functions/carbon-acx/[[path]].ts†L1-L160】【F:workers/compute/index.ts†L1-L123】
 
 ---
 
@@ -75,12 +76,12 @@ Layer descriptions, types, and activities are sourced directly from `data/layers
 | --- | --- |
 | `calc/` | Pydantic schemas, datastore abstractions, derivation routines, figure builders, and manifest utilities for the carbon dataset.【F:calc/derive.py†L52-L92】 |
 | `app/` | Dash components and layouts for analyst demos, including reference drawers, agency strips, and intensity explorers tied to derived payloads.【F:app/app.py†L12-L158】 |
-| `apps/` | Next-generation web applications built as pnpm workspace packages. Currently contains `carbon-acx-web`, a modern React + TypeScript application. |
-| `site/` | Static React client (Vite 5 + Tailwind) with stage-managed storytelling, scope pins, and artefact-aware navigation for publishing.【F:site/src/App.tsx†L1-L160】 |
+| `apps/` | Next-generation web applications built as pnpm workspace packages. `carbon-acx-web` is the active public web product. |
+| `site/` | Frozen compatibility client kept for migration and reference work; no longer the primary deployment target. |
 | `functions/` | Cloudflare Pages Function that proxies artefact access with immutable caching, sanitised paths, and optional upstream origins.【F:functions/carbon-acx/[[path]].ts†L1-L160】 |
-| `workers/` | Cloudflare Worker compute API providing `/api/compute` and `/api/health` endpoints for lightweight integrations.【F:workers/compute/index.ts†L1-L123】 |
+| `workers/` | Experimental compute surface kept for parity work only; it is not the authoritative machine-facing contract for milestone 1.【F:workers/compute/index.ts†L1-L123】 |
 | `scripts/` | Maintenance utilities for syncing layer catalogues, packaging artefacts, auditing coverage, and preparing deployment metadata.【F:scripts/prepare_pages_bundle.py†L1-L100】 |
-| `docs/` | Deep dives into change management, maintenance calendars, deployment guidance, and “what runs where” environment expectations.【F:docs/WHAT_RUNS_WHERE.md†L1-L11】 |
+| `docs/` | Deep dives into change management, maintenance calendars, deployment guidance, and archived environment notes. |
 
 ---
 
@@ -88,18 +89,17 @@ Layer descriptions, types, and activities are sourced directly from `data/layers
 
 ### Prerequisites
 
-- Python 3.11+ with Poetry for dependency management.【F:pyproject.toml†L1-L12】
-- Node.js ≥ 18 for the Vite-powered static site build (see `site/package.json`).【F:site/package.json†L1-L34】
+- Python 3.11 with Poetry 1.8.x for the canonical data and CLI tooling.【F:pyproject.toml†L1-L12】
+- Node.js 20.19.4 with pnpm 10.5.2 for the web app and workspace builds.【F:package.json†L1-L18】
 - Make, Git, and a Cloudflare account (optional) if you plan to deploy Functions or Workers.
 
 ### Install dependencies
 
 ```bash
-poetry install --with dev --no-root
-make site_install
+./scripts/bootstrap.sh
 ```
 
-These commands install Python tooling, JavaScript dependencies, and doc linters referenced by the Make targets.【F:Makefile†L1-L120】
+`./scripts/bootstrap.sh` validates the pinned toolchain and installs the Python and web dependencies used by the primary build path.【F:Makefile†L1-L120】
 
 ### Build the dataset
 
@@ -111,9 +111,10 @@ make build
 
 ### Explore the experiences
 
+- **Primary web app:** `pnpm dev` from the repo root launches `apps/carbon-acx-web` for product work.
 - **Dash app:** `make app` launches the local Dash server reading derived artefacts from `calc/outputs` by default for analyst exploration.【F:Makefile†L1-L120】【F:app/app.py†L41-L158】
-- **Static site:** `npm run dev -- --host 0.0.0.0` inside `site/` starts the Vite dev server mirroring the same catalogue for UX validation.【F:site/package.json†L1-L20】【F:site/src/App.tsx†L1-L160】
-- **Worker API:** Use `wrangler dev` to exercise `/api/compute` and `/api/health`, verifying payload validation before deploying to Cloudflare.【F:workers/compute/index.ts†L1-L123】【F:wrangler.toml†L1-L12】
+- **Legacy site:** `site/` remains available for compatibility work, but it is not part of the primary release path.
+- **Worker API (experimental):** Use `wrangler dev` only when validating parity work against the Python compute contract; do not treat this path as the canonical API surface yet.【F:workers/compute/index.ts†L1-L123】【F:wrangler.toml†L1-L12】
 
 ### Local Chat (WebGPU)
 
@@ -139,19 +140,20 @@ make build
 
 ## Tooling, quality, and automation
 
+- `make doctor` validates the pinned Node, pnpm, Python, and Poetry versions used by the recovery baseline.
 - `make validate` runs Ruff, Black, doc linters, pytest, and asset validation in one pass.【F:Makefile†L17-L40】
-- `make package` assembles the static site, copies hashed artefacts, and writes immutable caching headers for Cloudflare Pages deploys.【F:Makefile†L65-L104】【F:scripts/prepare_pages_bundle.py†L42-L100】
+- `make package` assembles the primary web app bundle and packaged artefacts, then writes immutable caching headers for Cloudflare Pages deploys without rebuilding the legacy site.【F:Makefile†L65-L104】【F:scripts/prepare_pages_bundle.py†L42-L100】
 - Additional helpers include `make sbom`, `make catalog`, and reference-oriented scripts in `tools/` for maintaining compliance and citation integrity.【F:Makefile†L1-L120】
 
-See `docs/TESTING_NOTES.md` and `docs/WHAT_RUNS_WHERE.md` for deeper guidance on QA expectations across environments.【F:docs/WHAT_RUNS_WHERE.md†L1-L11】
+See `docs/archive/TESTING_NOTES.md` and `docs/archive/WHAT_RUNS_WHERE.md` for deeper guidance on QA expectations across environments.
 
 ---
 
 ## Deployment notes
 
-1. Run `make package` to produce `dist/site` with artefacts, `_headers`, `_redirects`, and a byte inventory ready for Cloudflare Pages uploads.【F:Makefile†L65-L104】【F:scripts/prepare_pages_bundle.py†L42-L100】
+1. Run `make package` to produce the packaged Pages bundle in `dist/site` with the Next.js web output, artefacts, `_headers`, `_redirects`, and a byte inventory ready for Cloudflare Pages uploads.【F:Makefile†L65-L104】【F:scripts/prepare_pages_bundle.py†L42-L100】
 2. Deploy the Pages Function from `functions/` alongside the static bundle to enforce immutable caching, sanitised paths, and optional upstream origins.【F:functions/carbon-acx/[[path]].ts†L1-L160】
-3. Publish the compute Worker with Wrangler so `/api/compute` exposes on-demand figures backed by the same dataset fingerprint as your builds.【F:workers/compute/index.ts†L1-L123】【F:wrangler.toml†L1-L12】
+3. Treat `workers/compute` as optional experimental infrastructure; parity-test it before any deployment and avoid making public guarantees around `/api/compute` until it matches the Python contract.【F:workers/compute/index.ts†L1-L123】【F:wrangler.toml†L1-L12】
 
 ---
 

@@ -11,8 +11,8 @@
     "preview": "wrangler pages dev .next",
     "deploy": "pnpm build && wrangler pages deploy .next",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest",
+    "typecheck": "next typegen && tsc --noEmit",
+    "test": "vitest run --config vitest.config.ts",
     "test:e2e": "playwright test"
   },
   "dependencies": {

@@ -1,4 +1,4 @@
-"""Runtime compute orchestration used by the live /api/compute endpoint."""
+"""Canonical compute orchestration used by CLI and parity tests."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ import pandas as pd
 from . import citations, figures
 from .upstream import dependency_metadata
 from .api import collect_activity_source_keys
-from .dal import DataStore, SqlStore
+from .dal import DataStore, choose_backend
 from .schema import (
     Activity,
     ActivitySchedule,
@@ -39,7 +39,9 @@ from .schema import (
 # the implementation compact without duplicating the transformation logic.
 from . import derive
 
-__all__ = ["compute_profile"]
+COMPUTE_PROFILE_CONTRACT_VERSION = "acx.compute-profile/1-0-0"
+
+__all__ = ["COMPUTE_PROFILE_CONTRACT_VERSION", "compute_profile"]
 
 
 _VERSION_TABLES = (
@@ -315,7 +317,7 @@ def compute_profile(
 
     override_values = _normalise_overrides(overrides)
 
-    store = datastore or SqlStore()
+    store = datastore or choose_backend()
     should_close = datastore is None and hasattr(store, "close")
     try:
         activities = {activity.activity_id: activity for activity in store.load_activities()}
@@ -705,6 +707,7 @@ def compute_profile(
         }
 
         return {
+            "contract_version": COMPUTE_PROFILE_CONTRACT_VERSION,
             "figures": figures_payload,
             "references": references,
             "manifest": manifest,

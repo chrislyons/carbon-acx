@@ -15,10 +15,16 @@ CATALOG_PATH := artifacts/catalog.json
 
 .PHONY: install lint test audit ci_build_pages app format validate release build-backend build site package sbom build-static \
         db_init db_import db_export build_csv build_db citations-scan refs-check refs-fetch refs-normalize refs-audit \
-        verify_manifests catalog validate-manifests validate-diff-fixtures build-web
+        verify_manifests catalog validate-manifests validate-diff-fixtures build-web bootstrap doctor
 
 install:
 	poetry install --with dev --no-root
+
+doctor:
+	./scripts/bootstrap.sh --check-only
+
+bootstrap:
+	./scripts/bootstrap.sh
 
 lint:
 	PYTHONPATH=. poetry run ruff check .
@@ -84,7 +90,12 @@ site: site_build
 site_dev: site_install
 	cd $(SITE_DIR) && $(SITE_PNPM) run dev -- --host 0.0.0.0
 
-build-web:
+WEB_CALCULATOR_DATA := apps/carbon-acx-web/src/generated/calculator-data.json
+
+$(WEB_CALCULATOR_DATA): data/activities.csv data/emission_factors.csv data/grid_intensity.csv data/sources.csv scripts/generate_web_calculator_data.py
+	python3 scripts/generate_web_calculator_data.py --output $(WEB_CALCULATOR_DATA)
+
+build-web: $(WEB_CALCULATOR_DATA)
 	pnpm run build:web
 
 $(SITE_LAYERS_JSON): $(DATA_LAYERS_CSV) scripts/sync_layers_json.py

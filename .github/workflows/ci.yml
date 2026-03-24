@@ -49,6 +49,8 @@ PY
         with:
           version: 10.5.2
           run_install: false
+      - name: Verify pinned toolchain
+        run: ./scripts/bootstrap.sh --check-only
 
       - name: Install workspace dependencies
         run: pnpm install --frozen-lockfile -w
@@ -80,7 +82,6 @@ PY
           ACX040_HASHED: "1"
           PYTHONPATH: "."
         run: |
-          pnpm --dir site install --frozen-lockfile --prod=false
           make build
           make verify_manifests
           make validate-manifests
@@ -148,16 +149,18 @@ PY
         with:
           version: 10.5.2
           run_install: false
+      - name: Verify pinned toolchain
+        run: ./scripts/bootstrap.sh --check-only
       - name: Install workspace dependencies
         run: pnpm install --frozen-lockfile -w
       - name: Install web workspace dependencies
         run: pnpm --filter carbon-acx-web install --frozen-lockfile
-      - name: Install site dependencies
-        working-directory: site
-        run: pnpm install --frozen-lockfile
-      - name: Run site tests
-        working-directory: site
+      - name: Run web unit tests
+        working-directory: apps/carbon-acx-web
         run: pnpm test
+      - name: Run web typecheck
+        working-directory: apps/carbon-acx-web
+        run: pnpm typecheck
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"

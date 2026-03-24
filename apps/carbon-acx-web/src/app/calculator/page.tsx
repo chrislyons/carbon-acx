@@ -363,7 +363,7 @@ function ResultsView({ summary, inputs, isShared, onBack, onReset }: ResultsView
       {/* Shared Banner */}
       {isShared && (
         <div className="mb-6 p-3 bg-purple-50 border border-purple-200 rounded-lg text-sm text-purple-800">
-          You're viewing a shared carbon footprint. Click "Edit inputs" to modify and save your own.
+          You&apos;re viewing a shared carbon footprint. Click &quot;Edit inputs&quot; to modify and save your own.
         </div>
       )}
 

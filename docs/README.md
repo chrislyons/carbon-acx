@@ -1,15 +1,15 @@
 # Carbon ACX Documentation
 
-Comprehensive documentation for the Carbon ACX open reference stack for trustworthy carbon accounting.
+Documentation index for the Carbon ACX recovery baseline. The active product surfaces are `apps/carbon-acx-web/`, packaged artifacts from `calc/`, and the analyst Dash app in `app/`. Legacy planning and prototype material lives under the archive paths.
 
 ## Directory Structure
 
 ```
 docs/
 ├── README.md                  # This file - documentation index
-├── CHANGELOG.md               # Project changelog
-├── TESTING_NOTES.md           # Testing guidelines and QA expectations
-├── WHAT_RUNS_WHERE.md         # Environment expectations and runtime requirements
+├── archive/CHANGELOG.md       # Project changelog (archived path)
+├── archive/TESTING_NOTES.md   # Testing guidelines and QA expectations
+├── archive/WHAT_RUNS_WHERE.md # Environment expectations and runtime requirements
 │
 ├── acx/                       # Numbered ACX documentation series
 │   ├── ACX001.md ... ACX086.md
@@ -40,11 +40,11 @@ docs/
 
 ## Quick Navigation
 
-### Essential Reference Docs (Root)
+### Essential Reference Docs
 
-- **[CHANGELOG.md](./CHANGELOG.md)** - Project changelog
-- **[TESTING_NOTES.md](./TESTING_NOTES.md)** - QA guidelines
-- **[WHAT_RUNS_WHERE.md](./WHAT_RUNS_WHERE.md)** - Runtime environments
+- **[archive/CHANGELOG.md](./archive/CHANGELOG.md)** - Project changelog
+- **[archive/TESTING_NOTES.md](./archive/TESTING_NOTES.md)** - QA guidelines
+- **[archive/WHAT_RUNS_WHERE.md](./archive/WHAT_RUNS_WHERE.md)** - Runtime environments
 
 ### ACX Documentation Series
 
@@ -52,28 +52,17 @@ The `acx/` directory contains numbered ACX documents following workspace convent
 
 **Format**: `ACX<NUM>.md` where NUM is 3-4 digits, zero-padded, sequential
 
-**Latest Documents**:
-- **[ACX080.md](./acx/ACX080.md)** - Phase 1 rebuild strategy (canvas-first architecture)
-- **[ACX082.md](./acx/ACX082.md)** - 3D Universe Foundation Sprint planning
-- **[ACX083.md](./acx/ACX083.md)** - Phase 3: Sphere Distribution & Layout System
-- **[ACX084.md](./acx/ACX084.md)** - Phase 4: Camera Choreography & Intro Animation
-- **[ACX085.md](./acx/ACX085.md)** - SSR Fix & Phase 5 Completion
-- **[ACX086.md](./acx/ACX086.md)** - Session Report: SSR Crisis Resolution
+Most historical ACX implementation notes now live under `acx/archive/`.
 
-**Browse All**: See `acx/` directory for complete chronological listing.
+**Browse All**: See `acx/` for active index documents and `acx/archive/` for prior sprint history.
 
 ### Guides
 
-- **[deploy.md](./guides/deploy.md)** - Deployment instructions
-- **[THEMING.md](./guides/THEMING.md)** - Design tokens and theming system
-- **[UX-IA.md](./guides/UX-IA.md)** - User experience and information architecture
-- **[routes.md](./guides/routes.md)** - Application routing reference
-- **[validation.md](./guides/validation.md)** - Data validation guide
+Most historical guides now live under `guides/archive/`. Treat them as reference material unless they explicitly describe the current recovery baseline.
 
 ### Audits
 
-- **[AUDIT_2025-10-12.md](./audits/AUDIT_2025-10-12.md)** - Comprehensive repository audit
-- **[pr_history_review.md](./audits/pr_history_review.md)** - Pull request history analysis
+Most historical audits now live under `audits/archive/`.
 
 ### Archive
 

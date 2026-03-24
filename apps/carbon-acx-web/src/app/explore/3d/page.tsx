@@ -35,73 +35,38 @@ const CATEGORY_COLORS: Record<string, string> = {
 // Required because Three.js needs browser APIs (WebGL)
 export const dynamic = 'force-dynamic'
 
-// Sample carbon emissions data
-// These activities represent realistic annual emissions for common sources
-const SAMPLE_ACTIVITIES = [
-  {
-    id: 'commute-car',
-    name: 'Daily Car Commute',
-    annualEmissions: 2400, // kg CO₂ (20 miles/day, 250 days/year)
-    category: 'Transport',
-    manifestId: 'abc123', // Will integrate with real manifests
-  },
-  {
-    id: 'home-electricity',
-    name: 'Home Electricity',
-    annualEmissions: 4200, // kg CO₂ (average US household)
-    category: 'Energy',
-    manifestId: 'def456',
-  },
-  {
-    id: 'natural-gas',
-    name: 'Natural Gas Heating',
-    annualEmissions: 2100, // kg CO₂
-    category: 'Energy',
-    manifestId: 'ghi789',
-  },
-  {
-    id: 'flights',
-    name: 'Air Travel',
-    annualEmissions: 1800, // kg CO₂ (3 round-trip domestic flights)
-    category: 'Transport',
-    manifestId: 'jkl012',
-  },
-  {
-    id: 'food-meat',
-    name: 'Meat Consumption',
-    annualEmissions: 1500, // kg CO₂ (high-meat diet)
-    category: 'Food',
-    manifestId: 'mno345',
-  },
-  {
-    id: 'shopping',
-    name: 'Consumer Goods',
-    annualEmissions: 1200, // kg CO₂
-    category: 'Consumption',
-    manifestId: 'pqr678',
-  },
-  {
-    id: 'waste',
-    name: 'Household Waste',
-    annualEmissions: 600, // kg CO₂
-    category: 'Waste',
-    manifestId: 'stu901',
-  },
-  {
-    id: 'water',
-    name: 'Water Usage',
-    annualEmissions: 300, // kg CO₂
-    category: 'Utilities',
-    manifestId: 'vwx234',
-  },
-  {
-    id: 'streaming',
-    name: 'Digital Services',
-    annualEmissions: 150, // kg CO₂ (streaming, cloud storage)
-    category: 'Digital',
-    manifestId: 'yz5678',
-  },
-]
+const SAMPLE_ACTIVITY_INPUTS: Record<string, number> = {
+  'TRAN.SCHOOLRUN.CAR.KM': 180,
+  'TRAN.FLIGHT.SHORTHAUL.PKM': 1200,
+  'FOOD.MEAL.BEEF.SERVING': 6,
+  'MEDIA.STREAM.HD.HOUR': 18,
+  'AI.USAGE.GPT.QUERY': 120,
+  'ENERGY.NATGAS.M3': 40,
+  'REFR.APPL.FRIDGE.OP.YEAR': 0.25,
+  'DEVICE.LAPTOP.UNIT': 0.1,
+}
+
+function toVisualizationActivity(
+  activityId: string,
+  quantity: number
+): Activity | null {
+  const activity = CALCULATOR_ACTIVITIES.find((item) => item.id === activityId)
+  if (!activity) {
+    return null
+  }
+
+  return {
+    id: activity.id,
+    name: activity.name,
+    annualEmissions: (activity.emissionFactor * quantity) / 1000,
+    category: CATEGORY_INFO[activity.category].name,
+    color: CATEGORY_COLORS[activity.category],
+  }
+}
+
+const SAMPLE_ACTIVITIES: Activity[] = Object.entries(SAMPLE_ACTIVITY_INPUTS)
+  .map(([activityId, quantity]) => toVisualizationActivity(activityId, quantity))
+  .filter((activity): activity is Activity => activity !== null)
 
 type DataSource = 'sample' | 'calculator'
 
@@ -164,20 +129,8 @@ export default function ThreeDVisualizationPage() {
   const calculatorActivities: Activity[] = React.useMemo(() => {
     return Object.entries(calculatorInputs)
       .filter(([_, qty]) => qty > 0)
-      .map(([activityId, quantity]) => {
-        const activity = CALCULATOR_ACTIVITIES.find((a) => a.id === activityId)
-        if (!activity) return null
-        // Calculator uses grams, DataUniverse uses kg
-        const emissionsKg = (activity.emissionFactor * quantity) / 1000
-        return {
-          id: activity.id,
-          name: activity.name,
-          annualEmissions: emissionsKg,
-          category: CATEGORY_INFO[activity.category].name,
-          color: CATEGORY_COLORS[activity.category],
-        }
-      })
-      .filter((a): a is Activity => a !== null)
+      .map(([activityId, quantity]) => toVisualizationActivity(activityId, quantity))
+      .filter((activity): activity is Activity => activity !== null)
   }, [calculatorInputs])
 
   // Select which activities to display based on source
