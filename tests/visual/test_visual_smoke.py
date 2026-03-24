@@ -103,9 +103,14 @@ def _hamming_distance(lhs: int, rhs: int) -> int:
 
 def _render_and_hash(name: str, figure, out_dir: Path) -> tuple[Path, int]:
     out_dir.mkdir(parents=True, exist_ok=True)
-    image_bytes = pio.to_image(
-        figure, format="png", engine="kaleido", width=960, height=540, scale=1
-    )
+    try:
+        image_bytes = pio.to_image(
+            figure, format="png", engine="kaleido", width=960, height=540, scale=1
+        )
+    except ValueError as exc:
+        if "Failed to start Kaleido subprocess" in str(exc):
+            pytest.skip(f"Kaleido is unavailable in this environment: {exc}")
+        raise
     output_path = out_dir / f"{name}.png"
     output_path.write_bytes(image_bytes)
     return output_path, _perceptual_hash(image_bytes)

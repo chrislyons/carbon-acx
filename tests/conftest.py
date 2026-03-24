@@ -20,6 +20,15 @@ def _set_output_root(tmp_path, monkeypatch):
     return output_root
 
 
+@pytest.fixture(autouse=True)
+def _clear_json_payload_cache():
+    from app import app as app_module
+
+    app_module._cached_json_payload.cache_clear()
+    yield
+    app_module._cached_json_payload.cache_clear()
+
+
 @pytest.fixture
 def derived_output_root():
     return Path(os.environ["ACX_OUTPUT_ROOT"])  # type: ignore[arg-type]

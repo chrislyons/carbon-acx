@@ -32,11 +32,11 @@ lint:
 	PYTHONPATH=. poetry run python -m scripts.lint_docs README.md docs
 
 test:
-        PYTHONPATH=. poetry run pytest
-        PYTHONPATH=. python tools/validate_assets.py
+	PYTHONPATH=. poetry run pytest
+	PYTHONPATH=. poetry run python tools/validate_assets.py
 
 verify_manifests:
-        PYTHONPATH=. poetry run pytest tests/test_manifests.py
+	PYTHONPATH=. poetry run pytest tests/test_manifests.py
 
 $(LATEST_BUILD):
 	@mkdir -p $(DIST_ARTIFACTS_DIR)
@@ -105,12 +105,12 @@ $(PACKAGED_MANIFEST): $(LATEST_BUILD)
 	PYTHONPATH=. poetry run python -m scripts.package_artifacts --src $(DIST_ARTIFACTS_DIR) --dest $(PACKAGED_ARTIFACTS_DIR)
 
 WEB_APP_DIR := apps/carbon-acx-web
-WEB_APP_DIST := $(WEB_APP_DIR)/dist
+WEB_APP_DIST := $(WEB_APP_DIR)/.next
 
 package: $(PACKAGED_MANIFEST) build-web sbom
 	rm -rf $(DIST_SITE_DIR)
 	mkdir -p $(DIST_SITE_DIR)
-	cp -R $(WEB_APP_DIST)/* $(DIST_SITE_DIR)/
+	cp -R $(WEB_APP_DIST)/. $(DIST_SITE_DIR)/
 	PYTHONPATH=. poetry run python -m scripts.prepare_pages_bundle --site $(DIST_SITE_DIR) --artifacts $(PACKAGED_ARTIFACTS_DIR)
 
 catalog: $(CATALOG_PATH)
@@ -134,7 +134,7 @@ validate: lint test
 audit:
 	PYTHONPATH=. poetry run python scripts/audit_layers.py
 	test -s artifacts/audit_report.json
-	PYTHONPATH=. python -c "from pathlib import Path; import json, sys; payload = json.loads(Path('artifacts/audit_report.json').read_text()); layers = payload.get('layers_present') or []; sys.exit(0 if layers else 'Layer audit report must list at least one layer')"
+	PYTHONPATH=. poetry run python -c "from pathlib import Path; import json, sys; payload = json.loads(Path('artifacts/audit_report.json').read_text()); layers = payload.get('layers_present') or []; sys.exit(0 if layers else 'Layer audit report must list at least one layer')"
 
 release:
 	@echo "release placeholder"
@@ -180,7 +180,7 @@ refs-audit:
 	poetry run python -m calc.refs_audit
 
 validate-manifests:
-	python -m tools.validator.validate validate-manifest dist/artifacts/manifests/figures
+	PYTHONPATH=. poetry run python -m tools.validator.validate validate-manifest dist/artifacts/manifests/figures
 
 validate-diff-fixtures:
-	python -m tools.validator.validate validate-diff tools/validator/fixtures/sample_diff.json --manifests dist/artifacts/manifests
+	PYTHONPATH=. poetry run python -m tools.validator.validate validate-diff tools/validator/fixtures/sample_diff.json --manifests dist/artifacts/manifests

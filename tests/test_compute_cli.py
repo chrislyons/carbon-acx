@@ -27,7 +27,11 @@ def sqlite_db(tmp_path: Path) -> Path:
     return db_path
 
 
-def test_compute_cli_matches_compute_profile(sqlite_db: Path) -> None:
+def test_compute_cli_matches_compute_profile(
+    sqlite_db: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("ACX_GENERATED_AT", "1970-01-01T00:00:00+00:00")
+
     store = SqlStore(sqlite_db)
     try:
         expected = compute_profile(
