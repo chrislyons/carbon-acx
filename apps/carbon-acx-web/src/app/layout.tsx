@@ -23,11 +23,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased min-h-screen flex flex-col">
+      <body className="min-h-screen bg-background text-foreground antialiased">
         <QueryProvider>
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
+          <div className="flex min-h-screen flex-col">
+            <Header />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </div>
         </QueryProvider>
       </body>
     </html>
