@@ -15,7 +15,7 @@ export function Header() {
 
   return (
     <header className="site-header">
-      <div className="page-shell py-4">
+      <div className="page-shell py-2.5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center justify-between gap-4">
             <Link href="/" className="flex items-center gap-3">

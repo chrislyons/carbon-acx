@@ -26,8 +26,8 @@ export function Footer() {
 
   return (
     <footer className="site-footer">
-      <div className="page-shell py-10 sm:py-12">
-        <div className="grid gap-8 md:grid-cols-[minmax(0,1.2fr)_minmax(180px,0.8fr)_minmax(180px,0.8fr)]">
+      <div className="page-shell py-6 sm:py-8">
+        <div className="grid gap-6 md:grid-cols-[minmax(0,1.2fr)_minmax(180px,0.8fr)_minmax(180px,0.8fr)]">
           <div>
             <div className="flex items-center gap-3">
               <span className="brand-mark" aria-hidden="true">
