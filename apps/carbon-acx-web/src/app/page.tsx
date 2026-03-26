@@ -1,207 +1,157 @@
 import Link from 'next/link'
-import { ACTIVITIES, CATEGORY_INFO, type ActivityCategory } from '@/lib/calculator'
+import {
+  ACTIVITIES,
+  CATEGORY_INFO,
+  type ActivityCategory,
+  getActivitiesByCategory,
+} from '@/lib/calculator'
 
-const primarySurfaces = [
+const categoryOrder: ActivityCategory[] = ['transport', 'food', 'digital', 'home', 'shopping']
+
+const categorySummaries = categoryOrder.map((category) => {
+  const activities = getActivitiesByCategory(category)
+  const factors = activities.map((a) => a.emissionFactor)
+  return {
+    category,
+    info: CATEGORY_INFO[category],
+    count: activities.length,
+    minFactor: Math.min(...factors),
+    maxFactor: Math.max(...factors),
+    unit: activities[0]?.unit ?? '',
+  }
+})
+
+const routes = [
   {
     href: '/calculator',
     label: 'Calculator',
-    meta: 'activity inputs + real factors',
+    kicker: 'activity inputs + real factors',
     description: 'Estimate emissions from tracked activities using the generated calculator dataset.',
   },
   {
     href: '/manifests',
     label: 'Manifests',
-    meta: 'hashes + provenance',
-    description: 'Inspect dataset lineage, artifact integrity, and the references behind each publication step.',
+    kicker: 'hashes + provenance',
+    description: 'Inspect dataset lineage, artifact integrity, and publication references.',
   },
   {
     href: '/explore',
     label: 'Explore',
-    meta: 'route hub',
-    description: 'Jump into the visualization routes and keep calculator, 3D, and world scenarios in one place.',
+    kicker: 'visualization hub',
+    description: 'Navigate spatial, scenario, and comparative views of emissions data.',
   },
-  {
-    href: '/explore/3d',
-    label: '3D Universe',
-    meta: 'orbital data view',
-    description: 'Navigate the spatial view for comparing emission sources and relationships at a glance.',
-  },
-  {
-    href: '/explore/worlds',
-    label: 'Carbon Worlds',
-    meta: 'scenario gallery',
-    description: 'Review scenario presets and world-building flows without losing the core data product context.',
-  },
-] as const
-
-const pipelineSteps = [
-  'Curate canonical CSV inputs in the dataset.',
-  'Validate schemas and relationships in the derivation layer.',
-  'Compute figures and calculator outputs from the same source-of-truth data.',
-  'Package manifests with hashes, timestamps, and references.',
-  'Publish product surfaces that consume the packaged outputs.',
-] as const
-
-const provenanceSignals = [
-  'Manifest-first artifact publishing',
-  'Byte-level hash verification',
-  'Reproducible Python derivation pipeline',
-  'Open-source review of methods and references',
-] as const
-
-const categoryOrder: ActivityCategory[] = ['transport', 'food', 'digital', 'home', 'shopping']
-
-const categorySummaries = categoryOrder.map((category) => ({
-  category,
-  info: CATEGORY_INFO[category],
-  count: ACTIVITIES.filter((activity) => activity.category === category).length,
-}))
-
-const headlineStats = [
-  { value: String(ACTIVITIES.length), label: 'Tracked activities' },
-  { value: String(categorySummaries.length), label: 'Calculator categories' },
-  { value: String(primarySurfaces.length), label: 'Primary surfaces' },
-  { value: '100%', label: 'Open source' },
 ] as const
 
 export default function HomePage() {
   return (
-    <div className="pb-10 sm:pb-12">
-      <section className="page-shell pt-6 sm:pt-8 lg:pt-10">
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.8fr)]">
-          <div className="surface-card surface-card-accent">
-            <p className="section-kicker">Manifest-first carbon accounting</p>
-            <h1 className="home-title">Carbon ACX</h1>
-            <p className="section-copy text-base sm:text-lg">
-              Carbon ACX is a compact product surface for carbon accounting workflows: calculate activity
-              emissions, inspect manifests, and move between narrative exploration routes without leaving the
-              underlying data contract behind.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Link className="action-link action-link-primary" href="/calculator">
-                Open calculator
-              </Link>
-              <Link className="action-link" href="/manifests">
-                Review manifests
-              </Link>
-              <Link className="action-link" href="/explore">
-                Explore routes
-              </Link>
-            </div>
-            <div className="metric-grid mt-6">
-              {headlineStats.map((stat) => (
-                <div key={stat.label} className="metric-card">
-                  <div className="metric-value">{stat.value}</div>
-                  <div className="metric-label">{stat.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <aside className="surface-card">
-            <p className="section-kicker">Delivery pipeline</p>
-            <h2 className="section-title text-2xl">One data path, multiple product surfaces.</h2>
-            <ol className="pipeline-list mt-5">
-              {pipelineSteps.map((step, index) => (
-                <li key={step} className="pipeline-step">
-                  <span className="pipeline-step-index">{index + 1}</span>
-                  <span>{step}</span>
-                </li>
-              ))}
-            </ol>
-            <div className="surface-divider" />
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div>
-                <div className="metric-value text-2xl">{ACTIVITIES.length}</div>
-                <div className="metric-label">calculator activities</div>
-              </div>
-              <div>
-                <div className="metric-value text-2xl">{categorySummaries.length}</div>
-                <div className="metric-label">coverage groups</div>
-              </div>
-            </div>
-          </aside>
+    <div className="page-shell pb-8 pt-5 sm:pt-6">
+      {/* Dashboard header */}
+      <section className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="font-display text-xl font-semibold text-foreground sm:text-2xl">
+            Carbon ACX
+          </h1>
+          <p className="mt-1 text-sm text-[color:var(--text-muted)]">
+            <span className="font-mono text-xs font-medium text-[color:var(--accent-primary)]">
+              {ACTIVITIES.length}
+            </span>{' '}
+            activities{' '}
+            <span className="text-[color:var(--text-subtle)]">/</span>{' '}
+            <span className="font-mono text-xs font-medium text-[color:var(--accent-primary)]">
+              {categorySummaries.length}
+            </span>{' '}
+            categories{' '}
+            <span className="text-[color:var(--text-subtle)]">/</span>{' '}
+            manifest-first
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Link className="action-link action-link-primary" href="/calculator">
+            Calculator
+          </Link>
+          <Link className="action-link" href="/manifests">
+            Manifests
+          </Link>
+          <Link className="action-link" href="/explore">
+            Explore
+          </Link>
         </div>
       </section>
 
-      <section className="page-shell pt-8">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="section-kicker">Primary surfaces</p>
-            <h2 className="section-title">Start from the route that matches the job.</h2>
-          </div>
-          <p className="section-copy max-w-2xl">
-            The homepage is a routing layer into calculation, provenance, and exploration. It should get users
-            into working product surfaces quickly instead of acting like a marketing landing page.
-          </p>
-        </div>
-
-        <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {primarySurfaces.map((surface) => (
-            <Link key={surface.href} href={surface.href} className="product-card">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="section-kicker">{surface.meta}</div>
-                  <h3 className="text-xl font-semibold text-foreground">{surface.label}</h3>
-                </div>
-                <span className="product-card-arrow" aria-hidden="true">
-                  /
-                </span>
+      {/* Category metric grid */}
+      <section className="mt-5">
+        <p className="section-kicker">Coverage</p>
+        <div className="mt-2 grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+          {categorySummaries.map(({ category, info, count, minFactor, maxFactor }) => (
+            <div
+              key={category}
+              className="surface-card"
+              style={{ borderColor: `${info.color}28` }}
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-lg" aria-hidden="true">{info.emoji}</span>
+                <span className="text-sm font-medium text-foreground">{info.name}</span>
               </div>
-              <p className="section-copy">{surface.description}</p>
-              <span className="product-card-link">Open route</span>
-            </Link>
+              <div className="mt-2 flex items-baseline gap-2">
+                <span className="font-mono text-xl font-semibold text-foreground">{count}</span>
+                <span className="metric-label" style={{ marginTop: 0 }}>activities</span>
+              </div>
+              <div className="mt-1 font-mono text-xs text-[color:var(--text-subtle)]">
+                {minFactor.toLocaleString()}&ndash;{maxFactor.toLocaleString()} g/unit
+              </div>
+            </div>
           ))}
         </div>
       </section>
 
-      <section className="page-shell pt-8">
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
-          <div className="surface-card">
-            <p className="section-kicker">Coverage snapshot</p>
-            <h2 className="section-title text-2xl">Calculator categories stay tied to the generated dataset.</h2>
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              {categorySummaries.map(({ category, info, count }) => (
-                <div
-                  key={category}
-                  className="coverage-card"
-                  style={{ borderColor: `${info.color}33` }}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl" aria-hidden="true">
-                      {info.emoji}
-                    </span>
-                    <div>
-                      <div className="font-medium text-foreground">{info.name}</div>
-                      <div className="metric-label">{count} activities</div>
-                    </div>
-                  </div>
+      {/* Route cards */}
+      <section className="mt-6">
+        <p className="section-kicker">Surfaces</p>
+        <div className="mt-2 grid gap-3 md:grid-cols-3">
+          {routes.map((route) => (
+            <Link
+              key={route.href}
+              href={route.href}
+              className="surface-card flex flex-col gap-2 transition-colors hover:border-[color:var(--surface-border-strong)]"
+            >
+              <div className="flex items-start justify-between">
+                <div>
+                  <span className="section-kicker">{route.kicker}</span>
+                  <h2 className="mt-0.5 text-base font-semibold text-foreground">{route.label}</h2>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="surface-card">
-            <p className="section-kicker">Provenance</p>
-            <h2 className="section-title text-2xl">Trust comes from inspectable outputs.</h2>
-            <ul className="detail-list mt-5">
-              {provenanceSignals.map((signal) => (
-                <li key={signal} className="detail-list-item">
-                  <span className="detail-list-marker" aria-hidden="true" />
-                  <span>{signal}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Link className="action-link" href="/methodology">
-                Methodology
-              </Link>
-              <Link className="action-link" href="/manifests">
-                Artifact manifests
-              </Link>
-            </div>
-          </div>
+                <span className="font-mono text-sm text-[color:var(--text-subtle)]" aria-hidden="true">
+                  &rarr;
+                </span>
+              </div>
+              <p className="text-sm text-[color:var(--text-muted)] leading-relaxed">
+                {route.description}
+              </p>
+            </Link>
+          ))}
         </div>
+        <div className="mt-3 flex gap-3 text-sm">
+          <Link href="/explore/3d" className="quiet-link hover:text-foreground">
+            3D Universe &rarr;
+          </Link>
+          <Link href="/explore/worlds" className="quiet-link hover:text-foreground">
+            Carbon Worlds &rarr;
+          </Link>
+        </div>
+      </section>
+
+      {/* Provenance footer */}
+      <section className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[color:var(--text-subtle)]">
+        <span>Manifest-first</span>
+        <span className="hidden sm:inline">/</span>
+        <span>Byte hashes</span>
+        <span className="hidden sm:inline">/</span>
+        <span>Reproducible derivation</span>
+        <span className="hidden sm:inline">/</span>
+        <span>Open source</span>
+        <span className="hidden sm:inline">&middot;</span>
+        <Link href="/methodology" className="quiet-link underline decoration-[color:var(--surface-border)] underline-offset-2">
+          Methodology
+        </Link>
       </section>
     </div>
   )
