@@ -15,8 +15,8 @@ jobs:
   lint-yaml:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: ibiqlik/action-yamllint@v3
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+      - uses: ibiqlik/action-yamllint@2576378a8e339169678f9939646ee3ee325e845c  # v3
         with:
           file_or_dir: .github/workflows
           config_file: .yamllint.yml
@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [lint-yaml]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
 
       - name: Determine required Node version
         id: node_engine
@@ -41,11 +41,11 @@ PY
           echo "node_version=$node_version" >> $GITHUB_OUTPUT
 
       - name: Setup Node (use package.json engines)
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
         with:
           node-version: ${{ steps.node_engine.outputs.node_version }}
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1  # v4
         with:
           version: 10.5.2
           run_install: false
@@ -59,12 +59,12 @@ PY
         run: pnpm --filter carbon-acx-web install --frozen-lockfile
 
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5
         with:
           python-version: "3.11"
 
       - name: Install Poetry
-        uses: abatilo/actions-poetry@v3
+        uses: abatilo/actions-poetry@fd0e6716a0de25ef6ade151b8b53190b0376acfd  # v3
         with:
           poetry-version: "1.8.3"
 
@@ -89,13 +89,13 @@ PY
           make build-static
 
       - name: Upload data artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: dist-artifacts
           path: dist/artifacts
 
       - name: Upload static site bundle
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: dist-site
           path: dist/site
@@ -104,7 +104,7 @@ PY
     runs-on: ubuntu-latest
     needs: [build-static]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
       - name: Guard — fail if binaries slipped into PR
         run: |
           set -euo pipefail
@@ -142,10 +142,10 @@ PY
           echo "node_version=$node_version" >> $GITHUB_OUTPUT
 
       - name: Setup Node (use package.json engines)
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
         with:
           node-version: ${{ steps.node_engine.outputs.node_version }}
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1  # v4
         with:
           version: 10.5.2
           run_install: false
@@ -161,10 +161,10 @@ PY
       - name: Run web typecheck
         working-directory: apps/carbon-acx-web
         run: pnpm typecheck
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5
         with:
           python-version: "3.11"
-      - uses: abatilo/actions-poetry@v3
+      - uses: abatilo/actions-poetry@fd0e6716a0de25ef6ade151b8b53190b0376acfd  # v3
         with:
           poetry-version: "1.8.3"
       - run: poetry install --no-interaction --extras "db"

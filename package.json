@@ -17,6 +17,6 @@
     "preview:web": "pnpm --filter carbon-acx-web preview"
   },
   "devDependencies": {
-    "tsx": "^4.16.2"
+    "tsx": "4.20.6"
   }
 }
