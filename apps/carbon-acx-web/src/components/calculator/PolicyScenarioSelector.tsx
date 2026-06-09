@@ -35,7 +35,7 @@ export function PolicyScenarioSelector({
   } | null>(null)
 
   useEffect(() => {
-    const scenario = getScenario(selectedScenarioId)
+    const scenario = getScenario(selectedScenarioId as PolicyScenarioId)
     let totalEmissions = 0
     let gridIndexedCount = 0
     let fixedCount = 0
