@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { PolicyScenario, getAllScenarios, applyScenarioToFactor, getScenario } from '@/lib/policyScenarios'
+import { PolicyScenario, PolicyScenarioId, getAllScenarios, applyScenarioToFactor, getScenario } from '@/lib/policyScenarios'
 import type { ActivityProvenance } from '@/lib/calculator'
 
 interface PolicyScenarioSelectorProps {
