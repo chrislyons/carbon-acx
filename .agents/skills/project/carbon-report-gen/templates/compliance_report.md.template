@@ -1,0 +1,309 @@
+# Carbon Accounting Compliance Report
+
+**Reporting Entity:** {{ entity_name }}
+**Reporting Period:** {{ reporting_period }}
+**Report Date:** {{ generation_date }}
+**Data Version:** {{ data_version }}
+**Framework:** {{ compliance_framework }}
+
+---
+
+## Attestation
+
+This report has been prepared in accordance with {{ compliance_framework }} standards for greenhouse gas accounting and reporting.
+
+**Reporting Boundary:** {{ reporting_boundary }}
+**Operational Control:** {{ operational_control }}
+**Consolidation Approach:** {{ consolidation_approach }}
+
+**Preparer:**
+Name: _____________________
+Title: _____________________
+Date: _____________________
+Signature: _____________________
+
+**Reviewer:**
+Name: _____________________
+Title: _____________________
+Date: _____________________
+Signature: _____________________
+
+---
+
+## 1. Executive Summary
+
+### 1.1 Reporting Overview
+
+{{ reporting_overview }}
+
+### 1.2 Total Emissions Summary
+
+| Scope | Emissions (tCO2e) | % of Total |
+|-------|------------------|------------|
+| **Scope 1** (Direct Emissions) | {{ scope_1 }} | {{ scope_1_percent }}% |
+| **Scope 2** (Indirect - Energy) | {{ scope_2 }} | {{ scope_2_percent }}% |
+| **Scope 3** (Other Indirect) | {{ scope_3 }} | {{ scope_3_percent }}% |
+| **Total** | {{ total_emissions }} | 100% |
+
+### 1.3 Base Year Comparison
+
+| Metric | Base Year ({{ base_year }}) | Current Period | Change | % Change |
+|--------|----------------------------|----------------|--------|----------|
+| Total Emissions | {{ base_total }} tCO2e | {{ total_emissions }} tCO2e | {{ absolute_change }} tCO2e | {{ percent_change }}% |
+| Emissions Intensity | {{ base_intensity }} | {{ current_intensity }} | {{ intensity_change }} | {{ intensity_percent }}% |
+
+---
+
+## 2. Organizational Boundary
+
+### 2.1 Reporting Entity Description
+
+{{ entity_description }}
+
+### 2.2 Facilities & Operations Included
+
+{{ facilities_list }}
+
+### 2.3 Exclusions
+
+{{ exclusions }}
+
+---
+
+## 3. Operational Boundary
+
+### 3.1 Emission Sources
+
+#### 3.1.1 Scope 1: Direct Emissions
+
+{{ scope_1_sources }}
+
+#### 3.1.2 Scope 2: Indirect Emissions (Energy)
+
+{{ scope_2_sources }}
+
+#### 3.1.3 Scope 3: Other Indirect Emissions
+
+{{ scope_3_sources }}
+
+---
+
+## 4. Detailed Emissions Data
+
+### 4.1 Scope 1 Emissions
+
+| Source Category | Activity | Consumption | Unit | Emission Factor | Emissions (tCO2e) | Source ID |
+|----------------|----------|------------|------|-----------------|------------------|-----------|
+{{ scope_1_detail_table }}
+
+**Scope 1 Total:** {{ scope_1 }} tCO2e
+
+---
+
+### 4.2 Scope 2 Emissions
+
+| Source Category | Activity | Consumption | Unit | Grid Intensity | Emissions (tCO2e) | Location | Source ID |
+|----------------|----------|------------|------|----------------|------------------|----------|-----------|
+{{ scope_2_detail_table }}
+
+**Scope 2 Total (Location-Based):** {{ scope_2_location }} tCO2e
+**Scope 2 Total (Market-Based):** {{ scope_2_market }} tCO2e
+
+*This report uses {{ scope_2_method }} method.*
+
+---
+
+### 4.3 Scope 3 Emissions
+
+| Category | Subcategory | Activity | Consumption | Emission Factor | Emissions (tCO2e) | Source ID |
+|----------|-------------|----------|------------|-----------------|------------------|-----------|
+{{ scope_3_detail_table }}
+
+**Scope 3 Total:** {{ scope_3 }} tCO2e
+
+**Scope 3 Categories Included:**
+
+{{ scope_3_categories_included }}
+
+**Scope 3 Categories Excluded:**
+
+{{ scope_3_categories_excluded }}
+
+---
+
+## 5. Emission Factors & Methodologies
+
+### 5.1 Emission Factor Sources
+
+| Activity Category | Emission Factor | Unit | Vintage | Source | Methodology |
+|-------------------|----------------|------|---------|--------|-------------|
+{{ emission_factors_table }}
+
+### 5.2 Calculation Methodology
+
+{{ calculation_methodology }}
+
+### 5.3 Assumptions & Limitations
+
+{{ assumptions_limitations }}
+
+---
+
+## 6. Data Quality
+
+### 6.1 Data Quality Assessment
+
+| Quality Criterion | Score | Notes |
+|-------------------|-------|-------|
+| **Data Completeness** | {{ completeness_score }}/5 | {{ completeness_notes }} |
+| **Data Accuracy** | {{ accuracy_score }}/5 | {{ accuracy_notes }} |
+| **Data Consistency** | {{ consistency_score }}/5 | {{ consistency_notes }} |
+| **Data Transparency** | {{ transparency_score }}/5 | {{ transparency_notes }} |
+| **Overall Quality** | {{ overall_score }}/5 | {{ overall_notes }} |
+
+### 6.2 Data Gaps & Uncertainties
+
+{{ data_gaps }}
+
+### 6.3 Uncertainty Analysis
+
+{{ uncertainty_analysis }}
+
+---
+
+## 7. Verification & Assurance
+
+### 7.1 Internal Verification
+
+{{ internal_verification }}
+
+### 7.2 External Assurance
+
+{{ external_assurance }}
+
+**Assurance Provider:** {{ assurance_provider }}
+**Assurance Level:** {{ assurance_level }}
+**Assurance Date:** {{ assurance_date }}
+
+### 7.3 Verification Statement
+
+{{ verification_statement }}
+
+---
+
+## 8. Historical Emissions
+
+### 8.1 Emissions Trend
+
+| Year | Scope 1 | Scope 2 | Scope 3 | Total | Change from Previous Year |
+|------|---------|---------|---------|-------|--------------------------|
+{{ historical_table }}
+
+### 8.2 Chart: Emissions Trend
+
+![Historical Emissions Trend]({{ chart_historical }})
+
+**Figure 1:** Total GHG emissions trend over reporting history.
+
+---
+
+## 9. Carbon Intensity Metrics
+
+### 9.1 Intensity Metrics
+
+| Intensity Metric | Value | Unit | Base Year | Current | Change |
+|------------------|-------|------|-----------|---------|--------|
+{{ intensity_metrics_table }}
+
+### 9.2 Chart: Intensity Trends
+
+![Intensity Trends]({{ chart_intensity }})
+
+**Figure 2:** Emissions intensity trends over time.
+
+---
+
+## 10. Compliance Statement
+
+This report has been prepared in accordance with:
+
+- {{ compliance_standard_1 }}
+- {{ compliance_standard_2 }}
+- {{ compliance_standard_3 }}
+
+**Compliance Status:** {{ compliance_status }}
+
+**Deviations from Standards:**
+
+{{ deviations }}
+
+---
+
+## 11. Supporting Documentation
+
+### 11.1 Data Files
+
+{{ data_files_list }}
+
+### 11.2 Referenced Standards
+
+{{ standards_list }}
+
+### 11.3 Contact Information
+
+**Reporting Contact:**
+{{ contact_name }}
+{{ contact_title }}
+{{ contact_email }}
+{{ contact_phone }}
+
+**Technical Contact:**
+{{ technical_contact_name }}
+{{ technical_contact_email }}
+
+---
+
+## 12. Appendices
+
+### Appendix A: Emission Source Register
+
+{{ emission_source_register }}
+
+### Appendix B: Calculation Worksheets
+
+{{ calculation_worksheets }}
+
+### Appendix C: Source Documentation
+
+{{ source_documentation }}
+
+### Appendix D: Glossary
+
+- **tCO2e:** Metric tonnes of carbon dioxide equivalent
+- **Scope 1:** Direct GHG emissions from sources owned/controlled by the entity
+- **Scope 2:** Indirect GHG emissions from purchased electricity, heat, steam
+- **Scope 3:** All other indirect emissions in the value chain
+- **Location-Based:** Scope 2 method using average grid emission factor
+- **Market-Based:** Scope 2 method using specific contractual instruments
+- **GWP:** Global Warming Potential (100-year time horizon, IPCC AR6)
+- **Vintage:** Year of emission factor publication/measurement
+
+---
+
+**Report Version:** {{ report_version }}
+**Compliance Framework Version:** {{ framework_version }}
+**Generated by:** Claude Code (carbon.report.gen skill)
+**Generation Timestamp:** {{ generation_timestamp }}
+**Report ID:** {{ report_id }}
+
+---
+
+## Declaration
+
+I declare that the information provided in this report is accurate and complete to the best of my knowledge, based on data available as of {{ data_cutoff_date }}.
+
+**Authorized Signatory:**
+Name: _____________________
+Title: _____________________
+Date: _____________________
+Signature: _____________________

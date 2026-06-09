@@ -1,0 +1,297 @@
+{
+  "skill": "carbon.data.qa",
+  "version": "1.0.0",
+  "examples": [
+    {
+      "id": "example-001",
+      "category": "basic_lookup",
+      "user_query": "What is the emission factor for coffee?",
+      "expected_workflow": [
+        "Search data/activities.csv for coffee",
+        "Find FOOD.COFFEE.CUP.HOT",
+        "Load emission factor from data/emission_factors.csv",
+        "Look up source from data/sources.csv",
+        "Format answer with units and citation"
+      ],
+      "expected_output_structure": {
+        "activity_id": "FOOD.COFFEE.CUP.HOT",
+        "activity_name": "Coffee—12 oz hot",
+        "emission_factor": "0.021 kgCO2e/cup",
+        "source_id": "SRC_FOOD_2023",
+        "vintage": 2023,
+        "scope": "Bean production, roasting, brewing, waste"
+      }
+    },
+    {
+      "id": "example-002",
+      "category": "calculation",
+      "user_query": "How much CO2 from 500 kWh of Ontario grid electricity?",
+      "expected_workflow": [
+        "Find ENERGY.CA-ON.GRID.KWH activity",
+        "Load emission factor (e.g., 0.025 kgCO2e/kWh)",
+        "Calculate: 500 × 0.025 = 12.5 kgCO2e",
+        "Convert to tCO2e: 0.0125 tCO2e",
+        "Show calculation with units"
+      ],
+      "expected_output_structure": {
+        "activity_id": "ENERGY.CA-ON.GRID.KWH",
+        "consumption": "500 kWh",
+        "emission_factor": "0.025 kgCO2e/kWh",
+        "calculation": "500 kWh × 0.025 kgCO2e/kWh = 12.5 kgCO2e",
+        "total_emissions_kg": 12.5,
+        "total_emissions_tonnes": 0.0125,
+        "source_id": "SRC_GRID_ON_2024",
+        "vintage": 2024
+      }
+    },
+    {
+      "id": "example-003",
+      "category": "aggregation",
+      "user_query": "Show me all social media activity emissions per hour",
+      "expected_workflow": [
+        "Filter data/activities.csv where category='social'",
+        "Load emission factors for each",
+        "Present as comparative table",
+        "Include sources in footnote"
+      ],
+      "expected_output_structure": {
+        "activities": [
+          {
+            "platform": "YouTube",
+            "activity_id": "SOCIAL.YOUTUBE.HOUR",
+            "emission_factor": "0.046 kgCO2e/hour"
+          },
+          {
+            "platform": "Facebook",
+            "activity_id": "SOCIAL.FACEBOOK.HOUR",
+            "emission_factor": "0.038 kgCO2e/hour"
+          },
+          {
+            "platform": "Instagram",
+            "activity_id": "SOCIAL.INSTAGRAM.HOUR",
+            "emission_factor": "0.041 kgCO2e/hour"
+          },
+          {
+            "platform": "TikTok",
+            "activity_id": "SOCIAL.TIKTOK.HOUR",
+            "emission_factor": "0.043 kgCO2e/hour"
+          }
+        ],
+        "note": "All values include device use + network transfer",
+        "vintage": 2024
+      }
+    },
+    {
+      "id": "example-004",
+      "category": "ambiguous_query",
+      "user_query": "What are the emissions for streaming?",
+      "expected_workflow": [
+        "Identify multiple streaming types",
+        "Ask clarifying question",
+        "List options for user to choose"
+      ],
+      "expected_output_structure": {
+        "clarification_needed": true,
+        "options": [
+          {
+            "type": "Video Streaming",
+            "activities": ["HD video (1080p)", "UHD/4K video", "SD video (mobile)"]
+          },
+          {
+            "type": "Audio Streaming",
+            "activities": ["Standard quality music"]
+          },
+          {
+            "type": "Platform-Specific",
+            "activities": ["YouTube", "TikTok", "Instagram video"]
+          }
+        ],
+        "question": "Which type of streaming would you like emission data for?"
+      }
+    },
+    {
+      "id": "example-005",
+      "category": "comparison",
+      "user_query": "Compare emissions: cloud storage vs streaming",
+      "expected_workflow": [
+        "Find CLOUD.STORAGE.SYNC.GB_MONTH activity",
+        "Find video streaming activities (need to specify)",
+        "Ask user to clarify comparison parameters",
+        "Normalize to common units if possible"
+      ],
+      "expected_output_structure": {
+        "clarification_needed": true,
+        "question": "To compare storage and streaming, I need to know:\n1. How much cloud storage (GB)?\n2. For how long (months)?\n3. What type of streaming (hours, quality)?\n\nExample comparison:\n- Storing 100 GB for 1 month vs streaming 10 hours of HD video",
+        "note": "Units differ (gb_month vs hours), so direct comparison requires context"
+      }
+    },
+    {
+      "id": "example-006",
+      "category": "not_found",
+      "user_query": "What's the emission factor for blockchain mining?",
+      "expected_workflow": [
+        "Search for blockchain/crypto/mining activities",
+        "Find no matches",
+        "Return graceful 'not found' message",
+        "Suggest related alternatives"
+      ],
+      "expected_output_structure": {
+        "status": "data_not_available",
+        "message": "Emission factors for blockchain or cryptocurrency mining are not available in Carbon ACX dataset v1.2",
+        "dataset_coverage": [
+          "Professional services and food",
+          "Digital infrastructure (streaming, cloud, AI)",
+          "Industrial operations",
+          "Transportation and logistics",
+          "Military and defense operations",
+          "Earth system feedbacks"
+        ],
+        "suggested_alternatives": [
+          {
+            "activity": "Cloud server operations",
+            "activity_id": "ONLINE.DC.CLOUD.SERVER.HOUR"
+          },
+          {
+            "activity": "Data center rack usage",
+            "activity_id": "ONLINE.DC.COLOCATION.RACK.MONTH"
+          }
+        ]
+      }
+    },
+    {
+      "id": "example-007",
+      "category": "layer_exploration",
+      "user_query": "List all activities in the military operations layer",
+      "expected_workflow": [
+        "Filter data/activities.csv where layer_id contains 'military' or 'defense'",
+        "Group by category",
+        "Present organized list"
+      ],
+      "expected_output_structure": {
+        "layer": "Defense Operations / Military",
+        "activities_by_category": {
+          "military_mobility": [
+            "MIL.FLIGHT.PKM - Military aviation (pkm)",
+            "MIL.NAVAL.TONNEKM - Military naval shipping (tonne-km)",
+            "MIL.VEHICLE.KM - Military ground vehicles (km)"
+          ],
+          "weapons_production": [
+            "MIL.MUNITIONS.TONNE - Ammunition production (t)",
+            "MIL.AIRCRAFT.UNIT - Fighter aircraft production (unit)",
+            "MIL.TANK.UNIT - Armoured vehicle production (unit)"
+          ],
+          "bases_infrastructure": [
+            "MIL.BASE.M2.YEAR - Military base (m²-year)",
+            "MIL.DEPOT.M2.YEAR - Munitions depot (m²-year)"
+          ],
+          "military_operations": [
+            "MIL.MUNITIONS.DETONATED.TONNE - Munitions detonated (tonne)"
+          ]
+        },
+        "total_activities": 8
+      }
+    },
+    {
+      "id": "example-008",
+      "category": "unit_information",
+      "user_query": "What units are used for grid intensity?",
+      "expected_workflow": [
+        "Look up grid intensity activities in data/activities.csv",
+        "Check data/units.csv for kWh definition",
+        "Explain emission factor unit (kgCO2e/kWh)"
+      ],
+      "expected_output_structure": {
+        "grid_intensity_unit": "kgCO2e/kWh",
+        "definition": "Kilograms of CO2 equivalent per kilowatt-hour of electricity",
+        "example_activity": "ENERGY.CA-ON.GRID.KWH",
+        "typical_range": "0.02 to 0.9 kgCO2e/kWh depending on grid fuel mix",
+        "examples": {
+          "Ontario (low carbon)": "~0.025 kgCO2e/kWh",
+          "Alberta (fossil-heavy)": "~0.6 kgCO2e/kWh",
+          "Coal grid (high carbon)": "~0.9 kgCO2e/kWh"
+        }
+      }
+    },
+    {
+      "id": "example-009",
+      "category": "scenario_calculation",
+      "user_query": "If I stream 2 hours of HD video daily for a year, what's my annual footprint?",
+      "expected_workflow": [
+        "Find MEDIA.STREAM.HD.HOUR emission factor",
+        "Calculate daily: 2 hours × EF",
+        "Calculate annual: daily × 365",
+        "Show calculation with units",
+        "Convert to tCO2e"
+      ],
+      "expected_output_structure": {
+        "activity": "HD video streaming",
+        "activity_id": "MEDIA.STREAM.HD.HOUR",
+        "emission_factor": "0.055 kgCO2e/hour",
+        "calculation": {
+          "daily_hours": 2,
+          "annual_hours": "2 hours/day × 365 days = 730 hours",
+          "total_kg": "730 hours × 0.055 kgCO2e/hour = 40.15 kgCO2e",
+          "total_tonnes": "40.15 kgCO2e = 0.04015 tCO2e"
+        },
+        "annual_emissions": {
+          "kgCO2e": 40.15,
+          "tCO2e": 0.04015
+        },
+        "source_id": "SRC_MEDIA_2024",
+        "vintage": 2024,
+        "notes": "Includes device playback + network delivery"
+      }
+    },
+    {
+      "id": "example-010",
+      "category": "temporal_query",
+      "user_query": "What's the latest emission factor for cloud server operations?",
+      "expected_workflow": [
+        "Find ONLINE.DC.CLOUD.SERVER.HOUR activity",
+        "Load all emission factors for this activity",
+        "Select row with highest vintage year",
+        "Return with vintage clearly stated"
+      ],
+      "expected_output_structure": {
+        "activity_id": "ONLINE.DC.CLOUD.SERVER.HOUR",
+        "activity_name": "Hyperscale cloud server—per hour",
+        "latest_emission_factor": "0.025 kgCO2e/server_hour",
+        "vintage": 2024,
+        "note": "Latest available data as of 2024",
+        "source_id": "SRC_CLOUD_2024",
+        "scope": "IT load, networking, average cooling overhead for hyperscale facilities"
+      }
+    }
+  ],
+  "query_patterns": {
+    "basic_lookup": ["What is the emission factor for X?", "How much CO2 from X?"],
+    "calculation": ["How much CO2 from N units of X?", "Calculate emissions for X"],
+    "comparison": ["Compare X and Y", "Which is lower carbon: X or Y?"],
+    "aggregation": ["List all X activities", "Show me all X emissions", "Total emissions from X"],
+    "ambiguous": ["What are emissions for X?" (where X has multiple interpretations)],
+    "temporal": ["What was X in 2020?", "Latest emission factor for X"],
+    "exploration": ["What activities are in layer X?", "Show me all X categories"]
+  },
+  "common_pitfalls": [
+    {
+      "pitfall": "Returning emission factors without units",
+      "correct_behavior": "Always include units: kgCO2e/hour, kgCO2e/km, etc."
+    },
+    {
+      "pitfall": "Hallucinating data not in CSV files",
+      "correct_behavior": "Return 'Data not available' and suggest alternatives"
+    },
+    {
+      "pitfall": "Answering ambiguous queries without clarification",
+      "correct_behavior": "Ask clarifying question and list options"
+    },
+    {
+      "pitfall": "Performing calculations with mismatched units",
+      "correct_behavior": "Validate units at each step, show conversion if needed"
+    },
+    {
+      "pitfall": "Omitting data sources or vintage",
+      "correct_behavior": "Always cite source_id and vintage year"
+    }
+  ]
+}

@@ -1,3 +1,10 @@
+---
+related:
+  - 3d-data-visualization
+  - spatial_interfaces_require_new_navigation_paradigms
+  - ACX
+---
+
 # ACX101 World Labs Integration and Calculator Implementation Sprint
 
 **Date:** 2026-01-25

@@ -12,9 +12,20 @@ import {
   type ActivityCategory,
   type CalculatorInput,
   type CalculatorSummary,
+  type Activity,
 } from '@/lib/calculator'
+import { CitationDrawer } from '@/components/calculator/CitationDrawer'
+import { CustomActivityModal } from '@/components/calculator/CustomActivityModal'
+import { CarbonPricingChart } from '@/components/calculator/CarbonPricingChart'
+import { PolicyScenarioSelector, TargetYearSelector } from '@/components/calculator/PolicyScenarioSelector'
+import { EquityComparisonDisplay } from '@/components/calculator/EquityComparison'
+import { getShortCitation, getProvenanceSummary, formatIEEECitation } from '@/lib/ieeeCitations'
+import { compareCarbonCosts } from '@/lib/carbonPricing'
+import type { ActivityProvenance } from '@/lib/calculator'
+import { PolicyScenario, getScenario } from '@/lib/policyScenarios'
 
 const STORAGE_KEY = 'carbon-acx-calculator-inputs'
+const CUSTOM_ACTIVITIES_KEY = 'carbon-acx-custom-activities'
 
 type Step = 'input' | 'results'
 
@@ -55,18 +66,20 @@ export default function CalculatorPage() {
 function CalculatorSkeleton() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="animate-pulse">
-        <div className="h-8 bg-gray-200 rounded w-48 mb-4" />
-        <div className="h-4 bg-gray-200 rounded w-64 mb-8" />
-        <div className="flex gap-2 mb-6">
+      <div className="animate-pulse space-y-6">
+        <div>
+          <div className="h-8 bg-surface-border rounded w-48 mb-2" />
+          <div className="h-4 bg-surface-border rounded w-64" />
+        </div>
+        <div className="flex gap-2">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="h-10 bg-gray-200 rounded-lg w-24" />
+            <div key={i} className="h-10 bg-surface-border rounded-lg w-24" />
           ))}
         </div>
-        <div className="bg-gray-100 rounded-xl p-6 mb-6">
+        <div className="surface-card">
           <div className="space-y-4">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-16 bg-gray-200 rounded" />
+              <div key={i} className="h-16 bg-surface-border rounded" />
             ))}
           </div>
         </div>
@@ -82,20 +95,78 @@ function CalculatorContent() {
   const [inputs, setInputs] = useState<Record<string, number>>({})
   const [isLoaded, setIsLoaded] = useState(false)
   const [isShared, setIsShared] = useState(false)
+  const [citationDrawerOpen, setCitationDrawerOpen] = useState(false)
+  const [selectedActivityForCitation, setSelectedActivityForCitation] = useState<{
+    sourceIds: string[]
+    provenance?: ActivityProvenance
+    name: string
+  } | null>(null)
+  const [customActivitiesModalOpen, setCustomActivitiesModalOpen] = useState(false)
+  const [customActivities, setCustomActivities] = useState<Activity[]>([])
+  const [policyScenario, setPolicyScenario] = useState<'current' | 'netZero2050' | 'rapidGridDecarb' | 'carbonPriceRamp' | 'businessAsUsual'>('current')
+  const [targetYear, setTargetYear] = useState(2030)
+  const [carbonPrices, setCarbonPrices] = useState<Array<{ jurisdiction: string; priceUsdPerTonne: number; schemeType: string }>>([])
+  const [selectedPriceJurisdictions, setSelectedPriceJurisdictions] = useState<string[]>([])
+
+  // Load custom activities from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(CUSTOM_ACTIVITIES_KEY)
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed)) {
+          setCustomActivities(parsed)
+        }
+      }
+    } catch {
+      // Ignore
+    }
+  }, [])
+
+  // Save custom activities to localStorage
+  useEffect(() => {
+    try {
+      if (customActivities.length > 0) {
+        localStorage.setItem(CUSTOM_ACTIVITIES_KEY, JSON.stringify(customActivities))
+      } else {
+        localStorage.removeItem(CUSTOM_ACTIVITIES_KEY)
+      }
+    } catch {
+      // Ignore
+    }
+  }, [customActivities])
+
+  // Load carbon prices
+  useEffect(() => {
+    // Static data matching data/carbon_pricing.csv
+    setCarbonPrices([
+      { jurisdiction: 'EU ETS', priceUsdPerTonne: 75, schemeType: 'ETS' },
+      { jurisdiction: 'Canada Federal', priceUsdPerTonne: 65, schemeType: 'Carbon Tax' },
+      { jurisdiction: 'British Columbia', priceUsdPerTonne: 45, schemeType: 'Carbon Tax' },
+      { jurisdiction: 'Quebec', priceUsdPerTonne: 45, schemeType: 'ETS' },
+      { jurisdiction: 'California', priceUsdPerTonne: 35, schemeType: 'ETS' },
+      { jurisdiction: 'Washington', priceUsdPerTonne: 30, schemeType: 'ETS' },
+      { jurisdiction: 'RGGI (US Northeast)', priceUsdPerTonne: 15, schemeType: 'ETS' },
+      { jurisdiction: 'Sweden', priceUsdPerTonne: 120, schemeType: 'Carbon Tax' },
+      { jurisdiction: 'UK ETS', priceUsdPerTonne: 65, schemeType: 'ETS' },
+      { jurisdiction: 'Switzerland', priceUsdPerTonne: 80, schemeType: 'ETS' },
+      { jurisdiction: 'China National ETS', priceUsdPerTonne: 10, schemeType: 'ETS' },
+      { jurisdiction: 'Singapore', priceUsdPerTonne: 18, schemeType: 'Carbon Tax' },
+    ])
+    setSelectedPriceJurisdictions(['Canada Federal', 'EU ETS', 'California', 'Sweden'])
+  }, [])
 
   // Load inputs from URL params or localStorage on mount
   useEffect(() => {
     const sharedData = searchParams.get('data')
     if (sharedData) {
-      // Load from shared URL
       const decoded = decodeInputs(sharedData)
       if (Object.keys(decoded).length > 0) {
         setInputs(decoded)
         setIsShared(true)
-        setStep('results') // Go directly to results for shared links
+        setStep('results')
       }
     } else {
-      // Load from localStorage
       try {
         const saved = localStorage.getItem(STORAGE_KEY)
         if (saved) {
@@ -105,7 +176,7 @@ function CalculatorContent() {
           }
         }
       } catch {
-        // Ignore localStorage errors
+        // Ignore
       }
     }
     setIsLoaded(true)
@@ -121,11 +192,14 @@ function CalculatorContent() {
         localStorage.removeItem(STORAGE_KEY)
       }
     } catch {
-      // Ignore localStorage errors
+      // Ignore
     }
   }, [inputs, isLoaded])
 
-  // Calculate results
+  // Combine built-in and custom activities
+  const allActivities = useMemo(() => [...ACTIVITIES, ...customActivities], [customActivities])
+
+  // Calculate results with current inputs
   const summary = useMemo(() => {
     const calculatorInputs: CalculatorInput[] = Object.entries(inputs)
       .filter(([_, qty]) => qty > 0)
@@ -149,7 +223,24 @@ function CalculatorContent() {
     try {
       localStorage.removeItem(STORAGE_KEY)
     } catch {
-      // Ignore localStorage errors
+      // Ignore
+    }
+  }
+
+  const handleAddCustomActivity = (activity: Activity) => {
+    setCustomActivities((prev) => [...prev, activity])
+    setCustomActivitiesModalOpen(false)
+  }
+
+  const handleOpenCitations = (activityId: string) => {
+    const activity = allActivities.find((a) => a.id === activityId)
+    if (activity) {
+      setSelectedActivityForCitation({
+        sourceIds: activity.sourceIds,
+        provenance: activity.provenance,
+        name: activity.name,
+      })
+      setCitationDrawerOpen(true)
     }
   }
 
@@ -163,6 +254,19 @@ function CalculatorContent() {
         isShared={isShared}
         onBack={() => setStep('input')}
         onReset={handleReset}
+        onOpenCitations={handleOpenCitations}
+        citationDrawerOpen={citationDrawerOpen}
+        onCitationDrawerClose={() => setCitationDrawerOpen(false)}
+        selectedActivityForCitation={selectedActivityForCitation}
+        allActivities={allActivities}
+        tonnesCo2e={summary.totalEmissions / 1000000}
+        carbonPrices={carbonPrices}
+        selectedPriceJurisdictions={selectedPriceJurisdictions}
+        onPriceSelectionChange={setSelectedPriceJurisdictions}
+        policyScenario={policyScenario}
+        onPolicyScenarioChange={(id) => setPolicyScenario(id as typeof policyScenario)}
+        targetYear={targetYear}
+        onTargetYearChange={setTargetYear}
       />
     )
   }
@@ -171,16 +275,16 @@ function CalculatorContent() {
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <h1 className="text-3xl font-bold text-foreground mb-2">
           Carbon Calculator
         </h1>
-        <p className="text-gray-600">
-          Enter your activities to calculate your carbon footprint.
+        <p className="text-foreground-muted">
+          Enter your activities to calculate your carbon footprint. All factors cited with IEEE references.
         </p>
       </div>
 
       {/* Category Tabs */}
-      <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-2" role="tablist" aria-label="Activity categories">
         {categories.map((cat) => {
           const info = CATEGORY_INFO[cat]
           const categoryTotal = summary.byCategory[cat]
@@ -188,20 +292,24 @@ function CalculatorContent() {
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
+              role="tab"
+              aria-selected={activeCategory === cat}
+              aria-controls={`panel-${cat}`}
+              id={`tab-${cat}`}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
                 activeCategory === cat
-                  ? 'bg-gray-900 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-accent-primary text-white'
+                  : 'bg-background-elevated text-foreground hover:bg-background-hover'
               }`}
             >
-              <span>{info.emoji}</span>
+              <span aria-hidden="true">{info.emoji}</span>
               <span>{info.name}</span>
               {categoryTotal > 0 && (
                 <span
                   className={`ml-1 px-1.5 py-0.5 text-xs rounded ${
                     activeCategory === cat
                       ? 'bg-white/20 text-white'
-                      : 'bg-gray-200 text-gray-600'
+                      : 'bg-surface-border text-foreground-muted'
                   }`}
                 >
                   {formatEmissions(categoryTotal)}
@@ -213,55 +321,59 @@ function CalculatorContent() {
       </div>
 
       {/* Activity Inputs */}
-      <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6">
-        <div className="flex items-center gap-2 mb-4">
-          <span className="text-2xl">{CATEGORY_INFO[activeCategory].emoji}</span>
-          <h2 className="text-lg font-semibold text-gray-900">
-            {CATEGORY_INFO[activeCategory].name}
-          </h2>
+      <div className="surface-card mb-6" role="tabpanel" id={`panel-${activeCategory}`} aria-labelledby={`tab-${activeCategory}`}>
+        <div className="flex items-center justify-between gap-2 mb-4">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl" aria-hidden="true">{CATEGORY_INFO[activeCategory].emoji}</span>
+            <h2 className="text-lg font-semibold text-foreground">
+              {CATEGORY_INFO[activeCategory].name}
+            </h2>
+          </div>
+          <button
+            onClick={() => setCustomActivitiesModalOpen(true)}
+            className="action-link action-link-ghost text-sm"
+          >
+            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Add Custom
+          </button>
         </div>
 
         <div className="space-y-4">
           {getActivitiesByCategory(activeCategory).map((activity) => (
-            <div
+            <ActivityInputRow
               key={activity.id}
-              className="flex items-center justify-between gap-4 py-3 border-b border-gray-100 last:border-0"
-            >
-              <div className="flex-1 min-w-0">
-                <div className="font-medium text-gray-900">{activity.name}</div>
-                {activity.description && (
-                  <div className="text-sm text-gray-500">{activity.description}</div>
-                )}
-                <div className="text-xs text-gray-400 mt-0.5">
-                  {formatEmissions(activity.emissionFactor)} per {activity.unit}
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  min="0"
-                  step="any"
-                  value={inputs[activity.id] || ''}
-                  onChange={(e) => handleInputChange(activity.id, e.target.value)}
-                  placeholder="0"
-                  className="w-24 px-3 py-2 border border-gray-300 rounded-lg text-right focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-                <span className="text-sm text-gray-500 w-16">{activity.unitLabel}</span>
-              </div>
-            </div>
+              activity={activity}
+              value={inputs[activity.id] || ''}
+              onChange={handleInputChange}
+              onCitationsClick={() => handleOpenCitations(activity.id)}
+            />
           ))}
+          {customActivities
+            .filter((a) => a.category === activeCategory)
+            .map((activity) => (
+              <ActivityInputRow
+                key={activity.id}
+                activity={activity}
+                value={inputs[activity.id] || ''}
+                onChange={handleInputChange}
+                onCitationsClick={() => handleOpenCitations(activity.id)}
+                isCustom
+              />
+            ))}
         </div>
       </div>
 
       {/* Summary Bar */}
-      <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex items-center justify-between">
+      <div className="surface-card flex items-center justify-between flex-wrap gap-4">
         <div>
-          <div className="text-sm text-gray-500">Current Total</div>
-          <div className="text-2xl font-bold text-gray-900">
+          <div className="text-sm text-foreground-muted">Current Total</div>
+          <div className="text-2xl font-bold text-foreground font-mono">
             {formatEmissions(summary.totalEmissions)}
           </div>
           {summary.totalEmissions > 0 && (
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-foreground-muted">
               CO₂ equivalent
             </div>
           )}
@@ -270,7 +382,7 @@ function CalculatorContent() {
           {hasInputs && (
             <button
               onClick={handleReset}
-              className="px-4 py-2 text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors"
+              className="action-link action-link-ghost"
             >
               Reset
             </button>
@@ -278,11 +390,10 @@ function CalculatorContent() {
           <button
             onClick={() => setStep('results')}
             disabled={!hasInputs}
-            className={`px-6 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-              hasInputs
-                ? 'bg-blue-600 text-white hover:bg-blue-700'
-                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+            className={`action-link action-link-primary ${
+              hasInputs ? '' : 'opacity-50 cursor-not-allowed'
             }`}
+            aria-disabled={!hasInputs}
           >
             View Results →
           </button>
@@ -290,26 +401,146 @@ function CalculatorContent() {
       </div>
 
       {/* Info Box */}
-      <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+      <div className="mt-6 p-4 surface-card border-accent-primary/30 bg-background-elevated/50">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h3 className="text-sm font-semibold text-blue-900 mb-1">
+            <h3 className="text-sm font-semibold text-accent-primary mb-1">
               About This Calculator
             </h3>
-            <p className="text-sm text-blue-800">
+            <p className="text-sm text-foreground-muted">
               Emission factors sourced from ECCC National Inventory Report, IPCC, EPA,
               and peer-reviewed literature. All values are CO₂ equivalent using GWP100 (AR6).
+              Click the citation icon next to any activity to view full IEEE references.
+              Add custom activities with your own emission factors and sources.
             </p>
           </div>
           {hasInputs && (
-            <div className="flex items-center gap-1.5 text-xs text-green-700 whitespace-nowrap">
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex items-center gap-1.5 text-xs text-success whitespace-nowrap">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
               Auto-saved
             </div>
           )}
         </div>
+      </div>
+
+      {/* Custom Activity Modal */}
+      <CustomActivityModal
+        isOpen={customActivitiesModalOpen}
+        onClose={() => setCustomActivitiesModalOpen(false)}
+        onAdd={handleAddCustomActivity}
+      />
+
+      {/* Citation Drawer */}
+      <CitationDrawer
+        isOpen={citationDrawerOpen}
+        onClose={() => setCitationDrawerOpen(false)}
+        sourceIds={selectedActivityForCitation?.sourceIds || []}
+        provenance={selectedActivityForCitation?.provenance}
+        title={`Sources for ${selectedActivityForCitation?.name || 'Activity'}`}
+      />
+    </div>
+  )
+}
+
+// Activity Input Row Component
+function ActivityInputRow({
+  activity,
+  value,
+  onChange,
+  onCitationsClick,
+  isCustom = false,
+}: {
+  activity: Activity
+  value: string | number
+  onChange: (activityId: string, value: string) => void
+  onCitationsClick: () => void
+  isCustom?: boolean
+}) {
+  const provenanceInfo = activity.provenance ? getProvenanceSummary(activity.provenance) : null
+  const isGridIndexed = activity.isGridIndexed || provenanceInfo?.gridIntensity !== null
+
+  return (
+    <div
+      className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-3 border-b border-surface-border last:border-0"
+    >
+      <div className="flex-1 min-w-0 flex items-center gap-3">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-foreground">{activity.name}</span>
+            {isCustom && (
+              <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-accent-secondary/20 text-accent-secondary border border-accent-secondary/30">
+                Custom
+              </span>
+            )}
+            {isGridIndexed && (
+              <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-accent-primary/20 text-accent-primary border border-accent-primary/30">
+                Grid-indexed
+              </span>
+            )}
+          </div>
+          {activity.description && (
+            <div className="text-sm text-foreground-muted">{activity.description}</div>
+          )}
+          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+            <span className="text-xs text-foreground-subtle font-mono">
+              {formatEmissions(activity.emissionFactor)} per {activity.unit}
+            </span>
+            {/* Citation badges */}
+            <span className="flex items-center gap-1">
+              {activity.sourceIds.slice(0, 3).map((sourceId, idx) => (
+                <span
+                  key={idx}
+                  className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-surface-panel border border-surface-border text-foreground-muted hover:text-accent-primary cursor-help transition-colors"
+                  title={`Source: ${sourceId}`}
+                >
+                  {getShortCitation(sourceId)}
+                </span>
+              ))}
+              {activity.sourceIds.length > 3 && (
+                <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-surface-panel border border-surface-border text-foreground-muted">
+                  +{activity.sourceIds.length - 3}
+                </span>
+              )}
+              <button
+                onClick={onCitationsClick}
+                className="ml-1 p-1 rounded hover:bg-surface-border transition-colors"
+                aria-label={`View full citations for ${activity.name}`}
+                title="View all sources"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </button>
+            </span>
+          </div>
+          {provenanceInfo && (
+            <div className="text-xs text-foreground-subtle font-mono mt-0.5">
+              EF: {provenanceInfo.emissionFactor}
+              {provenanceInfo.gridIntensity && ` | Grid: ${provenanceInfo.gridIntensity}`}
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="flex items-center gap-2 sm:w-[140px]">
+        <label htmlFor={`input-${activity.id}`} className="sr-only">
+          {activity.name} quantity
+        </label>
+        <input
+          id={`input-${activity.id}`}
+          type="number"
+          min="0"
+          step="any"
+          value={value}
+          onChange={(e) => onChange(activity.id, e.target.value)}
+          placeholder="0"
+          className="w-full px-3 py-2 border border-surface-border-strong rounded-lg text-right bg-background-elevated text-foreground focus:ring-2 focus:ring-accent-primary focus:border-accent-primary"
+          aria-describedby={`unit-${activity.id}`}
+        />
+        <span id={`unit-${activity.id}`} className="text-sm text-foreground-muted w-16 text-right" aria-hidden="true">
+          {activity.unitLabel}
+        </span>
       </div>
     </div>
   )
@@ -325,9 +556,45 @@ interface ResultsViewProps {
   isShared: boolean
   onBack: () => void
   onReset: () => void
+  onOpenCitations: (activityId: string) => void
+  citationDrawerOpen: boolean
+  onCitationDrawerClose: () => void
+  selectedActivityForCitation: {
+    sourceIds: string[]
+    provenance?: ActivityProvenance
+    name: string
+  } | null
+  allActivities: Activity[]
+  tonnesCo2e: number
+  carbonPrices: Array<{ jurisdiction: string; priceUsdPerTonne: number; schemeType: string }>
+  selectedPriceJurisdictions: string[]
+  onPriceSelectionChange: (jurisdictions: string[]) => void
+  policyScenario: 'current' | 'netZero2050' | 'rapidGridDecarb' | 'carbonPriceRamp' | 'businessAsUsual'
+  onPolicyScenarioChange: (scenarioId: string) => void
+  targetYear: number
+  onTargetYearChange: (year: number) => void
 }
 
-function ResultsView({ summary, inputs, isShared, onBack, onReset }: ResultsViewProps) {
+function ResultsView({
+  summary,
+  inputs,
+  isShared,
+  onBack,
+  onReset,
+  onOpenCitations,
+  citationDrawerOpen,
+  onCitationDrawerClose,
+  selectedActivityForCitation,
+  allActivities,
+  tonnesCo2e,
+  carbonPrices,
+  selectedPriceJurisdictions,
+  onPriceSelectionChange,
+  policyScenario,
+  onPolicyScenarioChange,
+  targetYear,
+  onTargetYearChange,
+}: ResultsViewProps) {
   const [copied, setCopied] = useState(false)
   const categories = Object.keys(CATEGORY_INFO) as ActivityCategory[]
 
@@ -346,7 +613,6 @@ function ResultsView({ summary, inputs, isShared, onBack, onReset }: ResultsView
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
-      // Fallback for older browsers
       const input = document.createElement('input')
       input.value = url
       document.body.appendChild(input)
@@ -358,41 +624,58 @@ function ResultsView({ summary, inputs, isShared, onBack, onReset }: ResultsView
     }
   }
 
+  // Prepare activities for policy scenario selector
+  const scenarioActivities = useMemo(() => {
+    return summary.results.map((result) => {
+      const activity = allActivities.find((a) => a.id === result.activityId)
+      return {
+        id: result.activityId,
+        name: result.activityName,
+        emissionFactor: result.emissions / result.quantity,
+        isGridIndexed: activity?.isGridIndexed || false,
+        electricityKwhPerUnit: activity?.electricityKwhPerUnit || null,
+        provenance: activity?.provenance,
+      }
+    })
+  }, [summary.results, allActivities])
+
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Shared Banner */}
       {isShared && (
-        <div className="mb-6 p-3 bg-purple-50 border border-purple-200 rounded-lg text-sm text-purple-800">
-          You&apos;re viewing a shared carbon footprint. Click &quot;Edit inputs&quot; to modify and save your own.
+        <div className="mb-6 p-3 surface-card border-accent-warning/30 bg-accent-warning/10" role="status" aria-live="polite">
+          <p className="text-sm text-foreground">
+            You&apos;re viewing a shared carbon footprint. Click &quot;Edit inputs&quot; to modify and save your own.
+          </p>
         </div>
       )}
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
           <button
             onClick={onBack}
-            className="text-gray-500 hover:text-gray-700 text-sm mb-2 flex items-center gap-1"
+            className="text-foreground-muted hover:text-foreground text-sm mb-2 flex items-center gap-1 action-link action-link-ghost"
           >
             ← Edit inputs
           </button>
-          <h1 className="text-3xl font-bold text-gray-900">Your Carbon Footprint</h1>
+          <h1 className="text-3xl font-bold text-foreground">Your Carbon Footprint</h1>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <button
             onClick={handleShare}
-            className="px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5"
+            className="action-link"
           >
             {copied ? (
               <>
-                <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
                 Copied!
               </>
             ) : (
               <>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                 </svg>
                 Share
@@ -401,7 +684,7 @@ function ResultsView({ summary, inputs, isShared, onBack, onReset }: ResultsView
           </button>
           <button
             onClick={onReset}
-            className="px-4 py-2 text-gray-600 hover:text-gray-900 text-sm font-medium"
+            className="action-link action-link-ghost"
           >
             Start Over
           </button>
@@ -409,29 +692,46 @@ function ResultsView({ summary, inputs, isShared, onBack, onReset }: ResultsView
       </div>
 
       {/* Total Card */}
-      <div className="bg-gradient-to-br from-gray-900 to-gray-800 text-white rounded-2xl p-8 mb-8">
+      <div className="surface-card surface-card-accent rounded-2xl p-8 mb-8">
         <div className="text-center">
-          <div className="text-5xl font-bold mb-2">
+          <div className="text-5xl font-bold text-foreground font-mono mb-2">
             {formatEmissions(summary.totalEmissions)}
           </div>
-          <div className="text-gray-400 mb-4">Total CO₂ equivalent</div>
+          <div className="text-foreground-muted mb-4">Total CO₂ equivalent per year</div>
 
           {summary.comparisonToAverage > 0 && (
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full text-sm">
+            <div className="inline-flex items-center gap-2 px-4 py-2 surface-panel rounded-full text-sm border border-surface-border">
               <span>
                 {summary.comparisonToAverage < 100 ? '🌱' : '⚠️'}
               </span>
               <span>
-                {summary.comparisonToAverage.toFixed(1)}% of Canadian annual average
+                {summary.comparisonToAverage.toFixed(1)}% of Canadian annual average ({formatEmissions(14200000)})
               </span>
             </div>
           )}
         </div>
       </div>
 
+      {/* Policy Scenario & Target Year */}
+      <div className="grid gap-4 md:grid-cols-2 mb-8">
+        <PolicyScenarioSelector
+          selectedScenarioId={policyScenario}
+          onChange={onPolicyScenarioChange}
+          activities={scenarioActivities}
+          regionCode="CA-ON"
+          targetYear={targetYear}
+        />
+        <TargetYearSelector
+          selectedYear={targetYear}
+          onChange={onTargetYearChange}
+          minYear={2024}
+          maxYear={2050}
+        />
+      </div>
+
       {/* Category Breakdown */}
-      <div className="bg-white border border-gray-200 rounded-xl p-6 mb-8">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+      <div className="surface-card mb-8">
+        <h2 className="text-lg font-semibold text-foreground mb-4">
           Breakdown by Category
         </h2>
         <div className="space-y-4">
@@ -448,14 +748,14 @@ function ResultsView({ summary, inputs, isShared, onBack, onReset }: ResultsView
               <div key={cat}>
                 <div className="flex items-center justify-between mb-1.5">
                   <div className="flex items-center gap-2">
-                    <span>{info.emoji}</span>
-                    <span className="font-medium text-gray-900">{info.name}</span>
+                    <span aria-hidden="true">{info.emoji}</span>
+                    <span className="font-medium text-foreground">{info.name}</span>
                   </div>
-                  <span className="font-semibold text-gray-900">
+                  <span className="font-semibold text-foreground font-mono">
                     {formatEmissions(emissions)}
                   </span>
                 </div>
-                <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-3 bg-surface-border rounded-full overflow-hidden" role="progressbar" aria-valuenow={Math.round(percentage)} aria-valuemin={0} aria-valuemax={100} aria-label={`${info.name} emissions percentage`}>
                   <div
                     className="h-full rounded-full transition-all duration-500"
                     style={{
@@ -471,37 +771,63 @@ function ResultsView({ summary, inputs, isShared, onBack, onReset }: ResultsView
       </div>
 
       {/* Activity Details */}
-      <div className="bg-white border border-gray-200 rounded-xl p-6 mb-8">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+      <div className="surface-card mb-8">
+        <h2 className="text-lg font-semibold text-foreground mb-4">
           Activity Details
         </h2>
-        <div className="divide-y divide-gray-100">
+        <div className="divide-y divide-surface-border">
           {summary.results.map((result) => {
             const info = CATEGORY_INFO[result.category]
+            const activity = allActivities.find((a) => a.id === result.activityId)
+            const provenance = activity?.provenance
+            const provenanceInfo = provenance ? getProvenanceSummary(provenance) : null
+
             return (
               <div
                 key={result.activityId}
-                className="flex items-center justify-between py-3"
+                className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-4 gap-3"
               >
                 <div className="flex items-center gap-3">
                   <span
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-sm"
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0"
                     style={{ backgroundColor: `${info.color}20` }}
+                    aria-hidden="true"
                   >
                     {info.emoji}
                   </span>
                   <div>
-                    <div className="font-medium text-gray-900">{result.activityName}</div>
-                    <div className="text-sm text-gray-500">
-                      {result.quantity} {result.unit}
-                      {result.quantity !== 1 ? 's' : ''}
+                    <div className="font-medium text-foreground">{result.activityName}</div>
+                    <div className="text-sm text-foreground-muted">
+                      {result.quantity} {result.unit}{result.quantity !== 1 ? 's' : ''} × {formatEmissions(result.emissions / result.quantity)}/{result.unit}
                     </div>
+                    {provenanceInfo && (
+                      <div className="text-xs text-foreground-subtle font-mono mt-0.5">
+                        EF: {provenanceInfo.emissionFactor}
+                        {provenanceInfo.gridIntensity && ` | Grid: ${provenanceInfo.gridIntensity}`}
+                      </div>
+                    )}
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="font-semibold text-gray-900">
-                    {formatEmissions(result.emissions)}
+                <div className="flex items-center gap-3 shrink-0">
+                  <div className="text-right">
+                    <div className="font-semibold text-foreground font-mono">
+                      {formatEmissions(result.emissions)}
+                    </div>
+                    <div className="text-xs text-foreground-muted">
+                      {(result.emissions / summary.totalEmissions * 100).toFixed(1)}% of total
+                    </div>
                   </div>
+                  {activity && (
+                    <button
+                      onClick={() => onOpenCitations(activity.id)}
+                      className="action-link action-link-ghost p-2"
+                      aria-label={`View sources for ${activity.name}`}
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </button>
+                  )}
                 </div>
               </div>
             )
@@ -509,31 +835,62 @@ function ResultsView({ summary, inputs, isShared, onBack, onReset }: ResultsView
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <Link
-          href="/explore/3d"
-          className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg text-center font-medium hover:bg-blue-700 transition-colors"
-        >
-          Visualize in 3D Universe →
-        </Link>
-        <Link
-          href="/explore/worlds"
-          className="flex-1 px-6 py-3 bg-gray-100 text-gray-900 rounded-lg text-center font-medium hover:bg-gray-200 transition-colors"
-        >
-          Explore Carbon Worlds
-        </Link>
+      {/* Carbon Pricing Comparison */}
+      <CarbonPricingChart
+        tonnesCo2e={tonnesCo2e}
+        prices={carbonPrices}
+        selectedJurisdictions={selectedPriceJurisdictions}
+        onSelectionChange={onPriceSelectionChange}
+      />
+
+      {/* Equity Comparison */}
+      <EquityComparisonDisplay
+        tonnesCo2e={tonnesCo2e}
+        accountingMethod="production"
+      />
+
+      {/* Sources Summary */}
+      <div className="surface-card mt-8">
+        <h2 className="text-lg font-semibold text-foreground mb-4">
+          All Sources (IEEE Citations)
+        </h2>
+        <p className="text-sm text-foreground-muted mb-4">
+          Every emission factor in your calculation is backed by peer-reviewed or government sources.
+          Click an activity&apos;s citation icon above for activity-specific sources.
+        </p>
+        <div className="space-y-2">
+          {getAllCitations(summary.results, allActivities).map((citation, index) => (
+            <p key={index} className="text-sm text-foreground leading-relaxed">
+              {citation}
+            </p>
+          ))}
+        </div>
       </div>
 
-      {/* Methodology Link */}
-      <div className="mt-8 text-center">
-        <Link
-          href="/methodology"
-          className="text-sm text-gray-500 hover:text-gray-700"
-        >
-          Learn about our methodology →
-        </Link>
-      </div>
+      {/* Citation Drawer */}
+      <CitationDrawer
+        isOpen={citationDrawerOpen}
+        onClose={onCitationDrawerClose}
+        sourceIds={selectedActivityForCitation?.sourceIds || []}
+        provenance={selectedActivityForCitation?.provenance}
+        title={`Sources for ${selectedActivityForCitation?.name || 'Activity'}`}
+      />
     </div>
   )
+}
+
+// Helper to deduplicate citations across all results
+function getAllCitations(results: CalculatorSummary['results'], allActivities: Activity[]): string[] {
+  const allSourceIds = new Set<string>()
+  for (const result of results) {
+    const activity = allActivities.find((a) => a.id === result.activityId)
+    if (activity) {
+      activity.sourceIds.forEach((id) => allSourceIds.add(id))
+    }
+  }
+  const citations: string[] = []
+  for (const sourceId of allSourceIds) {
+    citations.push(formatIEEECitation(sourceId))
+  }
+  return citations
 }

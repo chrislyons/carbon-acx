@@ -1,0 +1,27 @@
+# Carbon Pricing Data
+# Source: World Bank Carbon Pricing Dashboard, ICAP, government sources
+# Format: jurisdiction,price_usd_per_tonne,currency,price_local,year,source_id,notes,scheme_type
+
+jurisdiction,price_usd_per_tonne,currency,price_local,year,source_id,notes,scheme_type
+EU ETS,75.0,EUR,68.0,2024,SRC.ICAP.2024,EU Emissions Trading System Phase 4,ETS
+Canada Federal,65.0,CAD,85.0,2024,SRC.ECCC.NIR.2025,Federal carbon price (rising to $170 by 2030),Carbon Tax
+British Columbia,45.0,CAD,65.0,2024,SRC.BC.CARBON.2024,BC carbon tax ($65/tCO2e),Carbon Tax
+Quebec,45.0,CAD,55.0,2024,SRC.QC.CAPANDTRADE.2024,Quebec cap-and-trade linked with California,ETS
+California,35.0,USD,35.0,2024,SRC.CA.CAPANDTRADE.2024,California cap-and-trade program,ETS
+Washington,30.0,USD,30.0,2024,SRC.WA.CCA.2024,WA Climate Commitment Act,ETS
+RGGI,15.0,USD,15.0,2024,SRC.RGGI.2024,Regional Greenhouse Gas Initiative (US Northeast),ETS
+New Zealand,50.0,NZD,80.0,2024,SRC.NZ.ETS.2024,New Zealand ETS,ETS
+South Korea,20.0,KRW,25000.0,2024,SRC.KR.ETS.2024,Korea ETS Phase 3,ETS
+China National,10.0,CNY,70.0,2024,SRC.CN.ETS.2024,China national ETS (power sector),ETS
+UK ETS,65.0,GBP,52.0,2024,SRC.UK.ETS.2024,UK ETS post-Brexit,ETS
+Sweden,120.0,SEK,1250.0,2024,SRC.SE.CARBON.2024,Sweden carbon tax (highest in world),Carbon Tax
+Norway,80.0,NOK,850.0,2024,SRC.NO.CARBON.2024,Norway carbon tax + ETS,Carbon Tax + ETS
+Switzerland,80.0,CHF,72.0,2024,SRC.CH.CARBON.2024,Switzerland ETS linked with EU,ETS
+Japan Tokyo,30.0,JPY,4000.0,2024,SRC.JP.TOKYO.2024,Tokyo cap-and-trade,ETS
+Japan Saitama,15.0,JPY,2000.0,2024,SRC.JP.SAITAMA.2024,Saitama prefecture ETS,ETS
+Mexico,5.0,MXN,90.0,2024,SRC.MX.CARBON.2024,Mexico carbon tax (pilot),Carbon Tax
+Chile,5.0,CLP,5000.0,2024,SRC.CL.CARBON.2024,Chile carbon tax,Carbon Tax
+Argentina,5.0,ARS,4500.0,2024,SRC.AR.CARBON.2024,Argentina carbon tax,Carbon Tax
+Colombia,5.0,COP,20000.0,2024,SRC.CO.CARBON.2024,Colombia carbon tax,Carbon Tax
+South Africa,8.0,ZAR,120.0,2024,SRC.ZA.CARBON.2024,South Africa carbon tax,Carbon Tax
+Singapore,18.0,SGD,25.0,2024,SRC.SG.CARBON.2024,Singapore carbon tax,Carbon Tax

@@ -27,6 +27,10 @@ export interface Activity {
   sourceIds: string[]
   sourceCitations: string[]
   provenance: ActivityProvenance
+  // Custom activity fields
+  isCustom?: boolean
+  isGridIndexed?: boolean
+  electricityKwhPerUnit?: number
 }
 
 export interface CategoryInfo {

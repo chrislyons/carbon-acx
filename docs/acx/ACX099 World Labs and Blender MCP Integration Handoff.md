@@ -1,3 +1,8 @@
+---
+related:
+  - ACX
+---
+
 # ACX099 World Labs and Blender MCP Integration Handoff
 
 **Date:** 2026-01-25
