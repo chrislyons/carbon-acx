@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "postbuild": "rm -rf .next/cache",
+    "postbuild": "rm -rf .next/cache && cp -r .next dist",
     "start": "next start",
     "preview": "wrangler pages dev .next",
     "deploy": "pnpm build && wrangler pages deploy .next",
