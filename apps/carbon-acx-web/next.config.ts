@@ -28,6 +28,10 @@ const nextConfig: NextConfig = {
 
   // Disable telemetry
   productionBrowserSourceMaps: false,
+
+  // Cloudflare Pages: static export for compatibility
+  output: 'export',
+  distDir: 'dist',
 }
 
 export default nextConfig

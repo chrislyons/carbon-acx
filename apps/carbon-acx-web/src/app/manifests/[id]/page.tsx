@@ -1,9 +1,14 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { getManifest } from '@/lib/manifests'
+import { getManifest, getAllManifestIds } from '@/lib/manifests'
 
 interface ManifestDetailPageProps {
   params: Promise<{ id: string }>
+}
+
+export async function generateStaticParams() {
+  const ids = await getAllManifestIds()
+  return ids.map((id) => ({ id }))
 }
 
 export default async function ManifestDetailPage({ params }: ManifestDetailPageProps) {

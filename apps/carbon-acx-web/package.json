@@ -6,10 +6,11 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "postbuild": "rm -rf .next/cache && cp -r .next dist",
+    "cf-build": "pnpm run build",
+    "postbuild": "rm -rf .next/cache",
     "start": "next start",
-    "preview": "wrangler pages dev .next",
-    "deploy": "pnpm build && wrangler pages deploy .next",
+    "preview": "wrangler pages dev dist",
+    "deploy": "pnpm run cf-build && wrangler pages deploy dist",
     "lint": "ESLINT_USE_FLAT_CONFIG=false eslint . --ext .js,.jsx,.ts,.tsx --max-warnings=0",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run --config vitest.config.ts",
@@ -48,7 +49,6 @@
     "wrangler": "^4.45.4"
   },
   "engines": {
-    "node": ">=20.19.4",
-    "pnpm": ">=10.5.2"
+    "node": ">=20.19.4"
   }
 }
