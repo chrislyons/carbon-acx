@@ -1,3 +1,4 @@
+---
 # dep-audit.yml — Reusable dependency audit workflow
 # Copy to .github/workflows/dep-audit.yml in any repo with CI.
 # Triggers on PRs that modify dependency files, audits for vulnerabilities
@@ -5,7 +6,7 @@
 
 name: Dependency Audit
 
-on:
+'on':
   pull_request:
     paths:
       - 'package.json'
