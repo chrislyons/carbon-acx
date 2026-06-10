@@ -14,18 +14,14 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>('dark')
-  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    setMounted(true)
-    // Check localStorage first
     const saved = localStorage.getItem('carbon-acx-theme') as Theme | null
     if (saved) {
       setThemeState(saved)
       document.documentElement.setAttribute('data-theme', saved)
       return
     }
-    // Check system preference
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
     const initialTheme = prefersDark ? 'dark' : 'light'
     setThemeState(initialTheme)
@@ -40,14 +36,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark')
-  }
-
-  if (!mounted) {
-    return (
-      <div className="min-h-screen bg-background text-foreground" data-theme="dark">
-        {children}
-      </div>
-    )
   }
 
   return (
