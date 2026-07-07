@@ -60,12 +60,14 @@ SELECTED_ACTIVITIES = [
 
 REGION_PREFERENCE = {"CA-ON": 0, "CA": 1, "GLOBAL": 2, "": 3}
 
+
 @dataclass(frozen=True)
 class GridIntensityRow:
     region: str
     vintage_year: int | None
     g_per_kwh: float
     source_id: str | None
+
 
 def _load_csv(path: Path) -> list[dict[str, str]]:
     with path.open(newline="", encoding="utf-8") as handle:
@@ -77,6 +79,7 @@ def _load_csv(path: Path) -> list[dict[str, str]]:
                 row[k.strip()] = row.pop(k)
     return rows
 
+
 def _float_or_none(value: str | None) -> float | None:
     if value is None:
         return None
@@ -85,11 +88,13 @@ def _float_or_none(value: str | None) -> float | None:
         return None
     return float(text)
 
+
 def _int_or_none(value: str | None) -> int | None:
     number = _float_or_none(value)
     if number is None:
         return None
     return int(number)
+
 
 def _generated_at() -> str:
     override = os.getenv("ACX_GENERATED_AT")
@@ -97,13 +102,16 @@ def _generated_at() -> str:
         return override
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 
+
 def _clean_name(name: str) -> str:
     if "—per " in name:
         return name.split("—per ", 1)[0].strip()
     return name.strip()
 
+
 def _unit_label(unit: str) -> str:
     return UNIT_LABELS.get(unit, unit.replace("_", " "))
+
 
 def _pick_factor(activity_id: str, rows: list[dict[str, str]]) -> dict[str, str]:
     candidates = [row for row in rows if row["activity_id"] == activity_id]
@@ -116,6 +124,7 @@ def _pick_factor(activity_id: str, rows: list[dict[str, str]]) -> dict[str, str]
         return (REGION_PREFERENCE.get(region, 99), -vintage)
 
     return sorted(candidates, key=sort_key)[0]
+
 
 def _grid_lookup(rows: list[dict[str, str]]) -> dict[str, list[GridIntensityRow]]:
     lookup: dict[str, list[GridIntensityRow]] = {}
@@ -137,6 +146,7 @@ def _grid_lookup(rows: list[dict[str, str]]) -> dict[str, list[GridIntensityRow]
         values.sort(key=lambda item: item.vintage_year or 0)
     return lookup
 
+
 def _pick_grid_row(
     region_code: str,
     vintage_year: int | None,
@@ -153,6 +163,7 @@ def _pick_grid_row(
         if older:
             return older[-1]
     return candidates[-1]
+
 
 def build_payload() -> dict[str, Any]:
     repo_root = Path(__file__).resolve().parent.parent
@@ -173,7 +184,9 @@ def build_payload() -> dict[str, Any]:
         if is_grid_indexed:
             electricity_kwh = _float_or_none(factor.get("electricity_kwh_per_unit"))
             if electricity_kwh is None:
-                raise ValueError(f"Grid-indexed factor missing electricity_kwh_per_unit: {activity_id}")
+                raise ValueError(
+                    f"Grid-indexed factor missing electricity_kwh_per_unit: {activity_id}"
+                )
             grid_row = _pick_grid_row(
                 factor.get("region", "").strip(),
                 _int_or_none(factor.get("vintage_year")),
@@ -187,7 +200,9 @@ def build_payload() -> dict[str, Any]:
             raise ValueError(f"Unable to resolve emission factor for {activity_id}")
 
         source_ids = [item for item in source_ids if item]
-        citations = [sources[source_id]["ieee_citation"] for source_id in source_ids if source_id in sources]
+        citations = [
+            sources[source_id]["ieee_citation"] for source_id in source_ids if source_id in sources
+        ]
 
         activity_payload.append(
             {
@@ -218,11 +233,13 @@ def build_payload() -> dict[str, Any]:
         "activities": activity_payload,
     }
 
+
 def write_payload(output_path: Path) -> Path:
     payload = build_payload()
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     return output_path
+
 
 def write_sources(output_path: Path) -> Path:
     repo_root = Path(__file__).resolve().parent.parent
@@ -230,6 +247,7 @@ def write_sources(output_path: Path) -> Path:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(sources_data, indent=2) + "\n", encoding="utf-8")
     return output_path
+
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
@@ -249,6 +267,7 @@ def main(argv: list[str] | None = None) -> int:
     write_payload(Path(args.output))
     write_sources(Path(args.sources_output))
     return 0
+
 
 if __name__ == "__main__":
     raise SystemExit(main())

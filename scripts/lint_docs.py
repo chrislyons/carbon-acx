@@ -19,10 +19,24 @@ BANNED_TOKENS: Mapping[str, str] = {
 }
 
 # Specific documents that are permitted to reference otherwise banned tokens.
-# This is useful for retrospective docs that must quote prior incidents.
+# This is useful for retrospective docs that must quote prior incidents while
+# describing their removal.
 ALLOWED_TOKEN_PATHS: Mapping[str, Set[Path]] = {
-    "fastapi": {Path("docs/audits/pr_history_review.md")},
+    "fastapi": {
+        Path("docs/audits/archive/pr_history_review.md"),
+        Path("docs/acx/ACX027 New Sprint.md"),
+    },
 }
+
+
+def _is_archived(path: Path) -> bool:
+    """Return True when the path lives under an ``archive/`` directory.
+
+    Archived documents are immutable historical records (see the ``docs/**/archive``
+    boundaries in CLAUDE.md). They frequently quote prior incidents verbatim, so
+    banned-terminology checks should not apply to them.
+    """
+    return "archive" in path.parts
 
 
 def iter_markdown_files(paths: Iterable[Path]) -> Iterable[Path]:
@@ -47,6 +61,11 @@ def scan_file(path: Path) -> list[str]:
         relative_path = path.resolve().relative_to(Path.cwd())
     except ValueError:
         relative_path = path
+
+    # Archived documents are immutable historical records; skip them so quoted
+    # incident write-ups do not trip banned-terminology checks.
+    if _is_archived(relative_path):
+        return errors
 
     lowered_lines = text.lower().splitlines()
     original_lines = text.splitlines()

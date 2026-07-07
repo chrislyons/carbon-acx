@@ -33,7 +33,9 @@ def _parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--db", help="Database path for sqlite or duckdb backends.")
     parser.add_argument("--overrides-json", help="Inline JSON object of activity overrides.")
-    parser.add_argument("--overrides-file", help="Path to a JSON file containing activity overrides.")
+    parser.add_argument(
+        "--overrides-file", help="Path to a JSON file containing activity overrides."
+    )
     parser.add_argument("--output", help="Optional file path for writing the payload.")
     parser.add_argument(
         "--pretty",
