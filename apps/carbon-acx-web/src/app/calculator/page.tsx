@@ -6,6 +6,7 @@ import Link from 'next/link'
 import {
   ACTIVITIES,
   CATEGORY_INFO,
+  CANADIAN_AVERAGE,
   calculateEmissions,
   formatEmissions,
   getActivitiesByCategory,
@@ -628,10 +629,14 @@ function ResultsView({
   const scenarioActivities = useMemo(() => {
     return summary.results.map((result) => {
       const activity = allActivities.find((a) => a.id === result.activityId)
+      // Use the activity's own factor; result.quantity is guaranteed > 0 by
+      // calculateEmissions, but referencing the source factor avoids the divide.
+      const emissionFactor =
+        activity?.emissionFactor ?? result.emissions / result.quantity
       return {
         id: result.activityId,
         name: result.activityName,
-        emissionFactor: result.emissions / result.quantity,
+        emissionFactor,
         isGridIndexed: activity?.isGridIndexed || false,
         electricityKwhPerUnit: activity?.electricityKwhPerUnit || null,
         provenance: activity?.provenance,
@@ -700,12 +705,17 @@ function ResultsView({
           <div className="text-foreground-muted mb-4">Total CO₂ equivalent per year</div>
 
           {summary.comparisonToAverage > 0 && (
-            <div className="inline-flex items-center gap-2 px-4 py-2 surface-panel rounded-full text-sm border border-surface-border">
+            <div
+              className="inline-flex items-center gap-2 px-4 py-2 surface-panel rounded-full text-sm border border-surface-border"
+              title={CANADIAN_AVERAGE.sourceCitation ?? undefined}
+            >
               <span>
                 {summary.comparisonToAverage < 100 ? '🌱' : '⚠️'}
               </span>
               <span>
-                {summary.comparisonToAverage.toFixed(1)}% of Canadian annual average ({formatEmissions(14200000)})
+                {summary.comparisonToAverage.toFixed(1)}% of {CANADIAN_AVERAGE.label} per-capita average
+                {CANADIAN_AVERAGE.year ? ` (${CANADIAN_AVERAGE.year})` : ''} (
+                {formatEmissions(CANADIAN_AVERAGE.annualGrams)})
               </span>
             </div>
           )}
@@ -781,6 +791,8 @@ function ResultsView({
             const activity = allActivities.find((a) => a.id === result.activityId)
             const provenance = activity?.provenance
             const provenanceInfo = provenance ? getProvenanceSummary(provenance) : null
+            const perUnitEmissions =
+              activity?.emissionFactor ?? result.emissions / result.quantity
 
             return (
               <div
@@ -798,7 +810,7 @@ function ResultsView({
                   <div>
                     <div className="font-medium text-foreground">{result.activityName}</div>
                     <div className="text-sm text-foreground-muted">
-                      {result.quantity} {result.unit}{result.quantity !== 1 ? 's' : ''} × {formatEmissions(result.emissions / result.quantity)}/{result.unit}
+                      {result.quantity} {result.unit}{result.quantity !== 1 ? 's' : ''} × {formatEmissions(perUnitEmissions)}/{result.unit}
                     </div>
                     {provenanceInfo && (
                       <div className="text-xs text-foreground-subtle font-mono mt-0.5">

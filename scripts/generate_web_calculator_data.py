@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-SCHEMA_VERSION = "acx.web-calculator/1-0-0"
+SCHEMA_VERSION = "acx.web-calculator/1-1-0"
 DEFAULT_OUTPUT = Path("apps/carbon-acx-web/src/generated/calculator-data.json")
 SOURCES_OUTPUT = Path("apps/carbon-acx-web/src/generated/sources.json")
 
@@ -60,6 +60,17 @@ SELECTED_ACTIVITIES = [
 
 REGION_PREFERENCE = {"CA-ON": 0, "CA": 1, "GLOBAL": 2, "": 3}
 
+# Comparison baselines surfaced in the calculator. Each entry names the
+# entity_id in data/equity_benchmarks.csv so the value stays sourced and
+# dynamic — never a hardcoded literal in the web app.
+BENCHMARK_ENTITIES = {
+    "canadian_average": "CA",
+}
+
+# Grams of CO2e per tonne, used to normalise per-capita tonnes to the grams
+# the calculator works in. Defined once here rather than inlined downstream.
+GRAMS_PER_TONNE = 1_000_000
+
 
 @dataclass(frozen=True)
 class GridIntensityRow:
@@ -78,6 +89,21 @@ def _load_csv(path: Path) -> list[dict[str, str]]:
             if k.strip() != k:
                 row[k.strip()] = row.pop(k)
     return rows
+
+
+def _load_commented_csv(path: Path) -> list[dict[str, str]]:
+    """Load a CSV whose header/documentation lines are prefixed with ``#``.
+
+    ``data/equity_benchmarks.csv`` carries provenance comments above the real
+    header row; skip them so ``csv.DictReader`` binds against the true columns.
+    """
+    lines = [
+        line
+        for line in path.read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    ]
+    reader = csv.DictReader(lines)
+    return [dict(row) for row in reader]
 
 
 def _float_or_none(value: str | None) -> float | None:
@@ -165,12 +191,47 @@ def _pick_grid_row(
     return candidates[-1]
 
 
+def build_benchmarks(
+    repo_root: Path, sources: dict[str, dict[str, str]]
+) -> dict[str, dict[str, Any]]:
+    """Build sourced comparison baselines from ``equity_benchmarks.csv``.
+
+    The calculator compares a user's footprint against per-capita baselines.
+    Every value carries its ``source_id``, IEEE citation, and vintage year so
+    the web app can render it dynamically with provenance — no magic numbers.
+    """
+    rows = {
+        row["entity_id"]: row
+        for row in _load_commented_csv(repo_root / "data/equity_benchmarks.csv")
+    }
+    benchmarks: dict[str, dict[str, Any]] = {}
+    for key, entity_id in BENCHMARK_ENTITIES.items():
+        row = rows.get(entity_id)
+        if row is None:
+            raise KeyError(f"Missing benchmark entity '{entity_id}' for '{key}'")
+        per_capita_tonnes = _float_or_none(row.get("co2_per_capita_tonnes"))
+        if per_capita_tonnes is None:
+            raise ValueError(f"Benchmark '{entity_id}' has no co2_per_capita_tonnes")
+        source_id = (row.get("source_id") or "").strip() or None
+        citation = sources.get(source_id, {}).get("ieee_citation") if source_id else None
+        benchmarks[key] = {
+            "label": row.get("entity_name") or entity_id,
+            "perCapitaTonnes": per_capita_tonnes,
+            "annualGrams": round(per_capita_tonnes * GRAMS_PER_TONNE),
+            "year": _int_or_none(row.get("year")),
+            "sourceId": source_id,
+            "sourceCitation": citation,
+        }
+    return benchmarks
+
+
 def build_payload() -> dict[str, Any]:
     repo_root = Path(__file__).resolve().parent.parent
     activities = {row["activity_id"]: row for row in _load_csv(repo_root / "data/activities.csv")}
     factors = _load_csv(repo_root / "data/emission_factors.csv")
     sources = {row["source_id"]: row for row in _load_csv(repo_root / "data/sources.csv")}
     grid_rows = _grid_lookup(_load_csv(repo_root / "data/grid_intensity.csv"))
+    benchmarks = build_benchmarks(repo_root, sources)
 
     activity_payload: list[dict[str, Any]] = []
     for category, activity_id in SELECTED_ACTIVITIES:
@@ -231,6 +292,7 @@ def build_payload() -> dict[str, Any]:
         "generatedAt": _generated_at(),
         "categories": CATEGORY_INFO,
         "activities": activity_payload,
+        "benchmarks": benchmarks,
     }
 
 

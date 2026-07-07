@@ -39,11 +39,21 @@ export interface CategoryInfo {
   color: string
 }
 
+export interface Benchmark {
+  label: string
+  perCapitaTonnes: number
+  annualGrams: number
+  year: number | null
+  sourceId: string | null
+  sourceCitation: string | null
+}
+
 export interface CalculatorDataset {
   schemaVersion: string
   generatedAt: string
   categories: Record<ActivityCategory, CategoryInfo>
   activities: Activity[]
+  benchmarks: Record<string, Benchmark>
 }
 
 export interface CalculatorInput {
@@ -61,6 +71,14 @@ export interface CalculatorResult {
   emissionsKg: number
 }
 
+export type SkippedInputReason = 'unknown-activity' | 'non-positive-quantity' | 'non-finite-quantity'
+
+export interface SkippedInput {
+  activityId: string
+  quantity: number
+  reason: SkippedInputReason
+}
+
 export interface CalculatorSummary {
   results: CalculatorResult[]
   totalEmissions: number
@@ -68,17 +86,27 @@ export interface CalculatorSummary {
   totalEmissionsTonnes: number
   byCategory: Record<ActivityCategory, number>
   comparisonToAverage: number
+  /** Inputs excluded from the total, surfaced so nothing is silently dropped. */
+  skipped: SkippedInput[]
 }
 
 export const CALCULATOR_DATASET = calculatorDataJson as CalculatorDataset
 export const ACTIVITIES = CALCULATOR_DATASET.activities
 export const CATEGORY_INFO = CALCULATOR_DATASET.categories
+export const BENCHMARKS = CALCULATOR_DATASET.benchmarks
 
-// Canadian average annual footprint: ~14.2 tonnes CO2e per capita.
-export const CANADIAN_AVERAGE_ANNUAL = 14200000
+// Sourced comparison baseline (see data/equity_benchmarks.csv → ECCC NIR).
+// Dynamic and citation-backed; never a hardcoded literal.
+export const CANADIAN_AVERAGE = BENCHMARKS.canadian_average
+export const CANADIAN_AVERAGE_ANNUAL = CANADIAN_AVERAGE.annualGrams
+
+// O(1) id lookup, built once from the generated dataset.
+const ACTIVITY_BY_ID: ReadonlyMap<string, Activity> = new Map(
+  ACTIVITIES.map((activity) => [activity.id, activity]),
+)
 
 export function getActivityById(id: string): Activity | undefined {
-  return ACTIVITIES.find((activity) => activity.id === id)
+  return ACTIVITY_BY_ID.get(id)
 }
 
 export function getActivitiesByCategory(category: ActivityCategory): Activity[] {
@@ -87,6 +115,7 @@ export function getActivitiesByCategory(category: ActivityCategory): Activity[] 
 
 export function calculateEmissions(inputs: CalculatorInput[]): CalculatorSummary {
   const results: CalculatorResult[] = []
+  const skipped: SkippedInput[] = []
   const byCategory: Record<ActivityCategory, number> = {
     transport: 0,
     food: 0,
@@ -97,7 +126,16 @@ export function calculateEmissions(inputs: CalculatorInput[]): CalculatorSummary
 
   for (const input of inputs) {
     const activity = getActivityById(input.activityId)
-    if (!activity || input.quantity <= 0) {
+    if (!activity) {
+      skipped.push({ ...input, reason: 'unknown-activity' })
+      continue
+    }
+    if (!Number.isFinite(input.quantity)) {
+      skipped.push({ ...input, reason: 'non-finite-quantity' })
+      continue
+    }
+    if (input.quantity <= 0) {
+      skipped.push({ ...input, reason: 'non-positive-quantity' })
       continue
     }
 
@@ -123,7 +161,9 @@ export function calculateEmissions(inputs: CalculatorInput[]): CalculatorSummary
     totalEmissionsKg: totalEmissions / 1000,
     totalEmissionsTonnes: totalEmissions / 1000000,
     byCategory,
-    comparisonToAverage: (totalEmissions / CANADIAN_AVERAGE_ANNUAL) * 100,
+    comparisonToAverage:
+      CANADIAN_AVERAGE_ANNUAL > 0 ? (totalEmissions / CANADIAN_AVERAGE_ANNUAL) * 100 : 0,
+    skipped,
   }
 }
 
