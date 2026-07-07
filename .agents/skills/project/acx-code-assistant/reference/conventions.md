@@ -571,8 +571,8 @@ from calc.utils import load_csv
 ### Never Commit Secrets
 
 ```typescript
-// ❌ Bad - hardcoded secret
-const API_KEY = 'sk_live_abc123';
+// ❌ Bad - hardcoded secret (never commit a real key, even as an example)
+const API_KEY = '<YOUR_API_KEY_HERE>';
 
 // ✅ Good - use environment/bindings
 const API_KEY = env.API_KEY;  // Cloudflare Workers
