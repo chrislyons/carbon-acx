@@ -4,6 +4,7 @@ Active catalog for Carbon ACX project documents.
 
 ## Recent Documents
 
+- [ACX102 Recovery Merge and Calculator Provenance Hardening](./ACX102%20Recovery%20Merge%20and%20Calculator%20Provenance%20Hardening.md)
 - [ACX101 World Labs Integration and Calculator Implementation Sprint](./ACX101%20World%20Labs%20Integration%20and%20Calculator%20Implementation%20Sprint.md)
 - [ACX100 World Labs 3D World Integration Specification](./ACX100%20World%20Labs%203D%20World%20Integration%20Specification.md)
 - [ACX099 World Labs and Blender MCP Integration Handoff](./ACX099%20World%20Labs%20and%20Blender%20MCP%20Integration%20Handoff.md)
