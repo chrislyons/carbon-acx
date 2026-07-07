@@ -94,6 +94,7 @@ function CalculatorContent() {
   const [step, setStep] = useState<Step>('input')
   const [activeCategory, setActiveCategory] = useState<ActivityCategory>('transport')
   const [inputs, setInputs] = useState<Record<string, number>>({})
+  const [inputErrors, setInputErrors] = useState<Record<string, string>>({})
   const [isLoaded, setIsLoaded] = useState(false)
   const [isShared, setIsShared] = useState(false)
   const [citationDrawerOpen, setCitationDrawerOpen] = useState(false)
@@ -211,15 +212,53 @@ function CalculatorContent() {
   const hasInputs = Object.values(inputs).some((v) => v > 0)
 
   const handleInputChange = (activityId: string, value: string) => {
-    const num = parseFloat(value) || 0
-    setInputs((prev) => ({
-      ...prev,
-      [activityId]: num,
-    }))
+    const trimmed = value.trim()
+
+    // Empty field: clear both the value and any prior error (nothing entered).
+    if (trimmed === '') {
+      setInputs((prev) => {
+        const next = { ...prev }
+        delete next[activityId]
+        return next
+      })
+      setInputErrors((prev) => {
+        if (!(activityId in prev)) return prev
+        const next = { ...prev }
+        delete next[activityId]
+        return next
+      })
+      return
+    }
+
+    // Validate explicitly instead of coercing bad input to 0 — a silently
+    // dropped entry is a trust bug for a carbon-accounting tool.
+    const num = Number(trimmed)
+    let error = ''
+    if (!Number.isFinite(num)) {
+      error = 'Enter a number'
+    } else if (num < 0) {
+      error = 'Must be zero or greater'
+    }
+
+    setInputErrors((prev) => {
+      const next = { ...prev }
+      if (error) {
+        next[activityId] = error
+      } else {
+        delete next[activityId]
+      }
+      return next
+    })
+
+    // Only commit finite, non-negative values to the calculation.
+    if (!error) {
+      setInputs((prev) => ({ ...prev, [activityId]: num }))
+    }
   }
 
   const handleReset = () => {
     setInputs({})
+    setInputErrors({})
     setStep('input')
     try {
       localStorage.removeItem(STORAGE_KEY)
@@ -347,6 +386,7 @@ function CalculatorContent() {
               key={activity.id}
               activity={activity}
               value={inputs[activity.id] || ''}
+              error={inputErrors[activity.id]}
               onChange={handleInputChange}
               onCitationsClick={() => handleOpenCitations(activity.id)}
             />
@@ -358,6 +398,7 @@ function CalculatorContent() {
                 key={activity.id}
                 activity={activity}
                 value={inputs[activity.id] || ''}
+                error={inputErrors[activity.id]}
                 onChange={handleInputChange}
                 onCitationsClick={() => handleOpenCitations(activity.id)}
                 isCustom
@@ -449,12 +490,14 @@ function CalculatorContent() {
 function ActivityInputRow({
   activity,
   value,
+  error,
   onChange,
   onCitationsClick,
   isCustom = false,
 }: {
   activity: Activity
   value: string | number
+  error?: string
   onChange: (activityId: string, value: string) => void
   onCitationsClick: () => void
   isCustom?: boolean
@@ -524,24 +567,36 @@ function ActivityInputRow({
           )}
         </div>
       </div>
-      <div className="flex items-center gap-2 sm:w-[140px]">
-        <label htmlFor={`input-${activity.id}`} className="sr-only">
-          {activity.name} quantity
-        </label>
-        <input
-          id={`input-${activity.id}`}
-          type="number"
-          min="0"
-          step="any"
-          value={value}
-          onChange={(e) => onChange(activity.id, e.target.value)}
-          placeholder="0"
-          className="w-full px-3 py-2 border border-surface-border-strong rounded-lg text-right bg-background-elevated text-foreground focus:ring-2 focus:ring-accent-primary focus:border-accent-primary"
-          aria-describedby={`unit-${activity.id}`}
-        />
-        <span id={`unit-${activity.id}`} className="text-sm text-foreground-muted w-16 text-right" aria-hidden="true">
-          {activity.unitLabel}
-        </span>
+      <div className="flex flex-col gap-1 sm:w-[140px]">
+        <div className="flex items-center gap-2">
+          <label htmlFor={`input-${activity.id}`} className="sr-only">
+            {activity.name} quantity
+          </label>
+          <input
+            id={`input-${activity.id}`}
+            type="number"
+            min="0"
+            step="any"
+            value={value}
+            onChange={(e) => onChange(activity.id, e.target.value)}
+            placeholder="0"
+            className={`w-full px-3 py-2 border rounded-lg text-right bg-background-elevated text-foreground focus:ring-2 focus:ring-accent-primary focus:border-accent-primary ${
+              error
+                ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
+                : 'border-surface-border-strong'
+            }`}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={`unit-${activity.id}${error ? ` error-${activity.id}` : ''}`}
+          />
+          <span id={`unit-${activity.id}`} className="text-sm text-foreground-muted w-16 text-right" aria-hidden="true">
+            {activity.unitLabel}
+          </span>
+        </div>
+        {error && (
+          <p id={`error-${activity.id}`} role="alert" className="text-xs text-red-500 text-right">
+            {error}
+          </p>
+        )}
       </div>
     </div>
   )
