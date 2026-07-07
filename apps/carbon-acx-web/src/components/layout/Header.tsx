@@ -1,61 +1,81 @@
+'use client'
+
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { useTheme } from '@/components/providers/ThemeProvider'
+
+const navItems = [
+  { href: '/calculator', label: 'Calculator' },
+  { href: '/explore', label: 'Explore' },
+  { href: '/manifests', label: 'Manifests' },
+  { href: '/methodology', label: 'Methodology' },
+] as const
 
 export function Header() {
+  const pathname = usePathname()
+  const { theme, toggleTheme } = useTheme()
+
   return (
-    <header className="border-b border-gray-200 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex items-center">
-            <Link href="/" className="flex items-center space-x-2">
-              <span className="text-2xl font-bold text-gray-900">
-                Carbon ACX
+    <header className="site-header">
+      <div className="page-shell py-2.5">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-center justify-between gap-4">
+            <Link href="/" className="flex items-center gap-3">
+              <span className="brand-mark" aria-hidden="true">
+                AC
+              </span>
+              <span>
+                <span className="text-lg font-semibold text-foreground sm:text-xl">Carbon ACX</span>
+                <span className="block text-sm text-[color:var(--text-subtle)]">
+                  Trustworthy carbon accounting
+                </span>
               </span>
             </Link>
-          </div>
 
-          <nav className="hidden md:flex space-x-8">
-            <Link
-              href="/calculator"
-              className="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium"
-            >
-              Calculator
-            </Link>
-            <Link
-              href="/explore"
-              className="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium"
-            >
-              Explore
-            </Link>
-            <Link
-              href="/manifests"
-              className="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium"
-            >
-              Manifests
-            </Link>
-            <Link
-              href="/methodology"
-              className="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium"
-            >
-              Methodology
-            </Link>
-          </nav>
-
-          <div className="flex items-center space-x-4">
             <a
               href="https://github.com/chrislyons/carbon-acx"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-500 hover:text-gray-700"
+              className="action-link hidden sm:inline-flex"
             >
-              <span className="sr-only">GitHub</span>
-              <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                <path
-                  fillRule="evenodd"
-                  d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
-                  clipRule="evenodd"
-                />
-              </svg>
+              GitHub
             </a>
+          </div>
+
+          <div className="flex items-center gap-3 flex-wrap">
+            <nav className="flex flex-wrap gap-2" aria-label="Primary">
+              {navItems.map((item) => {
+                const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`)
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="nav-chip"
+                    data-active={isActive ? 'true' : 'false'}
+                  >
+                    {item.label}
+                  </Link>
+                )
+              })}
+            </nav>
+
+            <button
+              onClick={toggleTheme}
+              className="action-link action-link-ghost p-2"
+              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+            >
+              {theme === 'dark' ? (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+              )}
+            </button>
           </div>
         </div>
       </div>

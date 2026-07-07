@@ -1,18 +1,18 @@
 # Carbon ACX Site (Legacy)
 
-**Legacy static web interface for Carbon ACX**
+**Frozen compatibility web interface for Carbon ACX**
 
-This is the original static React interface for Carbon ACX. It is being gradually superseded by the modern `apps/carbon-acx-web/` application but remains in active maintenance for specific features and backwards compatibility.
+This is the original static React interface for Carbon ACX. It has been superseded by `apps/carbon-acx-web/` as the primary product surface and is now kept only for compatibility, migration support, and reference work.
 
 ---
 
-## Status: Legacy / Maintenance Mode
+## Status: Frozen Compatibility Mode
 
-⚠️ **This interface is in maintenance mode.**
+⚠️ **This interface is frozen.**
 
 - **New features** should target `apps/carbon-acx-web/` (the modern web app)
-- **This interface receives** security patches and critical bug fixes only
-- **Migration timeline** is gradual; some unique features remain here temporarily
+- **This interface is not part of the primary release path**
+- **Changes here should be limited** to compatibility fixes, migration support, or extraction of still-needed assets
 
 ---
 
@@ -32,7 +32,7 @@ This static site provides:
 ### Use `site/` (this interface) for:
 - **WebGPU local chat** - Currently only available in this interface
 - **Legacy compatibility** - If you need the original interface structure
-- **Maintenance work** - Bug fixes and security patches
+- **Reference extraction** - Lifting remaining concepts or assets into the primary app
 
 ### Use `apps/carbon-acx-web/` (modern) for:
 - **New feature development** - All new work should target the modern app
@@ -143,7 +143,7 @@ Or from this directory:
 npm run build
 ```
 
-Output directory: `dist/` (copied to `dist/site/` by root Makefile)
+Output directory: `dist/` (legacy-only build output, not the primary release artifact)
 
 ---
 

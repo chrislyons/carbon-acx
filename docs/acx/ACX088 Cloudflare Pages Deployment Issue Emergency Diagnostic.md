@@ -1,3 +1,10 @@
+---
+related:
+  - cloudflare-workers-stack
+  - cloudflare_workers_enables_zero_ops_deployment
+  - ACX
+---
+
 # Cloudflare Pages Deployment Issue - Emergency Diagnostic
 
 **Deployment URL**: https://d7fbcc7f.carbon-acx.pages.dev/

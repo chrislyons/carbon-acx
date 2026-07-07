@@ -1,3 +1,11 @@
+---
+related:
+  - cloudflare-workers-stack
+  - component_libraries_reduce_cross_project_ui_debt
+  - performance_optimization_requires_measurement
+  - ACX
+---
+
 # Carbon ACX Web Application: Comprehensive Rebuild Strategy
 
 **Date:** 2025-10-25

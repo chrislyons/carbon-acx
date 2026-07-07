@@ -1,3 +1,10 @@
+---
+related:
+  - multi-theme-system
+  - theme_systems_support_user_preference
+  - ACX
+---
+
 # Carbon ACX Dark Mode Refinement and UX Polish
 
 Comprehensive dark mode fixes and Skip button refinement for the new onboarding wizard.

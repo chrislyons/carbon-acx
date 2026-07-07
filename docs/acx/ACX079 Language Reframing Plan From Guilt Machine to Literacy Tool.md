@@ -1,3 +1,8 @@
+---
+related:
+  - ACX
+---
+
 # Language Reframing Plan: From Guilt Machine to Literacy Tool
 
 **Date:** 2025-10-24

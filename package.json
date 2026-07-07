@@ -8,12 +8,16 @@
     "pnpm": "10.5.2"
   },
   "scripts": {
-    "schema:gen": "tsx apps/carbon-acx-web/schema/semantic-model.ts",
+    "vercel-build": "next build",
+    "doctor": "./scripts/bootstrap.sh --check-only",
+    "bootstrap": "./scripts/bootstrap.sh",
+    "web:data": "python3 scripts/generate_web_calculator_data.py",
+    "schema:gen": "pnpm run web:data",
     "dev": "pnpm --filter carbon-acx-web dev",
-    "build:web": "pnpm --filter carbon-acx-web install --frozen-lockfile && pnpm --filter carbon-acx-web run build",
+    "build:web": "pnpm run web:data && pnpm --filter carbon-acx-web install --frozen-lockfile && pnpm --filter carbon-acx-web run cf-build",
     "preview:web": "pnpm --filter carbon-acx-web preview"
   },
   "devDependencies": {
-    "tsx": "^4.16.2"
+    "tsx": "4.20.6"
   }
 }

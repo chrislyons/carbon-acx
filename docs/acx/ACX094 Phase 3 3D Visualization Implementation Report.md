@@ -1,3 +1,11 @@
+---
+related:
+  - 3d-data-visualization
+  - 3d_visualization_supports_understanding
+  - performance_optimization_requires_measurement
+  - ACX
+---
+
 # ACX094 Phase 3 3D Visualization Implementation Report
 
 **Date:** 2025-11-05

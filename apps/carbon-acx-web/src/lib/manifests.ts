@@ -154,8 +154,9 @@ export function getFigurePath(relativePath: string): string {
 }
 
 /**
- * Get the full path to a reference file
+ * Get all manifest IDs for static generation
  */
-export function getReferencePath(relativePath: string): string {
-  return path.join(getArtifactsDir(), relativePath)
+export async function getAllManifestIds(): Promise<string[]> {
+  const manifests = await getManifests()
+  return manifests.map((m) => m.id)
 }

@@ -1,3 +1,11 @@
+---
+related:
+  - 3d-data-visualization
+  - 3d_visualization_supports_understanding
+  - wasm_reliability_requires_progressive_enhancement
+  - ACX
+---
+
 # 3D Universe Foundation Sprint - Complete Implementation
 
 **Branch:** `feature/3d-universe`

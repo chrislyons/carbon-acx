@@ -9,12 +9,24 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Earth Color Palette
+        earth: {
+          'deep-ocean': '#0a1628',
+          'ocean-mid': '#1e3a5f',
+          'atmosphere': '#3b82f6',
+          'forest': '#22c55e',
+          'ice': '#f0f9ff',
+          'sunset': '#f97316',
+          'clouds': '#e0f2fe',
+        },
+        // Semantic mappings
         background: 'var(--background)',
         foreground: 'var(--foreground)',
       },
       fontFamily: {
-        sans: ['var(--font-geist-sans)', 'system-ui', 'sans-serif'],
-        mono: ['var(--font-geist-mono)', 'monospace'],
+        display: ['Cabinet Grotesk', 'system-ui', 'sans-serif'],
+        sans: ['General Sans', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'SF Mono', 'monospace'],
       },
     },
   },

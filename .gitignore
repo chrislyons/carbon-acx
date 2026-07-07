@@ -9,10 +9,14 @@ dist/artifacts/*
 !dist/artifacts/manifest.json
 !dist/artifacts/manifests/
 !dist/artifacts/manifests/*.json
+dist/artifacts/manifests/*.*.manifest.json
 !dist/artifacts/figures/
 !dist/artifacts/figures/*.svg
+!dist/artifacts/figures/*.json
+dist/artifacts/figures/*.*.json
 !dist/artifacts/references/
 !dist/artifacts/references/*.txt
+dist/artifacts/references/*.*.*
 calc/outputs/*
 !calc/outputs/governance_log.txt
 !calc/outputs/references_master.txt

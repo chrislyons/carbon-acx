@@ -12,21 +12,24 @@ export default function ExplorePage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white border border-gray-200 rounded-lg p-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Link
+          href="/explore/trends"
+          className="bg-white border border-gray-200 rounded-lg p-8 hover:border-green-500 hover:shadow-lg transition-all cursor-pointer"
+        >
           <div className="text-center">
-            <div className="text-5xl mb-4">📊</div>
+            <div className="text-5xl mb-4">📈</div>
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
-              2D Visualizations
+              Grid Trends
             </h2>
             <p className="text-gray-600 text-sm mb-4">
-              Charts, graphs, and tables for analyzing emissions data
+              Regional electricity grid carbon intensity over time
             </p>
-            <span className="inline-block px-3 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">
-              Coming Soon
+            <span className="inline-block px-3 py-1 bg-green-100 text-green-800 text-xs rounded-full font-medium">
+              ✓ Live Now
             </span>
           </div>
-        </div>
+        </Link>
 
         <Link
           href="/explore/3d"
@@ -60,6 +63,24 @@ export default function ExplorePage() {
             </p>
             <span className="inline-block px-3 py-1 bg-purple-100 text-purple-800 text-xs rounded-full font-medium">
               New
+            </span>
+          </div>
+        </Link>
+
+        <Link
+          href="/explore/sectors"
+          className="bg-white border border-gray-200 rounded-lg p-8 hover:border-orange-500 hover:shadow-lg transition-all cursor-pointer"
+        >
+          <div className="text-center">
+            <div className="text-5xl mb-4">🏭</div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              Sectoral Deep-Dives
+            </h2>
+            <p className="text-gray-600 text-sm mb-4">
+              Industrial, digital, military emissions breakdowns
+            </p>
+            <span className="inline-block px-3 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">
+              Coming Soon
             </span>
           </div>
         </Link>

@@ -1,0 +1,120 @@
+# ACX Catalog
+
+Active catalog for Carbon ACX project documents.
+
+## Recent Documents
+
+- [ACX101 World Labs Integration and Calculator Implementation Sprint](./ACX101%20World%20Labs%20Integration%20and%20Calculator%20Implementation%20Sprint.md)
+- [ACX100 World Labs 3D World Integration Specification](./ACX100%20World%20Labs%203D%20World%20Integration%20Specification.md)
+- [ACX099 World Labs and Blender MCP Integration Handoff](./ACX099%20World%20Labs%20and%20Blender%20MCP%20Integration%20Handoff.md)
+- [ACX098 Bloat Remediation Recommendations](./ACX098%20Bloat%20Remediation%20Recommendations.md)
+- [ACX097 Recent Documentation Audit](./ACX097%20Recent%20Documentation%20Audit%20-%20Planning%20vs%20Execution%20Alignment.md)
+
+## All Documents
+
+- [ACX000 Product Vision](./ACX000%20Product%20Vision.md)
+- [ACX001 Carbon Footprint Dataset v1_1 Core Plan](./ACX001%20Carbon%20Footprint%20Dataset%20v1_1%20Core%20Plan.md)
+- [ACX002 Database & Performance Optimizations](./ACX002%20Database%20%26%20Performance%20Optimizations%20%28Claude%29.md)
+- [ACX003 Schema Architecture v1_1](./ACX003%20Schema%20Architecture%20v1_1.md)
+- [ACX004 Temporal & Granularity Specification](./ACX004%20Temporal%20%26%20Granularity%20Specification%20%28Toronto%20Pilot%2C%20v1_1%29.md)
+- [ACX005 National Scaling Framework](./ACX005%20National%20Scaling%20Framework%20%28Canada%2C%20v1_1%29.md)
+- [ACX006 Master Source Registry](./ACX006%20Master%20Source%20Registry%20%28Canada%2C%20v1_1%29.md)
+- [ACX007 Visualization & UX Plan](./ACX007%20Visualization%20%26%20UX%20Plan%20%28Canada%20Pilot%2C%20v1_1%29.md)
+- [ACX008 Deployment Guide](./ACX008%20Deployment%20Guide%20%28CI_CD%2C%20Cloudflare%20Pages%2C%20v1_1%29.md)
+- [ACX009 User Communication Plan](./ACX009%20User%20Communication%20Plan%20%28Canada%20Pilot%2C%20v1_1%29.md)
+- [ACX010 Testing & Validation Plan](./ACX010%20Testing%20%26%20Validation%20Plan%20%28Canada%20Pilot%2C%20v1_1%29.md)
+- [ACX011 Daily Activity Patterns](./ACX011%20Daily%20activity%20patterns%20for%20a%20typical%20Toronto%20professional%20%2825%E2%80%9350%29.md)
+- [ACX012 Light-Industrial Layer](./ACX012%20Light-industrial%20layer%20%28Toronto%29_%20scope%2C%20activity%20catalogue%2C%20and%20data-source%20plan.md)
+- [ACX013 Suggestions for Heavy Industry](./ACX013%20Suggestions%20for%20Heavy%20Industry%20%28Toronto%29.md)
+- [ACX014 Online Services Layer](./ACX014%20Online%20Services%20Layer.md)
+- [ACX015 Data Seeding Protocol](./ACX015%20Data%20Seeding%20Protocol%20%28Canada%20Pilot%2C%20v1_1%29.md)
+- [ACX016 Data Access Layer Design](./ACX016%20Data%20Access%20Layer%20%28DAL%29%20Design.md)
+- [ACX017 Governance & Maintenance Charter](./ACX017%20Governance%20%26%20Maintenance%20Charter%20%28Canada%20Pilot%2C%20v1_1%29.md)
+- [ACX018 Cross-layer Integration Guide](./ACX018%20Cross-layer%20Integration%20Guide%20%28Canada%20Pilot%2C%20v1_1%29.md)
+- [ACX019 Project Status Report](./ACX019%20Project%20Status%20Report.md)
+- [ACX020 Sprint Plan](./ACX020%20Sprint%20Plan.md)
+- [ACX021 Sprint Completion Notes](./ACX021%20Sprint%20Completion%20Notes.md)
+- [ACX022 Post-Sprint Audit](./ACX022%20Post-Sprint%20Audit.md)
+- [ACX023 Next Sprint](./ACX023%20Next%20Sprint.md)
+- [ACX025 Post-Sprint Audit](./ACX025%20Post-Sprint%20Audit.md)
+- [ACX027 New Sprint](./ACX027%20New%20Sprint.md)
+- [ACX028 New New Sprint](./ACX028%20New%20New%20Sprint.md)
+- [ACX029 README_md](./ACX029%20README_md.md)
+- [ACX030 New New New Sprint](./ACX030%20New%20New%20New%20Sprint.md)
+- [ACX031 New New New Sprint](./ACX031%20New%20New%20New%20Sprint.md)
+- [ACX032 Another Sprint](./ACX032%20Another%20Sprint.md)
+- [ACX033 A other nother Sprint!](./ACX033%20A%20other%20nother%20Sprint%21.md)
+- [ACX034 New Sprint](./ACX034%20New%20Sprint.md)
+- [ACX035 Flights, Fridges, and___ Sprint](./ACX035%20Flights%2C%20Fridges%2C%20and___%20Sprint.md)
+- [ACX036 Military-Industrial Sprint](./ACX036%20Military-Industrial%20Sprint.md)
+- [ACX037 Forgotten Sprint](./ACX037%20Forgotten%20Sprint.md)
+- [ACX039 Lessons from Promptware](./ACX039%20Lessons%20from%20Promptware.md)
+- [ACX040 View Manifest Specification](./ACX040%20View%20Manifest%20Specification%20%28Provenance%20%26%20Fidelity%20Contracts%29.md)
+- [ACX040-CDX061 Implement ACX040 with Back-Compat](./ACX040-CDX061%20ACX040-CDX061%20Implement%20ACX040%20with%20Back-Compat.md)
+- [ACX041](./ACX041.md)
+- [ACX042 Carbon ACX Dataset Verification](./ACX042%20Carbon%20ACX%20dataset%20verification%20of%20claims%20and%20sources.md)
+- [ACX046 Albert Carbon Calculator Design Insights](./ACX046%20Albert%20Carbon%20Calculator_%20Design%20Insights%20for%20Carbon%20Accounting%20Innovation.md)
+- [ACX047 Our World in Data CO2 Platform](./ACX047%20Our%20World%20in%20Data%20CO2%20and%20Greenhouse%20Gas%20Emissions%20Platform.md)
+- [ACX048 The Climate Data Deficit](./ACX048%20The%20Climate%20Data%20Deficit_%20Opportunity%20for%20Carbon%20ACX%20as%20Civic%20Literacy%20Infrastructure.md)
+- [ACX049 Regroup Commands](./ACX049%20Regroup%20Commands.md)
+- [ACX050 Sprint](./ACX050%20Sprint.md)
+- [ACX051 Audit Report](./ACX051%20Audit%20Report.md)
+- [ACX052 Redesign Spec](./ACX052%20Redesign%20Spec.md)
+- [ACX053 Modernization Checklist](./ACX053%20Modernization%20Checklist.md)
+- [ACX054 Sprint Plan](./ACX054%20Sprint%20Plan.md)
+- [ACX055 Sprint Plan (ACX‑CDX‑081…088)](./ACX055%20Sprint%20Plan%20%28ACX%E2%80%91CDX%E2%80%91081%E2%80%A6088%29.md)
+- [ACX056 Next Sprint](./ACX056%20Next%20Sprint.md)
+- [ACX061 Frontend Audit Report](./ACX061%20Frontend%20Audit%20Report%20%28Claude%20Pass%2C%202025-10-12%29.md)
+- [ACX062 Frontend Redesign Spec](./ACX062%20Frontend%20Redesign%20Spec%20%28Claude%20Pass%2C%202025-10-12%29.md)
+- [ACX063 Frontend Implementation Status](./ACX063%20Frontend%20Implementation%20Status%20%28Living%29.md)
+- [ACX064 UX & Information Architecture](./ACX064%20UX%20%26%20Information%20Architecture.md)
+- [ACX065 Theming & Design Tokens](./ACX065%20Theming%20%26%20Design%20Tokens%20%28v1%29.md)
+- [ACX066 What Runs Where](./ACX066%20What%20Runs%20Where%20%E2%80%93%20Runtime%20%26%20Environment%20Map.md)
+- [ACX067 UX Polish Sprint](./ACX067%20UX%20Polish%20Sprint%20%E2%80%93%20Controls%20Repositioning%20%26%20Chart%20Fixes.md)
+- [ACX068 Historical Tracking & Export Enhancements](./ACX068%20Historical%20Tracking%20%26%20Export%20Enhancements.md)
+- [ACX069 Badge-Based UX and Profile Layer Comparison](./ACX069%20Badge-Based%20UX%20and%20Profile%20Layer%20Comparison%20System.md)
+- [ACX070 Profile Presets Display System](./ACX070%20Profile%20Presets%20Display%20System%20%2B%20Real%20Emission%20Calculations%20%2B%20Multi-Profile%20Comparison.md)
+- [ACX071 Activity Badge Grid Improvements](./ACX071%20Activity%20Badge%20Grid%20Improvements%20and%20Data%20Expansion.md)
+- [ACX072 WCAG 2.1 Level AA Accessibility Improvements](./ACX072%20WCAG%202.1%20Level%20AA%20Accessibility%20Improvements.md)
+- [ACX073 Comprehensive Frontend UX Testing Report](./ACX073%20Comprehensive%20Frontend%20UX%20Testing%20Report.md)
+- [ACX074 Activity Browser UX Improvements](./ACX074%20Activity%20Browser%20UX%20Improvements%20and%20Profile%20Data%20Completeness.md)
+- [ACX075 Parameter Overwhelm Analysis](./ACX075%20Carbon%20ACX%20Web%20App%20UX%20Audit%20Parameter%20Overwhelm%20Analysis.md)
+- [ACX076 Dark Mode Refinement and UX Polish](./ACX076%20Dark%20Mode%20Refinement%20and%20UX%20Polish.md)
+- [ACX077 Dashboard UX Audit and Optimization](./ACX077%20Dashboard%20UX%20Audit%20and%20Optimization.md)
+- [ACX078 Visualization Engagement P0 Fixes](./ACX078%20Visualization%20Engagement%20P0%20Fixes.md)
+- [ACX079 Language Reframing Plan](./ACX079%20Language%20Reframing%20Plan%20From%20Guilt%20Machine%20to%20Literacy%20Tool.md)
+- [ACX080 Comprehensive Rebuild Strategy](./ACX080%20Carbon%20ACX%20Web%20Application%20Comprehensive%20Rebuild%20Strategy.md)
+- [ACX081 Phase 2 Preparation Core Experience](./ACX081%20Carbon%20ACX%20Phase%202%20Preparation%20Core%20Experience.md)
+- [ACX082 Calculator Enhancement Transport Modes](./ACX082%20Calculator%20Enhancement%20Transport%20Modes%20Responsive%20Layouts%20Expandable%20Details.md)
+- [ACX083 GPT Codex Performance Recommendations](./ACX083%20GPT%20Codex%20Performance%20Recommendations%20Analysis%20Action%20Plan.md)
+- [ACX084 3D Universe Foundation Sprint](./ACX084%203D%20Universe%20Foundation%20Sprint%20Complete%20Implementation.md)
+- [ACX085 3D Universe SSR Fix Phase 5](./ACX085%203D%20Universe%20Foundation%20Sprint%20SSR%20Fix%20Phase%205%20Completion.md)
+- [ACX086 SSR Crisis Resolution](./ACX086%20SSR%20Crisis%20Resolution%20%26%203D%20Universe%20Sprint%20Completion.md)
+- [ACX087 Comprehensive UX Audit Report](./ACX087%20Carbon%20ACX%20Web%20Application%20Comprehensive%20UX%20Audit%20Report.md)
+- [ACX088 Cloudflare Pages Deployment Diagnostic](./ACX088%20Cloudflare%20Pages%20Deployment%20Issue%20Emergency%20Diagnostic.md)
+- [ACX089 UX Audit Critical Fixes](./ACX089%20UX%20Audit%20Critical%20Fixes%20Completion%20Report.md)
+- [ACX090 DataUniverse 3D Runtime Error Investigation](./ACX090%20DataUniverse%203D%20Visualization%20Runtime%20Error%20Investigation.md)
+- [ACX091 Frontend Enhancement Sprint](./ACX091%20Frontend%20Enhancement%20Sprint.md)
+- [ACX092 Frontend Rock-Solid Sprint Report](./ACX092%20Frontend%20Rock-Solid%20Sprint%20Report.md)
+- [ACX093 Strategic Frontend Rebuild Specification](./ACX093%20Strategic%20Frontend%20Rebuild%20Specification.md)
+- [ACX094 Phase 3 3D Visualization Implementation](./ACX094%20Phase%203%203D%20Visualization%20Implementation%20Report.md)
+- [ACX096 Strategic Rebuild Progress Audit](./ACX096%20Strategic%20Rebuild%20Progress%20Audit.md)
+- [ACX097 Recent Documentation Audit](./ACX097%20Recent%20Documentation%20Audit%20-%20Planning%20vs%20Execution%20Alignment.md)
+- [ACX098 Bloat Remediation Recommendations](./ACX098%20Bloat%20Remediation%20Recommendations.md)
+- [ACX099 World Labs and Blender MCP Integration Handoff](./ACX099%20World%20Labs%20and%20Blender%20MCP%20Integration%20Handoff.md)
+- [ACX100 World Labs 3D World Integration Specification](./ACX100%20World%20Labs%203D%20World%20Integration%20Specification.md)
+- [ACX101 World Labs Integration and Calculator Implementation Sprint](./ACX101%20World%20Labs%20Integration%20and%20Calculator%20Implementation%20Sprint.md)
+
+## Navigation
+
+- **Vault:** [[../../vault|Return to Vault]]
+- **Repo:** carbon-acx
+- **Docs:** `docs/acx/`
+
+## Tags
+
+#project-index #acx
+
+---
+
+**Last Updated:** 2026-05-01

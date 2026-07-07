@@ -1,109 +1,91 @@
 import Link from 'next/link'
 
+interface FooterLink {
+  href: string
+  label: string
+  external?: boolean
+}
+
+const productLinks: FooterLink[] = [
+  { href: '/calculator', label: 'Calculator' },
+  { href: '/explore', label: 'Explore' },
+  { href: '/explore/3d', label: '3D Universe' },
+  { href: '/explore/worlds', label: 'Carbon Worlds' },
+  { href: '/manifests', label: 'Manifests' },
+] as const
+
+const referenceLinks: FooterLink[] = [
+  { href: '/methodology', label: 'Methodology' },
+  { href: '/api/health', label: 'API health' },
+  { href: 'https://github.com/chrislyons/carbon-acx', label: 'Repository', external: true },
+  { href: 'https://github.com/chrislyons/carbon-acx/tree/main/docs', label: 'Docs tree', external: true },
+] as const
+
 export function Footer() {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="border-t border-gray-200 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="col-span-1 md:col-span-2">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">
-              Carbon ACX
-            </h3>
-            <p className="text-sm text-gray-600 mb-4">
-              Open reference stack for trustworthy carbon accounting with
-              manifest-first architecture, byte hashes, and provenance tracking.
-            </p>
-            <p className="text-xs text-gray-500">
-              Licensed under MIT. Built with Next.js 15.
+    <footer className="site-footer">
+      <div className="page-shell py-6 sm:py-8">
+        <div className="grid gap-6 md:grid-cols-[minmax(0,1.2fr)_minmax(180px,0.8fr)_minmax(180px,0.8fr)]">
+          <div>
+            <div className="flex items-center gap-3">
+              <span className="brand-mark" aria-hidden="true">
+                AC
+              </span>
+              <div>
+                <div className="text-lg font-semibold text-foreground">Carbon ACX</div>
+                <div className="metric-label">Manifest-first carbon accounting</div>
+              </div>
+            </div>
+            <p className="section-copy mt-4 max-w-xl">
+              Carbon ACX packages calculator data, manifests, and exploration routes from the same derivation
+              pipeline so the product surface stays auditable and consistent.
             </p>
           </div>
 
           <div>
-            <h4 className="text-sm font-semibold text-gray-900 mb-4">
-              Features
-            </h4>
-            <ul className="space-y-2">
-              <li>
-                <Link
-                  href="/calculator"
-                  className="text-sm text-gray-600 hover:text-gray-900"
-                >
-                  Activity Calculator
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/explore"
-                  className="text-sm text-gray-600 hover:text-gray-900"
-                >
-                  Data Explorer
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/manifests"
-                  className="text-sm text-gray-600 hover:text-gray-900"
-                >
-                  Manifest Viewer
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/methodology"
-                  className="text-sm text-gray-600 hover:text-gray-900"
-                >
-                  Methodology
-                </Link>
-              </li>
+            <div className="section-kicker">Product</div>
+            <ul className="footer-list mt-4">
+              {productLinks.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="quiet-link">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
           <div>
-            <h4 className="text-sm font-semibold text-gray-900 mb-4">
-              Resources
-            </h4>
-            <ul className="space-y-2">
-              <li>
-                <a
-                  href="https://github.com/chrislyons/carbon-acx"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-gray-600 hover:text-gray-900"
-                >
-                  GitHub
-                </a>
-              </li>
-              <li>
-                <Link
-                  href="/api/health"
-                  className="text-sm text-gray-600 hover:text-gray-900"
-                >
-                  API Status
-                </Link>
-              </li>
-              <li>
-                <a
-                  href="https://github.com/chrislyons/carbon-acx/blob/main/docs/API.md"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-gray-600 hover:text-gray-900"
-                >
-                  API Documentation
-                </a>
-              </li>
+            <div className="section-kicker">Reference</div>
+            <ul className="footer-list mt-4">
+              {referenceLinks.map((link) => (
+                <li key={link.href}>
+                  {link.external ? (
+                    <a
+                      href={link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="quiet-link"
+                    >
+                      {link.label}
+                    </a>
+                  ) : (
+                    <Link href={link.href} className="quiet-link">
+                      {link.label}
+                    </Link>
+                  )}
+                </li>
+              ))}
             </ul>
           </div>
         </div>
 
-        <div className="mt-8 pt-8 border-t border-gray-200">
-          <p className="text-xs text-center text-gray-500">
-            © {currentYear} Carbon ACX. All rights reserved. |{' '}
-            <span className="text-gray-400">
-              Ref: ACX093 Strategic Frontend Rebuild
-            </span>
-          </p>
+        <div className="surface-divider" />
+        <div className="flex flex-col gap-2 text-sm text-[color:var(--text-subtle)] sm:flex-row sm:items-center sm:justify-between">
+          <span>&copy; {currentYear} Carbon ACX</span>
+          <span>Derived data, inspectable manifests, and compact product routing.</span>
         </div>
       </div>
     </footer>

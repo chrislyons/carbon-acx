@@ -1,3 +1,11 @@
+---
+related:
+  - 3d-data-visualization
+  - 3d_visualization_supports_understanding
+  - spatial_interfaces_require_new_navigation_paradigms
+  - ACX
+---
+
 # ACX100 World Labs 3D World Integration Specification
 
 **Date:** 2026-01-25

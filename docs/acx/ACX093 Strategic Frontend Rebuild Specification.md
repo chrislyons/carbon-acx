@@ -1,3 +1,11 @@
+---
+related:
+  - cloudflare-workers-stack
+  - component_libraries_reduce_cross_project_ui_debt
+  - git_as_provenance_record_enables_attribution
+  - ACX
+---
+
 # Strategic Frontend Rebuild Specification
 
 **Document ID:** ACX092

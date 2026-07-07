@@ -1,7 +1,7 @@
 # Wrangler configuration for Cloudflare Pages
 name = "carbon-acx-web"
 compatibility_date = "2025-01-01"
-pages_build_output_dir = ".next"
+pages_build_output_dir = "dist"
 
 [env.production]
 routes = [

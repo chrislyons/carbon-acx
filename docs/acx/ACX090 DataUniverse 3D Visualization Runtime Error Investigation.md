@@ -1,3 +1,11 @@
+---
+related:
+  - 3d-data-visualization
+  - 3d_visualization_supports_understanding
+  - wasm_reliability_requires_progressive_enhancement
+  - ACX
+---
+
 # ACX090 - DataUniverse 3D Visualization Runtime Error Investigation
 
 **Created:** 2025-10-28

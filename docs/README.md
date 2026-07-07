@@ -1,221 +1,68 @@
 # Carbon ACX Documentation
 
-Comprehensive documentation for the Carbon ACX open reference stack for trustworthy carbon accounting.
+This directory is the source of truth for the Carbon ACX recovery baseline. The active product surfaces are the Next.js app in `apps/carbon-acx-web/`, packaged artifacts from `calc/`, and the analyst Dash app in `app/`. Historical planning and prototype material stays archived in-place instead of being mixed back into the active docs root.
 
-## Directory Structure
+## Current Layout
 
-```
+```text
 docs/
-├── README.md                  # This file - documentation index
-├── CHANGELOG.md               # Project changelog
-├── TESTING_NOTES.md           # Testing guidelines and QA expectations
-├── WHAT_RUNS_WHERE.md         # Environment expectations and runtime requirements
-│
-├── acx/                       # Numbered ACX documentation series
-│   ├── ACX001.md ... ACX086.md
-│   └── archive/               # Archived ACX docs
-│
-├── archive/                   # Dated/obsolete implementation docs
-│   ├── FRONTEND_IMPLEMENTATION_STATUS.md
-│   ├── FRONTEND_POLISH_PLAN.md
-│   ├── FRONTEND_REDESIGN_2025-10-12.md
-│   ├── USER_JOURNEYS.md
-│   ├── MAINTENANCE_CALENDAR.md
-│   └── CONTRIBUTING_SERIES.md
-│
-├── audits/                    # Repository and code audits
-│   ├── AUDIT_2025-10-12.md
-│   └── pr_history_review.md
-│
-└── guides/                    # How-to guides and reference docs
-    ├── deploy.md              # Deployment guide
-    ├── compare.md             # Comparison utilities
-    ├── validation.md          # Validation guide
-    ├── share-diff.md          # Sharing and diffing
-    ├── routes.md              # Application routes
-    ├── THEMING.md             # Design system and theming
-    ├── UX-IA.md               # UX and information architecture
-    └── ONLINE_METHOD_NOTES.md # Online methodology notes
+├── README.md                  # This index
+├── acx/
+│   ├── ACX.md                 # Active ACX catalog
+│   ├── ACX099 ... ACX101.md   # Current titled ACX documents
+│   └── archive/               # Historical ACX series
+├── archive/                   # General historical implementation docs
+├── audits/
+│   └── archive/               # Archived audits
+├── guides/
+│   └── archive/               # Archived guides
+├── wireframes/
+│   ├── archive/               # Shared wireframe overview archive
+│   └── v0.0.x/archive/        # Versioned wireframe archives
+└── repo-commands.html         # Command reference
 ```
 
 ## Quick Navigation
 
-### Essential Reference Docs (Root)
+- [ACX catalog](./acx/ACX.md)
+- [General archive](./archive/)
+- [Archived audits](./audits/archive/)
+- [Archived guides](./guides/archive/)
+- [Wireframe archives](./wireframes/archive/)
+- [Command reference](./repo-commands.html)
 
-- **[CHANGELOG.md](./CHANGELOG.md)** - Project changelog
-- **[TESTING_NOTES.md](./TESTING_NOTES.md)** - QA guidelines
-- **[WHAT_RUNS_WHERE.md](./WHAT_RUNS_WHERE.md)** - Runtime environments
+## ACX Naming Conventions
 
-### ACX Documentation Series
+- `ACX.md` is the live catalog for the numbered ACX series.
+- Active numbered documents use the pattern `ACX<NUM> <Title>.md`.
+- Historical numbered documents move to `docs/acx/archive/` without changing their filenames.
 
-The `acx/` directory contains numbered ACX documents following workspace conventions:
+Examples:
 
-**Format**: `ACX<NUM>.md` where NUM is 3-4 digits, zero-padded, sequential
+- `ACX099 World Labs and Blender MCP Integration Handoff.md`
+- `ACX101 World Labs Integration and Calculator Implementation Sprint.md`
 
-**Latest Documents**:
-- **[ACX080.md](./acx/ACX080.md)** - Phase 1 rebuild strategy (canvas-first architecture)
-- **[ACX082.md](./acx/ACX082.md)** - 3D Universe Foundation Sprint planning
-- **[ACX083.md](./acx/ACX083.md)** - Phase 3: Sphere Distribution & Layout System
-- **[ACX084.md](./acx/ACX084.md)** - Phase 4: Camera Choreography & Intro Animation
-- **[ACX085.md](./acx/ACX085.md)** - SSR Fix & Phase 5 Completion
-- **[ACX086.md](./acx/ACX086.md)** - Session Report: SSR Crisis Resolution
-
-**Browse All**: See `acx/` directory for complete chronological listing.
-
-### Guides
-
-- **[deploy.md](./guides/deploy.md)** - Deployment instructions
-- **[THEMING.md](./guides/THEMING.md)** - Design tokens and theming system
-- **[UX-IA.md](./guides/UX-IA.md)** - User experience and information architecture
-- **[routes.md](./guides/routes.md)** - Application routing reference
-- **[validation.md](./guides/validation.md)** - Data validation guide
-
-### Audits
-
-- **[AUDIT_2025-10-12.md](./audits/AUDIT_2025-10-12.md)** - Comprehensive repository audit
-- **[pr_history_review.md](./audits/pr_history_review.md)** - Pull request history analysis
-
-### Archive
-
-Dated implementation docs and obsolete planning documents. Kept for historical reference.
-
-- **[FRONTEND_IMPLEMENTATION_STATUS.md](./archive/FRONTEND_IMPLEMENTATION_STATUS.md)** - Phase 1-3 frontend status (2025-10-12)
-- **[USER_JOURNEYS.md](./archive/USER_JOURNEYS.md)** - User journey mapping
-
-## Documentation Conventions
-
-### Naming Convention
-
-**Pattern**: `<PREFIX><NUM>.(md|mdx)`
-
-- **Prefix**: 3-4 uppercase letters (e.g., `ACX`, `HBX`, `OCC`)
-- **Number**: 3-4 digits, zero-padded, sequential
-- **Regex**: `^([A-Z]{3,4})(\d{3,4})\.(md|mdx)$`
-
-**Examples**: `ACX001.md`, `ACX085.md`
-
-### Document Structure
-
-All structured documentation (ACX series) follows this template:
-
-```markdown
-# <Title>
-
-<1-4 sentence purpose>
-
-## Context
-<Background>
-
-## Decisions / Artifacts
-<What was decided/created>
-
-## Next Actions
-- [ ] <Next step>
-
-## References
-[1] <URL>
-```
-
-### Citations
-
-External claims must be cited in IEEE style:
-
-```markdown
-## References
-[1] https://example.com/source
-[2] https://another-source.com/article
-```
-
-### Discovery Before Creating
-
-Before creating a new ACX document:
+To discover the highest active numbered document:
 
 ```bash
-ls -1 docs/acx/*.md | grep -E "^ACX[0-9]{3,4}\.md$" | sort
+find docs/acx -maxdepth 1 -type f -name 'ACX[0-9]*.md' | sort
 ```
 
-Find the highest number and increment by 1, preserving digit width (3-4 digits).
+## Maintenance Rules
 
-## Related Documentation
+- Keep `docs/acx/ACX.md` aligned with the active-vs-archived split.
+- When archiving docs, move them into the matching archive directory instead of deleting them.
+- Treat `docs/audits/`, `docs/guides/`, and `docs/wireframes/` as archive entrypoints unless a new active index is intentionally added.
+- Update links and indexes in the same change whenever files move.
 
-### Repository Root
+## Related Repository Docs
 
-- **[README.md](../README.md)** - Project overview and getting started
-- **[CLAUDE.md](../CLAUDE.md)** - Repository-specific development rules
-- **[AGENTS.md](../AGENTS.md)** - AI assistant policies and review gates
-- **[CONTRIBUTING.md](../CONTRIBUTING.md)** - Contribution guidelines
-
-### Workspace
-
-- **[~/chrislyons/dev/CLAUDE.md](../../CLAUDE.md)** - Workspace conventions
-- **[~/.claude/CLAUDE.md](~/.claude/CLAUDE.md)** - Global user rules
-
-### Skills & Agents
-
-- **[.claude/skills/](../.claude/skills/)** - Skill definitions
-- **[.claude/agents/](../.claude/agents/)** - Agent definitions
-
-## Contributing to Documentation
-
-### Adding New ACX Documents
-
-1. Find the next sequential number:
-   ```bash
-   ls -1 docs/acx/ACX*.md | tail -1
-   ```
-
-2. Create document following template (see "Document Structure" above)
-
-3. Add IEEE-style citations for external sources
-
-4. Update this README if adding a significant milestone document
-
-### Updating Guides
-
-- Guides are evergreen - update in place with version history at bottom
-- Add "Last Updated" date and "Version" number
-- Major restructures should create new versioned docs
-
-### Archiving Documents
-
-Move dated/obsolete docs to `archive/` to keep root clean:
-
-```bash
-git mv docs/OLD_DOC.md docs/archive/
-```
-
-Update this README to remove references to archived docs.
-
-## Documentation Standards
-
-### Quality Checklist
-
-- [ ] Clear title and purpose statement
-- [ ] Proper markdown formatting
-- [ ] Working internal links
-- [ ] IEEE citations for external sources
-- [ ] Code examples tested (if applicable)
-- [ ] Screenshots/diagrams current (if applicable)
-- [ ] No secrets or credentials
-- [ ] Proper grammar and spelling
-
-### Accessibility
-
-- Use descriptive link text (not "click here")
-- Provide alt text for images
-- Use semantic headings (H1, H2, H3 hierarchy)
-- Avoid ASCII art (use diagrams or Mermaid instead)
-- Test with screen reader if possible
-
-### Maintenance
-
-- Review docs quarterly for accuracy
-- Archive obsolete implementation status docs
-- Update version numbers when content changes
-- Keep directory structure flat (max 2 levels)
+- [README.md](../README.md)
+- [CLAUDE.md](../CLAUDE.md)
+- [AGENTS.md](../AGENTS.md)
+- [CONTRIBUTING.md](../CONTRIBUTING.md)
 
 ---
 
-**Version**: 1.0.0
-**Last Updated**: 2025-10-27
-**Maintainer**: Carbon ACX Core Team
+**Version:** 1.1.0  
+**Last Updated:** 2026-03-25

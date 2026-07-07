@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 from calc.dal_sql import SqlStore
-from calc.service import compute_profile
+from calc.service import COMPUTE_PROFILE_CONTRACT_VERSION, compute_profile
 from scripts import import_csv_to_db
 
 
@@ -70,7 +70,8 @@ def test_compute_profile_shape_and_latency(sqlite_db: Path) -> None:
     duration = time.perf_counter() - start
     assert duration < 0.3, f"compute took {duration * 1000:.2f}ms"
 
-    assert set(response) == {"figures", "references", "manifest"}
+    assert set(response) == {"contract_version", "figures", "references", "manifest"}
+    assert response["contract_version"] == COMPUTE_PROFILE_CONTRACT_VERSION
     figures = response["figures"]
     assert set(figures) == {"stacked", "bubble", "sankey", "feedback"}
     assert response["manifest"]["profile_id"] == "PRO.TO.24_39.HYBRID.2025"

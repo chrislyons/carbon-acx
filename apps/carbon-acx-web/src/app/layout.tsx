@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { QueryProvider } from '@/components/providers/QueryProvider'
+import { ThemeProvider } from '@/components/providers/ThemeProvider'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -22,12 +23,21 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className="antialiased min-h-screen flex flex-col">
+    <html lang="en" suppressHydrationWarning>
+      <body className="min-h-screen bg-background text-foreground antialiased">
+        <a href="#main-content" className="skip-link">
+          Skip to main content
+        </a>
         <QueryProvider>
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
+          <ThemeProvider>
+            <div className="flex min-h-screen flex-col">
+              <Header />
+              <main id="main-content" className="flex-1" role="main">
+                {children}
+              </main>
+              <Footer />
+            </div>
+          </ThemeProvider>
         </QueryProvider>
       </body>
     </html>

@@ -1,3 +1,11 @@
+---
+related:
+  - 3d-data-visualization
+  - wasm_reliability_requires_progressive_enhancement
+  - cloudflare-workers-stack
+  - ACX
+---
+
 # 3D Universe Foundation Sprint - SSR Fix & Phase 5 Completion
 
 Definitive resolution of Three.js SSR errors on Cloudflare Pages and completion of Phase 5 interactive features for the Carbon ACX 3D Data Universe visualization.

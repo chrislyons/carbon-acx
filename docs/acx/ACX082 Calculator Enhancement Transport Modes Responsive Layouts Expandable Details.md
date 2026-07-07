@@ -1,3 +1,8 @@
+---
+related:
+  - ACX
+---
+
 # Calculator Enhancement: Transport Modes, Responsive Layouts, and Expandable Details
 
 Implementation of UX improvements to both QuickCalculator and EmissionCalculator components, addressing usability issues and adding optional granularity for data-conscious users.

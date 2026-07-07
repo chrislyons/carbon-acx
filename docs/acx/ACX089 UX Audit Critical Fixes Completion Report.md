@@ -1,3 +1,8 @@
+---
+related:
+  - ACX
+---
+
 # UX Audit Critical Fixes - Completion Report
 
 Implementation of CRITICAL and HIGH priority fixes from ACX087 UX audit.
@@ -18,9 +23,9 @@ Following the systematic UX audit documented in ACX087.md, this report tracks th
 - Added emission factor loading from `loadEmissionFactors()` API
 - Implemented `getEmissionFactor()` helper function that:
   - Matches activities to emission factors by `activityId` and `sectorId`
-  - Calculates `carbonIntensity` from `valueGPerUnit / 1000` (g ’ kg conversion)
+  - Calculates `carbonIntensity` from `valueGPerUnit / 1000` (g â†’ kg conversion)
   - Falls back to sector-level factor if activity-specific not found
-  - Provides default estimate (0.5 kg CO‚) with warning if no factor available
+  - Provides default estimate (0.5 kg COÂ‚) with warning if no factor available
 - Added loading state for emission factors
 - Proper error handling with console warnings for missing factors
 
@@ -50,7 +55,7 @@ Following the systematic UX audit documented in ACX087.md, this report tracks th
 - Integrated Radix UI Dialog component
 - Created modal that appears before adding activity
 - Input validation (min: 0.1, required)
-- Real-time emission preview showing `quantity × carbonIntensity`
+- Real-time emission preview showing `quantity Ã— carbonIntensity`
 - Error messaging for invalid quantities
 - Cancel/Confirm buttons with proper state management
 - Fully accessible with ARIA labels and keyboard support
@@ -220,9 +225,9 @@ Following the systematic UX audit documented in ACX087.md, this report tracks th
 
 1.  Verify build passes
 2.  Create completion report (this document)
-3. í Manual QA testing in browser
-4. í Git commit with comprehensive message
-5. í Consider PR creation if requested
+3. Ã­ Manual QA testing in browser
+4. Ã­ Git commit with comprehensive message
+5. Ã­ Consider PR creation if requested
 
 ## Summary
 

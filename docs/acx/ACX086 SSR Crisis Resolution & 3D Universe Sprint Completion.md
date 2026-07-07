@@ -1,3 +1,11 @@
+---
+related:
+  - 3d-data-visualization
+  - wasm_reliability_requires_progressive_enhancement
+  - cloudflare-workers-stack
+  - ACX
+---
+
 # Session Report: SSR Crisis Resolution & 3D Universe Sprint Completion
 
 Final session report documenting the resolution of critical production errors and completion of the 3D Universe Foundation Sprint for Carbon ACX.

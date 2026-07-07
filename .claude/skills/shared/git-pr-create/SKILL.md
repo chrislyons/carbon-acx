@@ -223,6 +223,7 @@ Use HEREDOC for proper formatting:
 
 ```bash
 gh pr create \
+  --fill \
   --base main \
   --title "feat(web): add dark mode toggle to dashboard" \
   --body "$(cat <<'EOF'

@@ -1,3 +1,9 @@
+---
+related:
+  - performance_optimization_requires_measurement
+  - ACX
+---
+
 # GPT Codex Performance Recommendations - Analysis & Action Plan
 
 Evaluation of optimization suggestions from GPT Codex for Carbon ACX codebase.

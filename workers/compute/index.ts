@@ -1,3 +1,10 @@
+/**
+ * Experimental Worker compute surface.
+ *
+ * Source-of-truth compute lives in `calc/service.py::compute_profile`.
+ * Keep this route limited to parity work until it matches the Python contract.
+ */
+
 import { computeFigures, getDatasetVersion, OverrideMap } from './runtime';
 
 const JSON_TYPE = 'application/json; charset=utf-8';
