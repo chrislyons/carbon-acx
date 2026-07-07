@@ -100,6 +100,26 @@ secrets.
 | doc-linter | pass |
 | Python dataset tests (via `uv run --no-project`) | pass |
 
+## 5. Input-validation UI + test-infra hardening (follow-on)
+
+Completed the user-facing half of the "nothing silently dropped" guarantee and
+fixed two latent test-infrastructure gaps found while verifying it.
+
+- **Input validation** (`calculator/page.tsx`): the change handler no longer
+  does `parseFloat(value) || 0`. It now clears on empty, commits finite
+  non-negative values, and rejects invalid/negative entries with an accessible
+  per-field error (`aria-invalid`, `role="alert"`, `aria-describedby`). Errors
+  reset on Reset. Verified in a real browser (Playwright).
+- **e2e coverage** (`tests/e2e/input-validation.spec.ts`): negative value shows
+  the error and flags the field; valid value clears both.
+- **`.eslintignore`** (new): `eslint .` in eslintrc mode ignores `.gitignore`,
+  so a populated `dist/` or `test-results/` would trip `no-assign-module-variable`
+  and intermittently break the lint gate. Pinned an explicit ignore list.
+- **Playwright webServer fix** (`playwright.config.ts`): was `pnpm build &&
+  pnpm start`, but `next start` cannot serve a static export (`output:
+  'export'`) — the suite only passed when a dev server was already running.
+  Switched to `pnpm dev`. All four e2e specs now pass standalone (CI-ready).
+
 ## Commits (on `main`, pushed)
 
 - `8c06be7` merge(main): record #254 ancestry
@@ -108,15 +128,21 @@ secrets.
 - `260d81f` fix(calculator): source comparison baseline from data; guard invalid inputs
 - `8a1218d` docs(skills): defang fake API key in anti-pattern example
 - `f7aa6b5` fix(docs): drop Google Fonts CDN from repo-commands.html (offline-first)
+- `fc5cea6` docs(acx): add ACX102 recovery merge + calculator provenance report
+- `dd2f0c8` feat(calculator): surface invalid inputs instead of coercing to zero
+- `cdb711f` test(calculator): e2e coverage for invalid-input surfacing
+- `01851d4` chore(web): add .eslintignore for build/test artifacts
+- `d0eb32b` fix(web): make e2e suite runnable standalone (static-export compatible)
 
 ## Notes / Follow-ups
 
 - **Tooling policy:** Python tooling on this machine must use **brew or uv only**
   (never `poetry install`/`pip` from PyPI) — supply-chain caution. Used
   `uv run --no-project` / `uvx` for all Python this session.
-- **Next step (identified, not yet done):** the calculator lib now *computes*
-  skipped inputs, but the UI still parses `"abc" → 0` silently
-  (`calculator/page.tsx:214`) and pre-filters before calling the lib. A
-  user-facing input-validation layer (distinguish empty vs. invalid, per-field
-  notice with ARIA) is the natural next increment to fully realize the
-  "nothing silently dropped" guarantee.
+- **Secret-hook:** refined the global `uri_creds` rule (backup at
+  `~/.claude/hooks/scan-secrets-commit.sh.bak`); it now excludes font-CDN URLs
+  and requires a letter in the password segment, still catching real
+  `user:password@host` credentials.
+- **Remaining opportunity:** other benchmark entities in
+  `data/equity_benchmarks.csv` (e.g. global average, other nations) could be
+  surfaced as additional comparison baselines using the same sourced pattern.
