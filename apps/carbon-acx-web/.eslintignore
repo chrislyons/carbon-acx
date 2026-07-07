@@ -1,0 +1,12 @@
+# Build and test artifacts — never lint generated/minified output.
+# eslintrc mode (this repo) does not honour .gitignore, so list them here to
+# keep `eslint .` deterministic even when a local build or Playwright run has
+# populated these directories.
+dist/
+.next/
+out/
+node_modules/
+coverage/
+test-results/
+playwright-report/
+next-env.d.ts
