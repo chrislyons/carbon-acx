@@ -1,6 +1,6 @@
 {
-  "schemaVersion": "acx.web-calculator/1-1-0",
-  "generatedAt": "2026-07-07T19:45:47+00:00",
+  "schemaVersion": "acx.web-calculator/1-2-0",
+  "generatedAt": "2026-07-11T07:25:41+00:00",
   "categories": {
     "transport": {
       "name": "Transport",
@@ -547,11 +547,108 @@
   "benchmarks": {
     "canadian_average": {
       "label": "Canada",
-      "perCapitaTonnes": 14.2,
-      "annualGrams": 14200000,
+      "scope": "national",
+      "regionCode": "CA",
+      "perCapitaTonnes": 17.3,
+      "annualGrams": 17300000,
+      "totalMt": 694.0,
+      "populationMillions": 40.098,
       "year": 2023,
       "sourceId": "SRC.ECCC.NIR.2025",
-      "sourceCitation": "[15] Environment and Climate Change Canada, \u201cNational Inventory Report 1990\u20132023: Greenhouse Gas Sources and Sinks in Canada,\u201d Ottawa, ON, Canada, 2025. Available: https://publications.gc.ca/collections/collection_2025/eccc/En81-4-2025-1-eng.pdf"
+      "sourceCitation": "[15] Environment and Climate Change Canada, \u201cNational Inventory Report 1990\u20132023: Greenhouse Gas Sources and Sinks in Canada,\u201d Ottawa, ON, Canada, 2025. Available: https://publications.gc.ca/collections/collection_2025/eccc/En81-4-2025-1-eng.pdf",
+      "populationSourceId": "SRC.STATCAN.POP.2023",
+      "populationCitation": "[64] Statistics Canada, Table 17-10-0009-01, \u201cPopulation estimates, quarterly (July 1, 2023),\u201d Ottawa, ON, Canada, 2023. Available: https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710000901",
+      "notes": "National territorial total 694 Mt (NIR 2025)"
+    },
+    "alberta_average": {
+      "label": "Alberta",
+      "scope": "province",
+      "regionCode": "CA-AB",
+      "perCapitaTonnes": 56.0,
+      "annualGrams": 56000000,
+      "totalMt": 263.4,
+      "populationMillions": 4.703,
+      "year": 2023,
+      "sourceId": "SRC.ECCC.NIR.2025",
+      "sourceCitation": "[15] Environment and Climate Change Canada, \u201cNational Inventory Report 1990\u20132023: Greenhouse Gas Sources and Sinks in Canada,\u201d Ottawa, ON, Canada, 2025. Available: https://publications.gc.ca/collections/collection_2025/eccc/En81-4-2025-1-eng.pdf",
+      "populationSourceId": "SRC.STATCAN.POP.2023",
+      "populationCitation": "[64] Statistics Canada, Table 17-10-0009-01, \u201cPopulation estimates, quarterly (July 1, 2023),\u201d Ottawa, ON, Canada, 2023. Available: https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710000901",
+      "notes": "AB total directly confirmed in 2025 NIR; oil & gas dominant"
+    },
+    "saskatchewan_average": {
+      "label": "Saskatchewan",
+      "scope": "province",
+      "regionCode": "CA-SK",
+      "perCapitaTonnes": 60.4,
+      "annualGrams": 60400000,
+      "totalMt": 73.0,
+      "populationMillions": 1.209,
+      "year": 2023,
+      "sourceId": "SRC.ECCC.NIR.2025",
+      "sourceCitation": "[15] Environment and Climate Change Canada, \u201cNational Inventory Report 1990\u20132023: Greenhouse Gas Sources and Sinks in Canada,\u201d Ottawa, ON, Canada, 2025. Available: https://publications.gc.ca/collections/collection_2025/eccc/En81-4-2025-1-eng.pdf",
+      "populationSourceId": "SRC.STATCAN.POP.2023",
+      "populationCitation": "[64] Statistics Canada, Table 17-10-0009-01, \u201cPopulation estimates, quarterly (July 1, 2023),\u201d Ottawa, ON, Canada, 2023. Available: https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710000901",
+      "notes": "Small population + heavy extraction industry"
+    },
+    "ontario_average": {
+      "label": "Ontario",
+      "scope": "province",
+      "regionCode": "CA-ON",
+      "perCapitaTonnes": 9.2,
+      "annualGrams": 9200000,
+      "totalMt": 143.0,
+      "populationMillions": 15.623,
+      "year": 2023,
+      "sourceId": "SRC.ECCC.NIR.2025",
+      "sourceCitation": "[15] Environment and Climate Change Canada, \u201cNational Inventory Report 1990\u20132023: Greenhouse Gas Sources and Sinks in Canada,\u201d Ottawa, ON, Canada, 2025. Available: https://publications.gc.ca/collections/collection_2025/eccc/En81-4-2025-1-eng.pdf",
+      "populationSourceId": "SRC.STATCAN.POP.2023",
+      "populationCitation": "[64] Statistics Canada, Table 17-10-0009-01, \u201cPopulation estimates, quarterly (July 1, 2023),\u201d Ottawa, ON, Canada, 2023. Available: https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710000901",
+      "notes": "Nuclear + hydro grid keeps per-capita low"
+    },
+    "quebec_average": {
+      "label": "Quebec",
+      "scope": "province",
+      "regionCode": "CA-QC",
+      "perCapitaTonnes": 8.6,
+      "annualGrams": 8600000,
+      "totalMt": 76.0,
+      "populationMillions": 8.848,
+      "year": 2023,
+      "sourceId": "SRC.ECCC.NIR.2025",
+      "sourceCitation": "[15] Environment and Climate Change Canada, \u201cNational Inventory Report 1990\u20132023: Greenhouse Gas Sources and Sinks in Canada,\u201d Ottawa, ON, Canada, 2025. Available: https://publications.gc.ca/collections/collection_2025/eccc/En81-4-2025-1-eng.pdf",
+      "populationSourceId": "SRC.STATCAN.POP.2023",
+      "populationCitation": "[64] Statistics Canada, Table 17-10-0009-01, \u201cPopulation estimates, quarterly (July 1, 2023),\u201d Ottawa, ON, Canada, 2023. Available: https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710000901",
+      "notes": "Lowest per-capita; extensive hydroelectricity"
+    },
+    "british_columbia_average": {
+      "label": "British Columbia",
+      "scope": "province",
+      "regionCode": "CA-BC",
+      "perCapitaTonnes": 10.7,
+      "annualGrams": 10700000,
+      "totalMt": 59.0,
+      "populationMillions": 5.519,
+      "year": 2023,
+      "sourceId": "SRC.ECCC.NIR.2025",
+      "sourceCitation": "[15] Environment and Climate Change Canada, \u201cNational Inventory Report 1990\u20132023: Greenhouse Gas Sources and Sinks in Canada,\u201d Ottawa, ON, Canada, 2025. Available: https://publications.gc.ca/collections/collection_2025/eccc/En81-4-2025-1-eng.pdf",
+      "populationSourceId": "SRC.STATCAN.POP.2023",
+      "populationCitation": "[64] Statistics Canada, Table 17-10-0009-01, \u201cPopulation estimates, quarterly (July 1, 2023),\u201d Ottawa, ON, Canada, 2023. Available: https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710000901",
+      "notes": "NIR national-accounting basis (excl. LULUCF)"
+    },
+    "manitoba_average": {
+      "label": "Manitoba",
+      "scope": "province",
+      "regionCode": "CA-MB",
+      "perCapitaTonnes": 15.1,
+      "annualGrams": 15100000,
+      "totalMt": 22.0,
+      "populationMillions": 1.454,
+      "year": 2023,
+      "sourceId": "SRC.ECCC.NIR.2025",
+      "sourceCitation": "[15] Environment and Climate Change Canada, \u201cNational Inventory Report 1990\u20132023: Greenhouse Gas Sources and Sinks in Canada,\u201d Ottawa, ON, Canada, 2025. Available: https://publications.gc.ca/collections/collection_2025/eccc/En81-4-2025-1-eng.pdf",
+      "populationSourceId": "SRC.STATCAN.POP.2023",
+      "populationCitation": "[64] Statistics Canada, Table 17-10-0009-01, \u201cPopulation estimates, quarterly (July 1, 2023),\u201d Ottawa, ON, Canada, 2023. Available: https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710000901",
+      "notes": "Hydro grid; agriculture-weighted emissions"
     }
   }
 }

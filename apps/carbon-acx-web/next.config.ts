@@ -5,6 +5,11 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
 
+  // Loopback origins allowed to request /_next/* in dev. Silences the Next.js
+  // cross-origin dev warning when the app is reached via 127.0.0.1 (e.g. the
+  // Playwright e2e webServer) rather than localhost. Dev-only; no prod effect.
+  allowedDevOrigins: ['localhost', '127.0.0.1'],
+
   // ESLint configuration
   eslint: {
     // Allow production builds to complete even with ESLint errors

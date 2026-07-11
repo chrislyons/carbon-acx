@@ -378,6 +378,13 @@
     "license": "Statistics Canada Open Licence"
   },
   {
+    "source_id": "SRC.STATCAN.POP.2023",
+    "ieee_citation": "[64] Statistics Canada, Table 17-10-0009-01, \u201cPopulation estimates, quarterly (July 1, 2023),\u201d Ottawa, ON, Canada, 2023. Available: https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710000901",
+    "url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710000901",
+    "year": "2023",
+    "license": "Statistics Canada Open Licence"
+  },
+  {
     "source_id": "SRC.TORONTO.FREIGHT.2024",
     "ieee_citation": "[55] City of Toronto, \u201cFreight and Goods Movement Strategy,\u201d Toronto, ON, Canada, 2024. Available: https://www.toronto.ca/services-payments/streets-parking-transportation/transportation-planning/transportation-master-plans/freight-and-goods-movement-strategy/",
     "url": "https://www.toronto.ca/services-payments/streets-parking-transportation/transportation-planning/transportation-master-plans/freight-and-goods-movement-strategy/",

@@ -1,0 +1,16 @@
+# Comparison Baselines — per-capita GHG footprint reference points for the calculator
+# Basis: ECCC National Inventory Report 1990-2023 (territorial/production accounting,
+#   excl. LULUCF), 2023. Per-capita = province total (Mt CO2e) / StatCan Jul 1 2023
+#   population. All figures traceable to a source_id; per-capita is derived, not quoted,
+#   so total_mt and population_millions are carried for verification.
+# Methodology note: territorial (production-based). Do NOT mix with consumption-based
+#   figures in data/equity_benchmarks.csv — they are not directly comparable.
+# Format: key,label,scope,region_code,total_mt,population_millions,per_capita_tonnes,year,source_id,population_source_id,notes
+key,label,scope,region_code,total_mt,population_millions,per_capita_tonnes,year,source_id,population_source_id,notes
+canadian_average,Canada,national,CA,694.0,40.098,17.3,2023,SRC.ECCC.NIR.2025,SRC.STATCAN.POP.2023,National territorial total 694 Mt (NIR 2025)
+alberta_average,Alberta,province,CA-AB,263.4,4.703,56.0,2023,SRC.ECCC.NIR.2025,SRC.STATCAN.POP.2023,AB total directly confirmed in 2025 NIR; oil & gas dominant
+saskatchewan_average,Saskatchewan,province,CA-SK,73.0,1.209,60.4,2023,SRC.ECCC.NIR.2025,SRC.STATCAN.POP.2023,Small population + heavy extraction industry
+ontario_average,Ontario,province,CA-ON,143.0,15.623,9.2,2023,SRC.ECCC.NIR.2025,SRC.STATCAN.POP.2023,Nuclear + hydro grid keeps per-capita low
+quebec_average,Quebec,province,CA-QC,76.0,8.848,8.6,2023,SRC.ECCC.NIR.2025,SRC.STATCAN.POP.2023,Lowest per-capita; extensive hydroelectricity
+british_columbia_average,British Columbia,province,CA-BC,59.0,5.519,10.7,2023,SRC.ECCC.NIR.2025,SRC.STATCAN.POP.2023,NIR national-accounting basis (excl. LULUCF)
+manitoba_average,Manitoba,province,CA-MB,22.0,1.454,15.1,2023,SRC.ECCC.NIR.2025,SRC.STATCAN.POP.2023,Hydro grid; agriculture-weighted emissions

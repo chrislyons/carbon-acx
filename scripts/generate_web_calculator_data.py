@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-SCHEMA_VERSION = "acx.web-calculator/1-1-0"
+SCHEMA_VERSION = "acx.web-calculator/1-2-0"
 DEFAULT_OUTPUT = Path("apps/carbon-acx-web/src/generated/calculator-data.json")
 SOURCES_OUTPUT = Path("apps/carbon-acx-web/src/generated/sources.json")
 
@@ -60,16 +60,14 @@ SELECTED_ACTIVITIES = [
 
 REGION_PREFERENCE = {"CA-ON": 0, "CA": 1, "GLOBAL": 2, "": 3}
 
-# Comparison baselines surfaced in the calculator. Each entry names the
-# entity_id in data/equity_benchmarks.csv so the value stays sourced and
-# dynamic — never a hardcoded literal in the web app.
-BENCHMARK_ENTITIES = {
-    "canadian_average": "CA",
-}
-
 # Grams of CO2e per tonne, used to normalise per-capita tonnes to the grams
 # the calculator works in. Defined once here rather than inlined downstream.
 GRAMS_PER_TONNE = 1_000_000
+
+# Tolerance for verifying that a benchmark's stated per-capita matches
+# total_mt / population_millions. Guards against a stale CSV edit where a total
+# or population is changed without recomputing per-capita.
+BENCHMARK_DERIVATION_TOLERANCE_T = 0.15
 
 
 @dataclass(frozen=True)
@@ -194,33 +192,69 @@ def _pick_grid_row(
 def build_benchmarks(
     repo_root: Path, sources: dict[str, dict[str, str]]
 ) -> dict[str, dict[str, Any]]:
-    """Build sourced comparison baselines from ``equity_benchmarks.csv``.
+    """Build sourced comparison baselines from ``data/benchmarks.csv``.
 
-    The calculator compares a user's footprint against per-capita baselines.
-    Every value carries its ``source_id``, IEEE citation, and vintage year so
-    the web app can render it dynamically with provenance — no magic numbers.
+    The calculator compares a user's footprint against per-capita baselines
+    (national and provincial). Every value carries its emissions ``source_id``,
+    population ``source_id``, IEEE citations, and vintage year so the web app
+    can render it dynamically with full provenance — no magic numbers.
+
+    Per-capita is *derived* (total_mt / population_millions); the stated
+    per_capita_tonnes is verified against that derivation so a stale CSV edit
+    (e.g. a total updated without recomputing) fails the build rather than
+    shipping an inconsistent number.
     """
-    rows = {
-        row["entity_id"]: row
-        for row in _load_commented_csv(repo_root / "data/equity_benchmarks.csv")
-    }
+    rows = _load_commented_csv(repo_root / "data/benchmarks.csv")
+    if not rows:
+        raise ValueError("data/benchmarks.csv contains no benchmark rows")
+
     benchmarks: dict[str, dict[str, Any]] = {}
-    for key, entity_id in BENCHMARK_ENTITIES.items():
-        row = rows.get(entity_id)
-        if row is None:
-            raise KeyError(f"Missing benchmark entity '{entity_id}' for '{key}'")
-        per_capita_tonnes = _float_or_none(row.get("co2_per_capita_tonnes"))
+    for row in rows:
+        key = (row.get("key") or "").strip()
+        if not key:
+            raise ValueError("benchmark row is missing a 'key'")
+
+        per_capita_tonnes = _float_or_none(row.get("per_capita_tonnes"))
         if per_capita_tonnes is None:
-            raise ValueError(f"Benchmark '{entity_id}' has no co2_per_capita_tonnes")
+            raise ValueError(f"Benchmark '{key}' has no per_capita_tonnes")
+
+        total_mt = _float_or_none(row.get("total_mt"))
+        population_millions = _float_or_none(row.get("population_millions"))
+
+        # Verify the derivation: total (Mt) / population (M) == per-capita (t).
+        if total_mt is not None and population_millions:
+            derived = total_mt / population_millions
+            if abs(derived - per_capita_tonnes) > BENCHMARK_DERIVATION_TOLERANCE_T:
+                raise ValueError(
+                    f"Benchmark '{key}': stated per_capita_tonnes "
+                    f"{per_capita_tonnes} disagrees with derived "
+                    f"{derived:.2f} (total_mt / population_millions). "
+                    "Recompute per_capita_tonnes in data/benchmarks.csv."
+                )
+
         source_id = (row.get("source_id") or "").strip() or None
+        population_source_id = (row.get("population_source_id") or "").strip() or None
         citation = sources.get(source_id, {}).get("ieee_citation") if source_id else None
+        population_citation = (
+            sources.get(population_source_id, {}).get("ieee_citation")
+            if population_source_id
+            else None
+        )
+
         benchmarks[key] = {
-            "label": row.get("entity_name") or entity_id,
+            "label": row.get("label") or key,
+            "scope": (row.get("scope") or "").strip() or None,
+            "regionCode": (row.get("region_code") or "").strip() or None,
             "perCapitaTonnes": per_capita_tonnes,
             "annualGrams": round(per_capita_tonnes * GRAMS_PER_TONNE),
+            "totalMt": total_mt,
+            "populationMillions": population_millions,
             "year": _int_or_none(row.get("year")),
             "sourceId": source_id,
             "sourceCitation": citation,
+            "populationSourceId": population_source_id,
+            "populationCitation": population_citation,
+            "notes": (row.get("notes") or "").strip() or None,
         }
     return benchmarks
 

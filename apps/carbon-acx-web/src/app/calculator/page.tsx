@@ -6,9 +6,12 @@ import Link from 'next/link'
 import {
   ACTIVITIES,
   CATEGORY_INFO,
-  CANADIAN_AVERAGE,
+  DEFAULT_BENCHMARK_KEY,
   calculateEmissions,
+  comparisonToBenchmark,
   formatEmissions,
+  getBenchmark,
+  getBenchmarkOptions,
   getActivitiesByCategory,
   type ActivityCategory,
   type CalculatorInput,
@@ -652,6 +655,10 @@ function ResultsView({
   onTargetYearChange,
 }: ResultsViewProps) {
   const [copied, setCopied] = useState(false)
+  const [benchmarkKey, setBenchmarkKey] = useState<string>(DEFAULT_BENCHMARK_KEY)
+  const benchmarkOptions = useMemo(() => getBenchmarkOptions(), [])
+  const selectedBenchmark = getBenchmark(benchmarkKey) ?? benchmarkOptions[0]
+  const comparisonPct = comparisonToBenchmark(summary.totalEmissions, selectedBenchmark)
   const categories = Object.keys(CATEGORY_INFO) as ActivityCategory[]
 
   // Sort categories by emissions for the chart
@@ -759,19 +766,43 @@ function ResultsView({
           </div>
           <div className="text-foreground-muted mb-4">Total CO₂ equivalent per year</div>
 
-          {summary.comparisonToAverage > 0 && (
-            <div
-              className="inline-flex items-center gap-2 px-4 py-2 surface-panel rounded-full text-sm border border-surface-border"
-              title={CANADIAN_AVERAGE.sourceCitation ?? undefined}
-            >
-              <span>
-                {summary.comparisonToAverage < 100 ? '🌱' : '⚠️'}
-              </span>
-              <span>
-                {summary.comparisonToAverage.toFixed(1)}% of {CANADIAN_AVERAGE.label} per-capita average
-                {CANADIAN_AVERAGE.year ? ` (${CANADIAN_AVERAGE.year})` : ''} (
-                {formatEmissions(CANADIAN_AVERAGE.annualGrams)})
-              </span>
+          {comparisonPct > 0 && (
+            <div className="flex flex-col items-center gap-2">
+              <div
+                className="inline-flex items-center gap-2 px-4 py-2 surface-panel rounded-full text-sm border border-surface-border"
+                title={selectedBenchmark.sourceCitation ?? undefined}
+              >
+                <span aria-hidden="true">{comparisonPct < 100 ? '🌱' : '⚠️'}</span>
+                <span>
+                  {comparisonPct.toFixed(1)}% of {selectedBenchmark.label} per-capita average
+                  {selectedBenchmark.year ? ` (${selectedBenchmark.year})` : ''} (
+                  {formatEmissions(selectedBenchmark.annualGrams)})
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <label htmlFor="benchmark-select" className="text-xs text-foreground-muted">
+                  Compare against
+                </label>
+                <select
+                  id="benchmark-select"
+                  value={benchmarkKey}
+                  onChange={(e) => setBenchmarkKey(e.target.value)}
+                  className="text-xs px-2 py-1 rounded-md border border-surface-border bg-background-elevated text-foreground focus:ring-2 focus:ring-accent-primary"
+                >
+                  {benchmarkOptions.map((option) => (
+                    <option key={option.key} value={option.key}>
+                      {option.scope === 'province' ? `  ${option.label}` : option.label} —{' '}
+                      {option.perCapitaTonnes.toFixed(1)} t/yr
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {selectedBenchmark.scope === 'province' && selectedBenchmark.totalMt && (
+                <p className="text-xs text-foreground-subtle">
+                  {selectedBenchmark.label}: {selectedBenchmark.totalMt} Mt CO₂e ÷{' '}
+                  {selectedBenchmark.populationMillions}M people (NIR territorial basis)
+                </p>
+              )}
             </div>
           )}
         </div>

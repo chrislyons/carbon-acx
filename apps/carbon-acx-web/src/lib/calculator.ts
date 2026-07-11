@@ -39,13 +39,22 @@ export interface CategoryInfo {
   color: string
 }
 
+export type BenchmarkScope = 'national' | 'province' | string
+
 export interface Benchmark {
   label: string
+  scope: BenchmarkScope | null
+  regionCode: string | null
   perCapitaTonnes: number
   annualGrams: number
+  totalMt: number | null
+  populationMillions: number | null
   year: number | null
   sourceId: string | null
   sourceCitation: string | null
+  populationSourceId: string | null
+  populationCitation: string | null
+  notes: string | null
 }
 
 export interface CalculatorDataset {
@@ -95,10 +104,40 @@ export const ACTIVITIES = CALCULATOR_DATASET.activities
 export const CATEGORY_INFO = CALCULATOR_DATASET.categories
 export const BENCHMARKS = CALCULATOR_DATASET.benchmarks
 
-// Sourced comparison baseline (see data/equity_benchmarks.csv → ECCC NIR).
-// Dynamic and citation-backed; never a hardcoded literal.
-export const CANADIAN_AVERAGE = BENCHMARKS.canadian_average
+// Sourced comparison baselines (see data/benchmarks.csv → ECCC NIR territorial
+// basis + StatCan population). Dynamic and citation-backed; never hardcoded.
+export const DEFAULT_BENCHMARK_KEY = 'canadian_average'
+export const CANADIAN_AVERAGE = BENCHMARKS[DEFAULT_BENCHMARK_KEY]
 export const CANADIAN_AVERAGE_ANNUAL = CANADIAN_AVERAGE.annualGrams
+
+export interface BenchmarkOption extends Benchmark {
+  key: string
+}
+
+/**
+ * All comparison baselines, national first, then provinces ascending by
+ * per-capita footprint (Quebec lowest → Saskatchewan highest). Stable order
+ * for selectors and legends.
+ */
+export function getBenchmarkOptions(): BenchmarkOption[] {
+  return Object.entries(BENCHMARKS)
+    .map(([key, benchmark]) => ({ key, ...benchmark }))
+    .sort((a, b) => {
+      const aNational = a.scope === 'national' ? 0 : 1
+      const bNational = b.scope === 'national' ? 0 : 1
+      if (aNational !== bNational) return aNational - bNational
+      return a.perCapitaTonnes - b.perCapitaTonnes
+    })
+}
+
+export function getBenchmark(key: string): Benchmark | undefined {
+  return BENCHMARKS[key]
+}
+
+/** Footprint as a percentage of a benchmark's annual per-capita baseline. */
+export function comparisonToBenchmark(totalEmissions: number, benchmark: Benchmark): number {
+  return benchmark.annualGrams > 0 ? (totalEmissions / benchmark.annualGrams) * 100 : 0
+}
 
 // O(1) id lookup, built once from the generated dataset.
 const ACTIVITY_BY_ID: ReadonlyMap<string, Activity> = new Map(
