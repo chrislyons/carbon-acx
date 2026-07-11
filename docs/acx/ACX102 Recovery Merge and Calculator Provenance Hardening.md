@@ -134,6 +134,43 @@ fixed two latent test-infrastructure gaps found while verifying it.
 - `01851d4` chore(web): add .eslintignore for build/test artifacts
 - `d0eb32b` fix(web): make e2e suite runnable standalone (static-export compatible)
 
+## 6. National + provincial comparison benchmarks (follow-on)
+
+Completed the "surface additional benchmarks" and `allowedDevOrigins`
+follow-ups. Priority order per direction: deepen **Canadian source diversity**
+first (provincial breakdown), before branching to other nations.
+
+- **New `data/benchmarks.csv`** — dedicated comparison-baseline table on a
+  single consistent methodology: **ECCC NIR 1990-2023 territorial basis (2023)**.
+  Per-capita is *derived* (province total Mt ÷ StatCan Jul-2023 population); the
+  CSV carries `total_mt` + `population_millions` so the derivation is verifiable,
+  plus an emissions `source_id` (`SRC.ECCC.NIR.2025`) and a population
+  `source_id` (`SRC.STATCAN.POP.2023`, newly added, IEEE [64]) per row.
+- **Methodology change:** the national baseline moved from **14.2 t
+  (consumption-based)** to **17.3 t (NIR territorial)** so national and
+  provincial figures are directly comparable — mixing bases was the prior
+  latent correctness hazard.
+- **Figures (2023 NIR territorial, t/capita/yr):** Canada 17.3, Quebec 8.6,
+  Ontario 9.2, BC 10.7, Manitoba 15.1, Alberta 56.0, Saskatchewan 60.4.
+  Alberta's 263.4 Mt total is directly confirmed in the 2025 NIR; the others
+  corroborated against the NIR provincial ranking and per-capita context.
+  Quebec/Ontario/BC low (hydro/nuclear grids); AB/SK high (oil & gas + coal).
+- **Generator:** `build_benchmarks` verifies each stated per-capita against
+  `total_mt / population_millions` (tolerance 0.15 t) — a stale edit fails the
+  build. Schema bumped to `acx.web-calculator/1-2-0`.
+- **Web:** lib gains `getBenchmarkOptions()` / `getBenchmark()` /
+  `comparisonToBenchmark()`; the calculator adds a benchmark `<select>` with a
+  per-province derivation line (Mt ÷ population). `next.config` sets
+  `allowedDevOrigins` to silence the Next cross-origin dev warning.
+- **Tests:** Python asserts dual provenance + derivation tie-out and that a bad
+  derivation is rejected; TS covers ordering, provenance, and that a lower
+  baseline yields a higher comparison %; new e2e drives the selector. 19 unit
+  + 5 e2e green.
+
+## Commits (session 2, on `main`)
+
+- `a4939cf` feat(calculator): sourced national + provincial comparison benchmarks
+
 ## Notes / Follow-ups
 
 - **Tooling policy:** Python tooling on this machine must use **brew or uv only**
@@ -143,6 +180,13 @@ fixed two latent test-infrastructure gaps found while verifying it.
   `~/.claude/hooks/scan-secrets-commit.sh.bak`); it now excludes font-CDN URLs
   and requires a letter in the password segment, still catching real
   `user:password@host` credentials.
-- **Remaining opportunity:** other benchmark entities in
-  `data/equity_benchmarks.csv` (e.g. global average, other nations) could be
-  surfaced as additional comparison baselines using the same sourced pattern.
+- **Data provenance caveat:** ECCC's machine-readable A-Tables (XLSX) were not
+  fetchable in-session (gov endpoints 403 / JS-gated); provincial totals other
+  than Alberta are corroborated across ECCC-sourced material rather than pulled
+  from the single primary spreadsheet. When the A-Tables are accessible, verify
+  ON/QC/SK/BC/MB totals against them and tighten if needed — the derivation
+  guard will flag any correction that doesn't tie out.
+- **Next benchmarks (per priority order):** complete **North America** (add
+  US national + states if state-level NIR-equivalent data is sourced; Mexico),
+  then the rest of the world from the consumption-based `equity_benchmarks.csv`
+  (kept separate — different methodology; would need a labelled basis toggle).
