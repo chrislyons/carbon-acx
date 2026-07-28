@@ -18,7 +18,7 @@ export default function MethodologyPage() {
         estimate is only shown when its factor has a registered source, boundary, region, GWP horizon, and vintage.
       </p>
 
-      <div className="mt-10 grid gap-5 md:grid-cols-2">
+      <div className="methodology-grid">
         <section className="surface-card">
           <h2 className="text-xl font-semibold text-foreground">Annual convention</h2>
           <p className="mt-3 text-foreground-muted">
@@ -49,7 +49,7 @@ export default function MethodologyPage() {
         </section>
       </div>
 
-      <section className="mt-8 surface-card">
+      <section className="surface-card reference-panel">
         <Eyebrow>Generated metadata</Eyebrow>
         <dl className="mt-4 grid gap-4 sm:grid-cols-3">
           <div><dt className="metric-label">Dataset version</dt><dd className="font-mono text-sm">{CALCULATOR_DATASET.schemaVersion}</dd></div>
@@ -58,7 +58,7 @@ export default function MethodologyPage() {
         </dl>
       </section>
 
-      <section className="mt-8 surface-card">
+      <section className="surface-card reference-panel">
         <Eyebrow>Comparison records</Eyebrow>
         <div className="mt-4 overflow-x-auto">
           <table className="w-full min-w-[38rem] text-left text-sm">
@@ -79,7 +79,7 @@ export default function MethodologyPage() {
         </div>
       </section>
 
-      <section className="mt-8 surface-card">
+      <section className="surface-card reference-panel">
         <Eyebrow>Source registry</Eyebrow>
         <p className="mt-3 text-foreground-muted">
           This ordered list is generated from published calculator records; it is not maintained separately in page
@@ -90,7 +90,7 @@ export default function MethodologyPage() {
         </div>
       </section>
 
-      <section className="mt-8 surface-card">
+      <section className="surface-card reference-panel">
         <Eyebrow>Static evidence artifacts</Eyebrow>
         <p className="mt-3 text-foreground-muted">
           Figures and their manifests are packaged with the static site. A manifest reports build metadata; the

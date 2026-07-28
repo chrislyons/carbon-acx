@@ -833,6 +833,10 @@ label {
   --rule: #657168;
   --oxide: #83c6b2;
   --background: var(--paper);
+  --background-elevated: #202b26;
+  --background-hover: #2a3932;
+  --surface-panel: #202b26;
+  --surface-panel-strong: #26342d;
   --signal: #ffad80;
   --foreground: var(--ink);
   --foreground-muted: var(--ink-muted);
@@ -846,7 +850,7 @@ body { background: var(--paper); color: var(--ink); }
 .ruled-section { border-block: 1px solid var(--rule); }
 .section-kicker { color: var(--oxide); font: 650 .74rem/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; }
 .mono, .equation, .trace-takeaway { font-family: var(--font-mono); }
-.trace-estimate { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(18rem, .7fr); gap: clamp(2rem, 6vw, 6rem); padding-block: clamp(2rem, 7vw, 6rem); }
+.trace-estimate { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(18rem, .7fr); gap: clamp(2rem, 6vw, 6rem); padding-block: clamp(1.5rem, 4vw, 3.5rem); }
 .trace-estimate h1, .editorial-fork h2 { font-family: var(--font-display); font-size: clamp(2.5rem, 6vw, 5.8rem); line-height: .91; letter-spacing: -.055em; margin: .7rem 0 1.5rem; }
 .trace-estimate__lead > p { max-width: 42rem; font-size: 1.1rem; }
 .quantity-field { display: grid; grid-template-columns: auto minmax(6rem, 10rem) auto; align-items: end; gap: .75rem; margin-top: 2rem; font-weight: 600; }
@@ -861,7 +865,7 @@ body { background: var(--paper); color: var(--ink); }
 .evidence-rail dl div { display:grid; grid-template-columns: 7rem 1fr; gap: .8rem; border-top: 1px solid var(--rule); padding: .5rem 0; }
 .evidence-rail dt { color: var(--ink-muted); }
 .evidence-rail dd { margin: 0; }
-.editorial-fork { display: grid; grid-template-columns: 1.2fr .8fr; gap: clamp(2rem, 8vw, 8rem); padding-block: 3rem; }
+.editorial-fork { display: grid; grid-template-columns: 1.2fr .8fr; gap: clamp(2rem, 8vw, 8rem); padding-block: 2rem; }
 .editorial-fork article + article { border-left: 1px solid var(--rule); padding-left: clamp(1.5rem, 5vw, 5rem); }
 .editorial-fork h2 { font-size: clamp(2rem, 4vw, 3.6rem); }
 @media (max-width: 700px) { .trace-estimate, .editorial-fork { grid-template-columns: 1fr; } .evidence-rail, .editorial-fork article + article { border-left: 0; border-top: 1px solid var(--rule); padding: 1.5rem 0 0; } .quantity-field { grid-template-columns: 1fr auto; } .quantity-field > span:first-child { grid-column: 1 / -1; } }
@@ -879,3 +883,6 @@ body { background: var(--paper); color: var(--ink); }
 @media (max-width: 800px) { .worksheet__groups,.mode-switcher { grid-template-columns:1fr; }.worksheet__body,.atlas__scan,.activity-editor { grid-template-columns:1fr; }.result-composition { position:static; order:-1; }.atlas__filters { grid-template-columns:1fr; } }
 .site-header { position:sticky; top:0; z-index:20; background:color-mix(in srgb, var(--paper) 92%, transparent); border-bottom:1px solid var(--rule); backdrop-filter:blur(8px); }.site-header__inner { display:flex; align-items:center; gap:1rem; justify-content:space-between; padding-block:.8rem; }.site-header__brand { font:700 1.15rem var(--font-display); }.site-header__brand span { display:block; color:var(--ink-muted); font:500 .64rem var(--font-mono); text-transform:uppercase; letter-spacing:.05em; }.site-header nav { display:flex; gap:1rem; }.site-header nav a { border-bottom:1px solid transparent; font-size:.9rem; }.site-header nav a[aria-current="page"],.site-header nav a:hover { border-color:var(--signal); }.mode-switcher__button { border:1px solid var(--rule); background:transparent; color:inherit; padding:.35rem .55rem; font:600 .72rem var(--font-mono); }.site-footer { border-top:1px solid var(--rule); margin-top:3rem; }.reference-strip { display:flex; justify-content:space-between; gap:1rem; padding-block:1rem; color:var(--ink-muted); font-size:.8rem; }.reference-strip nav { display:flex; flex-wrap:wrap; gap:1rem; }.reference-strip a { color:var(--ink); text-decoration:underline; text-underline-offset:3px; }
 @media (max-width:700px) { .site-header__inner { flex-wrap:wrap; }.site-header nav { order:3; width:100%; justify-content:space-between; gap:.5rem; }.reference-strip { display:block; }.reference-strip nav { margin-top:.75rem; } }
+.methodology-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:1rem; margin-top:2.5rem; }.reference-panel { margin-top:1rem; }.surface-card { border-radius:0; box-shadow:none; padding:1.25rem; } .surface-card:hover { box-shadow:none; }
+@media (max-width:700px) { .methodology-grid { grid-template-columns:1fr; } }
+.manifest-list { display:grid; gap:1rem; margin-top:2.5rem; }

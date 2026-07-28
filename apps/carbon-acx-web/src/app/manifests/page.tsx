@@ -17,7 +17,7 @@ export default async function ManifestsPage() {
       {manifests.length === 0 ? (
         <div className="mt-8"><DataState title="No manifests are packaged">Run <code>make build</code> before creating the static bundle.</DataState></div>
       ) : (
-        <div className="mt-8 grid gap-3">
+        <div className="manifest-list">
           {manifests.map((manifest) => (
             <Link key={manifest.id} href={`/manifests/${manifest.id}`} className="surface-card block hover:border-[color:var(--surface-border-strong)]">
               <div className="flex flex-wrap items-start justify-between gap-4">
