@@ -1,61 +1,33 @@
-# Carbon ACX Web - Next.js 15 Frontend
+# Carbon ACX public web
 
-Modern frontend for Carbon ACX built with Next.js 15, React 19, and TypeScript.
-
-## Stack
-
-- **Framework:** Next.js 15 (App Router)
-- **React:** 19.0
-- **TypeScript:** 5.7+
-- **Styling:** Tailwind CSS 4
-- **State Management:** TanStack Query v5 + Zustand 5
-- **UI Components:** Radix UI
-- **3D Visualization:** Three.js + React Three Fiber
-
-## Development
-
-```bash
-# Install dependencies
-pnpm install
-
-# Run development server
-pnpm dev
-
-# Build for production
-pnpm build
-
-# Type checking
-pnpm typecheck
-
-# Linting
-pnpm lint
-```
+A static Next.js App Router site for Carbon ACX’s public carbon-literacy interface. It makes activity-level annual estimates legible as quantity × cited emission factor, and preserves the distinction between calculator activities and the wider evidence catalogue.
 
 ## Architecture
 
-This is a complete rebuild following ACX093 Strategic Frontend Rebuild Specification.
+- **Next App Router static export** — no API routes or runtime data service.
+- **Authoritative generated data** — `src/generated/calculator-data.json`, `catalog-data.json`, and `sources.json` are produced from repository CSV authorities. Do not hand-edit them.
+- **Public routes** — `/`, `/calculator`, `/explore`, `/explore/3d`, `/methodology`, `/manifests`, and `/manifests/[id]`.
+- **Artifacts** — raw immutable artifacts remain available under `/artifacts/`; manifest pages verify fetched bytes against declared SHA-256 digests in the browser.
+- **Publication policy** — only finite, unit-matched factors with a cited source, region, scope boundary, GWP horizon, and vintage can be published. Demonstrative factors are unavailable, never zero.
 
-**Key Principles:**
-1. **Manifest-First UI** - Every data point shows provenance
-2. **Server Components** - Fetch manifest data server-side
-3. **Progressive Enhancement** - Works without JavaScript
-4. **Test-Driven** - 80%+ test coverage minimum
+## Data generation
 
-## Phase 1: Foundation (Current)
+From the repository root:
 
-- [x] Next.js 15 scaffold
-- [ ] Core dependencies installed
-- [ ] Cloudflare Pages configuration
-- [ ] Manifest data layer
-- [ ] API routes
-- [ ] Basic layout
+```sh
+poetry run python scripts/generate_web_calculator_data.py
+```
 
-**Ref:** ACX093 Strategic Frontend Rebuild Specification
+This writes all three generated web authorities. Use `ACX_GENERATED_AT` to reproduce an output timestamp for deterministic comparisons.
 
-## Legacy Frontend
+## Development and verification
 
-The previous Vite + React frontend has been archived to `apps/carbon-acx-web-legacy` and will be removed after successful migration.
+```sh
+pnpm dev
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm test:e2e
+```
 
-## License
-
-MIT
+From the repository root, `make build-static` packages the static site and artifacts into `dist/site/`.

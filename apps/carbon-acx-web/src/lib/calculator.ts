@@ -1,19 +1,22 @@
 import calculatorDataJson from '@/generated/calculator-data.json'
+import catalogDataJson from '@/generated/catalog-data.json'
 
-export type ActivityCategory =
-  | 'transport'
-  | 'food'
-  | 'digital'
-  | 'home'
-  | 'shopping'
+export type ActivityCategory = 'transport' | 'food' | 'digital' | 'home' | 'shopping'
 
-export interface ActivityProvenance {
+export interface ActivityEvidence {
   activityId: string
   emissionFactorId: string
-  emissionFactorRegion: string | null
-  emissionFactorVintageYear: number | null
-  gridIntensityRegion: string | null
-  gridIntensityVintageYear: number | null
+  sectorId: string
+  layerId: string
+  region: string | null
+  scopeBoundary: string
+  gwpHorizon: string
+  vintageYear: number | null
+  sourceIds: string[]
+  sourceCitations: string[]
+  methodNotes: string | null
+  uncertainty: { lowGPerUnit: number | null; highGPerUnit: number | null }
+  publicationStatus: 'published' | 'unavailable'
 }
 
 export interface Activity {
@@ -24,18 +27,23 @@ export interface Activity {
   unitLabel: string
   emissionFactor: number
   description?: string
-  sourceIds: string[]
-  sourceCitations: string[]
-  provenance: ActivityProvenance
-  // Custom activity fields
-  isCustom?: boolean
-  isGridIndexed?: boolean
-  electricityKwhPerUnit?: number
+  evidence: ActivityEvidence
+}
+
+export interface CatalogActivity {
+  id: string
+  name: string
+  category: string
+  unit: string
+  unitLabel: string
+  description: string
+  emissionFactor: number | null
+  evidence: ActivityEvidence
+  unavailabilityReason: string | null
 }
 
 export interface CategoryInfo {
   name: string
-  emoji: string
   color: string
 }
 
@@ -65,6 +73,12 @@ export interface CalculatorDataset {
   benchmarks: Record<string, Benchmark>
 }
 
+export interface CatalogDataset {
+  schemaVersion: string
+  generatedAt: string
+  activities: CatalogActivity[]
+}
+
 export interface CalculatorInput {
   activityId: string
   quantity: number
@@ -76,11 +90,18 @@ export interface CalculatorResult {
   category: ActivityCategory
   quantity: number
   unit: string
+  unitLabel: string
+  emissionFactor: number
   emissions: number
   emissionsKg: number
+  evidence: ActivityEvidence
 }
 
-export type SkippedInputReason = 'unknown-activity' | 'non-positive-quantity' | 'non-finite-quantity'
+export type SkippedInputReason =
+  | 'unknown-activity'
+  | 'unavailable-activity'
+  | 'non-positive-quantity'
+  | 'non-finite-quantity'
 
 export interface SkippedInput {
   activityId: string
@@ -95,17 +116,15 @@ export interface CalculatorSummary {
   totalEmissionsTonnes: number
   byCategory: Record<ActivityCategory, number>
   comparisonToAverage: number
-  /** Inputs excluded from the total, surfaced so nothing is silently dropped. */
   skipped: SkippedInput[]
 }
 
 export const CALCULATOR_DATASET = calculatorDataJson as CalculatorDataset
+export const CATALOG_DATASET = catalogDataJson as CatalogDataset
 export const ACTIVITIES = CALCULATOR_DATASET.activities
+export const CATALOG_ACTIVITIES = CATALOG_DATASET.activities
 export const CATEGORY_INFO = CALCULATOR_DATASET.categories
 export const BENCHMARKS = CALCULATOR_DATASET.benchmarks
-
-// Sourced comparison baselines (see data/benchmarks.csv → ECCC NIR territorial
-// basis + StatCan population). Dynamic and citation-backed; never hardcoded.
 export const DEFAULT_BENCHMARK_KEY = 'canadian_average'
 export const CANADIAN_AVERAGE = BENCHMARKS[DEFAULT_BENCHMARK_KEY]
 export const CANADIAN_AVERAGE_ANNUAL = CANADIAN_AVERAGE.annualGrams
@@ -114,11 +133,6 @@ export interface BenchmarkOption extends Benchmark {
   key: string
 }
 
-/**
- * All comparison baselines, national first, then provinces ascending by
- * per-capita footprint (Quebec lowest → Saskatchewan highest). Stable order
- * for selectors and legends.
- */
 export function getBenchmarkOptions(): BenchmarkOption[] {
   return Object.entries(BENCHMARKS)
     .map(([key, benchmark]) => ({ key, ...benchmark }))
@@ -134,18 +148,23 @@ export function getBenchmark(key: string): Benchmark | undefined {
   return BENCHMARKS[key]
 }
 
-/** Footprint as a percentage of a benchmark's annual per-capita baseline. */
 export function comparisonToBenchmark(totalEmissions: number, benchmark: Benchmark): number {
   return benchmark.annualGrams > 0 ? (totalEmissions / benchmark.annualGrams) * 100 : 0
 }
 
-// O(1) id lookup, built once from the generated dataset.
 const ACTIVITY_BY_ID: ReadonlyMap<string, Activity> = new Map(
   ACTIVITIES.map((activity) => [activity.id, activity]),
+)
+const CATALOG_ACTIVITY_BY_ID: ReadonlyMap<string, CatalogActivity> = new Map(
+  CATALOG_ACTIVITIES.map((activity) => [activity.id, activity]),
 )
 
 export function getActivityById(id: string): Activity | undefined {
   return ACTIVITY_BY_ID.get(id)
+}
+
+export function getCatalogActivityById(id: string): CatalogActivity | undefined {
+  return CATALOG_ACTIVITY_BY_ID.get(id)
 }
 
 export function getActivitiesByCategory(category: ActivityCategory): Activity[] {
@@ -166,7 +185,13 @@ export function calculateEmissions(inputs: CalculatorInput[]): CalculatorSummary
   for (const input of inputs) {
     const activity = getActivityById(input.activityId)
     if (!activity) {
-      skipped.push({ ...input, reason: 'unknown-activity' })
+      const catalogActivity = getCatalogActivityById(input.activityId)
+      skipped.push({
+        ...input,
+        reason: catalogActivity?.evidence.publicationStatus === 'unavailable'
+          ? 'unavailable-activity'
+          : 'unknown-activity',
+      })
       continue
     }
     if (!Number.isFinite(input.quantity)) {
@@ -177,6 +202,10 @@ export function calculateEmissions(inputs: CalculatorInput[]): CalculatorSummary
       skipped.push({ ...input, reason: 'non-positive-quantity' })
       continue
     }
+    if (activity.evidence.publicationStatus !== 'published') {
+      skipped.push({ ...input, reason: 'unavailable-activity' })
+      continue
+    }
 
     const emissions = input.quantity * activity.emissionFactor
     results.push({
@@ -185,20 +214,21 @@ export function calculateEmissions(inputs: CalculatorInput[]): CalculatorSummary
       category: activity.category,
       quantity: input.quantity,
       unit: activity.unit,
+      unitLabel: activity.unitLabel,
+      emissionFactor: activity.emissionFactor,
       emissions,
       emissionsKg: emissions / 1000,
+      evidence: activity.evidence,
     })
-
     byCategory[activity.category] += emissions
   }
 
   const totalEmissions = results.reduce((sum, result) => sum + result.emissions, 0)
-
   return {
     results,
     totalEmissions,
     totalEmissionsKg: totalEmissions / 1000,
-    totalEmissionsTonnes: totalEmissions / 1000000,
+    totalEmissionsTonnes: totalEmissions / 1_000_000,
     byCategory,
     comparisonToAverage:
       CANADIAN_AVERAGE_ANNUAL > 0 ? (totalEmissions / CANADIAN_AVERAGE_ANNUAL) * 100 : 0,
@@ -207,17 +237,38 @@ export function calculateEmissions(inputs: CalculatorInput[]): CalculatorSummary
 }
 
 export function formatEmissions(grams: number): string {
-  if (grams >= 1000000) {
-    return `${(grams / 1000000).toFixed(2)} tonnes`
-  }
-  if (grams >= 1000) {
-    return `${(grams / 1000).toFixed(1)} kg`
-  }
-  return `${Math.round(grams)} g`
+  if (grams >= 1_000_000) return `${(grams / 1_000_000).toFixed(2)} t CO₂e`
+  if (grams >= 1_000) return `${(grams / 1_000).toFixed(1)} kg CO₂e`
+  return `${Math.round(grams)} g CO₂e`
 }
 
-export function getEmissionsColor(kg: number): string {
-  if (kg < 1) return '#10b981'
-  if (kg < 10) return '#f59e0b'
-  return '#ef4444'
+export function encodeCalculatorInputs(inputs: Record<string, number>): string {
+  const entries = Object.entries(inputs).filter(
+    ([activityId, quantity]) => getActivityById(activityId) && Number.isFinite(quantity) && quantity > 0,
+  )
+  return entries.length > 0 ? btoa(entries.map(([id, value]) => `${id}:${value}`).join(',')) : ''
+}
+
+export function decodeCalculatorInputs(encoded: string): Record<string, number> {
+  try {
+    return atob(encoded).split(',').reduce<Record<string, number>>((decoded, entry) => {
+      const separator = entry.lastIndexOf(':')
+      const activityId = entry.slice(0, separator)
+      const quantity = Number(entry.slice(separator + 1))
+      if (getActivityById(activityId) && Number.isFinite(quantity) && quantity > 0) {
+        decoded[activityId] = quantity
+      }
+      return decoded
+    }, {})
+  } catch {
+    return {}
+  }
+}
+
+export type AtlasMode = 'personal' | 'systems' | 'industrial'
+
+export function getAtlasMode(activity: CatalogActivity): AtlasMode {
+  if (ACTIVITY_BY_ID.has(activity.id)) return 'personal'
+  if (['professional', 'online', 'industrial_light'].includes(activity.evidence.layerId)) return 'systems'
+  return 'industrial'
 }

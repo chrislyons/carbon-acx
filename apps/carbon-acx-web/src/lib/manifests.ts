@@ -9,7 +9,6 @@ import type {
   RootManifest,
   FigureManifest,
   ManifestListItem,
-  VerificationResult,
 } from '@/types/manifest'
 
 /**
@@ -107,44 +106,6 @@ export async function getManifestByPath(
   }
 }
 
-/**
- * Verify the byte hash of a manifest or figure
- * In a full implementation, this would compute SHA256 and compare
- * For now, returns the expected hash
- */
-export async function verifyManifest(
-  id: string
-): Promise<VerificationResult> {
-  try {
-    const manifest = await getManifest(id)
-
-    if (!manifest) {
-      return {
-        verified: false,
-        expected_hash: '',
-        error: 'Manifest not found',
-      }
-    }
-
-    // In a production implementation, we would:
-    // 1. Read the actual figure file
-    // 2. Compute its SHA256 hash
-    // 3. Compare with manifest.figure_sha256
-    //
-    // For now, we return the expected hash and mark as verified
-    return {
-      verified: true,
-      expected_hash: manifest.figure_sha256,
-      actual_hash: manifest.figure_sha256,
-    }
-  } catch (error) {
-    return {
-      verified: false,
-      expected_hash: '',
-      error: error instanceof Error ? error.message : 'Unknown error',
-    }
-  }
-}
 
 /**
  * Get the full path to a figure file

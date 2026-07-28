@@ -9,15 +9,42 @@ import {
   comparisonToBenchmark,
   getBenchmark,
   getBenchmarkOptions,
+  CATALOG_ACTIVITIES,
+  decodeCalculatorInputs,
+  encodeCalculatorInputs,
+  getAtlasMode,
 } from '@/lib/calculator'
 
 describe('calculator dataset', () => {
-  it('loads generated activities with provenance-backed sources', () => {
+  it('loads only published activities with complete evidence', () => {
     expect(ACTIVITIES.length).toBeGreaterThan(0)
     expect(Object.keys(CATEGORY_INFO)).toHaveLength(5)
-    expect(ACTIVITIES.every((activity) => activity.sourceIds.length > 0)).toBe(true)
+    expect(
+      ACTIVITIES.every(
+        (activity) =>
+          activity.evidence.publicationStatus === 'published' &&
+          activity.evidence.sourceIds.length > 0 &&
+          activity.evidence.sourceCitations.length > 0,
+      ),
+    ).toBe(true)
   })
 
+  it('forwards activity evidence with the calculated arithmetic', () => {
+    const summary = calculateEmissions([{ activityId: 'TRAN.SCHOOLRUN.CAR.KM', quantity: 1000 }])
+
+    expect(summary.totalEmissionsKg).toBe(180)
+    expect(summary.results[0]).toMatchObject({
+      emissionFactor: 180,
+      evidence: {
+        emissionFactorId: 'EF.CAR.KM',
+        region: 'CA-ON',
+        scopeBoundary: 'WTT+TTW',
+        gwpHorizon: 'GWP100 (AR6)',
+        vintageYear: 2023,
+      },
+    })
+    expect(summary.results[0].evidence.sourceCitations[0]).toContain('Environment and Climate')
+  })
   it('calculates emissions from canonical activity ids', () => {
     const summary = calculateEmissions([
       { activityId: 'TRAN.SCHOOLRUN.CAR.KM', quantity: 10 },
@@ -28,6 +55,19 @@ describe('calculator dataset', () => {
     expect(summary.byCategory.transport).toBe(1800)
     expect(summary.byCategory.food).toBe(18000)
     expect(summary.skipped).toHaveLength(0)
+  })
+})
+
+describe('catalogue data gaps', () => {
+  it('keeps unavailable catalogue activities out of totals', () => {
+    const unavailable = calculateEmissions([
+      { activityId: 'FOOD.COFFEE.CUP.HOT', quantity: 1 },
+    ])
+
+    expect(unavailable.totalEmissions).toBe(0)
+    expect(unavailable.skipped).toEqual([
+      { activityId: 'FOOD.COFFEE.CUP.HOT', quantity: 1, reason: 'unavailable-activity' },
+    ])
   })
 })
 
@@ -103,5 +143,27 @@ describe('invalid inputs are surfaced, never silently dropped', () => {
   it('records non-positive quantities as skipped', () => {
     const summary = calculateEmissions([{ activityId: 'FOOD.MEAL.BEEF.SERVING', quantity: 0 }])
     expect(summary.skipped[0].reason).toBe('non-positive-quantity')
+  })
+})
+
+describe('editorial public data helpers', () => {
+  it('keeps the exact car arithmetic in grams', () => {
+    expect(calculateEmissions([{ activityId: 'TRAN.SCHOOLRUN.CAR.KM', quantity: 1_000 }]).totalEmissions).toBe(180_000)
+  })
+
+  it('round-trips only known finite positive shared inputs', () => {
+    const encoded = encodeCalculatorInputs({
+      'TRAN.SCHOOLRUN.CAR.KM': 1_250,
+      'NOPE.NOT.REAL': 5,
+      'FOOD.MEAL.BEEF.SERVING': 0,
+      'HOME.ELECTRICITY.KWH': Number.NaN,
+    })
+    expect(decodeCalculatorInputs(encoded)).toEqual({ 'TRAN.SCHOOLRUN.CAR.KM': 1_250 })
+  })
+
+  it('partitions the catalogue into personal, systems, and industrial modes', () => {
+    expect(CATALOG_ACTIVITIES.filter((activity) => getAtlasMode(activity) === 'personal')).toHaveLength(22)
+    expect(CATALOG_ACTIVITIES.filter((activity) => getAtlasMode(activity) === 'systems')).toHaveLength(44)
+    expect(CATALOG_ACTIVITIES.filter((activity) => getAtlasMode(activity) === 'industrial')).toHaveLength(40)
   })
 })

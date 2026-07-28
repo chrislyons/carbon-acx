@@ -13,17 +13,11 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('dark')
+  const [theme, setThemeState] = useState<Theme>('light')
 
   useEffect(() => {
     const saved = localStorage.getItem('carbon-acx-theme') as Theme | null
-    if (saved) {
-      setThemeState(saved)
-      document.documentElement.setAttribute('data-theme', saved)
-      return
-    }
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    const initialTheme = prefersDark ? 'dark' : 'light'
+    const initialTheme = saved === 'dark' ? 'dark' : 'light'
     setThemeState(initialTheme)
     document.documentElement.setAttribute('data-theme', initialTheme)
   }, [])
@@ -51,7 +45,7 @@ export function useTheme(): ThemeContextType {
   // Return safe defaults
   if (!context) {
     return {
-      theme: 'dark',
+      theme: 'light',
       toggleTheme: () => {},
       setTheme: () => {},
     }

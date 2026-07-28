@@ -1,13 +1,11 @@
 import { expect, test } from '@playwright/test'
 
-test('calculator and manifests smoke flow', async ({ page }) => {
-  await page.goto('/calculator')
-  await expect(page.getByRole('heading', { name: 'Carbon Calculator' })).toBeVisible()
-
-  await page.locator('input[type="number"]').first().fill('5')
-  await page.getByRole('button', { name: /view results/i }).click()
-  await expect(page.getByRole('heading', { name: 'Your Carbon Footprint' })).toBeVisible()
-
-  await page.goto('/manifests')
-  await expect(page.getByRole('heading', { name: 'Manifest Explorer' })).toBeVisible()
+test('public routes use editorial evidence-first navigation', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.getByRole('heading', { name: 'What does one year of driving look like in carbon terms?' })).toBeVisible()
+  const nav = page.getByRole('navigation', { name: 'Primary' })
+  await expect(nav.getByRole('link', { name: 'Home' })).toBeVisible()
+  await expect(nav.getByRole('link', { name: 'Calculator' })).toBeVisible()
+  await expect(nav.getByRole('link', { name: 'Explore' })).toBeVisible()
+  await expect(nav.getByRole('link', { name: 'Methodology' })).toBeVisible()
 })

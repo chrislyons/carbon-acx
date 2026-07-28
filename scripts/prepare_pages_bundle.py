@@ -6,8 +6,6 @@ import shutil
 import textwrap
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-DEV_LAYERS_PATH = REPO_ROOT / "site" / "public" / "artifacts" / "layers.json"
 
 HEADERS_TEMPLATE = (
     textwrap.dedent(
@@ -17,7 +15,6 @@ HEADERS_TEMPLATE = (
 
     /artifacts/*
       Cache-Control: public, max-age=31536000, immutable
-      Content-Type: application/json; charset=utf-8
       Access-Control-Allow-Origin: *
       Access-Control-Allow-Methods: GET, HEAD, OPTIONS
       Access-Control-Allow-Headers: Content-Type
@@ -52,10 +49,6 @@ def prepare_pages_bundle(site_root: Path, artifacts_dir: Path) -> None:
     if target.exists():
         shutil.rmtree(target)
     shutil.copytree(artifacts_dir, target)
-
-    fallback_layers = target / "layers.json"
-    if not fallback_layers.exists() and DEV_LAYERS_PATH.is_file():
-        fallback_layers.write_bytes(DEV_LAYERS_PATH.read_bytes())
 
     index_path = target / "index.json"
     if index_path.exists():

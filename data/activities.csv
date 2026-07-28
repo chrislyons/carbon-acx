@@ -56,7 +56,7 @@ TRAN.FLIGHT.SHORTHAUL.PKM,SECTOR.INDUSTRIAL_LIGHT,industrial_light,aviation,Shor
 TRAN.FLIGHT.LONGHAUL.PKM,SECTOR.INDUSTRIAL_LIGHT,industrial_light,aviation,Long-haul passenger flight (pkm),pkm,International or transcontinental commercial flight over 1500 kilometres.,,Covers wide-body jet operations on intercontinental sectors.
 TRAN.FLIGHT.PRIVATE.PKM,SECTOR.PROFESSIONAL_SERVICES,professional,aviation,Private jet flight (pkm),pkm,Business aviation travel aboard private jets.,,Captures high-intensity corporate or charter jet usage.
 IND_LIGHT.WAREHOUSE.BASE_LOAD.SQFT_MONTH,SECTOR.INDUSTRIAL_LIGHT,industrial_light,warehousing,Warehouse base building load—per ft²-month,ft2_month,"Maintaining base building services (lighting, ventilation, idle equipment) for one square foot of light-industrial warehouse over a month.",ft2_month equals one square foot maintained for one calendar month.,Requires region-specific base-load and occupancy schedule data prior to activation.
-TRAN.DELIVERY.TRUCK.CLASS6.KM,SECTOR.INDUSTRIAL_LIGHT,industrial_light,logistics,Class-6 beverage delivery—per kilometre,km,Demo intensity reference for beverage truck deliveries.,,Demo seed only
+TRAN.DELIVERY.TRUCK.CLASS6.KM,SECTOR.INDUSTRIAL_LIGHT,industrial_light,logistics,Class-6 delivery truck—per kilometre,km,Moving goods one kilometre by a class-6 delivery truck.,,Class-6 delivery activity.
 CLOTHING.TSHIRT.COTTON,SECTOR.PROFESSIONAL_SERVICES,professional,clothing,Cotton T-shirt,garment,Production of one cotton T-shirt,,
 CLOTHING.JEANS.DENIM,SECTOR.PROFESSIONAL_SERVICES,professional,clothing,Denim jeans,garment,Production of one pair of jeans,,
 CLOTHING.JACKET.SYNTH,SECTOR.PROFESSIONAL_SERVICES,professional,clothing,Synthetic jacket,garment,Production of one synthetic jacket,,

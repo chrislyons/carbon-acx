@@ -1,337 +1,127 @@
 'use client'
 
-/**
- * 3D Data Universe Page
- * Interactive 3D visualization of carbon emissions data
- *
- * Features:
- * - Dynamic import for SSR safety (Three.js requires browser APIs)
- * - Suspense boundary for loading state
- * - Sample emissions data from common activities
- * - User calculator data integration
- * - Manifest integration for provenance tracking
- *
- * NOTE: This page is client-only and cannot be statically rendered
- * due to Three.js WebGL requirements. Dynamic rendering is forced.
- */
-
-import * as React from 'react'
 import Link from 'next/link'
-import type { Activity, ManifestInfo } from '@/components/viz/DataUniverse'
-import { ACTIVITIES as CALCULATOR_ACTIVITIES, CATEGORY_INFO } from '@/lib/calculator'
-
+import { useEffect, useMemo, useState } from 'react'
+import type { ComponentType } from 'react'
+import { DataState, Disclosure, EvidenceBadge, Eyebrow, SourceList } from '@/components/content'
+import { calculateEmissions, CATEGORY_INFO, formatEmissions, type CalculatorInput } from '@/lib/calculator'
+import type { Activity as VisualizationActivity, DataUniverseProps } from '@/components/viz/DataUniverse'
 const STORAGE_KEY = 'carbon-acx-calculator-inputs'
 
-// Map calculator categories to colors
-const CATEGORY_COLORS: Record<string, string> = {
-  transport: '#3b82f6', // blue
-  food: '#22c55e',      // green
-  digital: '#a855f7',   // purple
-  home: '#f59e0b',      // amber
-  shopping: '#ec4899',  // pink
-}
-
-// Force dynamic rendering (no static generation)
-// Required because Three.js needs browser APIs (WebGL)
-export const dynamic = 'force-dynamic'
-
-const SAMPLE_ACTIVITY_INPUTS: Record<string, number> = {
-  'TRAN.SCHOOLRUN.CAR.KM': 180,
-  'TRAN.FLIGHT.SHORTHAUL.PKM': 1200,
-  'FOOD.MEAL.BEEF.SERVING': 6,
-  'MEDIA.STREAM.HD.HOUR': 18,
-  'AI.USAGE.GPT.QUERY': 120,
-  'ENERGY.NATGAS.M3': 40,
-  'REFR.APPL.FRIDGE.OP.YEAR': 0.25,
-  'DEVICE.LAPTOP.UNIT': 0.1,
-}
-
-function toVisualizationActivity(
-  activityId: string,
-  quantity: number
-): Activity | null {
-  const activity = CALCULATOR_ACTIVITIES.find((item) => item.id === activityId)
-  if (!activity) {
-    return null
-  }
-
-  return {
-    id: activity.id,
-    name: activity.name,
-    annualEmissions: (activity.emissionFactor * quantity) / 1000,
-    category: CATEGORY_INFO[activity.category].name,
-    color: CATEGORY_COLORS[activity.category],
-  }
-}
-
-const SAMPLE_ACTIVITIES: Activity[] = Object.entries(SAMPLE_ACTIVITY_INPUTS)
-  .map(([activityId, quantity]) => toVisualizationActivity(activityId, quantity))
-  .filter((activity): activity is Activity => activity !== null)
-
-type DataSource = 'sample' | 'calculator'
-
+type DataUniverseComponent = ComponentType<DataUniverseProps>
 export default function ThreeDVisualizationPage() {
-  const [selectedActivity, setSelectedActivity] = React.useState<string | null>(null)
-  const [DataUniverse, setDataUniverse] = React.useState<React.ComponentType<any> | null>(null)
-  const [isClient, setIsClient] = React.useState(false)
-  const [manifest, setManifest] = React.useState<ManifestInfo | null>(null)
-  const [dataSource, setDataSource] = React.useState<DataSource>('sample')
-  const [calculatorInputs, setCalculatorInputs] = React.useState<Record<string, number>>({})
-  const [hasCalculatorData, setHasCalculatorData] = React.useState(false)
+  const [inputs, setInputs] = useState<Record<string, number>>({})
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [canUseWebGl, setCanUseWebGl] = useState(false)
+  const [DataUniverse, setDataUniverse] = useState<DataUniverseComponent | null>(null)
 
-  // Client-side only mount
-  React.useEffect(() => {
-    setIsClient(true)
-    // Dynamically import DataUniverse only on client
-    import('@/components/viz/DataUniverse').then((mod) => {
-      setDataUniverse(() => mod.DataUniverse)
-    })
-
-    // Load calculator data from localStorage
+  useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY)
-      if (saved) {
-        const parsed = JSON.parse(saved)
-        if (typeof parsed === 'object' && parsed !== null) {
-          const hasData = Object.values(parsed).some((v) => (v as number) > 0)
-          if (hasData) {
-            setCalculatorInputs(parsed)
-            setHasCalculatorData(true)
-            setDataSource('calculator') // Auto-select if user has data
-          }
-        }
-      }
+      if (saved) setInputs(JSON.parse(saved))
     } catch {
-      // Ignore localStorage errors
+      localStorage.removeItem(STORAGE_KEY)
+    }
+
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const canvas = document.createElement('canvas')
+    const webgl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl')
+    if (!reducedMotion && webgl) {
+      setCanUseWebGl(true)
+      import('@/components/viz/DataUniverse').then(({ DataUniverse: Component }) => setDataUniverse(() => Component))
     }
   }, [])
 
-  // Fetch manifest data
-  React.useEffect(() => {
-    fetch('/api/manifests')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.manifests && data.manifests.length > 0) {
-          const m = data.manifests[0]
-          setManifest({
-            datasetId: m.id,
-            title: m.figure_id,
-            manifestPath: m.manifest_path,
-            manifestSha256: m.hash_prefix,
-            generatedAt: m.generated_at,
-          })
-        }
-      })
-      .catch((err) => console.error('Failed to load manifest:', err))
-  }, [])
-
-  // Convert calculator inputs to activities for 3D visualization
-  const calculatorActivities: Activity[] = React.useMemo(() => {
-    return Object.entries(calculatorInputs)
-      .filter(([_, qty]) => qty > 0)
-      .map(([activityId, quantity]) => toVisualizationActivity(activityId, quantity))
-      .filter((activity): activity is Activity => activity !== null)
-  }, [calculatorInputs])
-
-  // Select which activities to display based on source
-  const displayActivities = dataSource === 'calculator' ? calculatorActivities : SAMPLE_ACTIVITIES
-
-  // Calculate total emissions
-  const totalEmissions = displayActivities.reduce(
-    (sum, activity) => sum + activity.annualEmissions,
-    0
+  const summary = useMemo(() => {
+    const calculatorInputs: CalculatorInput[] = Object.entries(inputs).map(([activityId, quantity]) => ({ activityId, quantity }))
+    return calculateEmissions(calculatorInputs)
+  }, [inputs])
+  const visualizationActivities = useMemo<VisualizationActivity[]>(
+    () => summary.results.map((result) => ({
+      id: result.activityId,
+      name: result.activityName,
+      annualEmissions: result.emissionsKg,
+      category: CATEGORY_INFO[result.category].name,
+      color: CATEGORY_INFO[result.category].color,
+    })),
+    [summary.results],
   )
-
-  const handleActivityClick = (activity: {
-    id: string
-    name: string
-    annualEmissions: number
-    category?: string
-    manifestId?: string
-  }) => {
-    setSelectedActivity(activity.id)
-    console.log('Activity clicked:', activity)
-    // Future: Show manifest details in a modal or side panel
-  }
+  const selected = selectedId ? summary.results.find((result) => result.activityId === selectedId) : null
 
   return (
-    <div className="flex flex-col min-h-screen">
-      {/* Header */}
-      <div className="bg-gray-900 text-white border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">3D Data Universe</h1>
-              <p className="text-gray-400 text-sm">
-                Interactive visualization of carbon emissions data
+    <div className="page-shell py-10 sm:py-14">
+      <Eyebrow>Optional representation</Eyebrow>
+      <h1 className="section-title">A spatial view of the same calculated results.</h1>
+      <p className="section-copy mt-4 max-w-3xl">
+        This route never introduces a new metric. Each sphere represents one already-calculated published result;
+        select a sphere to open the same evidence shown in the table below.
+      </p>
+
+      {summary.results.length === 0 ? (
+        <div className="mt-8">
+          <DataState title="No calculated result is stored">
+            Complete an annual worksheet first, then return here to view that same published data.{' '}
+            <Link className="underline" href="/calculator">Open Estimate</Link>
+          </DataState>
+        </div>
+      ) : (
+        <>
+          <section className="mt-8 surface-card">
+            {canUseWebGl && DataUniverse ? (
+              <DataUniverse
+                totalEmissions={summary.totalEmissionsKg}
+                activities={visualizationActivities}
+                onActivityClick={(activity) => setSelectedId(activity.id)}
+                enableIntroAnimation={false}
+                enableClickToFly={false}
+              />
+            ) : (
+              <DataState title="2D representation in use">
+                WebGL is unavailable or reduced motion is requested. The full result table and evidence below provide
+                the same information without a canvas.
+              </DataState>
+            )}
+          </section>
+
+          <section className="mt-6 surface-card">
+            <Eyebrow>2D contribution table</Eyebrow>
+            <p className="mt-2 text-sm text-foreground-muted">This accessible table is always available, including when the 3D canvas loads.</p>
+            <div className="mt-4 overflow-x-auto">
+              <table className="w-full min-w-[36rem] text-left text-sm">
+                <thead className="border-b border-[color:var(--surface-border)] text-xs uppercase tracking-wide text-foreground-muted">
+                  <tr><th className="pb-3">Activity</th><th className="pb-3">Annual estimate</th><th className="pb-3">Evidence</th><th className="pb-3">Details</th></tr>
+                </thead>
+                <tbody>
+                  {summary.results.map((result) => (
+                    <tr key={result.activityId} className="border-b border-[color:var(--surface-border)] last:border-0">
+                      <td className="py-3 font-semibold text-foreground">{result.activityName}</td>
+                      <td className="py-3 font-mono">{formatEmissions(result.emissions)}</td>
+                      <td className="py-3"><EvidenceBadge evidence={result.evidence} /></td>
+                      <td className="py-3"><button type="button" onClick={() => setSelectedId(result.activityId)} className="font-semibold text-[color:var(--accent-primary)] underline-offset-2 hover:underline">Inspect evidence</button></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          {selected ? (
+            <section className="mt-6 surface-card" aria-live="polite">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-xl font-semibold text-foreground">{selected.activityName}</h2>
+                <EvidenceBadge evidence={selected.evidence} />
+              </div>
+              <p className="mt-3 font-mono text-sm text-foreground-muted">
+                {selected.quantity.toLocaleString()} {selected.unitLabel} × {selected.emissionFactor.toLocaleString()} g CO₂e / {selected.unitLabel} = {formatEmissions(selected.emissions)}
               </p>
-            </div>
-            <Link
-              href="/explore"
-              className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm font-medium transition-colors"
-            >
-              ← Back to Explore
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* Stats Bar */}
-      <div className="bg-gray-50 border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-            {/* Data Source Toggle */}
-            <div className="flex items-center gap-2 p-1 bg-gray-200 rounded-lg">
-              <button
-                onClick={() => setDataSource('sample')}
-                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                  dataSource === 'sample'
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                Sample Data
-              </button>
-              <button
-                onClick={() => setDataSource('calculator')}
-                disabled={!hasCalculatorData}
-                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                  dataSource === 'calculator'
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : hasCalculatorData
-                      ? 'text-gray-600 hover:text-gray-900'
-                      : 'text-gray-400 cursor-not-allowed'
-                }`}
-              >
-                My Footprint
-                {hasCalculatorData && (
-                  <span className="ml-1.5 w-2 h-2 bg-green-500 rounded-full inline-block" />
-                )}
-              </button>
-            </div>
-
-            {/* Stats */}
-            <div className="flex-1 grid grid-cols-3 gap-4">
-              <div>
-                <div className="text-xs text-gray-600 uppercase tracking-wide mb-1">
-                  Total Emissions
-                </div>
-                <div className="text-xl font-bold text-gray-900">
-                  {totalEmissions >= 1000
-                    ? `${(totalEmissions / 1000).toFixed(1)} t`
-                    : `${totalEmissions.toFixed(0)} kg`} CO₂
-                </div>
-              </div>
-              <div>
-                <div className="text-xs text-gray-600 uppercase tracking-wide mb-1">
-                  Activities
-                </div>
-                <div className="text-xl font-bold text-gray-900">
-                  {displayActivities.length}
-                </div>
-              </div>
-              <div>
-                <div className="text-xs text-gray-600 uppercase tracking-wide mb-1">
-                  Data Source
-                </div>
-                <div className="text-xl font-bold text-gray-900">
-                  {dataSource === 'calculator' ? 'Personal' : 'Sample'}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* CTA if no calculator data */}
-          {!hasCalculatorData && (
-            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
-              <span className="text-sm text-blue-800">
-                Want to see your own carbon footprint in 3D?
-              </span>
-              <Link
-                href="/calculator"
-                className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Calculate Your Footprint →
-              </Link>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* 3D Visualization */}
-      <div className="flex-1 relative">
-        {!isClient || !DataUniverse ? (
-          <div className="w-full h-full min-h-[600px] flex flex-col items-center justify-center bg-gray-900 text-white">
-            <div className="mb-4">
-              <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-            </div>
-            <div className="text-lg font-semibold">Loading 3D Universe...</div>
-            <div className="text-sm text-gray-400 mt-2">
-              Initializing WebGL and Three.js
-            </div>
-          </div>
-        ) : (
-          <DataUniverse
-            totalEmissions={totalEmissions}
-            activities={displayActivities}
-            manifest={manifest || undefined}
-            onActivityClick={handleActivityClick}
-            enableIntroAnimation={true}
-            enableClickToFly={true}
-          />
-        )}
-      </div>
-
-      {/* Controls Info */}
-      <div className="bg-gray-900 text-white border-t border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-            <div>
-              <div className="font-semibold mb-1 text-blue-400">🖱️ Orbit Controls</div>
-              <div className="text-gray-400">
-                Drag to rotate • Scroll to zoom • Right-drag to pan
-              </div>
-            </div>
-            <div>
-              <div className="font-semibold mb-1 text-green-400">🎯 Interactions</div>
-              <div className="text-gray-400">
-                Hover spheres for details • Click to fly to activity
-              </div>
-            </div>
-            <div>
-              <div className="font-semibold mb-1 text-purple-400">🎨 Visual Legend</div>
-              <div className="text-gray-400">
-                Green: Low (&lt;1t) • Amber: Moderate (1-5t) • Red: High (&gt;5t)
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Selected Activity Panel */}
-      {selectedActivity && (
-        <div className="fixed bottom-4 right-4 bg-white border border-gray-300 rounded-lg shadow-xl p-4 max-w-sm">
-          <div className="text-xs text-gray-600 uppercase tracking-wide mb-2">
-            Selected Activity
-          </div>
-          <div className="font-semibold text-gray-900 mb-1">
-            {displayActivities.find((a) => a.id === selectedActivity)?.name}
-          </div>
-          <div className="text-sm text-gray-700">
-            {(() => {
-              const emissions = displayActivities.find((a) => a.id === selectedActivity)?.annualEmissions ?? 0
-              return emissions >= 1000
-                ? `${(emissions / 1000).toFixed(2)} t CO₂`
-                : `${emissions.toFixed(1)} kg CO₂`
-            })()}
-          </div>
-          <button
-            onClick={() => setSelectedActivity(null)}
-            className="mt-3 w-full px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded text-sm font-medium transition-colors"
-          >
-            Close
-          </button>
-        </div>
+              <Disclosure summary="Evidence and citations" open>
+                <p className="text-sm">{selected.evidence.region ?? 'Region not specified'} · {selected.evidence.scopeBoundary} · {selected.evidence.gwpHorizon} · {selected.evidence.vintageYear ?? 'Vintage not specified'}</p>
+                <p className="mt-3 text-sm">{selected.evidence.methodNotes ?? 'No method note is published.'}</p>
+                <SourceList sourceIds={selected.evidence.sourceIds} citations={selected.evidence.sourceCitations} />
+              </Disclosure>
+            </section>
+          ) : null}
+        </>
       )}
     </div>
   )

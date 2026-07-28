@@ -1,8 +1,6 @@
 ACX_DATA_BACKEND ?= csv
 OUTPUT_BASE ?= $(DIST_ARTIFACTS_DIR)/$(ACX_DATA_BACKEND)
 LATEST_BUILD := $(DIST_ARTIFACTS_DIR)/latest-build.json
-SITE_DIR := site
-SITE_BUILD_DIR ?= $(SITE_DIR)/dist
 DIST_DIR ?= dist
 DIST_ARTIFACTS_DIR := $(DIST_DIR)/artifacts
 DIST_SITE_DIR := $(DIST_DIR)/site
@@ -13,7 +11,7 @@ PACKAGED_MANIFEST := $(PACKAGED_ARTIFACTS_DIR)/manifest.json
 DEFAULT_GENERATED_AT ?= 1970-01-01T00:00:00+00:00
 CATALOG_PATH := artifacts/catalog.json
 
-.PHONY: install lint test audit ci_build_pages app format validate release build-backend build site package sbom build-static \
+.PHONY: install lint test audit ci_build_pages app format validate release build-backend build package sbom build-static \
         db_init db_import db_export build_csv build_db citations-scan refs-check refs-fetch refs-normalize refs-audit \
         verify_manifests catalog validate-manifests validate-diff-fixtures build-web bootstrap doctor
 
@@ -46,66 +44,21 @@ $(LATEST_BUILD):
 
 build: $(LATEST_BUILD)
 
-SITE_NODE_VERSION ?= 20.19.4
-SITE_NODE_ARCHIVE := node-v$(SITE_NODE_VERSION)-linux-x64
-SITE_NODE_TARBALL := $(CURDIR)/.cache/$(SITE_NODE_ARCHIVE).tar.xz
-SITE_NODE_DIR := $(CURDIR)/.cache/$(SITE_NODE_ARCHIVE)
-SITE_NODE_BIN := $(SITE_NODE_DIR)/bin
-SITE_NODE_DOWNLOAD := https://nodejs.org/dist/v$(SITE_NODE_VERSION)/$(SITE_NODE_ARCHIVE).tar.xz
-PNPM_VERSION ?= 10.5.2
-
-SITE_ENV := PATH=$(SITE_NODE_BIN):$$PATH NODE_ENV=development
-SITE_COREPACK := $(SITE_ENV) corepack
-SITE_PNPM := $(SITE_ENV) pnpm
-
-SITE_LAYERS_JSON := $(SITE_DIR)/public/artifacts/layers.json
-DATA_LAYERS_CSV := data/layers.csv
-
-.PHONY: site_install site_build site_dev
-
-$(SITE_NODE_BIN)/node:
-	@mkdir -p $(CURDIR)/.cache
-	@if [ ! -d "$(SITE_NODE_DIR)" ]; then \
-		echo "Downloading Node.js $(SITE_NODE_VERSION)"; \
-		curl -fsSLo $(SITE_NODE_TARBALL) $(SITE_NODE_DOWNLOAD); \
-		tar -xJf $(SITE_NODE_TARBALL) -C $(CURDIR)/.cache; \
-		rm -f $(SITE_NODE_TARBALL); \
-	fi
-
-site_install: $(SITE_NODE_BIN)/node
-	@$(SITE_COREPACK) enable
-	@$(SITE_COREPACK) prepare pnpm@$(PNPM_VERSION) --activate
-	cd $(SITE_DIR) && $(SITE_PNPM) install --frozen-lockfile --prod=false
-
-$(SITE_BUILD_DIR)/index.html: site_install $(SITE_LAYERS_JSON)
-	cd $(SITE_DIR) && $(SITE_PNPM) run build
-
-site_build: $(SITE_BUILD_DIR)/index.html
-
-site: site_build
-	rm -rf $(DIST_SITE_DIR)
-	mkdir -p $(DIST_DIR)
-	cp -R $(SITE_BUILD_DIR) $(DIST_SITE_DIR)
-
-site_dev: site_install
-	cd $(SITE_DIR) && $(SITE_PNPM) run dev -- --host 0.0.0.0
 
 WEB_CALCULATOR_DATA := apps/carbon-acx-web/src/generated/calculator-data.json
+WEB_CATALOG_DATA := apps/carbon-acx-web/src/generated/catalog-data.json
 
-$(WEB_CALCULATOR_DATA): data/activities.csv data/emission_factors.csv data/grid_intensity.csv data/sources.csv scripts/generate_web_calculator_data.py
-	python3 scripts/generate_web_calculator_data.py --output $(WEB_CALCULATOR_DATA)
+$(WEB_CALCULATOR_DATA) $(WEB_CATALOG_DATA): data/activities.csv data/emission_factors.csv data/grid_intensity.csv data/sources.csv scripts/generate_web_calculator_data.py
+	python3 scripts/generate_web_calculator_data.py
 
-build-web: $(WEB_CALCULATOR_DATA)
+build-web: $(WEB_CALCULATOR_DATA) $(WEB_CATALOG_DATA)
 	pnpm run build:web
-
-$(SITE_LAYERS_JSON): $(DATA_LAYERS_CSV) scripts/sync_layers_json.py
-	PYTHONPATH=. poetry run python -m scripts.sync_layers_json --csv $(DATA_LAYERS_CSV) --output $(SITE_LAYERS_JSON)
 
 $(PACKAGED_MANIFEST): $(LATEST_BUILD)
 	PYTHONPATH=. poetry run python -m scripts.package_artifacts --src $(DIST_ARTIFACTS_DIR) --dest $(PACKAGED_ARTIFACTS_DIR)
 
 WEB_APP_DIR := apps/carbon-acx-web
-WEB_APP_DIST := $(WEB_APP_DIR)/.next
+WEB_APP_DIST := $(WEB_APP_DIR)/dist
 
 package: $(PACKAGED_MANIFEST) build-web sbom
 	rm -rf $(DIST_SITE_DIR)
