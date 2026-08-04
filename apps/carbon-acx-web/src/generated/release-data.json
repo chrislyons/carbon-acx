@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "acx.public-release/1-0-0",
+  "generatedAt": "2026-08-04T22:48:09+00:00",
+  "inputs": {
+    "data/activities.csv": "8fc0746762ff2288a0a7268cdba050cccc5a9f963d342e7f127fc645198e64be",
+    "data/benchmarks.csv": "26b3b457644c6f3cbdce3ceeb3e12f03f18784a78b69f0e97864d87d968b45fd",
+    "data/emission_factors.csv": "b8e51a0a76ff7d0a949b3f21b09f390bcb55718cb66232d6ce1ecb1c6557b772",
+    "data/grid_intensity.csv": "7b587a4b3fca7258e2e552ee07d5d3345d0618ffb0fe269b4dd16bc24e5dee43",
+    "data/owid/annual-co2-emissions-per-country.csv": "3343aa2c0adddd1f9857b2b889057dcc377a61f1dc23bfcd5ab17963338bd9f8",
+    "data/owid/annual-co2-emissions-per-country.metadata.json": "87efb1319a3ae77340b04a198e509d9ed51dc5e7c45a347649479c8f9e9614a5",
+    "data/owid/manifest.json": "89b3ff83a4f27627c9f2df703f6a3140eccf978c4485a8dd67d197c9ec845c46",
+    "data/sources.csv": "ba7955881322437a260bf9de270914314a1c7de926c8115382228436d1fe23a4",
+    "scripts/generate_web_calculator_data.py": "2e3959adaabf24afb43df5b2481c122b67297c1030c596e76877ba725bf6ded6"
+  },
+  "authorities": {
+    "calculator": {
+      "schemaVersion": "acx.web-calculator/1-4-0",
+      "path": "/data/calculator-data.json",
+      "sha256": "70f70e2655c5acc67ba8de736d8df1c4f9874094ee218abc2abd03bf9bf108d5"
+    },
+    "catalog": {
+      "schemaVersion": "acx.web-calculator/1-4-0",
+      "path": "/data/catalog-data.json",
+      "sha256": "a6a38ebc16514ae88ef583d2fce67812cd3cd6dbfad0b9c055f4bda1aca37426"
+    },
+    "sources": {
+      "schemaVersion": "acx.web-sources/1-0-0",
+      "path": "/data/sources.json",
+      "sha256": "1cf7e40fb6a36f754ebca1aaf59d8001c886572bc211274caa2e22f59050be66"
+    },
+    "owidContext": {
+      "schemaVersion": "acx.owid-context/1-0-0",
+      "path": "/data/owid-context.json",
+      "sha256": "19a338392c23d45c98b99d36721bbd49fea4e34e885f88f0a736351aa79a49ef"
+    }
+  },
+  "sourceRegistryPath": "/data/sources.json",
+  "owid": {
+    "status": "available",
+    "contextSha256": "19a338392c23d45c98b99d36721bbd49fea4e34e885f88f0a736351aa79a49ef",
+    "sourceManifestPath": "/data/owid/manifest.json",
+    "sourceDataPath": "/data/owid/annual-co2-emissions-per-country.csv",
+    "sourceMetadataPath": "/data/owid/annual-co2-emissions-per-country.metadata.json"
+  }
+}

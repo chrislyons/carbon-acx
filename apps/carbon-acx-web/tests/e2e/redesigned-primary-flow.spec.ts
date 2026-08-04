@@ -29,6 +29,49 @@ test('methodology primer explains the derived school-run record', async ({ page 
   await expect(page.locator('#primer details[open]')).toHaveCount(1)
 })
 
+test('methodology shows the offline OWID context and release links', async ({ page }) => {
+  await page.route('**/*ourworldindata.org/**', (route) => route.abort())
+  await page.goto('/methodology')
+  await expect(page.getByRole('heading', { name: 'Our World in Data context' })).toBeVisible()
+  await expect(page.getByText('Latest Canada value', { exact: true })).toBeVisible()
+  await expect(page.getByText('territorial', { exact: true })).toBeVisible()
+  await expect(page.getByText('excluded', { exact: true })).toBeVisible()
+  await expect(page.getByText('country production', { exact: true })).toBeVisible()
+  await expect(page.getByText('tonnes', { exact: true })).toBeVisible()
+  await expect(page.getByText('Inspect the latest five annual values')).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Open the offline context record' })).toHaveAttribute(
+    'href',
+    '/data/owid-context.json',
+  )
+  await expect(page.getByRole('link', { name: 'Open the release manifest' })).toHaveAttribute(
+    'href',
+    '/data/release.json',
+  )
+  await expect(page.locator('.owid-context a[href="/data/owid/annual-co2-emissions-per-country.csv"]')).toHaveCount(1)
+  await expect(page.locator('.owid-context a[href="/data/owid/annual-co2-emissions-per-country.metadata.json"]')).toHaveCount(1)
+  await expect(page.locator('.owid-context a[href="/data/owid/manifest.json"]')).toHaveCount(1)
+  await expect(page.locator('.owid-context a[href="https://ourworldindata.org/grapher/annual-co2-emissions-per-country"]')).toHaveCount(1)
+})
+
+test('learn route renders offline published case studies when OWID is unreachable', async ({ page }) => {
+  await page.route('**/*ourworldindata.org/**', (route) => route.abort())
+  await page.goto('/learn')
+  await expect(page.getByRole('heading', { name: 'Read a carbon estimate from the record outward.' })).toBeVisible()
+  await expect(page.getByText('Household school travel')).toBeVisible()
+  await expect(page.getByText('Small-organization office area')).toBeVisible()
+  await expect(page.getByText('Canadian-system electricity')).toBeVisible()
+  await expect(page.getByText(/8\.00 t CO₂e/)).toBeVisible()
+  await expect(page.getByText(/2\.8 kg CO₂e/)).toBeVisible()
+  await expect(page.getByText('No numeric value is substituted.')).toHaveCount(0)
+})
+
+test('five-link navigation wraps without horizontal overflow on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 800 })
+  await page.goto('/learn')
+  await expect(page.getByRole('navigation', { name: 'Primary' }).getByRole('link')).toHaveCount(5)
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320)
+})
+
 test('traces a home estimate into an editable worksheet', async ({ page }) => {
   await page.goto('/')
   await expect(page.getByText('1,000 kilometres')).toBeVisible()

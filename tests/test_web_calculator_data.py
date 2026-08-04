@@ -10,9 +10,13 @@ import pytest
 from scripts.generate_web_calculator_data import (
     DEFAULT_CATALOG_OUTPUT,
     DEFAULT_OUTPUT,
+    OWID_CONTEXT_OUTPUT,
+    PUBLIC_DATA_ROOT,
+    RELEASE_OUTPUT,
     SOURCES_OUTPUT,
     SOURCES_SCHEMA_VERSION,
     SCHEMA_VERSION,
+    _all_authority_bytes,
     _authority_bytes,
     _commit_authorities,
     _factor_evidence,
@@ -20,6 +24,7 @@ from scripts.generate_web_calculator_data import (
     _load_csv,
     build_benchmarks,
     build_catalog_payload,
+    build_owid_context_payload,
     build_payload,
 )
 
@@ -217,6 +222,141 @@ def test_benchmark_derivation_is_enforced(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="disagrees with derived"):
         build_benchmarks(tmp_path, sources)
+
+
+def test_owid_context_is_pinned_and_sorted() -> None:
+    context = build_owid_context_payload(REPO_ROOT)
+
+    assert context["schemaVersion"] == "acx.owid-context/1-0-0"
+    assert context["status"] == "available"
+    assert context["selection"] == {"entity": "Canada", "code": "CAN"}
+    assert context["basis"] == {
+        "accountingBasis": "territorial",
+        "gas": "CO₂",
+        "landUseChange": "excluded",
+        "geography": "country production",
+        "unit": "tonnes",
+    }
+    assert (
+        context["source"]["chartUrl"]
+        == "https://ourworldindata.org/grapher/annual-co2-emissions-per-country"
+    )
+    years = [point["year"] for point in context["points"]]
+    assert years == sorted(years)
+    assert len(years) > 1
+    assert context["source"]["dataSha256"]
+    assert context["source"]["metadataSha256"]
+
+
+def test_missing_owid_snapshot_emits_explicit_unavailable_context(tmp_path: Path) -> None:
+    context = build_owid_context_payload(tmp_path)
+
+    assert context["status"] == "unavailable"
+    assert context["source"] is None
+    assert context["basis"] is None
+    assert context["points"] == []
+    assert context["reason"]
+
+
+def test_partial_owid_snapshot_fails_generation(tmp_path: Path) -> None:
+    snapshot_dir = tmp_path / "data/owid"
+    snapshot_dir.mkdir(parents=True)
+    (snapshot_dir / "manifest.json").write_text("{}", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="partial"):
+        build_owid_context_payload(tmp_path)
+
+
+def test_owid_raw_digest_mismatch_fails_generation(tmp_path: Path) -> None:
+    snapshot_dir = tmp_path / "data/owid"
+    snapshot_dir.mkdir(parents=True)
+    for filename in (
+        "manifest.json",
+        "annual-co2-emissions-per-country.csv",
+        "annual-co2-emissions-per-country.metadata.json",
+    ):
+        shutil.copy(REPO_ROOT / "data/owid" / filename, snapshot_dir / filename)
+    data_path = snapshot_dir / "annual-co2-emissions-per-country.csv"
+    data_path.write_bytes(data_path.read_bytes() + b"\n")
+
+    with pytest.raises(ValueError, match="raw data digest"):
+        build_owid_context_payload(tmp_path)
+
+
+def test_release_authorities_keep_public_pairs_byte_identical() -> None:
+    authorities, remove_paths = _all_authority_bytes(REPO_ROOT, "2026-08-04T22:15:00+00:00")
+
+    assert remove_paths == ()
+    assert authorities[DEFAULT_OUTPUT] == authorities[PUBLIC_DATA_ROOT / "calculator-data.json"]
+    assert (
+        authorities[DEFAULT_CATALOG_OUTPUT] == authorities[PUBLIC_DATA_ROOT / "catalog-data.json"]
+    )
+    assert authorities[SOURCES_OUTPUT] == authorities[PUBLIC_DATA_ROOT / "sources.json"]
+    assert authorities[OWID_CONTEXT_OUTPUT] == authorities[PUBLIC_DATA_ROOT / "owid-context.json"]
+    assert authorities[RELEASE_OUTPUT] == authorities[PUBLIC_DATA_ROOT / "release.json"]
+
+
+def test_changing_only_owid_snapshot_bytes_preserves_acx_authorities(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    required_paths = [
+        "data/activities.csv",
+        "data/benchmarks.csv",
+        "data/emission_factors.csv",
+        "data/grid_intensity.csv",
+        "data/sources.csv",
+        "data/owid/annual-co2-emissions-per-country.csv",
+        "data/owid/annual-co2-emissions-per-country.metadata.json",
+        "data/owid/manifest.json",
+        "scripts/generate_web_calculator_data.py",
+    ]
+    for relative_path in required_paths:
+        destination = repo_root / relative_path
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy(REPO_ROOT / relative_path, destination)
+
+    before, _ = _all_authority_bytes(repo_root, "2026-08-04T22:15:00+00:00")
+    manifest_path = repo_root / "data/owid/manifest.json"
+    manifest = json.loads(manifest_path.read_bytes())
+    manifest["retrievedAt"] = "2026-08-05T00:00:00+00:00"
+    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    after, _ = _all_authority_bytes(repo_root, "2026-08-04T22:15:00+00:00")
+
+    assert before[DEFAULT_OUTPUT] == after[DEFAULT_OUTPUT]
+    assert before[DEFAULT_CATALOG_OUTPUT] == after[DEFAULT_CATALOG_OUTPUT]
+    assert before[SOURCES_OUTPUT] == after[SOURCES_OUTPUT]
+    assert before[OWID_CONTEXT_OUTPUT] != after[OWID_CONTEXT_OUTPUT]
+    assert before[RELEASE_OUTPUT] != after[RELEASE_OUTPUT]
+
+
+def test_unavailable_release_removes_stale_public_owid_files(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    for relative_path in (
+        "data/activities.csv",
+        "data/benchmarks.csv",
+        "data/emission_factors.csv",
+        "data/grid_intensity.csv",
+        "data/sources.csv",
+        "scripts/generate_web_calculator_data.py",
+    ):
+        destination = repo_root / relative_path
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy(REPO_ROOT / relative_path, destination)
+
+    output_root = tmp_path / "output"
+    stale_root = output_root / PUBLIC_DATA_ROOT / "owid"
+    stale_root.mkdir(parents=True)
+    for filename in ("manifest.json", "annual-co2-emissions-per-country.csv"):
+        (stale_root / filename).write_text("stale", encoding="utf-8")
+
+    authorities, remove_paths = _all_authority_bytes(repo_root, "2026-08-04T22:15:00+00:00")
+    _commit_authorities(output_root, authorities, remove_paths)
+    context = json.loads((output_root / OWID_CONTEXT_OUTPUT).read_bytes())
+    release = json.loads((output_root / RELEASE_OUTPUT).read_bytes())
+
+    assert context["status"] == "unavailable"
+    assert release["owid"]["status"] == "unavailable"
+    assert release["owid"]["sourceManifestPath"] is None
+    assert not any((output_root / path).exists() for path in remove_paths)
 
 
 def test_atomic_authority_commit_rolls_back_on_replacement_failure(

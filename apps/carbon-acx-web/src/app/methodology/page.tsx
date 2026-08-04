@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import { Disclosure, Eyebrow, SourceList } from '@/components/content'
+import releaseDataJson from '@/generated/release-data.json'
+import { Disclosure, Eyebrow, OwidContextCard, SourceList } from '@/components/content'
 import { ACTIVITIES, CALCULATOR_DATASET, calculateEmissions, encodeCalculatorInputs, formatEmissions, getActivityById, getBenchmarkOptions } from '@/lib/calculator'
 
 const sourcePairs = ACTIVITIES.flatMap((activity) =>
@@ -145,6 +146,22 @@ export default function MethodologyPage() {
             citations={sourcePairs.map(([, citation]) => citation)}
             urls={sourcePairs.map(([, , url]) => url)}
           />
+        </div>
+      </section>
+
+      <section className="reference-panel">
+        <OwidContextCard />
+        <div className="surface-card mt-4">
+          <Eyebrow>Offline release metadata</Eyebrow>
+          <p className="mt-3 text-foreground-muted">
+            This context is released as checked-in static bytes. The release manifest records the input and authority
+            digests used by the public site; it does not turn OWID data into a calculator factor.
+          </p>
+          <dl className="mt-4 grid gap-4 sm:grid-cols-3">
+            <div><dt className="metric-label">Release schema</dt><dd className="font-mono text-sm">{releaseDataJson.schemaVersion}</dd></div>
+            <div><dt className="metric-label">Release generated</dt><dd className="font-mono text-sm">{releaseDataJson.generatedAt}</dd></div>
+            <div><dt className="metric-label">OWID status</dt><dd className="font-mono text-sm">{releaseDataJson.owid.status}</dd></div>
+          </dl>
         </div>
       </section>
 

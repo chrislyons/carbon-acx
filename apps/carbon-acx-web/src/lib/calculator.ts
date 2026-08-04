@@ -1,5 +1,6 @@
 import calculatorDataJson from '@/generated/calculator-data.json'
 import catalogDataJson from '@/generated/catalog-data.json'
+import owidContextJson from '@/generated/owid-context.json'
 
 export type ActivityCategory = 'transport' | 'food' | 'digital' | 'home' | 'shopping'
 
@@ -90,6 +91,46 @@ export interface CatalogDataset {
   activities: CatalogActivity[]
 }
 
+export interface OwidContextPoint {
+  year: number
+  value: number
+}
+
+export interface OwidContextSource {
+  provider: string
+  chartId: string
+  chartUrl: string
+  metric: string
+  dataUrl: string
+  metadataUrl: string
+  citation: string
+  license: string
+  retrievedAt: string
+  upstreamTimespan: string
+  upstreamLastUpdated: string
+  dataSha256: string
+  metadataSha256: string
+}
+
+export interface OwidContextBasis {
+  accountingBasis: 'territorial'
+  gas: 'CO₂'
+  landUseChange: 'excluded'
+  geography: 'country production'
+  unit: 'tonnes'
+}
+
+export interface OwidContextDataset {
+  schemaVersion: string
+  status: 'available' | 'unavailable'
+  generatedAt: string
+  source: OwidContextSource | null
+  basis: OwidContextBasis | null
+  selection: { entity: 'Canada'; code: 'CAN' }
+  points: OwidContextPoint[]
+  reason?: string
+}
+
 export interface CalculatorInput {
   activityId: string
   quantity: number
@@ -132,6 +173,7 @@ export interface CalculatorSummary {
 
 export const CALCULATOR_DATASET = calculatorDataJson as CalculatorDataset
 export const CATALOG_DATASET = catalogDataJson as CatalogDataset
+export const OWID_CONTEXT = owidContextJson as OwidContextDataset
 export const ACTIVITIES = CALCULATOR_DATASET.activities
 export const CATALOG_ACTIVITIES = CATALOG_DATASET.activities
 export const CATEGORY_INFO = CALCULATOR_DATASET.categories
@@ -139,7 +181,23 @@ export const BENCHMARKS = CALCULATOR_DATASET.benchmarks
 export const DEFAULT_BENCHMARK_KEY = 'canadian_average'
 export const CANADIAN_AVERAGE = BENCHMARKS[DEFAULT_BENCHMARK_KEY]
 export const CANADIAN_AVERAGE_ANNUAL = CANADIAN_AVERAGE.annualGrams
+export function getLatestOwidPoint(
+  context: OwidContextDataset = OWID_CONTEXT,
+): OwidContextPoint | null {
+  return context.points.length > 0 ? context.points[context.points.length - 1] : null
+}
 
+export function getLatestOwidChange(
+  context: OwidContextDataset = OWID_CONTEXT,
+): { absolute: number; percentage: number | null } | null {
+  if (context.points.length < 2) return null
+  const previous = context.points[context.points.length - 2]
+  const latest = context.points[context.points.length - 1]
+  return {
+    absolute: latest.value - previous.value,
+    percentage: previous.value === 0 ? null : ((latest.value - previous.value) / previous.value) * 100,
+  }
+}
 export interface BenchmarkOption extends Benchmark {
   key: string
 }

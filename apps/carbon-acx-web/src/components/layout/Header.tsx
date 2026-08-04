@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTheme } from '@/components/providers/ThemeProvider'
 
-const links = [{ href: '/', label: 'Home' }, { href: '/calculator', label: 'Calculator' }, { href: '/explore', label: 'Explore' }, { href: '/methodology', label: 'Methodology' }] as const
+const links = [{ href: '/', label: 'Home' }, { href: '/calculator', label: 'Calculator' }, { href: '/explore', label: 'Explore' }, { href: '/learn', label: 'Learn' }, { href: '/methodology', label: 'Methodology' }] as const
 
 export function Header() {
   const pathname = usePathname()

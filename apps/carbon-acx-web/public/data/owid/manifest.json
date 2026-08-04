@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "acx.owid-source/1-0-0",
+  "provider": "Our World in Data",
+  "chartId": "annual-co2-emissions-per-country",
+  "metric": "Annual CO\u2082 emissions",
+  "dataUrl": "https://ourworldindata.org/grapher/annual-co2-emissions-per-country.csv",
+  "metadataUrl": "https://ourworldindata.org/grapher/annual-co2-emissions-per-country.metadata.json",
+  "resolvedDataUrl": "https://ourworldindata.org/grapher/annual-co2-emissions-per-country.csv",
+  "resolvedMetadataUrl": "https://ourworldindata.org/grapher/annual-co2-emissions-per-country.metadata.json",
+  "retrievedAt": "2026-08-04T22:24:20+00:00",
+  "upstreamTimespan": "1750-2024",
+  "upstreamLastUpdated": "2025-11-13",
+  "license": "CC BY 4.0",
+  "accountingBasis": "territorial",
+  "landUseChange": "excluded",
+  "unit": "tonnes",
+  "entity": "Canada",
+  "entityCode": "CAN",
+  "dataSha256": "3343aa2c0adddd1f9857b2b889057dcc377a61f1dc23bfcd5ab17963338bd9f8",
+  "metadataSha256": "87efb1319a3ae77340b04a198e509d9ed51dc5e7c45a347649479c8f9e9614a5",
+  "citation": "Global Carbon Budget (2025)"
+}
