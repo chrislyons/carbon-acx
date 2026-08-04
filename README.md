@@ -6,7 +6,7 @@
 
 > **Current dataset version:** v1.2
 
-Carbon ACX is a public carbon-literacy web app and open reference stack. It turns auditable CSV inputs into a reproducible dataset, then publishes annual activity estimates, an evidence-first Activity Atlas, and static Cloudflare Pages bundles. Every public calculation uses a cited, published factor; incomplete records are shown as unavailable rather than converted to zero.
+Carbon ACX is a public carbon-literacy web app and open reference stack. It turns auditable CSV inputs into a reproducible dataset, then publishes annual activity estimates, an evidence-first Activity Atlas, and static Cloudflare Pages bundles. The web calculator/catalogue authorities use `acx.web-calculator/1-4-0`; the versioned source envelope uses `acx.web-sources/1-0-0`. Every public calculation uses a cited, published factor; incomplete records are shown as unavailable rather than converted to zero.
 
 ---
 
@@ -30,7 +30,7 @@ The secondary **Evidence library** (`/manifests`) ships static manifests and raw
 | **Source-of-truth data** | Canonical CSVs for activities, emission factors, schedules, grid intensity, and more live under `data/`, ready for rebuilds and audits. |
 | **Derivation toolkit** | `python -m calc.derive` validates inputs, composes emissions, exports intensity matrices, and emits immutable manifests with hashed figures in `dist/artifacts/`. |
 | **Primary web app** | `apps/carbon-acx-web/` contains the static Next.js public product: Start here, Estimate, Activity Atlas, How we know, and the Evidence library. |
-| **Published-data contract** | `scripts/generate_web_calculator_data.py` emits calculator and catalogue JSON from canonical data; demo, uncited, incomplete, or unit-mismatched factors cannot enter public calculator totals. |
+| **Published-data contract** | `scripts/generate_web_calculator_data.py` emits `acx.web-calculator/1-4-0` calculator/catalogue records and an `acx.web-sources/1-0-0` source envelope from canonical data; demo, uncited, incomplete, or unit-mismatched factors cannot enter public calculator totals. |
 | **Packaging automation** | `make package` builds the static Next.js export into `dist/site`, then packages immutable raw artifacts and Pages metadata beside it. |
 
 ## At-a-glance layers
@@ -58,7 +58,7 @@ Layer descriptions, types, and activities are sourced directly from `data/layers
 
 1. **Curate data.** Update canonical CSV inputs in `data/` with source, region, scope, GWP horizon, vintage, and unit evidence.
 2. **Derive & validate.** Run `make build` to compute emissions, manifests, and intensity matrices under repeatable validation rules.
-3. **Generate public datasets.** Run `python scripts/generate_web_calculator_data.py` to emit published calculator records and the Activity Atlas catalogue; incomplete records remain unavailable.
+3. **Generate public datasets.** Run `python3 scripts/generate_web_calculator_data.py --repo-root "$PWD" --output-root "$PWD"` to atomically emit the three tracked web authorities; `sources.json` is versioned and incomplete records remain unavailable rather than zero.
 4. **Package static delivery.** Run `make package` to export the Next.js app to `dist/site` and copy raw `/artifacts/` for browser-side hash verification.
 
 ---

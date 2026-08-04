@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test'
 
 test('calculator traces a 1000 km annual estimate to evidence and Ontario comparison', async ({ page }) => {
   await page.goto('/calculator')
+  await expect(page.getByText('Why this matters')).toHaveCount(0)
   await page.getByRole('button', { name: /Transport/ }).click()
   await page.getByRole('button', { name: 'Add School run by car' }).click()
   await page.locator('#TRAN\\.SCHOOLRUN\\.CAR\\.KM-quantity').fill('1000')
@@ -9,5 +10,11 @@ test('calculator traces a 1000 km annual estimate to evidence and Ontario compar
   await page.getByRole('button', { name: 'Factor evidence' }).click()
   await expect(page.getByText('EF.CAR.KM')).toBeVisible()
   await page.getByRole('combobox', { name: 'Comparison basis' }).selectOption('ontario_average')
-  await expect(page.getByText('production-based, excluding LULUCF')).toBeVisible()
+  await expect(page.getByText('Ontario (2023)')).toBeVisible()
+  await expect(page.getByText('territorial/production-based, excluding LULUCF')).toBeVisible()
+  await expect(page.getByText('Why this matters')).toBeVisible()
+  await expect(page.getByText('Nuclear + hydro grid keeps per-capita low')).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Read the compatible benchmark method' })).toHaveAttribute('href', '/methodology#benchmarks')
+  await expect(page.locator('.benchmark-context a[href^=\"https://publications.gc.ca\"]')).toBeVisible()
+  await expect(page.getByText('Context only: this is a territorial/production-based per-capita scale, not a direct organizational or peer comparison.')).toBeVisible()
 })

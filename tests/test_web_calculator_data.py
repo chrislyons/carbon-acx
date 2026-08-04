@@ -1,11 +1,20 @@
 from __future__ import annotations
 
+import csv
+import json
+import shutil
 from pathlib import Path
 
 import pytest
 
 from scripts.generate_web_calculator_data import (
+    DEFAULT_CATALOG_OUTPUT,
+    DEFAULT_OUTPUT,
+    SOURCES_OUTPUT,
+    SOURCES_SCHEMA_VERSION,
     SCHEMA_VERSION,
+    _authority_bytes,
+    _commit_authorities,
     _factor_evidence,
     _grid_lookup,
     _load_csv,
@@ -21,6 +30,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 def test_generated_web_calculator_data_uses_published_evidence() -> None:
     payload = build_payload()
 
+    assert SCHEMA_VERSION == "acx.web-calculator/1-4-0"
     assert payload["schemaVersion"] == SCHEMA_VERSION
     assert len(payload["activities"]) == 22
     car = payload["activities"][0]
@@ -32,11 +42,36 @@ def test_generated_web_calculator_data_uses_published_evidence() -> None:
     assert car["evidence"]["gwpHorizon"] == "GWP100 (AR6)"
     assert car["evidence"]["vintageYear"] == 2023
     assert car["evidence"]["sourceCitations"]
+    assert car["evidence"]["sourceUrls"]
+    assert car["unitDefinition"] == ""
+    assert car["notes"] == "Passengers default to one when unspecified."
     assert all(
         activity["evidence"]["publicationStatus"] == "published"
         and "SRC.DEMO" not in activity["evidence"]["sourceIds"]
         for activity in payload["activities"]
     )
+
+
+def test_sources_use_versioned_envelope_and_grid_metadata_aligns() -> None:
+    sources = json.loads(
+        (REPO_ROOT / "apps/carbon-acx-web/src/generated/sources.json").read_text(encoding="utf-8")
+    )
+    assert SOURCES_SCHEMA_VERSION == "acx.web-sources/1-0-0"
+    assert sources["schemaVersion"] == SOURCES_SCHEMA_VERSION
+    assert isinstance(sources["sources"], list)
+
+    payload = build_payload()
+    subway = next(
+        activity for activity in payload["activities"] if activity["id"] == "TRAN.TTC.SUBWAY.KM"
+    )
+    evidence = subway["evidence"]
+    assert (
+        len(evidence["sourceIds"])
+        == len(evidence["sourceCitations"])
+        == len(evidence["sourceUrls"])
+        == 2
+    )
+    assert all(evidence["sourceUrls"])
 
 
 def test_generated_web_calculator_data_propagates_grid_factor_ranges() -> None:
@@ -64,7 +99,45 @@ def test_catalog_marks_incomplete_activity_unavailable_without_zero() -> None:
     stream = next(activity for activity in payload["activities"] if activity["id"] == "stream")
     assert stream["emissionFactor"] is None
     assert stream["evidence"]["publicationStatus"] == "unavailable"
+    assert stream["evidence"]["sourceUrls"] == []
     assert stream["unavailabilityReason"]
+
+
+def test_missing_source_url_is_hard_failure_for_selected_factor() -> None:
+    activities = {row["activity_id"]: row for row in _load_csv(REPO_ROOT / "data/activities.csv")}
+    factors = _load_csv(REPO_ROOT / "data/emission_factors.csv")
+    sources = {row["source_id"]: row for row in _load_csv(REPO_ROOT / "data/sources.csv")}
+    grids = _grid_lookup(_load_csv(REPO_ROOT / "data/grid_intensity.csv"))
+    factor = next(row.copy() for row in factors if row["ef_id"] == "EF.CAR.KM")
+    sources["SRC.ECCC.NIR.2025"]["url"] = ""
+
+    with pytest.raises(ValueError, match="Missing registered source URL"):
+        _factor_evidence(activities["TRAN.SCHOOLRUN.CAR.KM"], factor, sources, grids)
+
+
+def test_catalog_missing_source_url_is_unavailable_without_zero(tmp_path: Path) -> None:
+    shutil.copytree(REPO_ROOT / "data", tmp_path / "data")
+    source_path = tmp_path / "data/sources.csv"
+    fieldnames = ["source_id", "ieee_citation", "url", "year", "license"]
+    with source_path.open(newline="", encoding="utf-8") as handle:
+        rows = list(csv.DictReader(handle))
+    for row in rows:
+        if row["source_id"] == "SRC.IEA.NRCAN.BUILDINGS.2024":
+            row["url"] = ""
+    with source_path.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+
+    payload = build_catalog_payload(tmp_path)
+    office = next(
+        activity
+        for activity in payload["activities"]
+        if activity["id"] == "BUILDING.OFFICE.M2.YEAR"
+    )
+    assert office["evidence"]["publicationStatus"] == "unavailable"
+    assert office["emissionFactor"] is None
+    assert office["unavailabilityReason"]
 
 
 def test_demo_and_missing_citations_are_rejected() -> None:
@@ -89,6 +162,7 @@ def test_demo_and_missing_citations_are_rejected() -> None:
     with pytest.raises(ValueError, match="Demonstration factor is not publishable: EF.CAR.KM"):
         _factor_evidence(activity, factor, sources, grids)
 
+    factor["method_notes"] = ""
     factor["source_id"] = "SRC.NOT.REGISTERED"
     with pytest.raises(ValueError, match="Missing registered IEEE citation"):
         _factor_evidence(activity, factor, sources, grids)
@@ -102,7 +176,11 @@ def test_generated_web_calculator_data_carries_sourced_benchmark() -> None:
     assert benchmark["annualGrams"] == round(benchmark["perCapitaTonnes"] * 1_000_000)
     assert benchmark["sourceId"]
     assert benchmark["sourceCitation"]
-    assert isinstance(benchmark["year"], int)
+    assert benchmark["sourceUrl"]
+    assert benchmark["populationSourceUrl"]
+    assert benchmark["accountingBasis"] == "territorial"
+    assert benchmark["landUseChange"] == "excluded"
+    assert benchmark["year"] == 2023
 
 
 def test_generated_web_calculator_data_carries_provincial_benchmarks() -> None:
@@ -114,6 +192,9 @@ def test_generated_web_calculator_data_carries_provincial_benchmarks() -> None:
         assert benchmark["sourceId"], f"{key} missing emissions source"
         assert benchmark["populationSourceId"], f"{key} missing population source"
         assert benchmark["sourceCitation"] and benchmark["populationCitation"]
+        assert benchmark["sourceUrl"] and benchmark["populationSourceUrl"]
+        assert benchmark["accountingBasis"] == "territorial"
+        assert benchmark["landUseChange"] == "excluded"
         assert (
             abs(
                 benchmark["totalMt"] / benchmark["populationMillions"]
@@ -126,12 +207,46 @@ def test_generated_web_calculator_data_carries_provincial_benchmarks() -> None:
 def test_benchmark_derivation_is_enforced(tmp_path: Path) -> None:
     data_dir = tmp_path / "data"
     data_dir.mkdir()
-    (data_dir / "benchmarks.csv").write_text(
-        "key,label,scope,region_code,total_mt,population_millions,"
-        "per_capita_tonnes,year,source_id,population_source_id,notes\n"
-        "x,X,province,X,100,10,99,2023,SRC.X,SRC.P,\n",
+    shutil.copy(REPO_ROOT / "data/benchmarks.csv", data_dir / "benchmarks.csv")
+    benchmark_path = data_dir / "benchmarks.csv"
+    benchmark_path.write_text(
+        benchmark_path.read_text(encoding="utf-8").replace(",17.3,2023,", ",99,2023,", 1),
         encoding="utf-8",
     )
+    sources = {row["source_id"]: row for row in _load_csv(REPO_ROOT / "data/sources.csv")}
 
     with pytest.raises(ValueError, match="disagrees with derived"):
-        build_benchmarks(tmp_path, {})
+        build_benchmarks(tmp_path, sources)
+
+
+def test_atomic_authority_commit_rolls_back_on_replacement_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    output_root = tmp_path / "output"
+    before = {}
+    for relative_path in (DEFAULT_OUTPUT, DEFAULT_CATALOG_OUTPUT, SOURCES_OUTPUT):
+        destination = output_root / relative_path
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        content = f"before:{relative_path}".encode()
+        destination.write_bytes(content)
+        before[relative_path] = content
+
+    authorities = _authority_bytes(REPO_ROOT, "2026-08-04T22:15:00+00:00")
+    from scripts import generate_web_calculator_data as generator
+
+    original_replace = generator._replace_file
+    calls = 0
+
+    def fail_on_second_replace(source: Path, destination: Path) -> None:
+        nonlocal calls
+        calls += 1
+        if calls == 2:
+            raise OSError("injected replacement failure")
+        original_replace(source, destination)
+
+    monkeypatch.setattr(generator, "_replace_file", fail_on_second_replace)
+    with pytest.raises(OSError, match="injected replacement failure"):
+        _commit_authorities(output_root, authorities)
+
+    for relative_path, content in before.items():
+        assert (output_root / relative_path).read_bytes() == content

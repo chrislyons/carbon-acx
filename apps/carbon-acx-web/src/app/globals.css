@@ -888,3 +888,37 @@ body { background: var(--paper); color: var(--ink); }
 .manifest-list { display:grid; gap:1rem; margin-top:2.5rem; }
 /* The masthead provides the top rule; primary experience sections begin without a duplicate divider. */
 .trace-estimate, .worksheet__intro, .atlas > header { border-top: 0; }
+.editorial-jobs { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:clamp(1.25rem, 3vw, 3rem); padding-block:2rem; }
+.editorial-jobs article + article { border-left:1px solid var(--rule); padding-left:clamp(1.25rem, 3vw, 3rem); }
+.editorial-jobs h2 { font:650 clamp(1.7rem, 3vw, 2.8rem)/.95 var(--font-display); letter-spacing:-.04em; margin:.7rem 0 1rem; }
+.primer-card { margin-top:2.5rem; }
+.primer-card > h2 { font:650 clamp(1.8rem, 3vw, 3rem)/1 var(--font-display); letter-spacing:-.04em; }
+.primer-card .disclosure { margin-top:1.5rem; }
+.primer-card__questions { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:1rem 2rem; }
+.primer-card__questions article { border-top:1px solid var(--rule); padding-top:1rem; }
+.primer-card__questions h3 { font:650 1.15rem/1.1 var(--font-display); }
+.working-example { border-top:1px solid var(--rule); margin-top:1.5rem; padding-top:1.5rem; }
+.working-example__equation, .factor-record-details__equation { border-left:.3rem solid var(--oxide); font:600 1rem/1.6 var(--font-mono); margin-top:1rem; padding:.75rem 1rem; overflow-wrap:anywhere; }
+.factor-record-details { display:grid; gap:1.25rem; margin-top:1.25rem; }
+.factor-record-details section { border-top:1px solid var(--rule); padding-top:1rem; }
+.factor-record-details h3 { font:650 1.15rem/1.1 var(--font-display); }
+.factor-record-details p { margin-top:.65rem; }
+.factor-record-details__technical { margin-top:1rem; }
+.factor-record-details__technical div { border-top:1px solid var(--rule); display:grid; grid-template-columns:8rem 1fr; gap:.75rem; padding:.5rem 0; }
+.factor-record-details__technical dt { color:var(--ink-muted); }
+.factor-record-details__technical dd { margin:0; overflow-wrap:anywhere; }
+.benchmark-context { border-top:1px solid var(--rule); margin-top:1rem; padding-top:1rem; }
+.benchmark-context h3 { font:650 1.35rem/1.1 var(--font-display); margin-top:.5rem; }
+.benchmark-context dl { margin-top:.75rem; }
+.benchmark-context dl div, .benchmark-context__sources li { border-top:1px solid var(--rule); display:grid; grid-template-columns:8rem 1fr; gap:.75rem; padding:.5rem 0; }
+.benchmark-context dd { margin:0; overflow-wrap:anywhere; }
+.benchmark-context__sources { list-style:none; margin:1rem 0 0; padding:0; }
+.benchmark-context__sources { font-size:.86rem; }
+.benchmark-context__sources span { color:var(--ink-muted); }
+.benchmark-context__caveat { border-left:.25rem solid var(--signal); padding-left:.75rem; }
+@media (max-width:700px) {
+  .editorial-jobs { grid-template-columns:1fr; }
+  .editorial-jobs article + article { border-left:0; border-top:1px solid var(--rule); padding:1.5rem 0 0; }
+  .primer-card__questions { grid-template-columns:1fr; }
+  .factor-record-details__technical div, .benchmark-context dl div, .benchmark-context__sources li { grid-template-columns:1fr; gap:.2rem; }
+}

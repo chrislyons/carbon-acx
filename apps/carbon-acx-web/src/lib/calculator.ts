@@ -14,6 +14,7 @@ export interface ActivityEvidence {
   vintageYear: number | null
   sourceIds: string[]
   sourceCitations: string[]
+  sourceUrls: string[]
   methodNotes: string | null
   uncertainty: { lowGPerUnit: number | null; highGPerUnit: number | null }
   publicationStatus: 'published' | 'unavailable'
@@ -26,7 +27,9 @@ export interface Activity {
   unit: string
   unitLabel: string
   emissionFactor: number
-  description?: string
+  description: string
+  unitDefinition: string
+  notes: string
   evidence: ActivityEvidence
 }
 
@@ -37,6 +40,8 @@ export interface CatalogActivity {
   unit: string
   unitLabel: string
   description: string
+  unitDefinition: string
+  notes: string
   emissionFactor: number | null
   evidence: ActivityEvidence
   unavailabilityReason: string | null
@@ -48,6 +53,8 @@ export interface CategoryInfo {
 }
 
 export type BenchmarkScope = 'national' | 'province' | string
+export type BenchmarkAccountingBasis = 'territorial'
+export type BenchmarkLandUseChange = 'excluded'
 
 export interface Benchmark {
   label: string
@@ -60,9 +67,13 @@ export interface Benchmark {
   year: number | null
   sourceId: string | null
   sourceCitation: string | null
+  sourceUrl: string | null
   populationSourceId: string | null
   populationCitation: string | null
+  populationSourceUrl: string | null
   notes: string | null
+  accountingBasis: BenchmarkAccountingBasis
+  landUseChange: BenchmarkLandUseChange
 }
 
 export interface CalculatorDataset {

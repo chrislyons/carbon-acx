@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { SourceList } from '@/components/content'
+import { FactorRecordDetails } from '@/components/content'
 import { CATALOG_ACTIVITIES, getAtlasMode, type AtlasMode, type CatalogActivity } from '@/lib/calculator'
 
 const modes: { id: AtlasMode; label: string; description: string }[] = [
@@ -32,6 +32,27 @@ export default function ExplorePage() {
   </div>
 }
 
-function DetailPane({ record }: { record: CatalogActivity | null }) { if (!record) return <aside className="detail-pane"><p className="section-kicker">Record detail</p><p>Select a record from the matrix to inspect its factor, boundary, and evidence.</p></aside>; if (record.evidence.publicationStatus === 'unavailable') return <aside className="detail-pane"><p className="section-kicker">Data gap</p><h2>{record.name}</h2><p className="status-mark">Not available</p><p>{record.unavailabilityReason}</p><p><strong>No numeric zero is substituted.</strong></p><p className="mono">{record.evidence.emissionFactorId || 'No factor ID'}</p></aside>; return <aside className="detail-pane"><p className="section-kicker">Record detail</p><h2>{record.name}</h2><p className="equation">{record.emissionFactor} g CO₂e / {record.unitLabel}</p><dl><div><dt>Scope</dt><dd>{record.evidence.scopeBoundary}</dd></div><div><dt>Region</dt><dd>{record.evidence.region}</dd></div><div><dt>Vintage</dt><dd>{record.evidence.vintageYear}</dd></div><div><dt>GWP horizon</dt><dd>{record.evidence.gwpHorizon}</dd></div><div><dt>Uncertainty</dt><dd>{record.evidence.uncertainty.lowGPerUnit == null ? 'Not quantified' : `${record.evidence.uncertainty.lowGPerUnit}–${record.evidence.uncertainty.highGPerUnit} g CO₂e / ${record.unitLabel}`}</dd></div><div><dt>Method</dt><dd>{record.evidence.methodNotes}</dd></div><div><dt>Factor ID</dt><dd className="mono">{record.evidence.emissionFactorId}</dd></div></dl><SourceList sourceIds={record.evidence.sourceIds} citations={record.evidence.sourceCitations} /></aside> }
+function DetailPane({ record }: { record: CatalogActivity | null }) {
+  if (!record) {
+    return <aside className="detail-pane"><p className="section-kicker">Record detail</p><p>Select a record from the matrix to inspect its factor, boundary, and evidence.</p></aside>
+  }
+  if (record.evidence.publicationStatus === 'unavailable') {
+    return <aside className="detail-pane"><p className="section-kicker">Data gap</p><h2>{record.name}</h2><p className="status-mark">Not available</p><p>{record.unavailabilityReason}</p><p><strong>No numeric zero is substituted.</strong></p><p className="mono">{record.evidence.emissionFactorId || 'No factor ID'}</p></aside>
+  }
+  return (
+    <aside className="detail-pane">
+      <p className="section-kicker">Record detail</p>
+      <h2>{record.name}</h2>
+      <FactorRecordDetails
+        description={record.description}
+        unitDefinition={record.unitDefinition}
+        notes={record.notes}
+        unitLabel={record.unitLabel}
+        emissionFactor={record.emissionFactor}
+        evidence={record.evidence}
+      />
+    </aside>
+  )
+}
 
 function label(value: string) { return value.replaceAll('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase()) }

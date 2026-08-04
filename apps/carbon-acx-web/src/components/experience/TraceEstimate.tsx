@@ -39,7 +39,7 @@ export function TraceEstimate() {
     <aside className="evidence-rail" aria-label="Factor evidence">
       <p className="section-kicker">What this number means</p>
       <dl><div><dt>Factor</dt><dd>{activity.emissionFactor} g CO₂e / kilometre</dd></div><div><dt>Scope</dt><dd>{activity.evidence.scopeBoundary}</dd></div><div><dt>Region</dt><dd>{activity.evidence.region}</dd></div><div><dt>GWP horizon</dt><dd>{activity.evidence.gwpHorizon}</dd></div><div><dt>Vintage</dt><dd>{activity.evidence.vintageYear}</dd></div><div><dt>Uncertainty</dt><dd>{activity.evidence.uncertainty.lowGPerUnit == null ? 'Not quantified' : `${activity.evidence.uncertainty.lowGPerUnit}–${activity.evidence.uncertainty.highGPerUnit} g CO₂e / kilometre`}</dd></div><div><dt>Factor ID</dt><dd className="mono">{activity.evidence.emissionFactorId}</dd></div></dl>
-      <SourceList sourceIds={activity.evidence.sourceIds} citations={activity.evidence.sourceCitations} />
+      <SourceList sourceIds={activity.evidence.sourceIds} citations={activity.evidence.sourceCitations} urls={activity.evidence.sourceUrls} />
     </aside>
   </section>
 }
