@@ -1,6 +1,6 @@
 # ACX104 — Responsive Layout and Accessibility Merge
 
-**Status:** Merged to `main` on 2026-08-04  
+**Status:** Review complete; PR #258 remains open pending repository CI repair  
 **Scope:** PR #258 — responsive public-web layouts and accessibility coverage
 
 ## Delivered
@@ -24,7 +24,16 @@ pnpm test:e2e
 pnpm build
 ```
 
-The merge review ran the first four commands successfully: 21 unit tests and 37 Playwright tests passed. Browser review at 390 × 844 confirmed the closed and open menu states, five navigational links, and a document width equal to the 390px viewport.
+The review ran all five commands successfully: 21 unit tests and 37 Playwright tests passed, and the static export generated 14 pages. Browser review at 390 × 844 confirmed the closed and open menu states, five navigational links, and a document width equal to the 390px viewport.
+
+## Merge gate
+
+The branch was not merged because its repository CI checks are red for pre-existing infrastructure and documentation failures unrelated to this change:
+
+- `build-static` runs `scripts/bootstrap.sh --check-only` with Python 3.12.3, while the script requires Python 3.11.
+- `citations` fails on the existing banned `fastapi` term in `docs/acx/ACX102 Recovery Merge and Calculator Provenance Hardening.md`; PR #258 does not modify that file.
+
+Cloudflare Pages deployment and `lint-yaml` passed. Do not bypass these required checks; repair the base CI failures, re-run the checks, then merge PR #258.
 
 ## Operations
 
