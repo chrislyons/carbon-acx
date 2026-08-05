@@ -1,6 +1,6 @@
 # ACX104 — Responsive Layout and Accessibility Merge
 
-**Status:** Review complete; PR #258 remains open pending repository CI repair  
+**Status:** CI gate repair submitted; PR #258 awaits rerun of required checks  
 **Scope:** PR #258 — responsive public-web layouts and accessibility coverage
 
 ## Delivered
@@ -28,12 +28,12 @@ The review ran all five commands successfully: 21 unit tests and 37 Playwright t
 
 ## Merge gate
 
-The branch was not merged because its repository CI checks are red for pre-existing infrastructure and documentation failures unrelated to this change:
+The following repository-gate defects were repaired and require CI confirmation:
 
-- `build-static` runs `scripts/bootstrap.sh --check-only` with Python 3.12.3, while the script requires Python 3.11.
-- `citations` fails on the existing banned `fastapi` term in `docs/acx/ACX102 Recovery Merge and Calculator Provenance Hardening.md`; PR #258 does not modify that file.
+- `build-static` and `tests` now select Python 3.11 before `scripts/bootstrap.sh --check-only`, matching the script's pinned interpreter requirement.
+- ACX102 now uses framework-neutral language outside its explicit historical-document exception, so the documentation linter can scan the full active corpus.
 
-Cloudflare Pages deployment and `lint-yaml` passed. Do not bypass these required checks; repair the base CI failures, re-run the checks, then merge PR #258.
+Cloudflare Pages deployment and `lint-yaml` passed before the repair. Do not bypass required checks; merge PR #258 only after the rerun is green.
 
 ## Operations
 
