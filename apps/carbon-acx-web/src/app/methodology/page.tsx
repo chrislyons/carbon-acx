@@ -1,10 +1,22 @@
 import Link from 'next/link'
 import { Disclosure, Eyebrow, SourceList } from '@/components/content'
-import { ACTIVITIES, CALCULATOR_DATASET, getBenchmarkOptions } from '@/lib/calculator'
+import { ACTIVITIES, CALCULATOR_DATASET, calculateEmissions, encodeCalculatorInputs, formatEmissions, getActivityById, getBenchmarkOptions } from '@/lib/calculator'
 
 const sourcePairs = ACTIVITIES.flatMap((activity) =>
-  activity.evidence.sourceIds.map((sourceId, index) => [sourceId, activity.evidence.sourceCitations[index]] as const),
+  activity.evidence.sourceIds.map((sourceId, index) => [
+    sourceId,
+    activity.evidence.sourceCitations[index],
+    activity.evidence.sourceUrls[index] ?? null,
+  ] as const),
 ).filter(([sourceId], index, all) => all.findIndex(([candidate]) => candidate === sourceId) === index)
+
+const primerActivity = getActivityById('TRAN.SCHOOLRUN.CAR.KM')!
+const primerQuantity = 1_000
+const primerResult = calculateEmissions([{ activityId: primerActivity.id, quantity: primerQuantity }]).results[0]!
+const primerUnit = primerActivity.unitLabel.endsWith('s')
+  ? primerActivity.unitLabel.slice(0, -1)
+  : primerActivity.unitLabel
+const primerEquation = `${primerQuantity.toLocaleString('en-CA')} ${primerActivity.unitLabel} × ${primerActivity.emissionFactor} g CO₂e / ${primerUnit} = ${formatEmissions(primerResult.emissions)}/year`
 
 export default function MethodologyPage() {
   const benchmarks = getBenchmarkOptions()
@@ -17,6 +29,48 @@ export default function MethodologyPage() {
         Carbon ACX derives its public calculator and Activity Atlas from canonical CSV records. A visitor-facing
         estimate is only shown when its factor has a registered source, boundary, region, GWP horizon, and vintage.
       </p>
+
+      <section id="primer" className="surface-card primer-card">
+        <h2>Learn how to read a carbon estimate</h2>
+        <Disclosure summary="Open the six-question primer" open>
+          <div className="primer-card__questions">
+            <article>
+              <h3>What is the equation?</h3>
+              <p>An activity quantity is multiplied by its published emission factor to make a transparent estimate.</p>
+              <p className="working-example__equation">{primerEquation}</p>
+            </article>
+            <article>
+              <h3>What period does it cover?</h3>
+              <p>Calculator quantities use an annual convention: the quantity describes one year, and the result is shown as an annual estimate.</p>
+            </article>
+            <article>
+              <h3>What is inside the boundary?</h3>
+              <p>The published scope boundary states which upstream, operational, or downstream activity the factor includes. Read it before interpreting the total.</p>
+            </article>
+            <article>
+              <h3>Which region and vintage apply?</h3>
+              <p>This example uses {primerActivity.evidence.region} and a {primerActivity.evidence.vintageYear} factor vintage. Geography and year stay attached to every record.</p>
+            </article>
+            <article>
+              <h3>How should uncertainty be read?</h3>
+              <p>Uncertainty bounds describe the published factor range when available; they do not turn a screening estimate into a verified inventory.</p>
+            </article>
+            <article>
+              <h3>What happens when evidence is missing?</h3>
+              <p>Unavailable evidence is excluded from totals rather than converted to zero. Incompatible units must not be compared.</p>
+            </article>
+          </div>
+          <div className="working-example">
+            <p className="section-kicker">Working example</p>
+            <p>{primerActivity.description}</p>
+            <p className="working-example__equation">{primerEquation}</p>
+            <div className="flex flex-wrap gap-3">
+              <Link className="text-link text-link--primary" href={`/calculator?data=${encodeCalculatorInputs({ [primerActivity.id]: primerQuantity })}`}>Open this example in the calculator</Link>
+              <Link className="text-link" href="/explore">Inspect the published record</Link>
+            </div>
+          </div>
+        </Disclosure>
+      </section>
 
       <div className="methodology-grid">
         <section className="surface-card">
@@ -58,7 +112,7 @@ export default function MethodologyPage() {
         </dl>
       </section>
 
-      <section className="surface-card reference-panel">
+      <section id="benchmarks" className="surface-card reference-panel">
         <Eyebrow>Comparison records</Eyebrow>
         <div className="mt-4 overflow-x-auto">
           <table className="w-full min-w-[38rem] text-left text-sm">
@@ -70,8 +124,8 @@ export default function MethodologyPage() {
                 <tr key={benchmark.key} className="border-b border-[color:var(--surface-border)] last:border-0">
                   <td className="py-3 font-semibold text-foreground">{benchmark.label}</td>
                   <td className="py-3">{benchmark.perCapitaTonnes.toFixed(1)} t CO₂e / capita</td>
-                  <td className="py-3">{benchmark.year}</td>
-                  <td className="py-3 font-mono text-xs">{benchmark.sourceId}</td>
+                  <td className="py-3">{benchmark.year ?? 'Not specified'}</td>
+                  <td className="py-3 font-mono text-xs">{benchmark.sourceId ?? 'Not specified'}</td>
                 </tr>
               ))}
             </tbody>
@@ -86,7 +140,11 @@ export default function MethodologyPage() {
           copy. Every result displays the applicable subset.
         </p>
         <div className="mt-4">
-          <SourceList sourceIds={sourcePairs.map(([sourceId]) => sourceId)} citations={sourcePairs.map(([, citation]) => citation)} />
+          <SourceList
+            sourceIds={sourcePairs.map(([sourceId]) => sourceId)}
+            citations={sourcePairs.map(([, citation]) => citation)}
+            urls={sourcePairs.map(([, , url]) => url)}
+          />
         </div>
       </section>
 

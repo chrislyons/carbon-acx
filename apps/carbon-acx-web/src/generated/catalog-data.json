@@ -1,6 +1,6 @@
 {
-  "schemaVersion": "acx.web-calculator/1-3-0",
-  "generatedAt": "2026-07-28T04:30:11+00:00",
+  "schemaVersion": "acx.web-calculator/1-4-0",
+  "generatedAt": "2026-08-04T22:15:00+00:00",
   "activities": [
     {
       "id": "AGRI.BEEF.CARCASS.KG",
@@ -9,6 +9,8 @@
       "unit": "kg",
       "unitLabel": "kg",
       "description": "Hot carcass weight throughput leaving a Canadian beef processing line.",
+      "unitDefinition": "",
+      "notes": "Captures dressed beef output at large-scale slaughter and fabrication plants.",
       "emissionFactor": 60000.0,
       "evidence": {
         "activityId": "AGRI.BEEF.CARCASS.KG",
@@ -24,6 +26,9 @@
         ],
         "sourceCitations": [
           "[48] J. Poore and T. Nemecek, \u201cReducing food\u2019s environmental impacts through producers and consumers,\u201d Science, vol. 360, no. 6392, pp. 987\u2013992, 2018. Available: https://www.science.org/doi/10.1126/science.aaq0216"
+        ],
+        "sourceUrls": [
+          "https://www.science.org/doi/10.1126/science.aaq0216"
         ],
         "methodNotes": "Poore & Nemecek (2018) median beef supply intensity of 60 kgCO2e/kg carcass-equivalent; quartile range (36\u201382 kgCO2e/kg) sets bounds for upstream processing throughput.",
         "uncertainty": {
@@ -41,6 +46,8 @@
       "unit": "kg",
       "unitLabel": "kg",
       "description": "Eviscerated poultry weight ready for chill/pack.",
+      "unitDefinition": "",
+      "notes": "Represents chilled poultry throughput after defeathering and evisceration.",
       "emissionFactor": 6000.0,
       "evidence": {
         "activityId": "AGRI.POULTRY.READY.KG",
@@ -56,6 +63,9 @@
         ],
         "sourceCitations": [
           "[48] J. Poore and T. Nemecek, \u201cReducing food\u2019s environmental impacts through producers and consumers,\u201d Science, vol. 360, no. 6392, pp. 987\u2013992, 2018. Available: https://www.science.org/doi/10.1126/science.aaq0216"
+        ],
+        "sourceUrls": [
+          "https://www.science.org/doi/10.1126/science.aaq0216"
         ],
         "methodNotes": "Poore & Nemecek (2018) median poultry meat intensity of 6 kgCO2e/kg ready-to-cook product; quartile range (4\u20137 kgCO2e/kg) sets bounds.",
         "uncertainty": {
@@ -73,6 +83,8 @@
       "unit": "prompt",
       "unitLabel": "prompt",
       "description": "Generating a single image prompt with a general-purpose diffusion model.",
+      "unitDefinition": "",
+      "notes": "Reflects GPU inference electricity plus datacentre overhead for a representative creative AI workflow.",
       "emissionFactor": 350.0,
       "evidence": {
         "activityId": "AI.IMAGE.GENERATION.PROMPT",
@@ -88,6 +100,9 @@
         ],
         "sourceCitations": [
           "[37] A. Luccioni, A. Ligozat, and Y. Bengio, \u201cEstimating the Carbon Footprint of Inference,\u201d 2023. Available: https://arxiv.org/abs/2304.03271"
+        ],
+        "sourceUrls": [
+          "https://arxiv.org/abs/2304.03271"
         ],
         "methodNotes": "Stable Diffusion image generation: ~12.5 Wh per 512\u00d7512 image (50 inference steps at 250 W GPU for 3 sec) with datacentre PUE 1.2 and Ontario grid; bounds 200\u2013550 gCO2e/prompt reflect resolution and step count.",
         "uncertainty": {
@@ -105,6 +120,8 @@
       "unit": "1k_tokens",
       "unitLabel": "thousand tokens",
       "description": "Generating an approximately 1,000-token response from a general-purpose large language model.",
+      "unitDefinition": "1k_tokens means one thousand output tokens.",
+      "notes": "Electricity covers GPU inference plus supporting data centre overhead for a single 1k-token completion.",
       "emissionFactor": 0.081,
       "evidence": {
         "activityId": "AI.LLM.INFER.1K_TOKENS.GENERIC",
@@ -123,6 +140,10 @@
           "[36] A. Shehabi et al., \u201cEstimating the Energy Use of Data Centers: 2024 Update,\u201d Lawrence Berkeley National Laboratory, 2024. Available: https://eta.lbl.gov/publications/estimating-energy-use-data-centers",
           "[32] Independent Electricity System Operator, \u201cPower Data\u2014Emissions and Grid Intensity (Ontario),\u201d 2025. Available: https://www.ieso.ca/en/Power-Data/Data-Directory"
         ],
+        "sourceUrls": [
+          "https://eta.lbl.gov/publications/estimating-energy-use-data-centers",
+          "https://www.ieso.ca/en/Power-Data/Data-Directory"
+        ],
         "methodNotes": "Generic LLM inference electricity from LBNL data centre intensity tied to Ontario grid mix.",
         "uncertainty": {
           "lowGPerUnit": null,
@@ -139,6 +160,8 @@
       "unit": "1k_tokens",
       "unitLabel": "thousand tokens",
       "description": "Processing approximately 1,000 tokens with Anthropic Claude.",
+      "unitDefinition": "1k_tokens means one thousand combined prompt and completion tokens processed.",
+      "notes": "Representative of cloud-hosted Claude 3 class usage with North American datacentre mix.",
       "emissionFactor": 250.0,
       "evidence": {
         "activityId": "AI.USAGE.ANTHROPIC.QUERY",
@@ -154,6 +177,9 @@
         ],
         "sourceCitations": [
           "[37] A. Luccioni, A. Ligozat, and Y. Bengio, \u201cEstimating the Carbon Footprint of Inference,\u201d 2023. Available: https://arxiv.org/abs/2304.03271"
+        ],
+        "sourceUrls": [
+          "https://arxiv.org/abs/2304.03271"
         ],
         "methodNotes": "Claude estimated footprint per 1k tokens following SRC.LUCCIONI.2023 with 180\u2013350 gCO2e low/high span covering datacentre mix effects.",
         "uncertainty": {
@@ -171,6 +197,8 @@
       "unit": "1k_tokens",
       "unitLabel": "thousand tokens",
       "description": "Processing approximately 1,000 tokens with Google Gemini.",
+      "unitDefinition": "1k_tokens means one thousand combined prompt and completion tokens processed.",
+      "notes": "Representative of Gemini inference on carbon-optimized Google Cloud TPU infrastructure.",
       "emissionFactor": 200.0,
       "evidence": {
         "activityId": "AI.USAGE.GOOGLE.QUERY",
@@ -186,6 +214,9 @@
         ],
         "sourceCitations": [
           "[46] D. Patterson et al., \u201cCarbon Emissions and Large Neural Network Training,\u201d 2022. Available: https://arxiv.org/abs/2104.10350"
+        ],
+        "sourceUrls": [
+          "https://arxiv.org/abs/2104.10350"
         ],
         "methodNotes": "Google inference on carbon-optimized TPUs, per 1k tokens, with 150\u2013300 gCO2e range reflecting SRC.LUCCIONI.2023 uncertainty and TPU efficiency variation.",
         "uncertainty": {
@@ -203,6 +234,8 @@
       "unit": "1k_tokens",
       "unitLabel": "thousand tokens",
       "description": "Processing approximately 1,000 tokens with OpenAI GPT.",
+      "unitDefinition": "1k_tokens means one thousand combined prompt and completion tokens processed.",
+      "notes": "Representative of cloud-hosted GPT-4 class usage under mixed North American datacentre regions.",
       "emissionFactor": 280.0,
       "evidence": {
         "activityId": "AI.USAGE.GPT.QUERY",
@@ -218,6 +251,9 @@
         ],
         "sourceCitations": [
           "[37] A. Luccioni, A. Ligozat, and Y. Bengio, \u201cEstimating the Carbon Footprint of Inference,\u201d 2023. Available: https://arxiv.org/abs/2304.03271"
+        ],
+        "sourceUrls": [
+          "https://arxiv.org/abs/2304.03271"
         ],
         "methodNotes": "~280 gCO2e per 1k GPT tokens (cloud, mixed datacentre regions) with 200\u2013400 gCO2e sensitivity bounds drawn from SRC.LUCCIONI.2023 scenario sweep.",
         "uncertainty": {
@@ -235,6 +271,8 @@
       "unit": "cubic_metre_year",
       "unitLabel": "cubic metre year",
       "description": "Acidic effluent generation proxying downstream biogeochemical fluxes.",
+      "unitDefinition": "Cubic metres of acidic effluent produced per year.",
+      "notes": "Proxy linkage for nutrient/metal stress in receiving waters.",
       "emissionFactor": 275.0,
       "evidence": {
         "activityId": "AMD.ACID.DRAINAGE.M3.YEAR",
@@ -250,6 +288,9 @@
         ],
         "sourceCitations": [
           "[34] International Council on Mining and Metals, \u201cGlobal Acid Rock Drainage Guidance,\u201d London, U.K., 2022. Available: https://www.icmm.com/en-gb/environment/materials-circularity/tailings/acid-drainage-guidance"
+        ],
+        "sourceUrls": [
+          "https://www.icmm.com/en-gb/environment/materials-circularity/tailings/acid-drainage-guidance"
         ],
         "methodNotes": "Proxy CO\u2082e impact per cubic metre of unmanaged acid drainage.",
         "uncertainty": {
@@ -267,6 +308,8 @@
       "unit": "square_metre_year",
       "unitLabel": "square metre year",
       "description": "Operational footprint per square metre of hospital space over one year.",
+      "unitDefinition": "",
+      "notes": "",
       "emissionFactor": 250000.0,
       "evidence": {
         "activityId": "BUILDING.HOSPITAL.M2.YEAR",
@@ -282,6 +325,9 @@
         ],
         "sourceCitations": [
           "[31] International Energy Agency, \u201cTracking Clean Energy Progress: Buildings,\u201d Paris, France, 2023; and Natural Resources Canada, \u201cComprehensive Energy Use Database,\u201d Ottawa, ON, Canada, 2024. Available: https://oee.nrcan.gc.ca/corporate/statistics/neud/dpa/menus/trends/comprehensive_tables/list.cfm"
+        ],
+        "sourceUrls": [
+          "https://oee.nrcan.gc.ca/corporate/statistics/neud/dpa/menus/trends/comprehensive_tables/list.cfm"
         ],
         "methodNotes": "Hospital operational emissions referencing IEA intensity ranges scaled with NRCan provincial energy data for Ontario.",
         "uncertainty": {
@@ -299,6 +345,8 @@
       "unit": "square_metre_year",
       "unitLabel": "square metre year",
       "description": "Operational footprint per square metre of office space over one year.",
+      "unitDefinition": "",
+      "notes": "",
       "emissionFactor": 80000.0,
       "evidence": {
         "activityId": "BUILDING.OFFICE.M2.YEAR",
@@ -314,6 +362,9 @@
         ],
         "sourceCitations": [
           "[31] International Energy Agency, \u201cTracking Clean Energy Progress: Buildings,\u201d Paris, France, 2023; and Natural Resources Canada, \u201cComprehensive Energy Use Database,\u201d Ottawa, ON, Canada, 2024. Available: https://oee.nrcan.gc.ca/corporate/statistics/neud/dpa/menus/trends/comprehensive_tables/list.cfm"
+        ],
+        "sourceUrls": [
+          "https://oee.nrcan.gc.ca/corporate/statistics/neud/dpa/menus/trends/comprehensive_tables/list.cfm"
         ],
         "methodNotes": "Office operational emissions derived from IEA building energy benchmarks combined with NRCan Ontario energy mix factors.",
         "uncertainty": {
@@ -331,6 +382,8 @@
       "unit": "square_metre_year",
       "unitLabel": "square metre year",
       "description": "Operational footprint per square metre of residential space over one year.",
+      "unitDefinition": "",
+      "notes": "",
       "emissionFactor": 50000.0,
       "evidence": {
         "activityId": "BUILDING.RESIDENTIAL.M2.YEAR",
@@ -346,6 +399,9 @@
         ],
         "sourceCitations": [
           "[31] International Energy Agency, \u201cTracking Clean Energy Progress: Buildings,\u201d Paris, France, 2023; and Natural Resources Canada, \u201cComprehensive Energy Use Database,\u201d Ottawa, ON, Canada, 2024. Available: https://oee.nrcan.gc.ca/corporate/statistics/neud/dpa/menus/trends/comprehensive_tables/list.cfm"
+        ],
+        "sourceUrls": [
+          "https://oee.nrcan.gc.ca/corporate/statistics/neud/dpa/menus/trends/comprehensive_tables/list.cfm"
         ],
         "methodNotes": "Residential operational emissions using IEA residential energy benchmarks aligned to NRCan Ontario energy factors.",
         "uncertainty": {
@@ -363,6 +419,8 @@
       "unit": "tonne",
       "unitLabel": "tonne",
       "description": "Cradle-to-gate emissions for producing one tonne of RDX (Cyclonite) explosive.",
+      "unitDefinition": "",
+      "notes": "Includes hexamine synthesis, nitration, and solvent recovery.",
       "emissionFactor": 6000000.0,
       "evidence": {
         "activityId": "CHEM.RDX.TONNE",
@@ -378,6 +436,9 @@
         ],
         "sourceCitations": [
           "[3] Conflict and Environment Observatory, \u201cExplosive Materials Supply Chain Emissions,\u201d 2023. Available: https://ceobs.org/report-explosive-materials-supply-chain-emissions/"
+        ],
+        "sourceUrls": [
+          "https://ceobs.org/report-explosive-materials-supply-chain-emissions/"
         ],
         "methodNotes": "Cradle-to-gate RDX explosives factor including hexamine precursor synthesis and nitration work-up.",
         "uncertainty": {
@@ -395,6 +456,8 @@
       "unit": "tonne",
       "unitLabel": "tonne",
       "description": "Cradle-to-gate emissions for producing one tonne of trinitrotoluene explosive.",
+      "unitDefinition": "",
+      "notes": "Covers nitration precursors, steam, and wastewater controls.",
       "emissionFactor": 6000000.0,
       "evidence": {
         "activityId": "CHEM.TNT.TONNE",
@@ -410,6 +473,9 @@
         ],
         "sourceCitations": [
           "[3] Conflict and Environment Observatory, \u201cExplosive Materials Supply Chain Emissions,\u201d 2023. Available: https://ceobs.org/report-explosive-materials-supply-chain-emissions/"
+        ],
+        "sourceUrls": [
+          "https://ceobs.org/report-explosive-materials-supply-chain-emissions/"
         ],
         "methodNotes": "Cradle-to-gate TNT explosives factor covering nitration, drying, and waste treatment.",
         "uncertainty": {
@@ -427,6 +493,8 @@
       "unit": "garment",
       "unitLabel": "garments",
       "description": "Production of one synthetic jacket",
+      "unitDefinition": "",
+      "notes": "",
       "emissionFactor": 25000.0,
       "evidence": {
         "activityId": "CLOTHING.JACKET.SYNTH",
@@ -442,6 +510,9 @@
         ],
         "sourceCitations": [
           "[42] K. Niinim\u00e4ki et al., \u201cThe Environmental Price of Fast Fashion,\u201d Nature Reviews Earth & Environment, vol. 1, pp. 189\u2013200, 2020. Available: https://doi.org/10.1038/s43017-020-0039-9"
+        ],
+        "sourceUrls": [
+          "https://doi.org/10.1038/s43017-020-0039-9"
         ],
         "methodNotes": "~25 kgCO2e per synthetic jacket",
         "uncertainty": {
@@ -459,6 +530,8 @@
       "unit": "garment",
       "unitLabel": "garments",
       "description": "Production of one pair of jeans",
+      "unitDefinition": "",
+      "notes": "",
       "emissionFactor": 33000.0,
       "evidence": {
         "activityId": "CLOTHING.JEANS.DENIM",
@@ -474,6 +547,9 @@
         ],
         "sourceCitations": [
           "[50] Quantis, \u201cMeasuring Fashion: Environmental Impact of the Global Apparel and Footwear Industries Study,\u201d 2018. Available: https://quantis.com/measuring-fashion-report/"
+        ],
+        "sourceUrls": [
+          "https://quantis.com/measuring-fashion-report/"
         ],
         "methodNotes": "~33 kgCO2e per jeans",
         "uncertainty": {
@@ -491,6 +567,8 @@
       "unit": "garment",
       "unitLabel": "garments",
       "description": "Production of one pair of sneakers",
+      "unitDefinition": "",
+      "notes": "",
       "emissionFactor": 14000.0,
       "evidence": {
         "activityId": "CLOTHING.SHOES.SNEAKERS",
@@ -506,6 +584,9 @@
         ],
         "sourceCitations": [
           "[50] Quantis, \u201cMeasuring Fashion: Environmental Impact of the Global Apparel and Footwear Industries Study,\u201d 2018. Available: https://quantis.com/measuring-fashion-report/"
+        ],
+        "sourceUrls": [
+          "https://quantis.com/measuring-fashion-report/"
         ],
         "methodNotes": "~14 kgCO2e per sneakers",
         "uncertainty": {
@@ -523,6 +604,8 @@
       "unit": "garment",
       "unitLabel": "garments",
       "description": "Production of one cotton T-shirt",
+      "unitDefinition": "",
+      "notes": "",
       "emissionFactor": 4000.0,
       "evidence": {
         "activityId": "CLOTHING.TSHIRT.COTTON",
@@ -538,6 +621,9 @@
         ],
         "sourceCitations": [
           "[63] Waste and Resources Action Programme, \u201cValuing Our Clothes: The Cost of UK Fashion,\u201d 2017. Available: https://wrap.org.uk/resources/report/valuing-our-clothes-2017"
+        ],
+        "sourceUrls": [
+          "https://wrap.org.uk/resources/report/valuing-our-clothes-2017"
         ],
         "methodNotes": "~4 kgCO2e per cotton T-shirt",
         "uncertainty": {
@@ -555,6 +641,8 @@
       "unit": "GB",
       "unitLabel": "GB",
       "description": "Transferring one gigabyte of data from a cloud service to a consumer device.",
+      "unitDefinition": "GB refers to a gigabyte of data downloaded.",
+      "notes": "Electricity covers wide-area data transfer and data-centre egress for cloud content delivery.",
       "emissionFactor": 0.42,
       "evidence": {
         "activityId": "CLOUD.DOWNLOAD.GB",
@@ -573,6 +661,10 @@
           "[52] Scope3, \u201cData Transfer Emissions Methodology v1.0,\u201d 2024. Available: https://scope3.com/insights/data-transfer-methodology",
           "[32] Independent Electricity System Operator, \u201cPower Data\u2014Emissions and Grid Intensity (Ontario),\u201d 2025. Available: https://www.ieso.ca/en/Power-Data/Data-Directory"
         ],
+        "sourceUrls": [
+          "https://scope3.com/insights/data-transfer-methodology",
+          "https://www.ieso.ca/en/Power-Data/Data-Directory"
+        ],
         "methodNotes": "Scope3 data transfer electricity matched to Ontario grid for downloads per GB.",
         "uncertainty": {
           "lowGPerUnit": null,
@@ -589,6 +681,8 @@
       "unit": "gb_month",
       "unitLabel": "gb month",
       "description": "Maintaining one gigabyte of synced cloud storage for one month.",
+      "unitDefinition": "gb_month equals one gigabyte stored and synced for one month.",
+      "notes": "To be updated with hyperscale storage intensity.",
       "emissionFactor": null,
       "evidence": {
         "activityId": "CLOUD.STORAGE.SYNC.GB_MONTH",
@@ -601,6 +695,7 @@
         "vintageYear": null,
         "sourceIds": [],
         "sourceCitations": [],
+        "sourceUrls": [],
         "methodNotes": null,
         "uncertainty": {
           "lowGPerUnit": null,
@@ -617,6 +712,8 @@
       "unit": "hour",
       "unitLabel": "hours",
       "description": "One participant attending an audio-only conference for one hour.",
+      "unitDefinition": "",
+      "notes": "Electricity captures end-user devices and bandwidth intensity for audio conferencing services.",
       "emissionFactor": 0.504,
       "evidence": {
         "activityId": "CONF.AUDIO.PER_PARTICIPANT_HOUR",
@@ -635,6 +732,10 @@
           "[12] Carbon Trust and DIMPACT, \u201cThe Carbon Impact of Video Streaming,\u201d 2021. Available: https://www.dimpact.org/resources#carbon-impact-of-video-streaming",
           "[32] Independent Electricity System Operator, \u201cPower Data\u2014Emissions and Grid Intensity (Ontario),\u201d 2025. Available: https://www.ieso.ca/en/Power-Data/Data-Directory"
         ],
+        "sourceUrls": [
+          "https://www.dimpact.org/resources#carbon-impact-of-video-streaming",
+          "https://www.ieso.ca/en/Power-Data/Data-Directory"
+        ],
         "methodNotes": "Audio conferencing scaled from DIMPACT video data: 22% of HD video participant load assuming codec efficiency and reduced network bandwidth; device power 15 W (10\u201320 W) with Ontario grid.",
         "uncertainty": {
           "lowGPerUnit": 0.336,
@@ -651,6 +752,8 @@
       "unit": "hour",
       "unitLabel": "hours",
       "description": "One participant attending a high-definition video conference for one hour.",
+      "unitDefinition": "",
+      "notes": "Electricity accounts for end-user device plus upstream/downstream data transfer to cloud meeting services.",
       "emissionFactor": 2.296,
       "evidence": {
         "activityId": "CONF.HD.PARTICIPANT_HOUR",
@@ -669,6 +772,10 @@
           "[41] Netflix, Inc., \u201cSustainability Report,\u201d 2023. Available: https://sustainability.netflix.com/reports",
           "[32] Independent Electricity System Operator, \u201cPower Data\u2014Emissions and Grid Intensity (Ontario),\u201d 2025. Available: https://www.ieso.ca/en/Power-Data/Data-Directory"
         ],
+        "sourceUrls": [
+          "https://sustainability.netflix.com/reports",
+          "https://www.ieso.ca/en/Power-Data/Data-Directory"
+        ],
         "methodNotes": "HD video call per participant-hour using DIMPACT device mix and Ontario grid linkage.",
         "uncertainty": {
           "lowGPerUnit": null,
@@ -685,6 +792,8 @@
       "unit": "watt_per_square_metre",
       "unitLabel": "watt per square metre",
       "description": "Radiative forcing from Arctic and Antarctic ice and snow albedo loss.",
+      "unitDefinition": "Watts per square metre of additional radiative forcing.",
+      "notes": "Positive forcing accelerates additional cryosphere melt.",
       "emissionFactor": 0.11,
       "evidence": {
         "activityId": "CRYO.ALBEDO.LOSS.WM2",
@@ -700,6 +809,9 @@
         ],
         "sourceCitations": [
           "[39] National Aeronautics and Space Administration, \u201cState of the Cryosphere 2023,\u201d Greenbelt, MD, USA, 2023. Available: https://science.nasa.gov/earth-science/cryosphere"
+        ],
+        "sourceUrls": [
+          "https://science.nasa.gov/earth-science/cryosphere"
         ],
         "methodNotes": "Cryosphere albedo forcing converted to mean W/m\u00b2.",
         "uncertainty": {
@@ -717,6 +829,8 @@
       "unit": "unit",
       "unitLabel": "units",
       "description": "Embodied footprint per laptop manufactured.",
+      "unitDefinition": "",
+      "notes": "",
       "emissionFactor": 200000.0,
       "evidence": {
         "activityId": "DEVICE.LAPTOP.UNIT",
@@ -732,6 +846,9 @@
         ],
         "sourceCitations": [
           "[2] Apple Inc., \u201cEnvironmental Progress Report 2024,\u201d Cupertino, CA, USA, 2024; and A. Malmodin and D. Lund\u00e9n, \u201cThe Energy and Carbon Footprint of the Global ICT and E&M Sectors 2010\u20132015,\u201d Proc. Int. Telecommun. Energy Conf., 2018. Available: https://www.apple.com/environment/pdf/Apple_Environmental_Progress_Report_2024.pdf"
+        ],
+        "sourceUrls": [
+          "https://www.apple.com/environment/pdf/Apple_Environmental_Progress_Report_2024.pdf"
         ],
         "methodNotes": "Representative embodied footprint for a productivity laptop combining Apple 2024 disclosures with Malmodin & Lund\u00e9n 2018 component scaling.",
         "uncertainty": {
@@ -749,6 +866,8 @@
       "unit": "unit",
       "unitLabel": "units",
       "description": "Embodied footprint per phone manufactured.",
+      "unitDefinition": "",
+      "notes": "",
       "emissionFactor": 70000.0,
       "evidence": {
         "activityId": "DEVICE.SMARTPHONE.UNIT",
@@ -764,6 +883,9 @@
         ],
         "sourceCitations": [
           "[2] Apple Inc., \u201cEnvironmental Progress Report 2024,\u201d Cupertino, CA, USA, 2024; and A. Malmodin and D. Lund\u00e9n, \u201cThe Energy and Carbon Footprint of the Global ICT and E&M Sectors 2010\u20132015,\u201d Proc. Int. Telecommun. Energy Conf., 2018. Available: https://www.apple.com/environment/pdf/Apple_Environmental_Progress_Report_2024.pdf"
+        ],
+        "sourceUrls": [
+          "https://www.apple.com/environment/pdf/Apple_Environmental_Progress_Report_2024.pdf"
         ],
         "methodNotes": "Central embodied emissions for a flagship smartphone drawing on Apple 2024 supplier disclosures calibrated with Malmodin & Lund\u00e9n 2018 ICT LCA baselines.",
         "uncertainty": {
@@ -781,6 +903,8 @@
       "unit": "unit",
       "unitLabel": "units",
       "description": "Embodied footprint per television manufactured.",
+      "unitDefinition": "",
+      "notes": "",
       "emissionFactor": 300000.0,
       "evidence": {
         "activityId": "DEVICE.TV.UNIT",
@@ -796,6 +920,9 @@
         ],
         "sourceCitations": [
           "[2] Apple Inc., \u201cEnvironmental Progress Report 2024,\u201d Cupertino, CA, USA, 2024; and A. Malmodin and D. Lund\u00e9n, \u201cThe Energy and Carbon Footprint of the Global ICT and E&M Sectors 2010\u20132015,\u201d Proc. Int. Telecommun. Energy Conf., 2018. Available: https://www.apple.com/environment/pdf/Apple_Environmental_Progress_Report_2024.pdf"
+        ],
+        "sourceUrls": [
+          "https://www.apple.com/environment/pdf/Apple_Environmental_Progress_Report_2024.pdf"
         ],
         "methodNotes": "Embodied emissions for a large-format television synthesised from Apple 2024 supply-chain reporting and Malmodin & Lund\u00e9n 2018 home electronics intensities.",
         "uncertainty": {
@@ -813,6 +940,8 @@
       "unit": "download",
       "unitLabel": "download",
       "description": "Downloading a 50 gigabyte digital game to a console.",
+      "unitDefinition": "download equals one 50 GB transfer.",
+      "notes": "Energy intensity calibrated to validated broadband download benchmarks for large console titles.",
       "emissionFactor": null,
       "evidence": {
         "activityId": "DOWNLOAD.GAME.CONSOLE.50GB",
@@ -825,6 +954,7 @@
         "vintageYear": null,
         "sourceIds": [],
         "sourceCitations": [],
+        "sourceUrls": [],
         "methodNotes": null,
         "uncertainty": {
           "lowGPerUnit": null,
@@ -841,6 +971,8 @@
       "unit": "kWh",
       "unitLabel": "kWh",
       "description": "One kilowatt-hour delivered by the Ontario IESO-managed grid.",
+      "unitDefinition": "",
+      "notes": "Supports grid intensity reporting for Ontario electricity.",
       "emissionFactor": 28.0,
       "evidence": {
         "activityId": "ENERGY.CA-ON.GRID.KWH",
@@ -856,6 +988,9 @@
         ],
         "sourceCitations": [
           "[32] Independent Electricity System Operator, \u201cPower Data\u2014Emissions and Grid Intensity (Ontario),\u201d 2025. Available: https://www.ieso.ca/en/Power-Data/Data-Directory"
+        ],
+        "sourceUrls": [
+          "https://www.ieso.ca/en/Power-Data/Data-Directory"
         ],
         "methodNotes": "IESO reported 2024 Ontario grid mix intensity for system electricity.",
         "uncertainty": {
@@ -873,6 +1008,8 @@
       "unit": "L",
       "unitLabel": "L",
       "description": "Motor gasoline supply",
+      "unitDefinition": "",
+      "notes": "",
       "emissionFactor": 2300.0,
       "evidence": {
         "activityId": "ENERGY.GASOLINE.LITRE",
@@ -888,6 +1025,9 @@
         ],
         "sourceCitations": [
           "[45] Natural Resources Canada, \u201cFuel Life Cycle Assessment Modelling for Canada,\u201d 2024. Available: https://www.nrcan.gc.ca/energy/energy-efficiency/transportation/fuel-life-cycle-assessment/21086"
+        ],
+        "sourceUrls": [
+          "https://www.nrcan.gc.ca/energy/energy-efficiency/transportation/fuel-life-cycle-assessment/21086"
         ],
         "methodNotes": "WTT+TTW per litre",
         "uncertainty": {
@@ -905,6 +1045,8 @@
       "unit": "kWh",
       "unitLabel": "kWh",
       "description": "Retail electricity delivered to end users",
+      "unitDefinition": "",
+      "notes": "",
       "emissionFactor": 35.0,
       "evidence": {
         "activityId": "ENERGY.KWH.DELIVERED",
@@ -920,6 +1062,9 @@
         ],
         "sourceCitations": [
           "[32] Independent Electricity System Operator, \u201cPower Data\u2014Emissions and Grid Intensity (Ontario),\u201d 2025. Available: https://www.ieso.ca/en/Power-Data/Data-Directory"
+        ],
+        "sourceUrls": [
+          "https://www.ieso.ca/en/Power-Data/Data-Directory"
         ],
         "methodNotes": "Ontario grid intensity",
         "uncertainty": {
@@ -937,6 +1082,8 @@
       "unit": "m3",
       "unitLabel": "cubic metres",
       "description": "Pipeline gas delivered",
+      "unitDefinition": "",
+      "notes": "",
       "emissionFactor": 1900.0,
       "evidence": {
         "activityId": "ENERGY.NATGAS.M3",
@@ -952,6 +1099,9 @@
         ],
         "sourceCitations": [
           "[15] Environment and Climate Change Canada, \u201cNational Inventory Report 1990\u20132023: Greenhouse Gas Sources and Sinks in Canada,\u201d Ottawa, ON, Canada, 2025. Available: https://publications.gc.ca/collections/collection_2025/eccc/En81-4-2025-1-eng.pdf"
+        ],
+        "sourceUrls": [
+          "https://publications.gc.ca/collections/collection_2025/eccc/En81-4-2025-1-eng.pdf"
         ],
         "methodNotes": "Combustion + upstream",
         "uncertainty": {
@@ -969,6 +1119,8 @@
       "unit": "cup",
       "unitLabel": "cup",
       "description": "Cup of coffee",
+      "unitDefinition": "",
+      "notes": "",
       "emissionFactor": null,
       "evidence": {
         "activityId": "FOOD.COFFEE.CUP.HOT",
@@ -981,6 +1133,7 @@
         "vintageYear": 2025,
         "sourceIds": [],
         "sourceCitations": [],
+        "sourceUrls": [],
         "methodNotes": "Demo coffee cup baseline applying 150 g hot serving with AR6 GWP100 defaults.",
         "uncertainty": {
           "lowGPerUnit": null,
@@ -997,6 +1150,8 @@
       "unit": "kg",
       "unitLabel": "kg",
       "description": "Roasted coffee beans exiting industrial roasters.",
+      "unitDefinition": "",
+      "notes": "Covers roasted or instant coffee production ready for packaging.",
       "emissionFactor": 15000.0,
       "evidence": {
         "activityId": "FOOD.COFFEE.ROASTED.KG",
@@ -1012,6 +1167,9 @@
         ],
         "sourceCitations": [
           "[48] J. Poore and T. Nemecek, \u201cReducing food\u2019s environmental impacts through producers and consumers,\u201d Science, vol. 360, no. 6392, pp. 987\u2013992, 2018. Available: https://www.science.org/doi/10.1126/science.aaq0216"
+        ],
+        "sourceUrls": [
+          "https://www.science.org/doi/10.1126/science.aaq0216"
         ],
         "methodNotes": "Poore & Nemecek (2018) roasted coffee median intensity (~15 kgCO2e/kg) with interquartile span rounded to 10\u201321 kgCO2e/kg for uncertainty bounds.",
         "uncertainty": {
@@ -1029,6 +1187,8 @@
       "unit": "serving",
       "unitLabel": "servings",
       "description": "One serving of a meal including 150 grams of cooked beef.",
+      "unitDefinition": "",
+      "notes": "Includes cradle-to-grave emissions for a representative beef meal portion.",
       "emissionFactor": 9000.0,
       "evidence": {
         "activityId": "FOOD.MEAL.BEEF.SERVING",
@@ -1044,6 +1204,9 @@
         ],
         "sourceCitations": [
           "[48] J. Poore and T. Nemecek, \u201cReducing food\u2019s environmental impacts through producers and consumers,\u201d Science, vol. 360, no. 6392, pp. 987\u2013992, 2018. Available: https://www.science.org/doi/10.1126/science.aaq0216"
+        ],
+        "sourceUrls": [
+          "https://www.science.org/doi/10.1126/science.aaq0216"
         ],
         "methodNotes": "Median cradle-to-grave intensity for beef from Poore & Nemecek (2018) of 60 kgCO2e/kg applied to a 150 g cooked portion; lower and upper quartiles (36\u201382 kgCO2e/kg) set bounds.",
         "uncertainty": {
@@ -1061,6 +1224,8 @@
       "unit": "serving",
       "unitLabel": "servings",
       "description": "One serving of a meal including 150 grams of cooked chicken.",
+      "unitDefinition": "",
+      "notes": "Includes cradle-to-grave emissions for a representative chicken meal portion.",
       "emissionFactor": 900.0,
       "evidence": {
         "activityId": "FOOD.MEAL.CHICKEN.SERVING",
@@ -1076,6 +1241,9 @@
         ],
         "sourceCitations": [
           "[48] J. Poore and T. Nemecek, \u201cReducing food\u2019s environmental impacts through producers and consumers,\u201d Science, vol. 360, no. 6392, pp. 987\u2013992, 2018. Available: https://www.science.org/doi/10.1126/science.aaq0216"
+        ],
+        "sourceUrls": [
+          "https://www.science.org/doi/10.1126/science.aaq0216"
         ],
         "methodNotes": "Median poultry meat intensity of 6 kgCO2e/kg applied to a 150 g cooked portion; quartile range (4\u20137 kgCO2e/kg) sets bounds.",
         "uncertainty": {
@@ -1093,6 +1261,8 @@
       "unit": "serving",
       "unitLabel": "servings",
       "description": "One serving of a vegetarian meal centered on legumes and vegetables.",
+      "unitDefinition": "",
+      "notes": "Includes cradle-to-grave emissions for a representative plant-based meal portion.",
       "emissionFactor": 300.0,
       "evidence": {
         "activityId": "FOOD.MEAL.VEG.SERVING",
@@ -1108,6 +1278,9 @@
         ],
         "sourceCitations": [
           "[48] J. Poore and T. Nemecek, \u201cReducing food\u2019s environmental impacts through producers and consumers,\u201d Science, vol. 360, no. 6392, pp. 987\u2013992, 2018. Available: https://www.science.org/doi/10.1126/science.aaq0216"
+        ],
+        "sourceUrls": [
+          "https://www.science.org/doi/10.1126/science.aaq0216"
         ],
         "methodNotes": "Median legumes/pulses intensity of 2 kgCO2e/kg applied to a 150 g cooked portion; quartile range (1.2\u20133.2 kgCO2e/kg) sets bounds.",
         "uncertainty": {
@@ -1125,6 +1298,8 @@
       "unit": "tonne",
       "unitLabel": "tonne",
       "description": "Producing one metric tonne of cement clinker in a dry kiln line, inclusive of onsite fuel combustion and calcination phases.",
+      "unitDefinition": "",
+      "notes": "Includes benchmark kiln heat balance, calcination split, and representative fuel mix factors.",
       "emissionFactor": 870000.0,
       "evidence": {
         "activityId": "IND_HEAVY.CEMENT.CLINKER.TONNE",
@@ -1140,6 +1315,9 @@
         ],
         "sourceCitations": [
           "[22] Global Cement and Concrete Association, \u201cGetting the Numbers Right (GNR) 2023 Data Release,\u201d 2023. Available: https://gccassociation.org/sustainability-innovation/gnr/"
+        ],
+        "sourceUrls": [
+          "https://gccassociation.org/sustainability-innovation/gnr/"
         ],
         "methodNotes": "GCCA GNR 2023 Canadian cement kiln intensity: 0.87 tCO2e/t clinker baseline including process calcination (0.525 tCO2e/t) and fuel combustion (0.345 tCO2e/t); bounds 0.82\u20130.92 tCO2e/t reflect kiln fuel mix and thermal efficiency.",
         "uncertainty": {
@@ -1157,6 +1335,8 @@
       "unit": "hour",
       "unitLabel": "hours",
       "description": "Operating a large off-highway mining haul truck for one engine hour, inclusive of haul and idle cycles.",
+      "unitDefinition": "",
+      "notes": "Incorporates ultra-class haul truck duty cycle, payload, and diesel intensity data from Canadian surface mines.",
       "emissionFactor": 280000.0,
       "evidence": {
         "activityId": "IND_HEAVY.MINING.HAUL.TRUCK.HOUR",
@@ -1172,6 +1352,9 @@
         ],
         "sourceCitations": [
           "[44] Natural Resources Canada, \u201cCanada Freight Emissions Factors (Modal),\u201d 2024. Available: https://natural-resources.canada.ca"
+        ],
+        "sourceUrls": [
+          "https://natural-resources.canada.ca"
         ],
         "methodNotes": "Alberta oil sands haul truck: 400-tonne ultra-class truck consuming 70 L/h diesel (280 kg CO2e/h WTT+TTW) under representative haul cycle with 15% idle time; bounds 230\u2013330 kg/h for payload and grade variation.",
         "uncertainty": {
@@ -1189,6 +1372,8 @@
       "unit": "mmbtu",
       "unitLabel": "mmbtu",
       "description": "Firing refinery process heaters and boilers to deliver one million British thermal units of duty across process units.",
+      "unitDefinition": "",
+      "notes": "Anchored to stationary combustion factors with benchmarked fuel splits and heater efficiency datasets.",
       "emissionFactor": 65000.0,
       "evidence": {
         "activityId": "IND_HEAVY.REFINING.FIRED_UNIT.MMBTU",
@@ -1204,6 +1389,9 @@
         ],
         "sourceCitations": [
           "[45] Natural Resources Canada, \u201cFuel Life Cycle Assessment Modelling for Canada,\u201d 2024. Available: https://www.nrcan.gc.ca/energy/energy-efficiency/transportation/fuel-life-cycle-assessment/21086"
+        ],
+        "sourceUrls": [
+          "https://www.nrcan.gc.ca/energy/energy-efficiency/transportation/fuel-life-cycle-assessment/21086"
         ],
         "methodNotes": "Refinery fired heaters: 65 kgCO2e/MMBtu fired duty assuming 80% natural gas, 20% refinery fuel gas with combustion efficiency 85%; bounds 55\u201375 kgCO2e/MMBtu for fuel split and heater age.",
         "uncertainty": {
@@ -1221,6 +1409,8 @@
       "unit": "tonne",
       "unitLabel": "tonne",
       "description": "Producing one metric tonne of crude steel via an electric arc furnace, inclusive of charge preparation, melting, and tapping.",
+      "unitDefinition": "",
+      "notes": "Applies validated scrap ratios, grid intensity, and auxiliary load data for representative EAF operations.",
       "emissionFactor": 480000.0,
       "evidence": {
         "activityId": "IND_HEAVY.STEEL.EAF.TONNE",
@@ -1236,6 +1426,9 @@
         ],
         "sourceCitations": [
           "[61] worldsteel Association, \u201cSustainable Steel\u2014Indicators 2023,\u201d 2023. Available: https://worldsteel.org/steel-topics/sustainable-steel/"
+        ],
+        "sourceUrls": [
+          "https://worldsteel.org/steel-topics/sustainable-steel/"
         ],
         "methodNotes": "worldsteel 2023 EAF steelmaking: 0.48 tCO2e/t crude steel with 90% scrap charge; includes electricity (350 kWh/t at grid mix), oxygen plant load, and auxiliary systems; bounds 0.40\u20130.56 tCO2e/t for grid and scrap quality variation.",
         "uncertainty": {
@@ -1253,6 +1446,8 @@
       "unit": "site_day",
       "unitLabel": "site day",
       "description": "Operating a light-industrial construction site for one standard workday, inclusive of trades and supervision present on-site.",
+      "unitDefinition": "\"site_day\" equals one active construction site for a single 8\u201310 hour shift.",
+      "notes": "Includes integrated trade labour, equipment utilisation, and temporary power intensity assumptions.",
       "emissionFactor": null,
       "evidence": {
         "activityId": "IND_LIGHT.CONSTRUCTION.SITE_DAY",
@@ -1265,6 +1460,7 @@
         "vintageYear": null,
         "sourceIds": [],
         "sourceCitations": [],
+        "sourceUrls": [],
         "methodNotes": null,
         "uncertainty": {
           "lowGPerUnit": null,
@@ -1281,6 +1477,8 @@
       "unit": "hour",
       "unitLabel": "hours",
       "description": "Operating an electric or propane forklift for one hour of material handling within a light-industrial facility.",
+      "unitDefinition": "",
+      "notes": "Includes blended load-factor and fuel mix assumptions for representative forklift fleets.",
       "emissionFactor": null,
       "evidence": {
         "activityId": "IND_LIGHT.LOGISTICS.FORKLIFT.HOUR",
@@ -1293,6 +1491,7 @@
         "vintageYear": null,
         "sourceIds": [],
         "sourceCitations": [],
+        "sourceUrls": [],
         "methodNotes": null,
         "uncertainty": {
           "lowGPerUnit": null,
@@ -1309,6 +1508,8 @@
       "unit": "ft2_month",
       "unitLabel": "ft2 month",
       "description": "Maintaining base building services (lighting, ventilation, idle equipment) for one square foot of light-industrial warehouse over a month.",
+      "unitDefinition": "ft2_month equals one square foot maintained for one calendar month.",
+      "notes": "Requires region-specific base-load and occupancy schedule data prior to activation.",
       "emissionFactor": null,
       "evidence": {
         "activityId": "IND_LIGHT.WAREHOUSE.BASE_LOAD.SQFT_MONTH",
@@ -1321,6 +1522,7 @@
         "vintageYear": null,
         "sourceIds": [],
         "sourceCitations": [],
+        "sourceUrls": [],
         "methodNotes": null,
         "uncertainty": {
           "lowGPerUnit": null,
@@ -1337,6 +1539,8 @@
       "unit": "tonne_km",
       "unitLabel": "tonne km",
       "description": "Freight work performed by dedicated air cargo services measured in tonne-kilometres.",
+      "unitDefinition": "",
+      "notes": "Includes jet fuel burn for express air cargo flights allocated per tonne-kilometre.",
       "emissionFactor": 500.0,
       "evidence": {
         "activityId": "LOGI.AIR.TONNEKM",
@@ -1352,6 +1556,9 @@
         ],
         "sourceCitations": [
           "[25] International Civil Aviation Organization, \u201cCORSIA CO2 Estimation and Reporting Tool (CERT) \u2014 Methodology,\u201d 2024. Available: https://www.icao.int/environmental-protection/CORSIA"
+        ],
+        "sourceUrls": [
+          "https://www.icao.int/environmental-protection/CORSIA"
         ],
         "methodNotes": "ICAO CORSIA CERT methodology gives ~0.5 kgCO2e per tonne-km for medium-haul dedicated cargo jets; \u00b130% bounds cover aircraft efficiency and load factors.",
         "uncertainty": {
@@ -1369,6 +1576,8 @@
       "unit": "parcel",
       "unitLabel": "parcel",
       "description": "One e-commerce parcel delivered within an urban last-mile route.",
+      "unitDefinition": "",
+      "notes": "Representative of dense Canadian city delivery rounds blending cargo vans and electric step vans.",
       "emissionFactor": 400.0,
       "evidence": {
         "activityId": "LOGI.PARCEL.URBAN",
@@ -1384,6 +1593,9 @@
         ],
         "sourceCitations": [
           "[18] U.S. Environmental Protection Agency, \u201cSmartWay Carrier Partner Tool: Technical Documentation,\u201d 2023. Available: https://www.epa.gov/smartway"
+        ],
+        "sourceUrls": [
+          "https://www.epa.gov/smartway"
         ],
         "methodNotes": "EPA SmartWay technical documentation cites ~0.5 kgCO2e per urban delivery stop; assuming 1.2 parcels per stop and NRCan fleet blend yields \u22480.40 kgCO2e per parcel with \u00b125% bounds for route density.",
         "uncertainty": {
@@ -1401,6 +1613,8 @@
       "unit": "tonne_km",
       "unitLabel": "tonne km",
       "description": "Dry or bulk maritime freight transport work measured in tonne-kilometres.",
+      "unitDefinition": "",
+      "notes": "",
       "emissionFactor": 6.5,
       "evidence": {
         "activityId": "LOGI.SHIPPING.BULK.TONNEKM",
@@ -1416,6 +1630,9 @@
         ],
         "sourceCitations": [
           "[33] International Maritime Organization, \u201cFourth IMO Greenhouse Gas Study 2020,\u201d London, U.K., 2020; and B. Comer et al., International Council on Clean Transportation, \u201cGreenhouse Gas Emissions from Global Shipping, 2013\u20132022,\u201d 2023. Available: https://theicct.org/publication/global-shipping-ghg-jan23/"
+        ],
+        "sourceUrls": [
+          "https://theicct.org/publication/global-shipping-ghg-jan23/"
         ],
         "methodNotes": "Representative dry bulk shipping intensity blending IMO 2020 averages with ICCT 2023 well-to-wake adjustments.",
         "uncertainty": {
@@ -1433,6 +1650,8 @@
       "unit": "tonne_km",
       "unitLabel": "tonne km",
       "description": "Containerised maritime freight transport work measured in tonne-kilometres.",
+      "unitDefinition": "",
+      "notes": "",
       "emissionFactor": 12.5,
       "evidence": {
         "activityId": "LOGI.SHIPPING.CONTAINER.TONNEKM",
@@ -1448,6 +1667,9 @@
         ],
         "sourceCitations": [
           "[33] International Maritime Organization, \u201cFourth IMO Greenhouse Gas Study 2020,\u201d London, U.K., 2020; and B. Comer et al., International Council on Clean Transportation, \u201cGreenhouse Gas Emissions from Global Shipping, 2013\u20132022,\u201d 2023. Available: https://theicct.org/publication/global-shipping-ghg-jan23/"
+        ],
+        "sourceUrls": [
+          "https://theicct.org/publication/global-shipping-ghg-jan23/"
         ],
         "methodNotes": "Tank-to-wake plus upstream fuel intensity for container shipping harmonising IMO 2020 fleet data with ICCT 2023 updates.",
         "uncertainty": {
@@ -1465,6 +1687,8 @@
       "unit": "tonne_km",
       "unitLabel": "tonne km",
       "description": "Freight work performed by heavy-duty trucks measured in tonne-kilometres.",
+      "unitDefinition": "",
+      "notes": "Covers linehaul road freight intensity for Canadian tractor-trailers and rigid trucks.",
       "emissionFactor": 60.0,
       "evidence": {
         "activityId": "LOGI.TRUCK.TONNEKM",
@@ -1480,6 +1704,9 @@
         ],
         "sourceCitations": [
           "[44] Natural Resources Canada, \u201cCanada Freight Emissions Factors (Modal),\u201d 2024. Available: https://natural-resources.canada.ca"
+        ],
+        "sourceUrls": [
+          "https://natural-resources.canada.ca"
         ],
         "methodNotes": "NRCan modal freight emissions factors indicate Canadian heavy-duty trucks emit roughly 0.06 kgCO2e per tonne-km; \u00b120% bounds reflect payload and backhaul variation.",
         "uncertainty": {
@@ -1497,6 +1724,8 @@
       "unit": "tonne",
       "unitLabel": "tonne",
       "description": "Producing one metric tonne of Portland cement clinker.",
+      "unitDefinition": "tonne refers to one metric tonne of output.",
+      "notes": "Baseline kiln emissions for representative Canadian operations.",
       "emissionFactor": 850000.0,
       "evidence": {
         "activityId": "MATERIAL.CEMENT.CLINKER.TONNE",
@@ -1512,6 +1741,9 @@
         ],
         "sourceCitations": [
           "[22] Global Cement and Concrete Association, \u201cGetting the Numbers Right (GNR) 2023 Data Release,\u201d 2023. Available: https://gccassociation.org/sustainability-innovation/gnr/"
+        ],
+        "sourceUrls": [
+          "https://gccassociation.org/sustainability-innovation/gnr/"
         ],
         "methodNotes": "GCCA GNR dataset reports 2022 kiln emissions of 0.85 tCO2e/t clinker across Canadian facilities (0.80\u20130.90 tCO2e/t range).",
         "uncertainty": {
@@ -1529,6 +1761,8 @@
       "unit": "tonne",
       "unitLabel": "tonne",
       "description": "Producing one metric tonne of virgin polyethylene terephthalate (PET) resin.",
+      "unitDefinition": "tonne refers to one metric tonne of output.",
+      "notes": "Covers cradle-to-gate polymerisation of PTA and MEG into PET pellets.",
       "emissionFactor": 2700000.0,
       "evidence": {
         "activityId": "MATERIAL.PET.VIRGIN.TONNE",
@@ -1544,6 +1778,9 @@
         ],
         "sourceCitations": [
           "[47] PlasticsEurope, \u201cPlastics\u2014The Facts 2022: An Analysis of European Plastics Production, Demand and Waste Data,\u201d 2022. Available: https://plasticseurope.org/knowledge-hub/plastics-the-facts-2022/"
+        ],
+        "sourceUrls": [
+          "https://plasticseurope.org/knowledge-hub/plastics-the-facts-2022/"
         ],
         "methodNotes": "PlasticsEurope cradle-to-gate LCI cites 2.7 tCO2e/t virgin PET pellets (2.4\u20133.0 tCO2e/t reflecting energy mix uncertainty).",
         "uncertainty": {
@@ -1561,6 +1798,8 @@
       "unit": "tonne",
       "unitLabel": "tonne",
       "description": "Producing one metric tonne of crude steel slab via integrated route.",
+      "unitDefinition": "tonne refers to one metric tonne of output.",
+      "notes": "Includes blast furnace-basic oxygen furnace route cradle-to-gate intensity.",
       "emissionFactor": 2000000.0,
       "evidence": {
         "activityId": "MATERIAL.STEEL.CRUDESLAB.TONNE",
@@ -1576,6 +1815,9 @@
         ],
         "sourceCitations": [
           "[61] worldsteel Association, \u201cSustainable Steel\u2014Indicators 2023,\u201d 2023. Available: https://worldsteel.org/steel-topics/sustainable-steel/"
+        ],
+        "sourceUrls": [
+          "https://worldsteel.org/steel-topics/sustainable-steel/"
         ],
         "methodNotes": "worldsteel integrated route indicators show ~2.0 tCO2e/t crude steel slabs with 1.8\u20132.2 tCO2e/t variation by fuel mix.",
         "uncertainty": {
@@ -1593,6 +1835,8 @@
       "unit": "hour",
       "unitLabel": "hours",
       "description": "One hour of high-definition video streaming on any device.",
+      "unitDefinition": "",
+      "notes": "Aggregates playback plus network electricity for representative HD streaming.",
       "emissionFactor": 3.64,
       "evidence": {
         "activityId": "MEDIA.STREAM.HD.HOUR",
@@ -1611,6 +1855,10 @@
           "[13] University of Bristol and DIMPACT, \u201cDIMPACT Video Streaming Carbon Modelling Guidance,\u201d 2022. Available: https://www.dimpact.org/resources#video-streaming-guidance",
           "[32] Independent Electricity System Operator, \u201cPower Data\u2014Emissions and Grid Intensity (Ontario),\u201d 2025. Available: https://www.ieso.ca/en/Power-Data/Data-Directory"
         ],
+        "sourceUrls": [
+          "https://www.dimpact.org/resources#video-streaming-guidance",
+          "https://www.ieso.ca/en/Power-Data/Data-Directory"
+        ],
         "methodNotes": "Ontario-weighted mix: 60% TV, 30% laptop, 10% smartphone using playback power ranges in SRC.PIHKOLA.2020; HD bitrate 2.5 GB/h (1.5\u20134) from SRC.DIMPACT.STREAMING.2022; network intensity 0.018 kWh/GB (0.01\u20130.03) from SRC.ASLAN.2018; data-centre energy 0.005 kWh/GB (0.003\u20130.008) assuming PUE 1.2 aligned with SRC.MASANET.2020; combined with 2024 Ontario grid 28 g/kWh (SRC.IESO.POWERDATA.2025).",
         "uncertainty": {
           "lowGPerUnit": 2.156,
@@ -1627,6 +1875,8 @@
       "unit": "hour",
       "unitLabel": "hours",
       "description": "One hour of high-definition video streaming delivered to a television via broadband.",
+      "unitDefinition": "",
+      "notes": "Electricity use covers device playback plus network and data-centre demand per hour of 1080p streaming.",
       "emissionFactor": 4.62,
       "evidence": {
         "activityId": "MEDIA.STREAM.HD.HOUR.TV",
@@ -1645,6 +1895,10 @@
           "[12] Carbon Trust and DIMPACT, \u201cThe Carbon Impact of Video Streaming,\u201d 2021. Available: https://www.dimpact.org/resources#carbon-impact-of-video-streaming",
           "[32] Independent Electricity System Operator, \u201cPower Data\u2014Emissions and Grid Intensity (Ontario),\u201d 2025. Available: https://www.ieso.ca/en/Power-Data/Data-Directory"
         ],
+        "sourceUrls": [
+          "https://www.dimpact.org/resources#carbon-impact-of-video-streaming",
+          "https://www.ieso.ca/en/Power-Data/Data-Directory"
+        ],
         "methodNotes": "Ontario TV streaming hour with DIMPACT playback power, network, and data-centre shares.",
         "uncertainty": {
           "lowGPerUnit": null,
@@ -1661,6 +1915,8 @@
       "unit": "hour",
       "unitLabel": "hours",
       "description": "One hour of standard-definition streaming to a smartphone or tablet on Wi-Fi.",
+      "unitDefinition": "",
+      "notes": "Includes measured Wi-Fi and mobile network energy intensity per streaming hour.",
       "emissionFactor": 0.7,
       "evidence": {
         "activityId": "MEDIA.STREAM.SD.HOUR.MOBILE",
@@ -1679,6 +1935,10 @@
           "[13] University of Bristol and DIMPACT, \u201cDIMPACT Video Streaming Carbon Modelling Guidance,\u201d 2022. Available: https://www.dimpact.org/resources#video-streaming-guidance",
           "[32] Independent Electricity System Operator, \u201cPower Data\u2014Emissions and Grid Intensity (Ontario),\u201d 2025. Available: https://www.ieso.ca/en/Power-Data/Data-Directory"
         ],
+        "sourceUrls": [
+          "https://www.dimpact.org/resources#video-streaming-guidance",
+          "https://www.ieso.ca/en/Power-Data/Data-Directory"
+        ],
         "methodNotes": "SD mobile streaming: 85% smartphone playback with 4 W (3\u20136 W) device power; SD bitrate 0.7 GB/h (0.5\u20131.0) using DIMPACT network and datacentre factors with Ontario grid.",
         "uncertainty": {
           "lowGPerUnit": 0.42,
@@ -1695,6 +1955,8 @@
       "unit": "hour",
       "unitLabel": "hours",
       "description": "One hour of ultra-high-definition (4K) streaming on any device.",
+      "unitDefinition": "",
+      "notes": "Aggregates playback plus network electricity for representative UHD streaming.",
       "emissionFactor": 7.14,
       "evidence": {
         "activityId": "MEDIA.STREAM.UHD.HOUR",
@@ -1713,6 +1975,10 @@
           "[13] University of Bristol and DIMPACT, \u201cDIMPACT Video Streaming Carbon Modelling Guidance,\u201d 2022. Available: https://www.dimpact.org/resources#video-streaming-guidance",
           "[32] Independent Electricity System Operator, \u201cPower Data\u2014Emissions and Grid Intensity (Ontario),\u201d 2025. Available: https://www.ieso.ca/en/Power-Data/Data-Directory"
         ],
+        "sourceUrls": [
+          "https://www.dimpact.org/resources#video-streaming-guidance",
+          "https://www.ieso.ca/en/Power-Data/Data-Directory"
+        ],
         "methodNotes": "Ontario-weighted mix: 60% TV, 30% laptop, 10% smartphone with playback power ranges from SRC.PIHKOLA.2020; UHD bitrate 7 GB/h (5\u201311) from SRC.DIMPACT.STREAMING.2022; network intensity 0.018 kWh/GB (0.01\u20130.03) from SRC.ASLAN.2018; data-centre energy 0.005 kWh/GB (0.003\u20130.008) assuming PUE 1.2 aligned with SRC.MASANET.2020; Ontario grid factor 28 g/kWh (SRC.IESO.POWERDATA.2025).",
         "uncertainty": {
           "lowGPerUnit": 3.8360000000000003,
@@ -1729,6 +1995,8 @@
       "unit": "hour",
       "unitLabel": "hours",
       "description": "One hour of ultra-high-definition (4K) streaming to a television.",
+      "unitDefinition": "",
+      "notes": "EF to be added after validating 4K bandwidth intensity.",
       "emissionFactor": 7.84,
       "evidence": {
         "activityId": "MEDIA.STREAM.UHD.HOUR.TV",
@@ -1747,6 +2015,10 @@
           "[13] University of Bristol and DIMPACT, \u201cDIMPACT Video Streaming Carbon Modelling Guidance,\u201d 2022. Available: https://www.dimpact.org/resources#video-streaming-guidance",
           "[32] Independent Electricity System Operator, \u201cPower Data\u2014Emissions and Grid Intensity (Ontario),\u201d 2025. Available: https://www.ieso.ca/en/Power-Data/Data-Directory"
         ],
+        "sourceUrls": [
+          "https://www.dimpact.org/resources#video-streaming-guidance",
+          "https://www.ieso.ca/en/Power-Data/Data-Directory"
+        ],
         "methodNotes": "UHD TV streaming: 75% large-format TV playback with increased device power (75 W avg) and UHD bitrate 7 GB/h (5\u201311); network 0.018 kWh/GB (0.01\u20130.03), datacentre 0.005 kWh/GB (0.003\u20130.008) with Ontario grid 28 g/kWh.",
         "uncertainty": {
           "lowGPerUnit": 4.2,
@@ -1763,6 +2035,8 @@
       "unit": "unit",
       "unitLabel": "units",
       "description": "Embodied emissions for manufacturing a modern multirole fighter aircraft.",
+      "unitDefinition": "",
+      "notes": "Includes airframe composites, avionics, and engine manufacture prior to delivery.",
       "emissionFactor": 250000000.0,
       "evidence": {
         "activityId": "MIL.AIRCRAFT.UNIT",
@@ -1778,6 +2052,9 @@
         ],
         "sourceCitations": [
           "[53] Stockholm International Peace Research Institute and Conflict and Environment Observatory, \u201cMilitary Emissions Database: Methodology and Global Benchmarks,\u201d 2024. Available: https://ceobs.org/wp-content/uploads/2024/05/military-emissions-database-2024.pdf"
+        ],
+        "sourceUrls": [
+          "https://ceobs.org/wp-content/uploads/2024/05/military-emissions-database-2024.pdf"
         ],
         "methodNotes": "Embodied emissions midpoint for 5th-generation fighter production including engines and avionics.",
         "uncertainty": {
@@ -1795,6 +2072,8 @@
       "unit": "square_metre_year",
       "unitLabel": "square metre year",
       "description": "Annual operational footprint for one square metre of mixed military base facilities.",
+      "unitDefinition": "square_metre_year equals one square metre sustained for one calendar year.",
+      "notes": "Includes electricity, heat, and support services at Canadian bases.",
       "emissionFactor": 150000.0,
       "evidence": {
         "activityId": "MIL.BASE.M2.YEAR",
@@ -1810,6 +2089,9 @@
         ],
         "sourceCitations": [
           "[14] Department of National Defence, \u201cDefence Energy and Environment Strategy\u20142023 Progress Update,\u201d Ottawa, ON, Canada, 2024. Available: https://www.canada.ca/en/department-national-defence/corporate/reports-publications/defence-energy-environment-progress-2023.html"
+        ],
+        "sourceUrls": [
+          "https://www.canada.ca/en/department-national-defence/corporate/reports-publications/defence-energy-environment-progress-2023.html"
         ],
         "methodNotes": "Annualised Canadian Forces Base energy, fleet, and building services emissions normalised per square metre.",
         "uncertainty": {
@@ -1827,6 +2109,8 @@
       "unit": "month",
       "unitLabel": "month",
       "description": "Modeled emissions for one month of high-intensity armed conflict operations.",
+      "unitDefinition": "",
+      "notes": "Aggregates fuel, logistics, and materiel consumption during sustained combat.",
       "emissionFactor": 1500000000000.0,
       "evidence": {
         "activityId": "MIL.CONFLICT.MONTH",
@@ -1842,6 +2126,9 @@
         ],
         "sourceCitations": [
           "[59] United Nations Environment Programme, \u201cEnvironmental Consequences of Armed Conflict and War,\u201d Nairobi, Kenya, 2022. Available: https://wedocs.unep.org/handle/20.500.11822/40538"
+        ],
+        "sourceUrls": [
+          "https://wedocs.unep.org/handle/20.500.11822/40538"
         ],
         "methodNotes": "Modeled midpoint for high-intensity war operations integrating fuel, logistics, and replacement manufacturing.",
         "uncertainty": {
@@ -1859,6 +2146,8 @@
       "unit": "square_metre_year",
       "unitLabel": "square metre year",
       "description": "Annual operational footprint for one square metre of secure munitions storage.",
+      "unitDefinition": "square_metre_year equals one square metre sustained for one calendar year.",
+      "notes": "Includes specialised HVAC, security, and hazard controls.",
       "emissionFactor": 225000.0,
       "evidence": {
         "activityId": "MIL.DEPOT.M2.YEAR",
@@ -1874,6 +2163,9 @@
         ],
         "sourceCitations": [
           "[14] Department of National Defence, \u201cDefence Energy and Environment Strategy\u20142023 Progress Update,\u201d Ottawa, ON, Canada, 2024. Available: https://www.canada.ca/en/department-national-defence/corporate/reports-publications/defence-energy-environment-progress-2023.html"
+        ],
+        "sourceUrls": [
+          "https://www.canada.ca/en/department-national-defence/corporate/reports-publications/defence-energy-environment-progress-2023.html"
         ],
         "methodNotes": "High-security depot operations including conditioned storage, ventilation, and standby generation.",
         "uncertainty": {
@@ -1891,6 +2183,8 @@
       "unit": "pkm",
       "unitLabel": "passenger-kilometres",
       "description": "Representative fuel use for crewed military aviation missions allocated per person-kilometre equivalent.",
+      "unitDefinition": "",
+      "notes": "Covers tactical airlift and combat training sorties using standard load factors.",
       "emissionFactor": 340.0,
       "evidence": {
         "activityId": "MIL.FLIGHT.PKM",
@@ -1906,6 +2200,9 @@
         ],
         "sourceCitations": [
           "[40] NATO Science & Technology Organization, \u201cOperational Energy Metrics for NATO Missions,\u201d Brussels, Belgium, 2023. Available: https://www.nato.int/cps/en/natohq/topics_197175.htm"
+        ],
+        "sourceUrls": [
+          "https://www.nato.int/cps/en/natohq/topics_197175.htm"
         ],
         "methodNotes": "Midpoint of NATO operational energy intensity range for tactical airlift and fighter missions.",
         "uncertainty": {
@@ -1923,6 +2220,8 @@
       "unit": "tonne",
       "unitLabel": "tonne",
       "description": "Detonating one metric tonne of mixed munitions during exercises or combat operations.",
+      "unitDefinition": "tonne refers to the explosive fill detonated expressed as TNT equivalent.",
+      "notes": "Accounts for explosive oxidation, casing particulates, and immediate blast combustion by-products.",
       "emissionFactor": 420000.0,
       "evidence": {
         "activityId": "MIL.MUNITIONS.DETONATED.TONNE",
@@ -1938,6 +2237,9 @@
         ],
         "sourceCitations": [
           "[3] Conflict and Environment Observatory, \u201cExplosive Materials Supply Chain Emissions,\u201d 2023. Available: https://ceobs.org/report-explosive-materials-supply-chain-emissions/"
+        ],
+        "sourceUrls": [
+          "https://ceobs.org/report-explosive-materials-supply-chain-emissions/"
         ],
         "methodNotes": "Munitions detonation: 0.42 tCO2e/t TNT-equivalent from explosive oxidation (0.30 t), casing vaporization (0.08 t), and propellant residue combustion (0.04 t); bounds 0.30\u20130.55 tCO2e/t for composition variation.",
         "uncertainty": {
@@ -1955,6 +2257,8 @@
       "unit": "event",
       "unitLabel": "event",
       "description": "Modeled emissions from a coordinated munitions detonation scenario.",
+      "unitDefinition": "event equals one coordinated detonation of explosives.",
+      "notes": "Includes simultaneous explosive release, propellant combustion, and crater ignition impacts per event.",
       "emissionFactor": 12500000.0,
       "evidence": {
         "activityId": "MIL.MUNITIONS.DETONATION.EVENT",
@@ -1970,6 +2274,9 @@
         ],
         "sourceCitations": [
           "[3] Conflict and Environment Observatory, \u201cExplosive Materials Supply Chain Emissions,\u201d 2023. Available: https://ceobs.org/report-explosive-materials-supply-chain-emissions/"
+        ],
+        "sourceUrls": [
+          "https://ceobs.org/report-explosive-materials-supply-chain-emissions/"
         ],
         "methodNotes": "Coordinated munitions detonation event: 30 t TNT-equivalent baseline (12.5 tCO2e) representing mixed artillery/rocket strike package; bounds 5\u201325 tCO2e/event for engagement scale 10\u201360 t TNT.",
         "uncertainty": {
@@ -1987,6 +2294,8 @@
       "unit": "tonne",
       "unitLabel": "tonne",
       "description": "Cradle-to-gate emissions for producing one tonne of mixed-calibre munitions.",
+      "unitDefinition": "",
+      "notes": "Aggregates propellant, casing, and assembly energy demand.",
       "emissionFactor": 2500000.0,
       "evidence": {
         "activityId": "MIL.MUNITIONS.TONNE",
@@ -2002,6 +2311,9 @@
         ],
         "sourceCitations": [
           "[53] Stockholm International Peace Research Institute and Conflict and Environment Observatory, \u201cMilitary Emissions Database: Methodology and Global Benchmarks,\u201d 2024. Available: https://ceobs.org/wp-content/uploads/2024/05/military-emissions-database-2024.pdf"
+        ],
+        "sourceUrls": [
+          "https://ceobs.org/wp-content/uploads/2024/05/military-emissions-database-2024.pdf"
         ],
         "methodNotes": "Synthesised from SIPRI/CEOBS embodied emissions factors for ammunition plants.",
         "uncertainty": {
@@ -2019,6 +2331,8 @@
       "unit": "tonne_km",
       "unitLabel": "tonne km",
       "description": "Marine fuel intensity for naval logistics and combat vessels allocated per tonne-kilometre moved.",
+      "unitDefinition": "",
+      "notes": "Includes auxiliary propulsion and onboard systems fuel supporting fleet readiness.",
       "emissionFactor": 30.0,
       "evidence": {
         "activityId": "MIL.NAVAL.TONNEKM",
@@ -2034,6 +2348,9 @@
         ],
         "sourceCitations": [
           "[40] NATO Science & Technology Organization, \u201cOperational Energy Metrics for NATO Missions,\u201d Brussels, Belgium, 2023. Available: https://www.nato.int/cps/en/natohq/topics_197175.htm"
+        ],
+        "sourceUrls": [
+          "https://www.nato.int/cps/en/natohq/topics_197175.htm"
         ],
         "methodNotes": "Averages NATO auxiliary and propulsion fuel burn per tonne-kilometre for naval logistics.",
         "uncertainty": {
@@ -2051,6 +2368,8 @@
       "unit": "unit",
       "unitLabel": "units",
       "description": "Embodied emissions for producing a main battle tank or heavy infantry fighting vehicle.",
+      "unitDefinition": "",
+      "notes": "Covers steel fabrication, powertrain assembly, and active protection systems.",
       "emissionFactor": 135000000.0,
       "evidence": {
         "activityId": "MIL.TANK.UNIT",
@@ -2066,6 +2385,9 @@
         ],
         "sourceCitations": [
           "[53] Stockholm International Peace Research Institute and Conflict and Environment Observatory, \u201cMilitary Emissions Database: Methodology and Global Benchmarks,\u201d 2024. Available: https://ceobs.org/wp-content/uploads/2024/05/military-emissions-database-2024.pdf"
+        ],
+        "sourceUrls": [
+          "https://ceobs.org/wp-content/uploads/2024/05/military-emissions-database-2024.pdf"
         ],
         "methodNotes": "Embodied emissions midpoint for main battle tank manufacture with composite armour packages.",
         "uncertainty": {
@@ -2083,6 +2405,8 @@
       "unit": "km",
       "unitLabel": "kilometres",
       "description": "Armoured and tactical ground vehicle fuel burn per kilometre travelled.",
+      "unitDefinition": "",
+      "notes": "Covers mixed fleet of APCs, IFVs, and tactical trucks operating on diesel or JP-8.",
       "emissionFactor": 1600.0,
       "evidence": {
         "activityId": "MIL.VEHICLE.KM",
@@ -2098,6 +2422,9 @@
         ],
         "sourceCitations": [
           "[40] NATO Science & Technology Organization, \u201cOperational Energy Metrics for NATO Missions,\u201d Brussels, Belgium, 2023. Available: https://www.nato.int/cps/en/natohq/topics_197175.htm"
+        ],
+        "sourceUrls": [
+          "https://www.nato.int/cps/en/natohq/topics_197175.htm"
         ],
         "methodNotes": "Representative JP-8 consumption for mixed armoured ground fleets under combined arms training tempo.",
         "uncertainty": {
@@ -2115,6 +2442,8 @@
       "unit": "event",
       "unitLabel": "event",
       "description": "Modeled wildfire incident covering suppression logistics and mutual aid response.",
+      "unitDefinition": "event equals one wildfire incident mobilising interagency crews.",
+      "notes": "Aggregates aerial suppression sorties, ground crew operations, and support logistics fuel per large incident.",
       "emissionFactor": 850000000.0,
       "evidence": {
         "activityId": "MODELED.WILDFIRE.EVENT",
@@ -2130,6 +2459,9 @@
         ],
         "sourceCitations": [
           "[15] Environment and Climate Change Canada, \u201cNational Inventory Report 1990\u20132023: Greenhouse Gas Sources and Sinks in Canada,\u201d Ottawa, ON, Canada, 2025. Available: https://publications.gc.ca/collections/collection_2025/eccc/En81-4-2025-1-eng.pdf"
+        ],
+        "sourceUrls": [
+          "https://publications.gc.ca/collections/collection_2025/eccc/En81-4-2025-1-eng.pdf"
         ],
         "methodNotes": "Large wildfire incident (5,000 ha baseline): suppression operations add ~170 tCO2e (aerial sorties 120 t, ground fleet 35 t, camp logistics 15 t) atop burn emissions; bounds 450\u20131,250 tCO2e/event reflect fire size 2k\u201310k ha.",
         "uncertainty": {
@@ -2147,6 +2479,8 @@
       "unit": "hectare",
       "unitLabel": "hectare",
       "description": "Burning one hectare of forested land in a wildfire.",
+      "unitDefinition": "hectare equals 10,000 square metres of vegetated land burned.",
+      "notes": "Integrates crown fire, surface fuel consumption, and initial soil carbon release for representative boreal and temperate forests.",
       "emissionFactor": 45000000.0,
       "evidence": {
         "activityId": "MODELED.WILDFIRE.HECTARE",
@@ -2162,6 +2496,9 @@
         ],
         "sourceCitations": [
           "[15] Environment and Climate Change Canada, \u201cNational Inventory Report 1990\u20132023: Greenhouse Gas Sources and Sinks in Canada,\u201d Ottawa, ON, Canada, 2025. Available: https://publications.gc.ca/collections/collection_2025/eccc/En81-4-2025-1-eng.pdf"
+        ],
+        "sourceUrls": [
+          "https://publications.gc.ca/collections/collection_2025/eccc/En81-4-2025-1-eng.pdf"
         ],
         "methodNotes": "Boreal forest wildfire: 45 tCO2e/ha burned integrating crown fire (30 t/ha), surface fuel (12 t/ha), and soil carbon release (3 t/ha); bounds 25\u201365 tCO2e/ha span temperate mixed to boreal black spruce stands.",
         "uncertainty": {
@@ -2179,6 +2516,8 @@
       "unit": "kg",
       "unitLabel": "kg",
       "description": "Municipal mixed solid waste combusted in a waste-to-energy facility.",
+      "unitDefinition": "",
+      "notes": "Represents Toronto waste transferred to the Durham York Energy Centre.",
       "emissionFactor": 295.0,
       "evidence": {
         "activityId": "MUNI.WASTE.INCINERATION.KG",
@@ -2194,6 +2533,9 @@
         ],
         "sourceCitations": [
           "[19] U.S. Environmental Protection Agency, \u201cWaste Reduction Model (WARM), Version 15,\u201d Oct. 2023. Available: https://www.epa.gov/warm/versions-waste-reduction-model-warm#15"
+        ],
+        "sourceUrls": [
+          "https://www.epa.gov/warm/versions-waste-reduction-model-warm#15"
         ],
         "methodNotes": "EPA WARM v15 mixed MSW combustion for energy recovery reports ~0.267 MTCO2e per short ton; converted to 295 gCO2e/kg assuming 907.185 kg per short ton and retaining \u00b135% bounds for facility energy offsets.",
         "uncertainty": {
@@ -2211,6 +2553,8 @@
       "unit": "kg",
       "unitLabel": "kg",
       "description": "Municipal mixed solid waste routed to a landfill with landfill-gas recovery.",
+      "unitDefinition": "",
+      "notes": "Covers residual residential/commercial waste disposed at Green Lane Landfill.",
       "emissionFactor": 482.8,
       "evidence": {
         "activityId": "MUNI.WASTE.LANDFILL.KG",
@@ -2226,6 +2570,9 @@
         ],
         "sourceCitations": [
           "[19] U.S. Environmental Protection Agency, \u201cWaste Reduction Model (WARM), Version 15,\u201d Oct. 2023. Available: https://www.epa.gov/warm/versions-waste-reduction-model-warm#15"
+        ],
+        "sourceUrls": [
+          "https://www.epa.gov/warm/versions-waste-reduction-model-warm#15"
         ],
         "methodNotes": "EPA WARM v15 mixed MSW landfilling (national average LFG recovery, typical collection) gives 0.438 MTCO2e per short ton disposed; converted to 482.8 gCO2e/kg using 907.185 kg per short ton.",
         "uncertainty": {
@@ -2243,6 +2590,8 @@
       "unit": "m3",
       "unitLabel": "cubic metres",
       "description": "Treated drinking water pumped through Toronto\u2019s distribution network.",
+      "unitDefinition": "",
+      "notes": "Captures city-scale treatment and distribution energy and emissions.",
       "emissionFactor": 180.0,
       "evidence": {
         "activityId": "MUNI.WATER.POTABLE.M3",
@@ -2258,6 +2607,9 @@
         ],
         "sourceCitations": [
           "[57] Toronto Water, \u201c2023 Drinking Water System Annual Report,\u201d City of Toronto, Feb. 2024. Available: https://www.toronto.ca/services-payments/water-environment/tap-water-in-toronto/drinking-water-quality-reports/"
+        ],
+        "sourceUrls": [
+          "https://www.toronto.ca/services-payments/water-environment/tap-water-in-toronto/drinking-water-quality-reports/"
         ],
         "methodNotes": "Toronto Water 2023 annual report cites \u224872 kt CO2e scope 1+2 emissions over ~0.40 billion m\u00b3 supplied; intensity rounded to 0.18 kgCO2e/m\u00b3 with \u00b130% bounds for year-to-year energy mix swings.",
         "uncertainty": {
@@ -2275,6 +2627,8 @@
       "unit": "hour",
       "unitLabel": "hours",
       "description": "One hour of standard-quality audio streaming.",
+      "unitDefinition": "",
+      "notes": "Electricity reflects device playback plus upstream network delivery for typical audio quality.",
       "emissionFactor": 0.154,
       "evidence": {
         "activityId": "MUSIC.STREAM.STANDARD.HOUR",
@@ -2293,6 +2647,10 @@
           "[12] Carbon Trust and DIMPACT, \u201cThe Carbon Impact of Video Streaming,\u201d 2021. Available: https://www.dimpact.org/resources#carbon-impact-of-video-streaming",
           "[32] Independent Electricity System Operator, \u201cPower Data\u2014Emissions and Grid Intensity (Ontario),\u201d 2025. Available: https://www.ieso.ca/en/Power-Data/Data-Directory"
         ],
+        "sourceUrls": [
+          "https://www.dimpact.org/resources#carbon-impact-of-video-streaming",
+          "https://www.ieso.ca/en/Power-Data/Data-Directory"
+        ],
         "methodNotes": "Audio streaming electricity: 3.5 W playback power (2\u20135 W) with 80 kbps bitrate consuming 0.036 GB/h; network 0.018 kWh/GB and datacentre 0.005 kWh/GB from DIMPACT methodology with Ontario grid.",
         "uncertainty": {
           "lowGPerUnit": 0.084,
@@ -2309,6 +2667,8 @@
       "unit": "ph_decade",
       "unitLabel": "ph decade",
       "description": "Global mean surface ocean pH shift attributable to CO\u2082 loading.",
+      "unitDefinition": "pH units per decade.",
+      "notes": "Negative values indicate acidification, reducing carbonate buffering.",
       "emissionFactor": -0.02,
       "evidence": {
         "activityId": "OCEAN.ACIDIFICATION.PH.DEC",
@@ -2324,6 +2684,9 @@
         ],
         "sourceCitations": [
           "[43] National Oceanic and Atmospheric Administration, \u201cGlobal Ocean Monitoring and Observing: State of the Ocean Climate 2023,\u201d Silver Spring, MD, USA, 2023. Available: https://www.noaa.gov/ocean-climate-report"
+        ],
+        "sourceUrls": [
+          "https://www.noaa.gov/ocean-climate-report"
         ],
         "methodNotes": "Surface ocean pH decline per decade reflecting acidification feedback.",
         "uncertainty": {
@@ -2341,6 +2704,8 @@
       "unit": "carbon_dioxide_pg_per_year",
       "unitLabel": "carbon dioxide pg per year",
       "description": "Global ocean net carbon dioxide sink prior to feedback attenuation.",
+      "unitDefinition": "Measured in petagrams of CO\u2082 absorbed per year.",
+      "notes": "Negative throughput indicates net sink flux.",
       "emissionFactor": -2500000000000000.0,
       "evidence": {
         "activityId": "OCEAN.CO2.UPTAKE.PGCO2",
@@ -2356,6 +2721,9 @@
         ],
         "sourceCitations": [
           "[43] National Oceanic and Atmospheric Administration, \u201cGlobal Ocean Monitoring and Observing: State of the Ocean Climate 2023,\u201d Silver Spring, MD, USA, 2023. Available: https://www.noaa.gov/ocean-climate-report"
+        ],
+        "sourceUrls": [
+          "https://www.noaa.gov/ocean-climate-report"
         ],
         "methodNotes": "NOAA GOS carbon budget midpoint; negative indicates sink strength.",
         "uncertainty": {
@@ -2373,6 +2741,8 @@
       "unit": "gb",
       "unitLabel": "gb",
       "description": "Delivering one gigabyte of content from an edge cache within a content delivery network.",
+      "unitDefinition": "gb equals one gigabyte transferred from edge infrastructure to end users.",
+      "notes": "Captures cache hit distribution, backbone transport, and edge facility electricity per gigabyte delivered.",
       "emissionFactor": null,
       "evidence": {
         "activityId": "ONLINE.CDN.EDGE.GB",
@@ -2385,6 +2755,7 @@
         "vintageYear": null,
         "sourceIds": [],
         "sourceCitations": [],
+        "sourceUrls": [],
         "methodNotes": null,
         "uncertainty": {
           "lowGPerUnit": null,
@@ -2401,6 +2772,8 @@
       "unit": "server_hour",
       "unitLabel": "server hour",
       "description": "Operating one hyperscale cloud server instance for an hour at typical utilisation.",
+      "unitDefinition": "server_hour equals one physical or virtual server-hour of IT compute load maintained within a hyperscale data centre.",
+      "notes": "Includes IT load, networking, and average cooling overhead for hyperscale facilities.",
       "emissionFactor": null,
       "evidence": {
         "activityId": "ONLINE.DC.CLOUD.SERVER.HOUR",
@@ -2413,6 +2786,7 @@
         "vintageYear": null,
         "sourceIds": [],
         "sourceCitations": [],
+        "sourceUrls": [],
         "methodNotes": null,
         "uncertainty": {
           "lowGPerUnit": null,
@@ -2429,6 +2803,8 @@
       "unit": "rack_month",
       "unitLabel": "rack month",
       "description": "Maintaining one rack-equivalent of colocation space for one month including redundant power and cooling.",
+      "unitDefinition": "rack_month equals one standard 42U rack position sustained for a calendar month.",
+      "notes": "Includes UPS losses, cooling energy, and network distribution for enterprise colocation suites.",
       "emissionFactor": null,
       "evidence": {
         "activityId": "ONLINE.DC.COLOCATION.RACK.MONTH",
@@ -2441,6 +2817,7 @@
         "vintageYear": null,
         "sourceIds": [],
         "sourceCitations": [],
+        "sourceUrls": [],
         "methodNotes": null,
         "uncertainty": {
           "lowGPerUnit": null,
@@ -2457,6 +2834,8 @@
       "unit": "carbon_dioxide_equivalent_pg_per_year",
       "unitLabel": "carbon dioxide equivalent pg per year",
       "description": "Thaw-driven greenhouse gas fluxes from high-latitude permafrost.",
+      "unitDefinition": "Petagrams CO\u2082e emitted per year.",
+      "notes": "Positive flux denotes net emissions from thaw and fire feedbacks.",
       "emissionFactor": 300000000000000.0,
       "evidence": {
         "activityId": "PERMAFROST.EMISSIONS.PGCO2E",
@@ -2472,6 +2851,9 @@
         ],
         "sourceCitations": [
           "[16] Environment and Climate Change Canada, \u201cNorthern Canada Permafrost Network Synthesis Report,\u201d Ottawa, ON, Canada, 2023. Available: https://www.canada.ca/en/environment-climate-change/services/climate-change/science-research-data/permafrost.html"
+        ],
+        "sourceUrls": [
+          "https://www.canada.ca/en/environment-climate-change/services/climate-change/science-research-data/permafrost.html"
         ],
         "methodNotes": "Pan-Arctic thaw emissions aggregated as Pg CO\u2082e per year.",
         "uncertainty": {
@@ -2489,6 +2871,8 @@
       "unit": "year",
       "unitLabel": "years",
       "description": "Annual household refrigerator or freezer electricity use and average refrigerant leakage.",
+      "unitDefinition": "",
+      "notes": "",
       "emissionFactor": 150000.0,
       "evidence": {
         "activityId": "REFR.APPL.FRIDGE.OP.YEAR",
@@ -2504,6 +2888,9 @@
         ],
         "sourceCitations": [
           "[29] International Energy Agency, \u201cCooling and Appliance Efficiency Outlook,\u201d Paris, France, 2024. Available: https://www.iea.org/reports/cooling-and-appliance-efficiency-outlook"
+        ],
+        "sourceUrls": [
+          "https://www.iea.org/reports/cooling-and-appliance-efficiency-outlook"
         ],
         "methodNotes": "Assumes 600 kWh/year refrigerator electricity on the Ontario grid (16.8 kgCO2e) with 10% leakage of a 0.6 kg HFC-134a charge (\u2248128 kgCO2e) per IEA 2024 cooling efficiency guidance and AR6 GWP.",
         "uncertainty": {
@@ -2521,6 +2908,8 @@
       "unit": "unit",
       "unitLabel": "units",
       "description": "Embodied emissions for manufacturing a household refrigerator or freezer including initial refrigerant charge.",
+      "unitDefinition": "",
+      "notes": "",
       "emissionFactor": 400000.0,
       "evidence": {
         "activityId": "REFR.APPL.FRIDGE.UNIT",
@@ -2536,6 +2925,9 @@
         ],
         "sourceCitations": [
           "[62] Waste and Resources Action Programme, \u201cHousehold Appliance Carbon Factors,\u201d 2023. Available: https://wrap.org.uk/resources/report/household-appliance-carbon-factors"
+        ],
+        "sourceUrls": [
+          "https://wrap.org.uk/resources/report/household-appliance-carbon-factors"
         ],
         "methodNotes": "WRAP 2023 household appliance factor covering steel, plastics, and foam manufacturing plus a 0.6 kg HFC-134a factory charge using AR6 GWP.",
         "uncertainty": {
@@ -2553,6 +2945,8 @@
       "unit": "kg_foodyear",
       "unitLabel": "kg foodyear",
       "description": "Electricity and refrigerant leakage intensity per kilogram of food kept in supermarket cold storage for one year.",
+      "unitDefinition": "",
+      "notes": "kg_foodyear equals one kilogram of food held under refrigeration for a year.",
       "emissionFactor": 500.0,
       "evidence": {
         "activityId": "REFR.COLDCHAIN.SUPERMARKET.KG",
@@ -2568,6 +2962,9 @@
         ],
         "sourceCitations": [
           "[20] Food and Agriculture Organization and International Energy Agency, \u201cCold Chain Energy and Emission Factors,\u201d 2024. Available: https://www.fao.org/energy/newsroom/detail/en/c/1654324/"
+        ],
+        "sourceUrls": [
+          "https://www.fao.org/energy/newsroom/detail/en/c/1654324/"
         ],
         "methodNotes": "FAO/IEA 2024 supermarket cold-chain study: 12 kWh/kg-food-year Ontario electricity (\u2248336 gCO2e) plus 8% annual leakage of 0.02 kg R448A per kg throughput (~164 gCO2e).",
         "uncertainty": {
@@ -2585,6 +2982,8 @@
       "unit": "year",
       "unitLabel": "years",
       "description": "Annual electricity demand and refrigerant leakage for a residential or light-commercial air-conditioning system.",
+      "unitDefinition": "",
+      "notes": "",
       "emissionFactor": 400000.0,
       "evidence": {
         "activityId": "REFR.HVAC.AC.OP.YEAR",
@@ -2600,6 +2999,9 @@
         ],
         "sourceCitations": [
           "[28] International Energy Agency Cool Coalition, \u201cCooling for All: Operational Benchmarks,\u201d 2024. Available: https://www.coolcoalition.org/resources/"
+        ],
+        "sourceUrls": [
+          "https://www.coolcoalition.org/resources/"
         ],
         "methodNotes": "Combines 1,200 kWh/year AC electricity on Ontario grid (\u224833.6 kgCO2e) with 6% annual leakage of a 1.5 kg R410A charge (~366 kgCO2e) from IEA Cool Coalition 2024 operational benchmarks.",
         "uncertainty": {
@@ -2617,6 +3019,8 @@
       "unit": "unit",
       "unitLabel": "units",
       "description": "Embodied emissions for manufacturing a split or central air-conditioning system including initial refrigerant charge.",
+      "unitDefinition": "",
+      "notes": "",
       "emissionFactor": 700000.0,
       "evidence": {
         "activityId": "REFR.HVAC.AC.UNIT",
@@ -2632,6 +3036,9 @@
         ],
         "sourceCitations": [
           "[60] Technology and Economic Assessment Panel, \u201cTEAP 2023 Assessment Report\u2014HFC Phase-down,\u201d United Nations Environment Programme, 2023. Available: https://ozone.unep.org/assessment-panels/teap"
+        ],
+        "sourceUrls": [
+          "https://ozone.unep.org/assessment-panels/teap"
         ],
         "methodNotes": "UNEP TEAP 2023 split/central AC embodied intensity including compressor, coil, and cabinet manufacturing plus 1.5 kg R410A initial fill at AR6 GWP.",
         "uncertainty": {
@@ -2649,6 +3056,8 @@
       "unit": "square_kilometre_year",
       "unitLabel": "square kilometre year",
       "description": "Extent of oxygen-depleted zones driving secondary N\u2082O/CH\u2084 feedbacks.",
+      "unitDefinition": "Square kilometre-years of hypoxic waters.",
+      "notes": "Positive values indicate sink capacity loss and added emissions.",
       "emissionFactor": 275000000.0,
       "evidence": {
         "activityId": "RIVER.HYPOXIA.KM2.YEAR",
@@ -2664,6 +3073,9 @@
         ],
         "sourceCitations": [
           "[51] Global Ocean Oxygen Network, \u201cDeclining Oxygen: The Global Ocean Oxygen Network Status Report 2020,\u201d Paris, France: UNESCO-IOC, 2020. Available: https://unesdoc.unesco.org/ark:/48223/pf0000376705"
+        ],
+        "sourceUrls": [
+          "https://unesdoc.unesco.org/ark:/48223/pf0000376705"
         ],
         "methodNotes": "Aggregate proxy for N\u2082O/CH\u2084 feedback and lost sink services per km\u00b2-year.",
         "uncertainty": {
@@ -2681,6 +3093,8 @@
       "unit": "km",
       "unitLabel": "kilometres",
       "description": "Fuel burn for a two-to-three vehicle armoured SUV convoy per kilometre.",
+      "unitDefinition": "",
+      "notes": "Assumes staggered convoy formation with ballistic protection and idling overhead.",
       "emissionFactor": 1500.0,
       "evidence": {
         "activityId": "SEC.CONVOY.KM",
@@ -2696,6 +3110,9 @@
         ],
         "sourceCitations": [
           "[49] GardaWorld Protective Services, \u201cProtective Services Sustainability and Emissions Benchmarking,\u201d Montreal, QC, Canada, 2024. Available: https://www.garda.com/insights/protective-services-sustainability-2024"
+        ],
+        "sourceUrls": [
+          "https://www.garda.com/insights/protective-services-sustainability-2024"
         ],
         "methodNotes": "Two-to-three vehicle armoured convoy midpoint assuming blended urban/suburban patrol duty cycle.",
         "uncertainty": {
@@ -2713,6 +3130,8 @@
       "unit": "hour",
       "unitLabel": "hours",
       "description": "Operational emissions for one hour of armed onsite guard coverage.",
+      "unitDefinition": "",
+      "notes": "Includes guard equipment load, surveillance systems, and conditioned space.",
       "emissionFactor": 2500.0,
       "evidence": {
         "activityId": "SEC.GUARD.HOUR",
@@ -2728,6 +3147,9 @@
         ],
         "sourceCitations": [
           "[49] GardaWorld Protective Services, \u201cProtective Services Sustainability and Emissions Benchmarking,\u201d Montreal, QC, Canada, 2024. Available: https://www.garda.com/insights/protective-services-sustainability-2024"
+        ],
+        "sourceUrls": [
+          "https://www.garda.com/insights/protective-services-sustainability-2024"
         ],
         "methodNotes": "Guard post electricity, equipment, and vehicle standby emissions per staffed hour for Canadian luxury estates.",
         "uncertainty": {
@@ -2745,6 +3167,8 @@
       "unit": "hour",
       "unitLabel": "hours",
       "description": "Jet fuel consumption for one hour of private security helicopter patrol.",
+      "unitDefinition": "",
+      "notes": "Representative of light twin-engine turbine helicopters on perimeter patrol.",
       "emissionFactor": 325000.0,
       "evidence": {
         "activityId": "SEC.HELI.HOUR",
@@ -2760,6 +3184,9 @@
         ],
         "sourceCitations": [
           "[49] GardaWorld Protective Services, \u201cProtective Services Sustainability and Emissions Benchmarking,\u201d Montreal, QC, Canada, 2024. Available: https://www.garda.com/insights/protective-services-sustainability-2024"
+        ],
+        "sourceUrls": [
+          "https://www.garda.com/insights/protective-services-sustainability-2024"
         ],
         "methodNotes": "Jet fuel midpoint for light security helicopters operating perimeter sweeps.",
         "uncertainty": {
@@ -2777,6 +3204,8 @@
       "unit": "hour",
       "unitLabel": "hours",
       "description": "Scrolling and watching media on Facebook for 1 hour.",
+      "unitDefinition": "",
+      "notes": "",
       "emissionFactor": 60.0,
       "evidence": {
         "activityId": "SOCIAL.FACEBOOK.HOUR",
@@ -2792,6 +3221,9 @@
         ],
         "sourceCitations": [
           "[23] R. Hintemann and S. Hinterholzer, \u201cEnergy Consumption of Digital Services: Streaming vs. Social Media,\u201d Borderstep Institute and IITP, 2022. Available: https://www.iitp.de/digital-carbon-footprint"
+        ],
+        "sourceUrls": [
+          "https://www.iitp.de/digital-carbon-footprint"
         ],
         "methodNotes": "Hintemann & Hinterholzer Facebook estimate (0.06 kgCO2e/hr) tuned with SRC.META.SR.2023 operational efficiency disclosures and SRC.IEA.DIGITAL.NETWORKS.2023 network/data-centre intensity ranges.",
         "uncertainty": {
@@ -2809,6 +3241,8 @@
       "unit": "hour",
       "unitLabel": "hours",
       "description": "Scrolling and watching media on Instagram for 1 hour.",
+      "unitDefinition": "",
+      "notes": "",
       "emissionFactor": 85.0,
       "evidence": {
         "activityId": "SOCIAL.INSTAGRAM.HOUR",
@@ -2824,6 +3258,9 @@
         ],
         "sourceCitations": [
           "[23] R. Hintemann and S. Hinterholzer, \u201cEnergy Consumption of Digital Services: Streaming vs. Social Media,\u201d Borderstep Institute and IITP, 2022. Available: https://www.iitp.de/digital-carbon-footprint"
+        ],
+        "sourceUrls": [
+          "https://www.iitp.de/digital-carbon-footprint"
         ],
         "methodNotes": "Instagram hour derived from SRC.HINTEMANN2022 mobile-focused scenario with 70% smartphone, 20% tablet, 10% desktop device mix anchored to SRC.META.SR.2023 efficiency improvements and SRC.IEA.DIGITAL.NETWORKS.2023 bandwidth intensity; \u00b140% bounds (50\u2013150 gCO2e/hr) follow SRC.MALMODIN.2018.",
         "uncertainty": {
@@ -2841,6 +3278,8 @@
       "unit": "hour",
       "unitLabel": "hours",
       "description": "Browsing LinkedIn for 1 hour.",
+      "unitDefinition": "",
+      "notes": "",
       "emissionFactor": 50.0,
       "evidence": {
         "activityId": "SOCIAL.LINKEDIN.HOUR",
@@ -2856,6 +3295,9 @@
         ],
         "sourceCitations": [
           "[23] R. Hintemann and S. Hinterholzer, \u201cEnergy Consumption of Digital Services: Streaming vs. Social Media,\u201d Borderstep Institute and IITP, 2022. Available: https://www.iitp.de/digital-carbon-footprint"
+        ],
+        "sourceUrls": [
+          "https://www.iitp.de/digital-carbon-footprint"
         ],
         "methodNotes": "LinkedIn browsing intensity (0.05 kgCO2e/hr) via SRC.HINTEMANN2022 knowledge-worker profile, cross-checked with SRC.MALMODIN.2018 ICT footprint ratios and SRC.IEA.DIGITAL.NETWORKS.2023 network data.",
         "uncertainty": {
@@ -2873,6 +3315,8 @@
       "unit": "hour",
       "unitLabel": "hours",
       "description": "Scrolling a social media feed on a smartphone over mobile or Wi-Fi data.",
+      "unitDefinition": "",
+      "notes": "Electricity covers handset use plus average data-transfer intensity per hour of social media use.",
       "emissionFactor": 0.1344,
       "evidence": {
         "activityId": "SOCIAL.SCROLL.HOUR.MOBILE",
@@ -2891,6 +3335,10 @@
           "[12] Carbon Trust and DIMPACT, \u201cThe Carbon Impact of Video Streaming,\u201d 2021. Available: https://www.dimpact.org/resources#carbon-impact-of-video-streaming",
           "[32] Independent Electricity System Operator, \u201cPower Data\u2014Emissions and Grid Intensity (Ontario),\u201d 2025. Available: https://www.ieso.ca/en/Power-Data/Data-Directory"
         ],
+        "sourceUrls": [
+          "https://www.dimpact.org/resources#carbon-impact-of-video-streaming",
+          "https://www.ieso.ca/en/Power-Data/Data-Directory"
+        ],
         "methodNotes": "Mobile social scrolling electricity from DIMPACT handset load aligned to Ontario grid.",
         "uncertainty": {
           "lowGPerUnit": null,
@@ -2907,6 +3355,8 @@
       "unit": "hour",
       "unitLabel": "hours",
       "description": "Sending snaps and viewing stories on Snapchat for 1 hour.",
+      "unitDefinition": "",
+      "notes": "",
       "emissionFactor": 70.0,
       "evidence": {
         "activityId": "SOCIAL.SNAPCHAT.HOUR",
@@ -2922,6 +3372,9 @@
         ],
         "sourceCitations": [
           "[23] R. Hintemann and S. Hinterholzer, \u201cEnergy Consumption of Digital Services: Streaming vs. Social Media,\u201d Borderstep Institute and IITP, 2022. Available: https://www.iitp.de/digital-carbon-footprint"
+        ],
+        "sourceUrls": [
+          "https://www.iitp.de/digital-carbon-footprint"
         ],
         "methodNotes": "Snapchat hour from SRC.HINTEMANN2022 handset-intensive scenario, adjusted with SRC.META.SR.2023 infrastructure efficiency and SRC.IEA.DIGITAL.NETWORKS.2023 bandwidth ranges; \u00b140% uncertainty from SRC.MALMODIN.2018.",
         "uncertainty": {
@@ -2939,6 +3392,8 @@
       "unit": "hour",
       "unitLabel": "hours",
       "description": "Watching short-form video on TikTok for 1 hour.",
+      "unitDefinition": "",
+      "notes": "",
       "emissionFactor": 150.0,
       "evidence": {
         "activityId": "SOCIAL.TIKTOK.HOUR",
@@ -2954,6 +3409,9 @@
         ],
         "sourceCitations": [
           "[23] R. Hintemann and S. Hinterholzer, \u201cEnergy Consumption of Digital Services: Streaming vs. Social Media,\u201d Borderstep Institute and IITP, 2022. Available: https://www.iitp.de/digital-carbon-footprint"
+        ],
+        "sourceUrls": [
+          "https://www.iitp.de/digital-carbon-footprint"
         ],
         "methodNotes": "TikTok per-hour footprint (0.15 kgCO2e/hr) from SRC.HINTEMANN2022 short-video profile using 85% smartphone, 10% tablet, 5% desktop usage mix with network intensity anchored to SRC.IEA.DIGITAL.NETWORKS.2023 and expanded bounds (80\u2013250 gCO2e/hr) reflecting SRC.MALMODIN.2018 variability.",
         "uncertainty": {
@@ -2971,6 +3429,8 @@
       "unit": "hour",
       "unitLabel": "hours",
       "description": "Browsing the Twitter/X feed for 1 hour.",
+      "unitDefinition": "",
+      "notes": "",
       "emissionFactor": 55.0,
       "evidence": {
         "activityId": "SOCIAL.TWITTER.HOUR",
@@ -2986,6 +3446,9 @@
         ],
         "sourceCitations": [
           "[23] R. Hintemann and S. Hinterholzer, \u201cEnergy Consumption of Digital Services: Streaming vs. Social Media,\u201d Borderstep Institute and IITP, 2022. Available: https://www.iitp.de/digital-carbon-footprint"
+        ],
+        "sourceUrls": [
+          "https://www.iitp.de/digital-carbon-footprint"
         ],
         "methodNotes": "Twitter/X browsing electricity (0.055 kgCO2e/hr) per SRC.HINTEMANN2022, validated against SRC.IEA.DIGITAL.NETWORKS.2023 network/device ranges and broader ICT intensity bounds from SRC.MALMODIN.2018.",
         "uncertainty": {
@@ -3003,6 +3466,8 @@
       "unit": "hour",
       "unitLabel": "hours",
       "description": "Streaming video on YouTube for 1 hour.",
+      "unitDefinition": "",
+      "notes": "",
       "emissionFactor": 230.0,
       "evidence": {
         "activityId": "SOCIAL.YOUTUBE.HOUR",
@@ -3018,6 +3483,9 @@
         ],
         "sourceCitations": [
           "[23] R. Hintemann and S. Hinterholzer, \u201cEnergy Consumption of Digital Services: Streaming vs. Social Media,\u201d Borderstep Institute and IITP, 2022. Available: https://www.iitp.de/digital-carbon-footprint"
+        ],
+        "sourceUrls": [
+          "https://www.iitp.de/digital-carbon-footprint"
         ],
         "methodNotes": "Hintemann & Hinterholzer social platform intensity (~0.23 kgCO2e/hr) aligned with Ontario grid, using blended device mix of 40% smart TV, 35% smartphone, 25% laptop informed by SRC.IEA.DIGITAL.NETWORKS.2023 traffic data and SRC.GOOGLE.SR.2023 efficiency disclosures; bounds (150\u2013400 gCO2e/hr) reflect SRC.MALMODIN.2018 ICT variability.",
         "uncertainty": {
@@ -3035,6 +3503,8 @@
       "unit": "event",
       "unitLabel": "event",
       "description": "Episodic tailings pond degassing or upset releasing CH\u2084/VOCs.",
+      "unitDefinition": "Discrete upset event.",
+      "notes": "Event severity scales greenhouse gas release.",
       "emissionFactor": 105000000.0,
       "evidence": {
         "activityId": "TAILINGS.DEGASS.EVENT",
@@ -3050,6 +3520,9 @@
         ],
         "sourceCitations": [
           "[1] Alberta Energy Regulator, \u201cTailings Management Framework: 2023 Annual Report,\u201d Calgary, AB, Canada, 2024. Available: https://static.aer.ca/prd/documents/reports/Tailings-Management-Framework-2023.pdf"
+        ],
+        "sourceUrls": [
+          "https://static.aer.ca/prd/documents/reports/Tailings-Management-Framework-2023.pdf"
         ],
         "methodNotes": "Representative CH\u2084/CO\u2082e release per tailings degassing upset.",
         "uncertainty": {
@@ -3067,6 +3540,8 @@
       "unit": "square_metre_year",
       "unitLabel": "square metre year",
       "description": "Tailings pond surface exposure indexed to methane and CO\u2082e flux.",
+      "unitDefinition": "Square metres of pond surface sustained for one year.",
+      "notes": "Surface-area proxy for fugitive CH\u2084/CO\u2082e emissions from ponds.",
       "emissionFactor": 850.0,
       "evidence": {
         "activityId": "TAILINGS.POND.M2.YEAR",
@@ -3082,6 +3557,9 @@
         ],
         "sourceCitations": [
           "[1] Alberta Energy Regulator, \u201cTailings Management Framework: 2023 Annual Report,\u201d Calgary, AB, Canada, 2024. Available: https://static.aer.ca/prd/documents/reports/Tailings-Management-Framework-2023.pdf"
+        ],
+        "sourceUrls": [
+          "https://static.aer.ca/prd/documents/reports/Tailings-Management-Framework-2023.pdf"
         ],
         "methodNotes": "Area-normalised CH\u2084/CO\u2082e emission factor for Alberta tailings ponds.",
         "uncertainty": {
@@ -3099,6 +3577,8 @@
       "unit": "km",
       "unitLabel": "kilometres",
       "description": "Moving goods one kilometre by a class-6 delivery truck.",
+      "unitDefinition": "",
+      "notes": "Class-6 delivery activity.",
       "emissionFactor": 860.79,
       "evidence": {
         "activityId": "TRAN.DELIVERY.TRUCK.CLASS6.KM",
@@ -3114,6 +3594,9 @@
         ],
         "sourceCitations": [
           "[17] U.S. Environmental Protection Agency, \u201cMOVES3 Heavy-Duty Vehicle Population and Activity Data,\u201d Nov. 2021. Available: https://www.epa.gov/system/files/documents/2021-11/moves-hdv-dvpg-508_0.pdf"
+        ],
+        "sourceUrls": [
+          "https://www.epa.gov/system/files/documents/2021-11/moves-hdv-dvpg-508_0.pdf"
         ],
         "methodNotes": "Diesel CO2e intensity computed with MOVES3 class-6 single-unit urban fuel economy of 7.4 mpg from SRC.EPA.MOVES.HDV.2021 and EPA GHGI tailpipe factors (10.21 kgCO2/gal plus CH4 and N2O) from SRC.EPA.GHGI.2023; \u00b110% bounds capture route variability.",
         "uncertainty": {
@@ -3131,6 +3614,8 @@
       "unit": "pkm",
       "unitLabel": "passenger-kilometres",
       "description": "International or transcontinental commercial flight over 1500 kilometres.",
+      "unitDefinition": "",
+      "notes": "Covers wide-body jet operations on intercontinental sectors.",
       "emissionFactor": 190.0,
       "evidence": {
         "activityId": "TRAN.FLIGHT.LONGHAUL.PKM",
@@ -3146,6 +3631,9 @@
         ],
         "sourceCitations": [
           "[10] UK Department for Energy Security and Net Zero, \u201cUK Government GHG Conversion Factors for Company Reporting,\u201d 2024. Available: https://www.gov.uk/government/collections/government-conversion-factors-for-company-reporting"
+        ],
+        "sourceUrls": [
+          "https://www.gov.uk/government/collections/government-conversion-factors-for-company-reporting"
         ],
         "methodNotes": "DEFRA 2024 international aviation long-haul passenger emission factor (0.19 kgCO2e/pkm) including well-to-tank uplift; bounds span published high/low radiative forcing uplift scenarios.",
         "uncertainty": {
@@ -3163,6 +3651,8 @@
       "unit": "pkm",
       "unitLabel": "passenger-kilometres",
       "description": "Business aviation travel aboard private jets.",
+      "unitDefinition": "",
+      "notes": "Captures high-intensity corporate or charter jet usage.",
       "emissionFactor": 900.0,
       "evidence": {
         "activityId": "TRAN.FLIGHT.PRIVATE.PKM",
@@ -3178,6 +3668,9 @@
         ],
         "sourceCitations": [
           "[27] International Energy Agency, \u201cAviation,\u201d Paris, France, 2023. Available: https://www.iea.org/reports/aviation"
+        ],
+        "sourceUrls": [
+          "https://www.iea.org/reports/aviation"
         ],
         "methodNotes": "IEA business aviation analysis citing 0.6\u20131.2 kgCO2e/pkm for typical corporate jet missions; midpoint retained at 0.9 kgCO2e/pkm for planning use.",
         "uncertainty": {
@@ -3195,6 +3688,8 @@
       "unit": "pkm",
       "unitLabel": "passenger-kilometres",
       "description": "Domestic or regional commercial flight under 1500 kilometres.",
+      "unitDefinition": "",
+      "notes": "Representative for narrow-body jet operations on sub-1500 km sectors.",
       "emissionFactor": 250.0,
       "evidence": {
         "activityId": "TRAN.FLIGHT.SHORTHAUL.PKM",
@@ -3210,6 +3705,9 @@
         ],
         "sourceCitations": [
           "[24] International Civil Aviation Organization, \u201cCORSIA Default Life Cycle Emissions Factors for International Aviation,\u201d 2023. Available: https://www.icao.int/environmental-protection/CORSIA/Pages/default.aspx"
+        ],
+        "sourceUrls": [
+          "https://www.icao.int/environmental-protection/CORSIA/Pages/default.aspx"
         ],
         "methodNotes": "ICAO CORSIA default life-cycle intensity for short-haul (<1,500 km) jet operations rounded to 0.25 kgCO2e/pkm with \u00b120% bounds reflecting narrow-body fleet efficiency variations.",
         "uncertainty": {
@@ -3227,6 +3725,8 @@
       "unit": "km",
       "unitLabel": "kilometres",
       "description": "Distance travelled by bicycle for a school run.",
+      "unitDefinition": "",
+      "notes": "",
       "emissionFactor": 0.0,
       "evidence": {
         "activityId": "TRAN.SCHOOLRUN.BIKE.KM",
@@ -3242,6 +3742,9 @@
         ],
         "sourceCitations": [
           "[15] Environment and Climate Change Canada, \u201cNational Inventory Report 1990\u20132023: Greenhouse Gas Sources and Sinks in Canada,\u201d Ottawa, ON, Canada, 2025. Available: https://publications.gc.ca/collections/collection_2025/eccc/En81-4-2025-1-eng.pdf"
+        ],
+        "sourceUrls": [
+          "https://publications.gc.ca/collections/collection_2025/eccc/En81-4-2025-1-eng.pdf"
         ],
         "methodNotes": "Cycling operational emissions ~0",
         "uncertainty": {
@@ -3259,6 +3762,8 @@
       "unit": "km",
       "unitLabel": "kilometres",
       "description": "Passenger kilometres for a school run completed by car.",
+      "unitDefinition": "",
+      "notes": "Passengers default to one when unspecified.",
       "emissionFactor": 180.0,
       "evidence": {
         "activityId": "TRAN.SCHOOLRUN.CAR.KM",
@@ -3274,6 +3779,9 @@
         ],
         "sourceCitations": [
           "[15] Environment and Climate Change Canada, \u201cNational Inventory Report 1990\u20132023: Greenhouse Gas Sources and Sinks in Canada,\u201d Ottawa, ON, Canada, 2025. Available: https://publications.gc.ca/collections/collection_2025/eccc/En81-4-2025-1-eng.pdf"
+        ],
+        "sourceUrls": [
+          "https://publications.gc.ca/collections/collection_2025/eccc/En81-4-2025-1-eng.pdf"
         ],
         "methodNotes": "Passenger car, gasoline, ~180 gCO2e/km average",
         "uncertainty": {
@@ -3291,6 +3799,8 @@
       "unit": "km",
       "unitLabel": "kilometres",
       "description": "Passenger kilometres travelled on Toronto Transit Commission buses.",
+      "unitDefinition": "",
+      "notes": "Diesel fleet operational intensity per passenger kilometre.",
       "emissionFactor": 86.62,
       "evidence": {
         "activityId": "TRAN.TTC.BUS.KM",
@@ -3306,6 +3816,9 @@
         ],
         "sourceCitations": [
           "[58] UK Department for Energy Security and Net Zero, \u201cUK Government Greenhouse Gas Conversion Factors for Company Reporting (2023),\u201d 2023. Available: https://raw.githubusercontent.com/filcuk/ghg_conversion_factors/main/country/gbr/release/ghg-conversion-factors-2023-gbr-v1.1.csv"
+        ],
+        "sourceUrls": [
+          "https://raw.githubusercontent.com/filcuk/ghg_conversion_factors/main/country/gbr/release/ghg-conversion-factors-2023-gbr-v1.1.csv"
         ],
         "methodNotes": "Converted 2017 TTC diesel consumption using UK 2023 mineral diesel factor and divided by bus passenger-kilometres estimated from boardings; \u00b110% passenger-kilometre assumption captured in bounds.",
         "uncertainty": {
@@ -3323,6 +3836,8 @@
       "unit": "km",
       "unitLabel": "kilometres",
       "description": "Passenger kilometres travelled on the Toronto subway.",
+      "unitDefinition": "",
+      "notes": "Electric rapid transit energy intensity per passenger kilometre.",
       "emissionFactor": 4.76,
       "evidence": {
         "activityId": "TRAN.TTC.SUBWAY.KM",
@@ -3341,6 +3856,10 @@
           "[9] Canadian Urban Transit Association and Ontario Ministry of Transportation, \u201cOntario Urban Transit Fact Book\u20142017 Operating Data: Toronto,\u201d 2017. Available: https://raw.githubusercontent.com/Nate-Wessel/TTC-funding/master/sources/Ontario_Transit_Factbooks/ttc/2017.pdf",
           "[32] Independent Electricity System Operator, \u201cPower Data\u2014Emissions and Grid Intensity (Ontario),\u201d 2025. Available: https://www.ieso.ca/en/Power-Data/Data-Directory"
         ],
+        "sourceUrls": [
+          "https://raw.githubusercontent.com/Nate-Wessel/TTC-funding/master/sources/Ontario_Transit_Factbooks/ttc/2017.pdf",
+          "https://www.ieso.ca/en/Power-Data/Data-Directory"
+        ],
         "methodNotes": "Derived from CUTA/MTO 2017 modal statistics allocating 85% of system electricity to heavy rail by revenue vehicle-kilometres and applying a 0.170 kWh/passenger-km intensity (0.136\u20130.222 kWh) with 2024 IESO grid intensity; passenger-kilometre share \u00b110% and 75\u2013100% electricity allocation retained in bounds.",
         "uncertainty": {
           "lowGPerUnit": 3.8080000000000003,
@@ -3357,6 +3876,8 @@
       "unit": "",
       "unitLabel": "",
       "description": "HD streaming on TV",
+      "unitDefinition": "",
+      "notes": "",
       "emissionFactor": null,
       "evidence": {
         "activityId": "stream",
@@ -3369,6 +3890,7 @@
         "vintageYear": 2025,
         "sourceIds": [],
         "sourceCitations": [],
+        "sourceUrls": [],
         "methodNotes": "Demonstration streaming mix using DIMPACT playback assumptions and Ontario grid defaults.",
         "uncertainty": {
           "lowGPerUnit": null,

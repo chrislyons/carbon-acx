@@ -4,14 +4,17 @@ import argparse
 import csv
 import json
 import math
-import re
 import os
+import re
+import shutil
+import tempfile
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-SCHEMA_VERSION = "acx.web-calculator/1-3-0"
+SCHEMA_VERSION = "acx.web-calculator/1-4-0"
+SOURCES_SCHEMA_VERSION = "acx.web-sources/1-0-0"
 DEFAULT_OUTPUT = Path("apps/carbon-acx-web/src/generated/calculator-data.json")
 DEFAULT_CATALOG_OUTPUT = Path("apps/carbon-acx-web/src/generated/catalog-data.json")
 SOURCES_OUTPUT = Path("apps/carbon-acx-web/src/generated/sources.json")
@@ -61,6 +64,15 @@ SELECTED_ACTIVITIES = [
     ("shopping", "DEVICE.LAPTOP.UNIT"),
 ]
 
+EXPECTED_BENCHMARK_KEYS = {
+    "canadian_average",
+    "alberta_average",
+    "saskatchewan_average",
+    "ontario_average",
+    "quebec_average",
+    "british_columbia_average",
+    "manitoba_average",
+}
 REGION_PREFERENCE = {"CA-ON": 0, "CA": 1, "GLOBAL": 2, "": 3}
 GRAMS_PER_TONNE = 1_000_000
 BENCHMARK_DERIVATION_TOLERANCE_T = 0.15
@@ -179,6 +191,13 @@ def _citation_for(source_id: str, sources: dict[str, dict[str, str]]) -> str:
     return citation
 
 
+def _source_url_for(source_id: str, sources: dict[str, dict[str, str]]) -> str:
+    url = (sources.get(source_id, {}).get("url") or "").strip()
+    if not url:
+        raise ValueError(f"Missing registered source URL for {source_id}")
+    return url
+
+
 def _factor_evidence(
     activity: dict[str, str],
     factor: dict[str, str],
@@ -206,6 +225,7 @@ def _factor_evidence(
         raise ValueError(f"SRC.DEMO is not publishable: {factor_id}")
     source_ids = [source_id]
     source_citations = [_citation_for(source_id, sources)]
+    source_urls = [_source_url_for(source_id, sources)]
     value_g_per_unit = _float_or_none(factor.get("value_g_per_unit"))
     uncertainty_low = _float_or_none(factor.get("uncert_low_g_per_unit"))
     uncertainty_high = _float_or_none(factor.get("uncert_high_g_per_unit"))
@@ -221,6 +241,7 @@ def _factor_evidence(
         value_g_per_unit = electricity_kwh * grid_row.g_per_kwh
         source_ids.append(grid_row.source_id)
         source_citations.append(_citation_for(grid_row.source_id, sources))
+        source_urls.append(_source_url_for(grid_row.source_id, sources))
         electricity_low = _float_or_none(factor.get("electricity_kwh_per_unit_low"))
         electricity_high = _float_or_none(factor.get("electricity_kwh_per_unit_high"))
         uncertainty_low = (
@@ -246,6 +267,7 @@ def _factor_evidence(
             "vintageYear": vintage_year,
             "sourceIds": source_ids,
             "sourceCitations": source_citations,
+            "sourceUrls": source_urls,
             "methodNotes": (factor.get("method_notes") or "").strip() or None,
             "uncertainty": {
                 "lowGPerUnit": uncertainty_low,
@@ -270,6 +292,7 @@ def _unavailable_evidence(
         "vintageYear": _int_or_none((factor or {}).get("vintage_year")),
         "sourceIds": [],
         "sourceCitations": [],
+        "sourceUrls": [],
         "methodNotes": ((factor or {}).get("method_notes") or "").strip() or None,
         "uncertainty": {"lowGPerUnit": None, "highGPerUnit": None},
         "publicationStatus": "unavailable",
@@ -283,12 +306,27 @@ def build_benchmarks(
     if not rows:
         raise ValueError("data/benchmarks.csv contains no benchmark rows")
 
+    keys = [(row.get("key") or "").strip() for row in rows]
+    if len(rows) != len(EXPECTED_BENCHMARK_KEYS) or set(keys) != EXPECTED_BENCHMARK_KEYS:
+        missing = sorted(EXPECTED_BENCHMARK_KEYS - set(keys))
+        unexpected = sorted(set(keys) - EXPECTED_BENCHMARK_KEYS)
+        raise ValueError(
+            f"Benchmark selector keys are not the expected set; missing={missing}, "
+            f"unexpected={unexpected}"
+        )
+
     benchmarks: dict[str, dict[str, Any]] = {}
     for row in rows:
         key = (row.get("key") or "").strip()
         per_capita_tonnes = _float_or_none(row.get("per_capita_tonnes"))
         if not key or per_capita_tonnes is None:
             raise ValueError("Benchmark row is missing a key or per_capita_tonnes")
+        accounting_basis = (row.get("accounting_basis") or "").strip()
+        land_use_change = (row.get("land_use_change") or "").strip()
+        if accounting_basis != "territorial" or land_use_change != "excluded":
+            raise ValueError(
+                f"Benchmark '{key}' has unexpected accounting basis or land-use treatment"
+            )
         total_mt = _float_or_none(row.get("total_mt"))
         population_millions = _float_or_none(row.get("population_millions"))
         if total_mt is not None and population_millions:
@@ -301,6 +339,11 @@ def build_benchmarks(
                 )
         source_id = (row.get("source_id") or "").strip() or None
         population_source_id = (row.get("population_source_id") or "").strip() or None
+        year = _int_or_none(row.get("year"))
+        if year != 2023 or source_id != "SRC.ECCC.NIR.2025":
+            raise ValueError(
+                f"Benchmark '{key}' must use year 2023 and source_id SRC.ECCC.NIR.2025"
+            )
         source_citation = _citation_for(source_id, sources) if source_id else None
         population_citation = (
             _citation_for(population_source_id, sources) if population_source_id else None
@@ -313,12 +356,18 @@ def build_benchmarks(
             "annualGrams": round(per_capita_tonnes * GRAMS_PER_TONNE),
             "totalMt": total_mt,
             "populationMillions": population_millions,
-            "year": _int_or_none(row.get("year")),
+            "year": year,
             "sourceId": source_id,
             "sourceCitation": source_citation,
+            "sourceUrl": _source_url_for(source_id, sources) if source_id else None,
             "populationSourceId": population_source_id,
             "populationCitation": population_citation,
+            "populationSourceUrl": (
+                _source_url_for(population_source_id, sources) if population_source_id else None
+            ),
             "notes": (row.get("notes") or "").strip() or None,
+            "accountingBasis": accounting_basis,
+            "landUseChange": land_use_change,
         }
     return benchmarks
 
@@ -337,8 +386,7 @@ def _load_inputs(repo_root: Path) -> tuple[
     )
 
 
-def build_payload(repo_root: Path | None = None) -> dict[str, Any]:
-    root = repo_root or Path(__file__).resolve().parent.parent
+def _build_payload(root: Path, generated_at: str) -> dict[str, Any]:
     activities, factors, sources, grid_rows = _load_inputs(root)
     activity_payload: list[dict[str, Any]] = []
     for category, activity_id in SELECTED_ACTIVITIES:
@@ -356,20 +404,28 @@ def build_payload(repo_root: Path | None = None) -> dict[str, Any]:
                 "unitLabel": _unit_label(activity["default_unit"]),
                 "emissionFactor": value_g_per_unit,
                 "description": activity.get("description") or "",
+                "unitDefinition": activity.get("unit_definition") or "",
+                "notes": activity.get("notes") or "",
                 "evidence": evidence,
             }
         )
     return {
         "schemaVersion": SCHEMA_VERSION,
-        "generatedAt": _generated_at(),
+        "generatedAt": generated_at,
         "categories": CATEGORY_INFO,
         "activities": activity_payload,
         "benchmarks": build_benchmarks(root, sources),
     }
 
 
-def build_catalog_payload(repo_root: Path | None = None) -> dict[str, Any]:
+def build_payload(
+    repo_root: Path | None = None, *, generated_at: str | None = None
+) -> dict[str, Any]:
     root = repo_root or Path(__file__).resolve().parent.parent
+    return _build_payload(root, generated_at or _generated_at())
+
+
+def _build_catalog_payload(root: Path, generated_at: str) -> dict[str, Any]:
     activities, factors, sources, grid_rows = _load_inputs(root)
     catalog: list[dict[str, Any]] = []
     for activity_id, activity in sorted(activities.items()):
@@ -390,6 +446,8 @@ def build_catalog_payload(repo_root: Path | None = None) -> dict[str, Any]:
                 "unit": activity.get("default_unit") or "",
                 "unitLabel": _unit_label(activity.get("default_unit") or ""),
                 "description": activity.get("description") or "",
+                "unitDefinition": activity.get("unit_definition") or "",
+                "notes": activity.get("notes") or "",
                 "emissionFactor": value_g_per_unit,
                 "evidence": evidence,
                 "unavailabilityReason": unavailable_reason,
@@ -397,45 +455,134 @@ def build_catalog_payload(repo_root: Path | None = None) -> dict[str, Any]:
         )
     return {
         "schemaVersion": SCHEMA_VERSION,
-        "generatedAt": _generated_at(),
+        "generatedAt": generated_at,
         "activities": catalog,
     }
 
 
+def build_catalog_payload(
+    repo_root: Path | None = None, *, generated_at: str | None = None
+) -> dict[str, Any]:
+    root = repo_root or Path(__file__).resolve().parent.parent
+    return _build_catalog_payload(root, generated_at or _generated_at())
+
+
+def _build_sources_payload(root: Path) -> dict[str, Any]:
+    return {
+        "schemaVersion": SOURCES_SCHEMA_VERSION,
+        "sources": _load_csv(root / "data/sources.csv"),
+    }
+
+
+def _json_bytes(payload: dict[str, Any]) -> bytes:
+    return (json.dumps(payload, indent=2) + "\n").encode("utf-8")
+
+
 def write_payload(output_path: Path, repo_root: Path | None = None) -> Path:
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(json.dumps(build_payload(repo_root), indent=2) + "\n", encoding="utf-8")
+    output_path.write_bytes(_json_bytes(build_payload(repo_root)))
     return output_path
 
 
 def write_catalog(output_path: Path, repo_root: Path | None = None) -> Path:
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(
-        json.dumps(build_catalog_payload(repo_root), indent=2) + "\n", encoding="utf-8"
-    )
+    output_path.write_bytes(_json_bytes(build_catalog_payload(repo_root)))
     return output_path
 
 
 def write_sources(output_path: Path, repo_root: Path | None = None) -> Path:
     root = repo_root or Path(__file__).resolve().parent.parent
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(
-        json.dumps(_load_csv(root / "data/sources.csv"), indent=2) + "\n", encoding="utf-8"
-    )
+    output_path.write_bytes(_json_bytes(_build_sources_payload(root)))
     return output_path
+
+
+def _authority_bytes(repo_root: Path, generated_at: str) -> dict[Path, bytes]:
+    return {
+        DEFAULT_OUTPUT: _json_bytes(_build_payload(repo_root, generated_at)),
+        DEFAULT_CATALOG_OUTPUT: _json_bytes(_build_catalog_payload(repo_root, generated_at)),
+        SOURCES_OUTPUT: _json_bytes(_build_sources_payload(repo_root)),
+    }
+
+
+def _validate_authority_bytes(authorities: dict[Path, bytes]) -> None:
+    for relative_path, payload_bytes in authorities.items():
+        if not payload_bytes.endswith(b"\n"):
+            raise ValueError(f"Generated authority is missing a trailing newline: {relative_path}")
+        payload = json.loads(payload_bytes)
+        if not isinstance(payload, dict):
+            raise ValueError(f"Generated authority is not a JSON object: {relative_path}")
+        if relative_path == SOURCES_OUTPUT:
+            if payload.get("schemaVersion") != SOURCES_SCHEMA_VERSION or not isinstance(
+                payload.get("sources"), list
+            ):
+                raise ValueError(f"Invalid generated source authority: {relative_path}")
+        elif payload.get("schemaVersion") != SCHEMA_VERSION:
+            raise ValueError(f"Invalid generated calculator authority: {relative_path}")
+
+
+def _replace_file(source: Path, destination: Path) -> None:
+    os.replace(source, destination)
+
+
+def _commit_authorities(output_root: Path, authorities: dict[Path, bytes]) -> None:
+    output_root = output_root.resolve()
+    output_root.parent.mkdir(parents=True, exist_ok=True)
+    staging_root = Path(
+        tempfile.mkdtemp(prefix=f".{output_root.name}.staging-", dir=output_root.parent)
+    )
+    backup_root = Path(
+        tempfile.mkdtemp(prefix=f".{output_root.name}.backup-", dir=output_root.parent)
+    )
+    replaced: list[tuple[Path, Path, bool]] = []
+    try:
+        for relative_path, payload_bytes in authorities.items():
+            staged_path = staging_root / relative_path
+            staged_path.parent.mkdir(parents=True, exist_ok=True)
+            staged_path.write_bytes(payload_bytes)
+            if staged_path.read_bytes() != payload_bytes:
+                raise OSError(f"Staged authority bytes changed: {relative_path}")
+
+        for relative_path in authorities:
+            destination = output_root / relative_path
+            if destination.exists():
+                backup_path = backup_root / relative_path
+                backup_path.parent.mkdir(parents=True, exist_ok=True)
+                backup_path.write_bytes(destination.read_bytes())
+
+        for relative_path in authorities:
+            destination = output_root / relative_path
+            staged_path = staging_root / relative_path
+            backup_path = backup_root / relative_path
+            existed = backup_path.exists()
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            _replace_file(staged_path, destination)
+            replaced.append((destination, backup_path, existed))
+    except Exception:
+        for destination, backup_path, existed in reversed(replaced):
+            if existed:
+                _replace_file(backup_path, destination)
+            elif destination.exists():
+                destination.unlink()
+        raise
+    finally:
+        shutil.rmtree(staging_root, ignore_errors=True)
+        shutil.rmtree(backup_root, ignore_errors=True)
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Generate the published calculator and activity catalogue datasets."
     )
-    parser.add_argument("--output", default=str(DEFAULT_OUTPUT))
-    parser.add_argument("--catalog-output", default=str(DEFAULT_CATALOG_OUTPUT))
-    parser.add_argument("--sources-output", default=str(SOURCES_OUTPUT))
+    default_repo_root = Path(__file__).resolve().parent.parent
+    parser.add_argument("--repo-root", default=str(default_repo_root))
+    parser.add_argument("--output-root", default=str(default_repo_root))
     args = parser.parse_args(argv)
-    write_payload(Path(args.output))
-    write_catalog(Path(args.catalog_output))
-    write_sources(Path(args.sources_output))
+    repo_root = Path(args.repo_root).resolve()
+    output_root = Path(args.output_root).resolve()
+    authorities = _authority_bytes(repo_root, _generated_at())
+    _validate_authority_bytes(authorities)
+    _commit_authorities(output_root, authorities)
     return 0
 
 

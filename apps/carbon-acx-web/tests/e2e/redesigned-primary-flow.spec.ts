@@ -1,5 +1,34 @@
 import { expect, test } from '@playwright/test'
 
+test('front door presents three explicit jobs', async ({ page }) => {
+  await page.goto('/')
+  const jobs = [
+    ['Understand a carbon estimate', '/methodology#primer'],
+    ['Estimate an activity', '/calculator'],
+    ['Inspect the evidence', '/explore'],
+  ] as const
+  for (const [name, href] of jobs) {
+    await expect(page.getByRole('link', { name, exact: true })).toHaveAttribute('href', href)
+  }
+})
+test('methodology primer explains the derived school-run record', async ({ page }) => {
+  await page.goto('/methodology#primer')
+  await expect(page.getByRole('heading', { name: 'Learn how to read a carbon estimate' })).toBeVisible()
+  for (const question of [
+    'What is the equation?',
+    'What period does it cover?',
+    'What is inside the boundary?',
+    'Which region and vintage apply?',
+    'How should uncertainty be read?',
+    'What happens when evidence is missing?',
+  ]) {
+    await expect(page.getByRole('heading', { name: question })).toBeVisible()
+  }
+  await expect(page.getByText('1,000 kilometres × 180 g CO₂e / kilometre = 180.0 kg CO₂e/year', { exact: true }).first()).toBeVisible()
+  await expect(page.getByText('Unavailable evidence is excluded from totals rather than converted to zero.')).toBeVisible()
+  await expect(page.locator('#primer details[open]')).toHaveCount(1)
+})
+
 test('traces a home estimate into an editable worksheet', async ({ page }) => {
   await page.goto('/')
   await expect(page.getByText('1,000 kilometres')).toBeVisible()

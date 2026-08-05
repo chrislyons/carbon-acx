@@ -3,8 +3,8 @@
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import type { ComponentType } from 'react'
-import { DataState, Disclosure, EvidenceBadge, Eyebrow, SourceList } from '@/components/content'
-import { calculateEmissions, CATEGORY_INFO, formatEmissions, type CalculatorInput } from '@/lib/calculator'
+import { DataState, EvidenceBadge, Eyebrow, FactorRecordDetails } from '@/components/content'
+import { calculateEmissions, CATEGORY_INFO, formatEmissions, getActivityById, type CalculatorInput } from '@/lib/calculator'
 import type { Activity as VisualizationActivity, DataUniverseProps } from '@/components/viz/DataUniverse'
 const STORAGE_KEY = 'carbon-acx-calculator-inputs'
 
@@ -47,6 +47,7 @@ export default function ThreeDVisualizationPage() {
     [summary.results],
   )
   const selected = selectedId ? summary.results.find((result) => result.activityId === selectedId) : null
+  const selectedActivity = selectedId ? getActivityById(selectedId) : null
 
   return (
     <div className="page-shell py-10 sm:py-14">
@@ -111,14 +112,15 @@ export default function ThreeDVisualizationPage() {
                 <h2 className="text-xl font-semibold text-foreground">{selected.activityName}</h2>
                 <EvidenceBadge evidence={selected.evidence} />
               </div>
-              <p className="mt-3 font-mono text-sm text-foreground-muted">
-                {selected.quantity.toLocaleString()} {selected.unitLabel} × {selected.emissionFactor.toLocaleString()} g CO₂e / {selected.unitLabel} = {formatEmissions(selected.emissions)}
-              </p>
-              <Disclosure summary="Evidence and citations" open>
-                <p className="text-sm">{selected.evidence.region ?? 'Region not specified'} · {selected.evidence.scopeBoundary} · {selected.evidence.gwpHorizon} · {selected.evidence.vintageYear ?? 'Vintage not specified'}</p>
-                <p className="mt-3 text-sm">{selected.evidence.methodNotes ?? 'No method note is published.'}</p>
-                <SourceList sourceIds={selected.evidence.sourceIds} citations={selected.evidence.sourceCitations} />
-              </Disclosure>
+              <FactorRecordDetails
+                description={selectedActivity?.description ?? selected.activityName}
+                unitDefinition={selectedActivity?.unitDefinition ?? ''}
+                notes={selectedActivity?.notes ?? ''}
+                unitLabel={selected.unitLabel}
+                emissionFactor={selected.emissionFactor}
+                evidence={selected.evidence}
+                quantity={selected.quantity}
+              />
             </section>
           ) : null}
         </>

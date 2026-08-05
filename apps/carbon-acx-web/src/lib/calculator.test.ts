@@ -24,7 +24,10 @@ describe('calculator dataset', () => {
         (activity) =>
           activity.evidence.publicationStatus === 'published' &&
           activity.evidence.sourceIds.length > 0 &&
-          activity.evidence.sourceCitations.length > 0,
+          activity.evidence.sourceCitations.length > 0 &&
+          activity.evidence.sourceUrls.length === activity.evidence.sourceIds.length &&
+          typeof activity.unitDefinition === 'string' &&
+          typeof activity.notes === 'string',
       ),
     ).toBe(true)
   })
@@ -44,6 +47,13 @@ describe('calculator dataset', () => {
       },
     })
     expect(summary.results[0].evidence.sourceCitations[0]).toContain('Environment and Climate')
+    expect(summary.results[0].evidence.sourceUrls[0]).toMatch(/^https:\/\//)
+    expect(summary.results[0].evidence.sourceUrls).toHaveLength(summary.results[0].evidence.sourceIds.length)
+    const activity = ACTIVITIES.find((candidate) => candidate.id === 'TRAN.SCHOOLRUN.CAR.KM')!
+    expect(activity).toMatchObject({
+      unitDefinition: '',
+      notes: 'Passengers default to one when unspecified.',
+    })
   })
   it('calculates emissions from canonical activity ids', () => {
     const summary = calculateEmissions([
@@ -69,6 +79,15 @@ describe('catalogue data gaps', () => {
       { activityId: 'FOOD.COFFEE.CUP.HOT', quantity: 1, reason: 'unavailable-activity' },
     ])
   })
+  it('distinguishes a published zero factor from unavailable evidence', () => {
+    const bike = ACTIVITIES.find((activity) => activity.id === 'TRAN.SCHOOLRUN.BIKE.KM')!
+    const stream = CATALOG_ACTIVITIES.find((activity) => activity.id === 'stream')!
+
+    expect(bike.emissionFactor).toBe(0)
+    expect(bike.evidence.publicationStatus).toBe('published')
+    expect(stream.emissionFactor).toBeNull()
+    expect(stream.evidence.publicationStatus).toBe('unavailable')
+  })
 })
 
 describe('comparison baselines', () => {
@@ -78,6 +97,10 @@ describe('comparison baselines', () => {
     expect(CANADIAN_AVERAGE.annualGrams).toBeGreaterThan(0)
     expect(CANADIAN_AVERAGE.sourceId).toBeTruthy()
     expect(CANADIAN_AVERAGE.sourceCitation).toBeTruthy()
+    expect(CANADIAN_AVERAGE.sourceUrl).toMatch(/^https:\/\//)
+    expect(CANADIAN_AVERAGE.populationSourceUrl).toMatch(/^https:\/\//)
+    expect(CANADIAN_AVERAGE.accountingBasis).toBe('territorial')
+    expect(CANADIAN_AVERAGE.landUseChange).toBe('excluded')
   })
 
   it('exposes national + provincial baselines, national first then ascending', () => {
