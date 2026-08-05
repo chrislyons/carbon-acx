@@ -12,15 +12,16 @@ Carbon ACX is a public carbon-literacy web app and open reference stack. It turn
 
 ## Public product
 
-The primary public app is `apps/carbon-acx-web/` with five routes:
+The primary public app is `apps/carbon-acx-web/` with eight routes:
 
 - **Start here** (`/`) introduces factor → annual estimate → source and states the product boundary.
 - **Estimate** (`/calculator`) accepts annual activity quantities, exposes the arithmetic and evidence for every result, and compares only against labelled Canadian territorial benchmarks.
 - **Explore** (`/explore`) is an Activity Atlas with opt-in filters for category, sector, layer, region, scope, and publication status. It never merges incompatible layers into a total.
+- **Spatial view** (`/explore/3d`) is an optional WebGL representation of already-calculated results; it preserves a complete 2D table when WebGL is unavailable or reduced motion is requested.
 - **Learn** (`/learn`) teaches the record contract through three source-backed, offline case studies without turning OWID context into a factor.
 - **How we know** (`/methodology`) documents the generated-data contract, annual convention, regional preference, missing-data policy, benchmark basis, source registry, and pinned OWID context.
 
-The secondary **Evidence library** (`/manifests`) ships static manifests and raw artifacts. Its browser verifier downloads a raw figure, computes SHA-256 with Web Crypto, and reports Verified, Hash mismatch, or Could not fetch artifact. The manifest schema is enforced by the derivation pipeline at [`tools/validator/schemas/figure-manifest.schema.json`](tools/validator/schemas/figure-manifest.schema.json).
+At widths of 700px or less, the shared header replaces its desktop links with a labelled five-link menu disclosure. The secondary **Evidence library** (`/manifests`) ships static manifests and raw artifacts. Its browser verifier downloads a raw figure, computes SHA-256 with Web Crypto, and reports Verified, Hash mismatch, or Could not fetch artifact. The manifest schema is enforced by the derivation pipeline at [`tools/validator/schemas/figure-manifest.schema.json`](tools/validator/schemas/figure-manifest.schema.json).
 
 ---
 
@@ -105,7 +106,7 @@ make build
 
 ### Explore the experiences
 
-- **Public routes:** `/`, `/calculator`, `/explore`, `/learn`, `/methodology`, and the secondary `/manifests` Evidence library.
+- **Public routes:** `/`, `/calculator`, `/explore`, `/explore/3d`, `/learn`, `/methodology`, and the secondary `/manifests` Evidence library.
 - **Dash app:** `make app` launches the local Dash server reading derived artifacts for analyst exploration.
 - **Static preview:** after `make package`, run `wrangler pages dev dist/site` to inspect the production-style static bundle and `/artifacts/`.
 
@@ -120,12 +121,10 @@ make build
 
 ---
 
-## Tooling, quality, and automation
-
 - `make doctor` validates the pinned Node, pnpm, Python, and Poetry versions used by the recovery baseline.
 - `make validate` runs Ruff, Black, doc linters, pytest, and asset validation in one pass.
 - `make package` builds the static public app, copies it to `dist/site`, packages raw artifacts, and writes immutable caching headers for Cloudflare Pages.
-- `pnpm --filter carbon-acx-web test:e2e` covers evidence arithmetic, benchmarks, unavailable data, the 2D fallback, removed Worlds navigation, artifact verification, and serious/critical Axe violations.
+- `pnpm --filter carbon-acx-web test:e2e` covers evidence arithmetic, benchmarks, unavailable data, the 2D fallback, mobile navigation disclosure, route overflow at 390 × 844, removed Worlds navigation, artifact verification, and serious/critical Axe violations.
 - Additional helpers include `make sbom`, `make catalog`, and reference-oriented scripts in `tools/` for maintaining compliance and citation integrity.
 
 ---

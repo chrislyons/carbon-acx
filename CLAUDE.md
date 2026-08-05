@@ -55,7 +55,8 @@ Open reference stack for trustworthy carbon accounting with manifest-first archi
 2. Web: `pnpm --filter carbon-acx-web typecheck`
 3. Web: `pnpm --filter carbon-acx-web lint`
 4. Web: `pnpm --filter carbon-acx-web test`
-5. Web: `pnpm --filter carbon-acx-web build`
+5. Web: `pnpm --filter carbon-acx-web test:e2e`
+6. Web: `pnpm --filter carbon-acx-web build`
 
 ## Design Context
 

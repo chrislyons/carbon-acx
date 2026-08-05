@@ -4,6 +4,7 @@ Active catalog for Carbon ACX project documents.
 
 ## Recent Documents
 
+- [ACX104 Responsive Layout and Accessibility Merge](./ACX104%20Responsive%20Layout%20and%20Accessibility%20Merge.md)
 - [ACX103 Climate.us Reconnaissance and Adoption Opportunities](./ACX103%20Climate.us%20Reconnaissance%20and%20Adoption%20Opportunities.md)
 - [ACX102 Recovery Merge and Calculator Provenance Hardening](./ACX102%20Recovery%20Merge%20and%20Calculator%20Provenance%20Hardening.md)
 - [ACX101 World Labs Integration and Calculator Implementation Sprint](./ACX101%20World%20Labs%20Integration%20and%20Calculator%20Implementation%20Sprint.md)
@@ -108,6 +109,7 @@ Active catalog for Carbon ACX project documents.
 - [ACX101 World Labs Integration and Calculator Implementation Sprint](./ACX101%20World%20Labs%20Integration%20and%20Calculator%20Implementation%20Sprint.md)
 - [ACX102 Recovery Merge and Calculator Provenance Hardening](./ACX102%20Recovery%20Merge%20and%20Calculator%20Provenance%20Hardening.md)
 - [ACX103 Climate.us Reconnaissance and Adoption Opportunities](./ACX103%20Climate.us%20Reconnaissance%20and%20Adoption%20Opportunities.md)
+- [ACX104 Responsive Layout and Accessibility Merge](./ACX104%20Responsive%20Layout%20and%20Accessibility%20Merge.md)
 
 ## Navigation
 
