@@ -1,6 +1,6 @@
 # ACX104 — Responsive Layout and Accessibility Merge
 
-**Status:** CI gate repair submitted; PR #258 awaits rerun of required checks  
+**Status:** Merged to `main` on 2026-08-04  
 **Scope:** PR #258 — responsive public-web layouts and accessibility coverage
 
 ## Delivered
@@ -28,12 +28,12 @@ The review ran all five commands successfully: 21 unit tests and 37 Playwright t
 
 ## Merge gate
 
-The following repository-gate defects were repaired and require CI confirmation:
+The repaired repository gates passed before merge:
 
-- `build-static` and `tests` now select Python 3.11 and Poetry 1.8.3 before `scripts/bootstrap.sh --check-only`, matching the script's pinned toolchain requirements.
-- ACX102 now uses framework-neutral language outside its explicit historical-document exception, so the documentation linter can scan the full active corpus.
+- `build-static` and `tests` select Python 3.11 and Poetry 1.8.3 before `scripts/bootstrap.sh --check-only`, matching the script's pinned toolchain requirements.
+- ACX102 uses framework-neutral language outside its explicit historical-document exception, so the documentation linter scans the full active corpus.
 
-Cloudflare Pages deployment and `lint-yaml` passed before the repair. Do not bypass required checks; merge PR #258 only after the rerun is green.
+The final PR run passed `lint-yaml`, citations, static build, tests, and Cloudflare Pages deployment.
 
 ## Operations
 
