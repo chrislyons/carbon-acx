@@ -87,7 +87,7 @@ export default function ThreeDVisualizationPage() {
           <section className="mt-6 surface-card">
             <Eyebrow>2D contribution table</Eyebrow>
             <p className="mt-2 text-sm text-foreground-muted">This accessible table is always available, including when the 3D canvas loads.</p>
-            <div className="mt-4 overflow-x-auto">
+            <div className="mt-4 overflow-x-auto" tabIndex={0} aria-label="2D contribution table">
               <table className="w-full min-w-[36rem] text-left text-sm">
                 <thead className="border-b border-[color:var(--surface-border)] text-xs uppercase tracking-wide text-foreground-muted">
                   <tr><th className="pb-3">Activity</th><th className="pb-3">Annual estimate</th><th className="pb-3">Evidence</th><th className="pb-3">Details</th></tr>

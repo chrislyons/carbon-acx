@@ -115,7 +115,7 @@ export default function MethodologyPage() {
 
       <section id="benchmarks" className="surface-card reference-panel">
         <Eyebrow>Comparison records</Eyebrow>
-        <div className="mt-4 overflow-x-auto">
+        <div className="mt-4 overflow-x-auto" tabIndex={0} aria-label="Comparison records table">
           <table className="w-full min-w-[38rem] text-left text-sm">
             <thead className="border-b border-[color:var(--surface-border)] text-xs uppercase tracking-wide text-foreground-muted">
               <tr><th className="pb-3">Benchmark</th><th className="pb-3">Annual value</th><th className="pb-3">Year</th><th className="pb-3">Source</th></tr>

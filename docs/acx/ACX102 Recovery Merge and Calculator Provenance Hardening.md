@@ -42,8 +42,8 @@ the recovery tip (verified empty diff); legacy app, old API routes, and npm
 - Black-formatted `calc/compute_cli.py` and `scripts/generate_web_calculator_data.py`
   (recovery-era files that would have failed CI's `black --check`).
 - Scoped `scripts/lint_docs.py` to skip `archive/` docs and allow the ACX027
-  sprint doc that quotes "fastapi" while documenting its removal. Active docs
-  still fail on the banned term (behavior test added inline).
+  sprint doc to preserve its historical incident quote. Active documentation
+  uses framework-neutral language, enforced by the documentation lint check.
 
 ## 3. Calculator provenance + correctness hardening
 
