@@ -245,8 +245,10 @@ function ActivityEditor({
           aria-describedby={error ? alertId : undefined}
         />
         {error ? <p id={alertId} role="alert" className="field-error">{error}</p> : null}
-        <button className="text-link" onClick={() => onEvidence(activity.id)}>Factor evidence</button>
-        <button className="text-link" onClick={() => onRemove(activity.id)}>Remove</button>
+        <div className="activity-editor__actions">
+          <button className="text-link" onClick={() => onEvidence(activity.id)}>Factor evidence</button>
+          <button className="text-link" onClick={() => onRemove(activity.id)}>Remove</button>
+        </div>
       </div>
     </article>
   )

@@ -43,6 +43,6 @@ pnpm test
 pnpm test:e2e
 ```
 
-The end-to-end suite covers the mobile navigation disclosure, route no-overflow scan, and the 390 × 844 calculator-to-Atlas continuation. For visual checks, use 320 × 800, 390 × 844, 768 × 1024, and 1280 × 800 viewports.
+The end-to-end suite covers the mobile navigation disclosure, route no-overflow scan, light and dark theme accessibility scans, 44px action-control targets, and the 390 × 844 calculator-to-Atlas continuation. For visual checks, use 320 × 800, 390 × 844, 768 × 1024, and 1280 × 800 viewports.
 
 From the repository root, `make build-static` packages the static site and artifacts into `dist/site/`.

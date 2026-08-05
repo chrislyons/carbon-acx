@@ -4,6 +4,7 @@ Active catalog for Carbon ACX project documents.
 
 ## Recent Documents
 
+- [ACX105 Theme Accessibility and Action Control Audit](./ACX105%20Theme%20Accessibility%20and%20Action%20Control%20Audit.md)
 - [ACX104 Responsive Layout and Accessibility Merge](./ACX104%20Responsive%20Layout%20and%20Accessibility%20Merge.md)
 - [ACX103 Climate.us Reconnaissance and Adoption Opportunities](./ACX103%20Climate.us%20Reconnaissance%20and%20Adoption%20Opportunities.md)
 - [ACX102 Recovery Merge and Calculator Provenance Hardening](./ACX102%20Recovery%20Merge%20and%20Calculator%20Provenance%20Hardening.md)
@@ -110,6 +111,7 @@ Active catalog for Carbon ACX project documents.
 - [ACX102 Recovery Merge and Calculator Provenance Hardening](./ACX102%20Recovery%20Merge%20and%20Calculator%20Provenance%20Hardening.md)
 - [ACX103 Climate.us Reconnaissance and Adoption Opportunities](./ACX103%20Climate.us%20Reconnaissance%20and%20Adoption%20Opportunities.md)
 - [ACX104 Responsive Layout and Accessibility Merge](./ACX104%20Responsive%20Layout%20and%20Accessibility%20Merge.md)
+- [ACX105 Theme Accessibility and Action Control Audit](./ACX105%20Theme%20Accessibility%20and%20Action%20Control%20Audit.md)
 
 ## Navigation
 

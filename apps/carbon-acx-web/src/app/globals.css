@@ -939,6 +939,42 @@ body {
   overflow-wrap: anywhere;
 }
 
+/* Buttons using a text-link treatment are still full touch targets, not browser-default controls. */
+button.text-link {
+  min-height: 44px;
+  margin: 0;
+  border: 1px solid var(--rule);
+  border-radius: 0;
+  padding: 0.55rem 0.75rem;
+  background: transparent;
+  color: var(--oxide);
+  font: 700 0.9rem/1.2 var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+}
+
+button.text-link:hover {
+  border-color: var(--oxide);
+  background: var(--background-hover);
+}
+
+.activity-editor__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.1rem;
+}
+
+.activity-picker article {
+  display: flex;
+  flex-direction: column;
+}
+
+.activity-picker article > button.text-link {
+  align-self: flex-start;
+  margin-top: auto;
+}
+
 .text-link--primary {
   color: var(--signal);
 }
