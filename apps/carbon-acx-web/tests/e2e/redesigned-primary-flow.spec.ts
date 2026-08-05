@@ -65,12 +65,64 @@ test('learn route renders offline published case studies when OWID is unreachabl
   await expect(page.getByText('No numeric value is substituted.')).toHaveCount(0)
 })
 
-test('five-link navigation wraps without horizontal overflow on mobile', async ({ page }) => {
-  await page.setViewportSize({ width: 320, height: 800 })
-  await page.goto('/learn')
-  await expect(page.getByRole('navigation', { name: 'Primary' }).getByRole('link')).toHaveCount(5)
-  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320)
+for (const viewport of [
+  { width: 320, height: 800 },
+  { width: 390, height: 844 },
+] as const) {
+  test(`mobile navigation disclosure works at ${viewport.width} × ${viewport.height}`, async ({ page }) => {
+    await page.setViewportSize(viewport)
+    await page.goto('/')
+    const openButton = page.getByRole('button', { name: 'Open navigation' })
+    await expect(openButton).toHaveAttribute('aria-expanded', 'false')
+    await expect(openButton).toHaveAttribute('aria-controls', 'mobile-primary-navigation')
+    await openButton.click()
+    const mobileNavigation = page.locator('#mobile-primary-navigation')
+    await expect(mobileNavigation).toBeVisible()
+    await expect(mobileNavigation.getByRole('link')).toHaveCount(5)
+    await expect(page.getByRole('button', { name: 'Close navigation' })).toHaveAttribute('aria-expanded', 'true')
+    await mobileNavigation.getByRole('link', { name: 'Learn', exact: true }).click()
+    await expect(page).toHaveURL(/\/learn$/)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewport.width)
+  })
+}
+
+test('preserves the home, calculator, and Atlas flow at 390 × 844', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/')
+  await expect(page.getByText('1,000 kilometres')).toBeVisible()
+  await expect(page.getByText('180.0 kg CO₂e/year', { exact: true })).toBeVisible()
+  await page.getByLabel('Annual distance').fill('1250')
+  await expect(page.getByText('225.0 kg CO₂e/year', { exact: true })).toBeVisible()
+  await page.getByRole('link', { name: 'Continue with this estimate' }).click()
+  await expect(page).toHaveURL(/\/calculator\?data=/)
+  await expect(page.locator('#TRAN\\.SCHOOLRUN\\.CAR\\.KM-quantity')).toHaveValue('1250')
+
+  await page.getByRole('button', { name: /Transport/ }).click()
+  await page.getByRole('button', { name: 'Add School run by car' }).click()
+  await page.locator('#TRAN\\.SCHOOLRUN\\.CAR\\.KM-quantity').fill('1000')
+  await expect(page.getByText('180.0 kg CO₂e/year', { exact: true })).toBeVisible()
+  await expect(page.locator('.compact-reference-list').getByText('Transport')).toBeVisible()
+  await expect(page.getByText('1000 kilometres × 180 g CO₂e / kilometres = 180.0 kg CO₂e')).toBeVisible()
+
+  await page.goto('/explore')
+  await expect(page.getByRole('button', { name: /Personal \/ household/ })).toHaveAttribute('aria-pressed', 'true')
+  await page.getByRole('button', { name: /Canadian systems/ }).click()
+  await page.getByRole('button', { name: 'stream Not available' }).click()
+  await expect(page.getByText('No numeric zero is substituted.')).toBeVisible()
+  await page.getByRole('button', { name: /Industrial layers/ }).click()
+  await expect(page.getByText(/Military/).first()).toBeVisible()
+  await page.getByRole('button', { name: 'Data table' }).click()
+  await expect(page.getByRole('table')).toBeVisible()
 })
+
+for (const route of ['/', '/calculator', '/explore', '/explore/3d', '/learn', '/methodology', '/manifests']) {
+  test(`mobile route ${route} has a visible main and no document overflow`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto(route)
+    await expect(page.locator('main')).toBeVisible()
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390)
+  })
+}
 
 test('traces a home estimate into an editable worksheet', async ({ page }) => {
   await page.goto('/')
