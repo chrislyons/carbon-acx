@@ -12,12 +12,13 @@ Carbon ACX is a public carbon-literacy web app and open reference stack. It turn
 
 ## Public product
 
-The primary public app is `apps/carbon-acx-web/` with four routes:
+The primary public app is `apps/carbon-acx-web/` with five routes:
 
 - **Start here** (`/`) introduces factor → annual estimate → source and states the product boundary.
 - **Estimate** (`/calculator`) accepts annual activity quantities, exposes the arithmetic and evidence for every result, and compares only against labelled Canadian territorial benchmarks.
 - **Explore** (`/explore`) is an Activity Atlas with opt-in filters for category, sector, layer, region, scope, and publication status. It never merges incompatible layers into a total.
-- **How we know** (`/methodology`) documents the generated-data contract, annual convention, regional preference, missing-data policy, benchmark basis, and source registry.
+- **Learn** (`/learn`) teaches the record contract through three source-backed, offline case studies without turning OWID context into a factor.
+- **How we know** (`/methodology`) documents the generated-data contract, annual convention, regional preference, missing-data policy, benchmark basis, source registry, and pinned OWID context.
 
 The secondary **Evidence library** (`/manifests`) ships static manifests and raw artifacts. Its browser verifier downloads a raw figure, computes SHA-256 with Web Crypto, and reports Verified, Hash mismatch, or Could not fetch artifact. The manifest schema is enforced by the derivation pipeline at [`tools/validator/schemas/figure-manifest.schema.json`](tools/validator/schemas/figure-manifest.schema.json).
 
@@ -29,8 +30,8 @@ The secondary **Evidence library** (`/manifests`) ships static manifests and raw
 | --- | --- |
 | **Source-of-truth data** | Canonical CSVs for activities, emission factors, schedules, grid intensity, and more live under `data/`, ready for rebuilds and audits. |
 | **Derivation toolkit** | `python -m calc.derive` validates inputs, composes emissions, exports intensity matrices, and emits immutable manifests with hashed figures in `dist/artifacts/`. |
-| **Primary web app** | `apps/carbon-acx-web/` contains the static Next.js public product: Start here, Estimate, Activity Atlas, How we know, and the Evidence library. |
-| **Published-data contract** | `scripts/generate_web_calculator_data.py` emits `acx.web-calculator/1-4-0` calculator/catalogue records and an `acx.web-sources/1-0-0` source envelope from canonical data; demo, uncited, incomplete, or unit-mismatched factors cannot enter public calculator totals. |
+| **Primary web app** | `apps/carbon-acx-web/` contains the static Next.js public product: Start here, Estimate, Activity Atlas, Learn, How we know, and the Evidence library. |
+| **Published-data contract** | `scripts/generate_web_calculator_data.py` emits `acx.web-calculator/1-4-0` calculator/catalogue records, the `acx.web-sources/1-0-0` source envelope, and the offline `acx.owid-context/1-0-0` plus `acx.public-release/1-0-0` authorities from canonical data; incomplete records remain unavailable rather than zero. |
 | **Packaging automation** | `make package` builds the static Next.js export into `dist/site`, then packages immutable raw artifacts and Pages metadata beside it. |
 
 ## At-a-glance layers
@@ -58,8 +59,9 @@ Layer descriptions, types, and activities are sourced directly from `data/layers
 
 1. **Curate data.** Update canonical CSV inputs in `data/` with source, region, scope, GWP horizon, vintage, and unit evidence.
 2. **Derive & validate.** Run `make build` to compute emissions, manifests, and intensity matrices under repeatable validation rules.
-3. **Generate public datasets.** Run `python3 scripts/generate_web_calculator_data.py --repo-root "$PWD" --output-root "$PWD"` to atomically emit the three tracked web authorities; `sources.json` is versioned and incomplete records remain unavailable rather than zero.
-4. **Package static delivery.** Run `make package` to export the Next.js app to `dist/site` and copy raw `/artifacts/` for browser-side hash verification.
+3. **Refresh the pinned OWID context when intentionally updating the source.** Run `python3 scripts/fetch_owid_context.py --output-dir data/owid` (or `make owid-context-update` / `pnpm owid:context:update`), inspect the manifest, and commit the three raw snapshot files.
+4. **Generate public datasets.** Run `python3 scripts/generate_web_calculator_data.py --repo-root "$PWD" --output-root "$PWD"` to atomically emit calculator/catalogue/source, offline context, release, and `/public/data/` authorities. The generator is offline and validates raw OWID digests; incomplete records remain unavailable rather than zero.
+5. **Package static delivery.** Run `make package` to export the Next.js app to `dist/site` and copy raw `/artifacts/` for browser-side hash verification.
 
 ---
 
@@ -70,7 +72,8 @@ Layer descriptions, types, and activities are sourced directly from `data/layers
 | `calc/` | Pydantic schemas, datastore abstractions, derivation routines, figure builders, and manifest utilities for the carbon dataset. |
 | `app/` | Dash components and layouts for analyst demos tied to derived payloads. |
 | `apps/carbon-acx-web/` | Active public static Next.js product. |
-| `scripts/generate_web_calculator_data.py` | Builds the calculator and Activity Atlas datasets from canonical CSVs. |
+| `scripts/fetch_owid_context.py` | Refreshes the intentionally pinned Canada OWID snapshot; generation never performs a network request. |
+| `scripts/generate_web_calculator_data.py` | Builds and atomically publishes the calculator, catalogue, source envelope, offline OWID context, release manifest, and public data copies from canonical inputs. |
 | `scripts/prepare_pages_bundle.py` | Adds raw artifacts, immutable cache headers, redirects, and a byte inventory to the static Pages bundle. |
 | `docs/` | Deep dives into change management, maintenance calendars, deployment guidance, and archived environment notes. |
 
@@ -102,8 +105,7 @@ make build
 
 ### Explore the experiences
 
-- **Public web app:** `pnpm dev` from the repository root launches `apps/carbon-acx-web`.
-- **Public routes:** `/`, `/calculator`, `/explore`, `/methodology`, and the secondary `/manifests` Evidence library.
+- **Public routes:** `/`, `/calculator`, `/explore`, `/learn`, `/methodology`, and the secondary `/manifests` Evidence library.
 - **Dash app:** `make app` launches the local Dash server reading derived artifacts for analyst exploration.
 - **Static preview:** after `make package`, run `wrangler pages dev dist/site` to inspect the production-style static bundle and `/artifacts/`.
 

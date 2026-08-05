@@ -13,7 +13,7 @@ CATALOG_PATH := artifacts/catalog.json
 
 .PHONY: install lint test audit ci_build_pages app format validate release build-backend build package sbom build-static \
         db_init db_import db_export build_csv build_db citations-scan refs-check refs-fetch refs-normalize refs-audit \
-        verify_manifests catalog validate-manifests validate-diff-fixtures build-web bootstrap doctor
+        verify_manifests catalog validate-manifests validate-diff-fixtures build-web bootstrap doctor owid-context-update
 
 install:
 	poetry install --with dev --no-root
@@ -47,11 +47,19 @@ build: $(LATEST_BUILD)
 
 WEB_CALCULATOR_DATA := apps/carbon-acx-web/src/generated/calculator-data.json
 WEB_CATALOG_DATA := apps/carbon-acx-web/src/generated/catalog-data.json
+WEB_SOURCES_DATA := apps/carbon-acx-web/src/generated/sources.json
+WEB_OWID_CONTEXT_DATA := apps/carbon-acx-web/src/generated/owid-context.json
+WEB_RELEASE_DATA := apps/carbon-acx-web/src/generated/release-data.json
+WEB_DATA_OUTPUTS := $(WEB_CALCULATOR_DATA) $(WEB_CATALOG_DATA) $(WEB_SOURCES_DATA) $(WEB_OWID_CONTEXT_DATA) $(WEB_RELEASE_DATA)
+OWID_SNAPSHOT_INPUTS := $(wildcard data/owid/manifest.json data/owid/annual-co2-emissions-per-country.csv data/owid/annual-co2-emissions-per-country.metadata.json)
 
-$(WEB_CALCULATOR_DATA) $(WEB_CATALOG_DATA): data/activities.csv data/emission_factors.csv data/grid_intensity.csv data/sources.csv scripts/generate_web_calculator_data.py
-	python3 scripts/generate_web_calculator_data.py
+$(WEB_DATA_OUTPUTS): data/activities.csv data/benchmarks.csv data/emission_factors.csv data/grid_intensity.csv data/sources.csv $(OWID_SNAPSHOT_INPUTS) scripts/generate_web_calculator_data.py scripts/fetch_owid_context.py
+	python3 scripts/generate_web_calculator_data.py --repo-root "$$PWD" --output-root "$$PWD"
 
-build-web: $(WEB_CALCULATOR_DATA) $(WEB_CATALOG_DATA)
+owid-context-update:
+	python3 scripts/fetch_owid_context.py --output-dir data/owid
+
+build-web: $(WEB_DATA_OUTPUTS)
 	pnpm run build:web
 
 $(PACKAGED_MANIFEST): $(LATEST_BUILD)
