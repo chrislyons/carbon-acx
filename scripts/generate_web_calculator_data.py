@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import math
 import os
@@ -15,9 +16,30 @@ from typing import Any
 
 SCHEMA_VERSION = "acx.web-calculator/1-4-0"
 SOURCES_SCHEMA_VERSION = "acx.web-sources/1-0-0"
+OWID_CONTEXT_SCHEMA_VERSION = "acx.owid-context/1-0-0"
+PUBLIC_RELEASE_SCHEMA_VERSION = "acx.public-release/1-0-0"
 DEFAULT_OUTPUT = Path("apps/carbon-acx-web/src/generated/calculator-data.json")
 DEFAULT_CATALOG_OUTPUT = Path("apps/carbon-acx-web/src/generated/catalog-data.json")
 SOURCES_OUTPUT = Path("apps/carbon-acx-web/src/generated/sources.json")
+OWID_CONTEXT_OUTPUT = Path("apps/carbon-acx-web/src/generated/owid-context.json")
+RELEASE_OUTPUT = Path("apps/carbon-acx-web/src/generated/release-data.json")
+PUBLIC_DATA_ROOT = Path("apps/carbon-acx-web/public/data")
+OWID_DATA_RELATIVE = Path("data/owid/annual-co2-emissions-per-country.csv")
+OWID_METADATA_RELATIVE = Path("data/owid/annual-co2-emissions-per-country.metadata.json")
+OWID_MANIFEST_RELATIVE = Path("data/owid/manifest.json")
+OWID_PUBLIC_ROOT = PUBLIC_DATA_ROOT / "owid"
+OWID_RAW_FILENAMES = (
+    "manifest.json",
+    "annual-co2-emissions-per-country.csv",
+    "annual-co2-emissions-per-country.metadata.json",
+)
+OWID_DATA_URL = "https://ourworldindata.org/grapher/annual-co2-emissions-per-country.csv"
+OWID_METADATA_URL = (
+    "https://ourworldindata.org/grapher/annual-co2-emissions-per-country.metadata.json"
+)
+OWID_CHART_URL = "https://ourworldindata.org/grapher/annual-co2-emissions-per-country"
+OWID_CHART_ID = "annual-co2-emissions-per-country"
+OWID_METRIC = "Annual CO₂ emissions"
 
 CATEGORY_INFO = {
     "transport": {"name": "Transport", "color": "#1f6f68"},
@@ -478,6 +500,300 @@ def _json_bytes(payload: dict[str, Any]) -> bytes:
     return (json.dumps(payload, indent=2) + "\n").encode("utf-8")
 
 
+def _sha256_bytes(payload: bytes) -> str:
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _owid_metadata_column(metadata: dict[str, Any]) -> dict[str, Any]:
+    chart = metadata.get("chart")
+    columns = metadata.get("columns")
+    if not isinstance(chart, dict) or chart.get("originalChartUrl") != OWID_CHART_URL:
+        raise ValueError("OWID metadata chart URL does not match the configured chart")
+    if chart.get("title") != "Annual CO₂ emissions":
+        raise ValueError("OWID metadata chart title does not match the configured chart")
+    if chart.get("citation") != "Global Carbon Budget (2025)":
+        raise ValueError("OWID metadata citation does not match the configured source")
+    if not isinstance(columns, dict) or set(columns) != {OWID_METRIC}:
+        raise ValueError("OWID metadata does not expose the exact configured metric column")
+    column = columns[OWID_METRIC]
+    if not isinstance(column, dict) or column.get("unit") != "tonnes":
+        raise ValueError("OWID metadata metric unit must be tonnes")
+    if not isinstance(column.get("timespan"), str) or not column["timespan"].strip():
+        raise ValueError("OWID metadata is missing an upstream timespan")
+    if not isinstance(column.get("lastUpdated"), str) or not column["lastUpdated"].strip():
+        raise ValueError("OWID metadata is missing an upstream lastUpdated vintage")
+    descriptions = " ".join(
+        str(column.get(key) or "")
+        for key in ("descriptionShort", "descriptionKey", "descriptionProcessing")
+    ).lower()
+    for phrase in ("territorial", "land-use change", "international aviation", "shipping"):
+        if phrase not in descriptions:
+            raise ValueError(
+                f"OWID metadata is missing the required accounting statement: {phrase}"
+            )
+    return column
+
+
+def _owid_points(csv_bytes: bytes) -> list[dict[str, Any]]:
+    try:
+        text = csv_bytes.decode("utf-8-sig")
+    except UnicodeDecodeError as error:
+        raise ValueError("OWID CSV is not valid UTF-8") from error
+    reader = csv.DictReader(text.splitlines())
+    fieldnames = reader.fieldnames or []
+    if not {"Entity", "Code", "Year", OWID_METRIC}.issubset(fieldnames):
+        raise ValueError("OWID CSV is missing a required field")
+    if fieldnames.count(OWID_METRIC) != 1:
+        raise ValueError("OWID CSV does not contain exactly one configured metric column")
+    points: list[dict[str, Any]] = []
+    years: set[int] = set()
+    for row in reader:
+        entity = row.get("Entity")
+        code = row.get("Code")
+        if entity == "Canada" and code != "CAN":
+            raise ValueError("OWID CSV pairs Canada with a code other than CAN")
+        if code == "CAN" and entity != "Canada":
+            raise ValueError("OWID CSV pairs CAN with an entity other than Canada")
+        if entity != "Canada" or code != "CAN":
+            continue
+        raw_year = (row.get("Year") or "").strip()
+        if not raw_year.isdecimal():
+            raise ValueError("OWID Canada row has a non-integer year")
+        year = int(raw_year)
+        try:
+            value = float((row.get(OWID_METRIC) or "").strip())
+        except ValueError as error:
+            raise ValueError("OWID Canada row has a non-numeric value") from error
+        if not math.isfinite(value):
+            raise ValueError("OWID Canada row has a non-finite value")
+        if year in years:
+            raise ValueError("OWID Canada series contains duplicate years")
+        years.add(year)
+        points.append({"year": year, "value": value})
+    if not points:
+        raise ValueError("OWID CSV contains no Canada/CAN rows")
+    return sorted(points, key=lambda point: point["year"])
+
+
+def _validate_owid_manifest(
+    manifest: dict[str, Any], data_bytes: bytes, metadata_bytes: bytes
+) -> None:
+    expected = {
+        "schemaVersion": "acx.owid-source/1-0-0",
+        "provider": "Our World in Data",
+        "chartId": OWID_CHART_ID,
+        "metric": OWID_METRIC,
+        "dataUrl": OWID_DATA_URL,
+        "metadataUrl": OWID_METADATA_URL,
+        "license": "CC BY 4.0",
+        "accountingBasis": "territorial",
+        "landUseChange": "excluded",
+        "unit": "tonnes",
+        "entity": "Canada",
+        "entityCode": "CAN",
+        "citation": "Global Carbon Budget (2025)",
+    }
+    required = set(expected) | {
+        "resolvedDataUrl",
+        "resolvedMetadataUrl",
+        "retrievedAt",
+        "upstreamTimespan",
+        "upstreamLastUpdated",
+        "dataSha256",
+        "metadataSha256",
+    }
+    if not required.issubset(manifest):
+        raise ValueError("OWID manifest is missing a required selection field")
+    for key, value in expected.items():
+        if manifest.get(key) != value:
+            raise ValueError(f"OWID manifest field {key} does not match the configured contract")
+    if manifest["dataSha256"] != _sha256_bytes(data_bytes):
+        raise ValueError("OWID raw data digest does not match its manifest")
+    if manifest["metadataSha256"] != _sha256_bytes(metadata_bytes):
+        raise ValueError("OWID metadata digest does not match its manifest")
+    for key in (
+        "resolvedDataUrl",
+        "resolvedMetadataUrl",
+        "retrievedAt",
+        "upstreamTimespan",
+        "upstreamLastUpdated",
+    ):
+        if not isinstance(manifest.get(key), str) or not manifest[key].strip():
+            raise ValueError(f"OWID manifest field {key} must be non-empty")
+    for key in ("dataSha256", "metadataSha256"):
+        digest = manifest[key]
+        if (
+            not isinstance(digest, str)
+            or len(digest) != 64
+            or any(character not in "0123456789abcdef" for character in digest)
+        ):
+            raise ValueError(f"OWID manifest field {key} must be a SHA-256 digest")
+
+
+def _build_owid_context_payload(
+    root: Path, generated_at: str
+) -> tuple[dict[str, Any], dict[str, bytes] | None]:
+    data_path = root / OWID_DATA_RELATIVE
+    metadata_path = root / OWID_METADATA_RELATIVE
+    manifest_path = root / OWID_MANIFEST_RELATIVE
+    present = [path.exists() for path in (data_path, metadata_path, manifest_path)]
+    if not any(present):
+        return (
+            {
+                "schemaVersion": OWID_CONTEXT_SCHEMA_VERSION,
+                "status": "unavailable",
+                "generatedAt": generated_at,
+                "source": None,
+                "basis": None,
+                "selection": {"entity": "Canada", "code": "CAN"},
+                "points": [],
+                "reason": "No pinned OWID snapshot is available in this release.",
+            },
+            None,
+        )
+    if not all(present):
+        raise ValueError(
+            "OWID snapshot is partial; data, metadata, and manifest must be present together"
+        )
+
+    data_bytes = data_path.read_bytes()
+    metadata_bytes = metadata_path.read_bytes()
+    try:
+        manifest = json.loads(manifest_path.read_bytes())
+    except json.JSONDecodeError as error:
+        raise ValueError("OWID manifest is not valid JSON") from error
+    if not isinstance(manifest, dict):
+        raise ValueError("OWID manifest is not a JSON object")
+    _validate_owid_manifest(manifest, data_bytes, metadata_bytes)
+    try:
+        metadata = json.loads(metadata_bytes)
+    except json.JSONDecodeError as error:
+        raise ValueError("OWID metadata is not valid JSON") from error
+    if not isinstance(metadata, dict):
+        raise ValueError("OWID metadata is not a JSON object")
+    column = _owid_metadata_column(metadata)
+    points = _owid_points(data_bytes)
+    context = {
+        "schemaVersion": OWID_CONTEXT_SCHEMA_VERSION,
+        "status": "available",
+        "generatedAt": generated_at,
+        "source": {
+            "provider": manifest["provider"],
+            "chartId": manifest["chartId"],
+            "chartUrl": OWID_CHART_URL,
+            "metric": manifest["metric"],
+            "dataUrl": manifest["dataUrl"],
+            "metadataUrl": manifest["metadataUrl"],
+            "citation": manifest["citation"],
+            "license": manifest["license"],
+            "retrievedAt": manifest["retrievedAt"],
+            "upstreamTimespan": column["timespan"],
+            "upstreamLastUpdated": column["lastUpdated"],
+            "dataSha256": manifest["dataSha256"],
+            "metadataSha256": manifest["metadataSha256"],
+        },
+        "basis": {
+            "accountingBasis": "territorial",
+            "gas": "CO₂",
+            "landUseChange": "excluded",
+            "geography": "country production",
+            "unit": "tonnes",
+        },
+        "selection": {"entity": "Canada", "code": "CAN"},
+        "points": points,
+    }
+    return context, {
+        "manifest.json": manifest_path.read_bytes(),
+        "annual-co2-emissions-per-country.csv": data_bytes,
+        "annual-co2-emissions-per-country.metadata.json": metadata_bytes,
+    }
+
+
+def build_owid_context_payload(repo_root: Path | None = None) -> dict[str, Any]:
+    root = repo_root or Path(__file__).resolve().parent.parent
+    payload, _ = _build_owid_context_payload(root, _generated_at())
+    return payload
+
+
+def _release_inputs(root: Path, snapshot_files: dict[str, bytes] | None) -> dict[str, str | None]:
+    relative_paths = {
+        Path("data/activities.csv"),
+        Path("data/benchmarks.csv"),
+        Path("data/emission_factors.csv"),
+        Path("data/grid_intensity.csv"),
+        Path("data/sources.csv"),
+        Path("scripts/generate_web_calculator_data.py"),
+        OWID_DATA_RELATIVE,
+        OWID_METADATA_RELATIVE,
+        OWID_MANIFEST_RELATIVE,
+    }
+    inputs: dict[str, str | None] = {}
+    for relative_path in sorted(relative_paths, key=lambda path: path.as_posix()):
+        if relative_path in {OWID_DATA_RELATIVE, OWID_METADATA_RELATIVE, OWID_MANIFEST_RELATIVE}:
+            if snapshot_files is None:
+                inputs[relative_path.as_posix()] = None
+            else:
+                filename = relative_path.name
+                inputs[relative_path.as_posix()] = _sha256_bytes(snapshot_files[filename])
+        else:
+            inputs[relative_path.as_posix()] = _sha256_bytes((root / relative_path).read_bytes())
+    return inputs
+
+
+def _build_release_payload(
+    root: Path,
+    generated_at: str,
+    context_bytes: bytes,
+    authorities: dict[Path, bytes],
+    snapshot_files: dict[str, bytes] | None,
+) -> dict[str, Any]:
+    public_calculator = PUBLIC_DATA_ROOT / "calculator-data.json"
+    public_catalog = PUBLIC_DATA_ROOT / "catalog-data.json"
+    public_sources = PUBLIC_DATA_ROOT / "sources.json"
+    public_context = PUBLIC_DATA_ROOT / "owid-context.json"
+    context = json.loads(context_bytes)
+    available = context.get("status") == "available"
+    return {
+        "schemaVersion": PUBLIC_RELEASE_SCHEMA_VERSION,
+        "generatedAt": generated_at,
+        "inputs": _release_inputs(root, snapshot_files),
+        "authorities": {
+            "calculator": {
+                "schemaVersion": SCHEMA_VERSION,
+                "path": "/data/calculator-data.json",
+                "sha256": _sha256_bytes(authorities[public_calculator]),
+            },
+            "catalog": {
+                "schemaVersion": SCHEMA_VERSION,
+                "path": "/data/catalog-data.json",
+                "sha256": _sha256_bytes(authorities[public_catalog]),
+            },
+            "sources": {
+                "schemaVersion": SOURCES_SCHEMA_VERSION,
+                "path": "/data/sources.json",
+                "sha256": _sha256_bytes(authorities[public_sources]),
+            },
+            "owidContext": {
+                "schemaVersion": OWID_CONTEXT_SCHEMA_VERSION,
+                "path": "/data/owid-context.json",
+                "sha256": _sha256_bytes(authorities[public_context]),
+            },
+        },
+        "sourceRegistryPath": "/data/sources.json",
+        "owid": {
+            "status": "available" if available else "unavailable",
+            "contextSha256": _sha256_bytes(context_bytes),
+            "sourceManifestPath": "/data/owid/manifest.json" if available else None,
+            "sourceDataPath": (
+                "/data/owid/annual-co2-emissions-per-country.csv" if available else None
+            ),
+            "sourceMetadataPath": (
+                "/data/owid/annual-co2-emissions-per-country.metadata.json" if available else None
+            ),
+        },
+    }
+
+
 def write_payload(output_path: Path, repo_root: Path | None = None) -> Path:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_bytes(_json_bytes(build_payload(repo_root)))
@@ -505,18 +821,61 @@ def _authority_bytes(repo_root: Path, generated_at: str) -> dict[Path, bytes]:
     }
 
 
+def _all_authority_bytes(
+    repo_root: Path, generated_at: str
+) -> tuple[dict[Path, bytes], tuple[Path, ...]]:
+    authorities = _authority_bytes(repo_root, generated_at)
+    context_payload, snapshot_files = _build_owid_context_payload(repo_root, generated_at)
+    context_bytes = _json_bytes(context_payload)
+    authorities[OWID_CONTEXT_OUTPUT] = context_bytes
+    authorities[PUBLIC_DATA_ROOT / "calculator-data.json"] = authorities[DEFAULT_OUTPUT]
+    authorities[PUBLIC_DATA_ROOT / "catalog-data.json"] = authorities[DEFAULT_CATALOG_OUTPUT]
+    authorities[PUBLIC_DATA_ROOT / "sources.json"] = authorities[SOURCES_OUTPUT]
+    authorities[PUBLIC_DATA_ROOT / "owid-context.json"] = context_bytes
+
+    remove_paths: list[Path] = []
+    if snapshot_files is not None:
+        for filename, content in snapshot_files.items():
+            authorities[OWID_PUBLIC_ROOT / filename] = content
+    else:
+        remove_paths.extend(OWID_PUBLIC_ROOT / filename for filename in OWID_RAW_FILENAMES)
+
+    release_bytes = _json_bytes(
+        _build_release_payload(
+            repo_root,
+            generated_at,
+            context_bytes,
+            authorities,
+            snapshot_files,
+        )
+    )
+    authorities[RELEASE_OUTPUT] = release_bytes
+    authorities[PUBLIC_DATA_ROOT / "release.json"] = release_bytes
+    return authorities, tuple(remove_paths)
+
+
 def _validate_authority_bytes(authorities: dict[Path, bytes]) -> None:
     for relative_path, payload_bytes in authorities.items():
+        if not payload_bytes:
+            raise ValueError(f"Generated authority is empty: {relative_path}")
+        if relative_path.name in OWID_RAW_FILENAMES:
+            continue
         if not payload_bytes.endswith(b"\n"):
             raise ValueError(f"Generated authority is missing a trailing newline: {relative_path}")
         payload = json.loads(payload_bytes)
         if not isinstance(payload, dict):
             raise ValueError(f"Generated authority is not a JSON object: {relative_path}")
-        if relative_path == SOURCES_OUTPUT:
+        if relative_path.name == "sources.json":
             if payload.get("schemaVersion") != SOURCES_SCHEMA_VERSION or not isinstance(
                 payload.get("sources"), list
             ):
                 raise ValueError(f"Invalid generated source authority: {relative_path}")
+        elif relative_path.name == "owid-context.json":
+            if payload.get("schemaVersion") != OWID_CONTEXT_SCHEMA_VERSION:
+                raise ValueError(f"Invalid generated OWID context authority: {relative_path}")
+        elif relative_path.name in {"release-data.json", "release.json"}:
+            if payload.get("schemaVersion") != PUBLIC_RELEASE_SCHEMA_VERSION:
+                raise ValueError(f"Invalid generated release authority: {relative_path}")
         elif payload.get("schemaVersion") != SCHEMA_VERSION:
             raise ValueError(f"Invalid generated calculator authority: {relative_path}")
 
@@ -525,7 +884,11 @@ def _replace_file(source: Path, destination: Path) -> None:
     os.replace(source, destination)
 
 
-def _commit_authorities(output_root: Path, authorities: dict[Path, bytes]) -> None:
+def _commit_authorities(
+    output_root: Path,
+    authorities: dict[Path, bytes],
+    remove_paths: tuple[Path, ...] = (),
+) -> None:
     output_root = output_root.resolve()
     output_root.parent.mkdir(parents=True, exist_ok=True)
     staging_root = Path(
@@ -534,6 +897,7 @@ def _commit_authorities(output_root: Path, authorities: dict[Path, bytes]) -> No
     backup_root = Path(
         tempfile.mkdtemp(prefix=f".{output_root.name}.backup-", dir=output_root.parent)
     )
+    targets = tuple(dict.fromkeys((*authorities, *remove_paths)))
     replaced: list[tuple[Path, Path, bool]] = []
     try:
         for relative_path, payload_bytes in authorities.items():
@@ -543,7 +907,7 @@ def _commit_authorities(output_root: Path, authorities: dict[Path, bytes]) -> No
             if staged_path.read_bytes() != payload_bytes:
                 raise OSError(f"Staged authority bytes changed: {relative_path}")
 
-        for relative_path in authorities:
+        for relative_path in targets:
             destination = output_root / relative_path
             if destination.exists():
                 backup_path = backup_root / relative_path
@@ -558,6 +922,13 @@ def _commit_authorities(output_root: Path, authorities: dict[Path, bytes]) -> No
             destination.parent.mkdir(parents=True, exist_ok=True)
             _replace_file(staged_path, destination)
             replaced.append((destination, backup_path, existed))
+
+        for relative_path in remove_paths:
+            destination = output_root / relative_path
+            if destination.exists():
+                backup_path = backup_root / relative_path
+                destination.unlink()
+                replaced.append((destination, backup_path, True))
     except Exception:
         for destination, backup_path, existed in reversed(replaced):
             if existed:
@@ -572,7 +943,7 @@ def _commit_authorities(output_root: Path, authorities: dict[Path, bytes]) -> No
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Generate the published calculator and activity catalogue datasets."
+        description="Generate the published calculator and offline context authorities."
     )
     default_repo_root = Path(__file__).resolve().parent.parent
     parser.add_argument("--repo-root", default=str(default_repo_root))
@@ -580,9 +951,9 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     repo_root = Path(args.repo_root).resolve()
     output_root = Path(args.output_root).resolve()
-    authorities = _authority_bytes(repo_root, _generated_at())
+    authorities, remove_paths = _all_authority_bytes(repo_root, _generated_at())
     _validate_authority_bytes(authorities)
-    _commit_authorities(output_root, authorities)
+    _commit_authorities(output_root, authorities, remove_paths)
     return 0
 
 

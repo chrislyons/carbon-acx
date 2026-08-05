@@ -922,3 +922,30 @@ body { background: var(--paper); color: var(--ink); }
   .primer-card__questions { grid-template-columns:1fr; }
   .factor-record-details__technical div, .benchmark-context dl div, .benchmark-context__sources li { grid-template-columns:1fr; gap:.2rem; }
 }
+.site-header nav { flex-wrap:wrap; }
+.learning-grid { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:1rem; }
+.learning-card { display:grid; gap:1rem; align-content:start; }
+.learning-card h2 { font:650 clamp(1.45rem, 2.4vw, 2.15rem)/1 var(--font-display); }
+.learning-card__arithmetic { border-left:.3rem solid var(--oxide); padding:.75rem 1rem; }
+.learning-card__arithmetic p { font:600 .95rem/1.6 var(--font-mono); margin-top:.35rem; overflow-wrap:anywhere; }
+.learning-card__metadata { margin-top:.25rem; }
+.learning-card__metadata div { border-top:1px solid var(--rule); display:grid; grid-template-columns:6rem 1fr; gap:.75rem; padding:.5rem 0; }
+.learning-card__metadata dd { margin:0; overflow-wrap:anywhere; }
+.owid-context { margin-top:0; }
+.owid-context h2 { font:650 clamp(1.7rem, 3vw, 2.6rem)/1 var(--font-display); }
+.owid-context__latest { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:1rem; margin:1.5rem 0; }
+.owid-context__latest div { border-top:1px solid var(--rule); padding-top:.75rem; }
+.owid-context__latest strong { display:block; font:650 1.2rem/1.1 var(--font-display); margin-top:.35rem; }
+.owid-context__values { list-style:none; margin:0; padding:0; }
+.owid-context__values li { display:flex; justify-content:space-between; gap:1rem; border-top:1px solid var(--rule); padding:.5rem 0; }
+.owid-context__links { display:flex; flex-wrap:wrap; gap:1rem; margin-top:1rem; }
+.owid-context__basis { margin:1rem 0 0; }
+.owid-context__basis div { border-top:1px solid var(--rule); display:grid; grid-template-columns:8rem 1fr; gap:.75rem; padding:.5rem 0; }
+.owid-context__basis dd { margin:0; font-weight:650; }
+@media (max-width:700px) {
+  .site-header nav { justify-content:flex-start; row-gap:.35rem; }
+  .learning-grid { grid-template-columns:1fr; }
+  .owid-context__latest { grid-template-columns:1fr; }
+  .learning-card__metadata div { grid-template-columns:1fr; gap:.2rem; }
+  .owid-context__basis div { grid-template-columns:1fr; gap:.2rem; }
+}
