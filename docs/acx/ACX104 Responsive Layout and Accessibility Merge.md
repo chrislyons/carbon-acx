@@ -30,7 +30,7 @@ The review ran all five commands successfully: 21 unit tests and 37 Playwright t
 
 The following repository-gate defects were repaired and require CI confirmation:
 
-- `build-static` and `tests` now select Python 3.11 before `scripts/bootstrap.sh --check-only`, matching the script's pinned interpreter requirement.
+- `build-static` and `tests` now select Python 3.11 and Poetry 1.8.3 before `scripts/bootstrap.sh --check-only`, matching the script's pinned toolchain requirements.
 - ACX102 now uses framework-neutral language outside its explicit historical-document exception, so the documentation linter can scan the full active corpus.
 
 Cloudflare Pages deployment and `lint-yaml` passed before the repair. Do not bypass required checks; merge PR #258 only after the rerun is green.
