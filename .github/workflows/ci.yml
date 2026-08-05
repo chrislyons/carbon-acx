@@ -54,8 +54,6 @@ jobs:
       - name: Install web workspace dependencies
         run: pnpm --filter carbon-acx-web install --frozen-lockfile
 
-
-
       - name: Install Poetry
         uses: abatilo/actions-poetry@fd0e6716a0de25ef6ade151b8b53190b0376acfd  # v3
         with:
