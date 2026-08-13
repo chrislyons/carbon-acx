@@ -115,7 +115,6 @@ git log --oneline -10
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
-Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
 **Conventional Commit Types:**
@@ -163,7 +162,6 @@ Closes #42
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
-Co-Authored-By: Claude <noreply@anthropic.com>
 EOF
 )"
 ```
@@ -224,7 +222,6 @@ git status
 
    🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
-   Co-Authored-By: Claude <noreply@anthropic.com>
    ```
 4. Execute commit
 5. Report success with hash
@@ -248,7 +245,6 @@ git status
 
    🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
-   Co-Authored-By: Claude <noreply@anthropic.com>
    ```
 4. Execute commit
 5. Suggest running `pytest tests/` to verify fix
@@ -270,7 +266,6 @@ git status
 
    🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
-   Co-Authored-By: Claude <noreply@anthropic.com>
    ```
 3. Execute `git commit`
 4. **Pre-commit hook runs and fails:** ESLint finds unused imports
@@ -301,7 +296,6 @@ git status
 
    🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
-   Co-Authored-By: Claude <noreply@anthropic.com>
    ```
 3. Execute commit
 4. Suggest: "Documentation updated. Ready to push or create PR?"
@@ -327,7 +321,6 @@ git status
 
    🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
-   Co-Authored-By: Claude <noreply@anthropic.com>
    ```
 4. Execute commit
 5. Suggest: "Run `pnpm test` to verify imports still resolve correctly"

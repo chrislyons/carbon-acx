@@ -225,7 +225,6 @@ Updates version files and CHANGELOG for v1.3.0 release.
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
-Co-Authored-By: Claude <noreply@anthropic.com>"
 ```
 
 ### Step 5: Build and Verify
