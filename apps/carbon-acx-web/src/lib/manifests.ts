@@ -1,9 +1,9 @@
+import { access, readFile } from 'fs/promises'
 /**
  * Manifest Data Layer
  * Server-side functions for reading and parsing Carbon ACX manifests
  */
 
-import { readFile } from 'fs/promises'
 import path from 'path'
 import type {
   RootManifest,
@@ -87,6 +87,16 @@ export async function getManifest(id: string): Promise<FigureManifest | null> {
   return await getManifestByPath(manifestItem.manifest_path)
 }
 
+async function resolveArtifactPath(primaryPath: string, fallbackPath: string): Promise<string> {
+  try {
+    await access(path.join(getArtifactsDir(), primaryPath))
+    return primaryPath
+  } catch {
+    await access(path.join(getArtifactsDir(), fallbackPath))
+    return fallbackPath
+  }
+}
+
 /**
  * Get a manifest by its file path relative to artifacts directory
  */
@@ -97,7 +107,10 @@ export async function getManifestByPath(
 
   try {
     const data = await readFile(manifestPath, 'utf-8')
-    return JSON.parse(data) as FigureManifest
+    const manifest = JSON.parse(data) as FigureManifest
+    manifest.figure_path = await resolveArtifactPath(manifest.figure_path, manifest.legacy_figure_path)
+    manifest.references.path = await resolveArtifactPath(manifest.references.path, manifest.references.legacy_path)
+    return manifest
   } catch (error) {
     console.error(`Failed to read manifest at ${manifestPath}:`, error)
     throw new Error(
