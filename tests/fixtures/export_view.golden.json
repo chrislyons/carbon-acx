@@ -1,8 +1,8 @@
 {
   "citation_keys": [
+    "SRC.DIMPACT.STREAMING.2022",
     "SRC.IESO.POWERDATA.2025",
-    "coffee",
-    "streaming"
+    "SRC.POORE2018"
   ],
   "data": [
     {
@@ -39,16 +39,16 @@
   "generated_at": "2024-01-02T03:04:05+00:00",
   "layer_citation_keys": {
     "professional": [
+      "SRC.DIMPACT.STREAMING.2022",
       "SRC.IESO.POWERDATA.2025",
-      "coffee",
-      "streaming"
+      "SRC.POORE2018"
     ]
   },
   "layer_references": {
     "professional": [
-      "[1] Independent Electricity System Operator (IESO), “Emissions and Grid Intensity (Ontario)—Data and Reports,” 2025. Available: https://www.ieso.ca/en/Power-Data/Data-Directory",
-      "[2] Coffee reference.",
-      "[3] Streaming reference."
+      "[1] University of Bristol and DIMPACT, “DIMPACT Video Streaming Carbon Modelling Guidance,” 2022. Available: https://dimpact.org/resources#video-streaming-guidance",
+      "[2] Independent Electricity System Operator, “Power Data—Emissions and Grid Intensity (Ontario),” 2025. Available: https://www.ieso.ca/en/Power-Data/Data-Directory",
+      "[3] J. Poore and T. Nemecek, “Reducing food’s environmental impacts through producers and consumers,” Science, vol. 360, no. 6392, pp. 987–992, 2018. Available: https://doi.org/10.1126/science.aaq0216"
     ]
   },
   "layers": [
@@ -63,8 +63,8 @@
     ]
   },
   "references": [
-    "[1] Independent Electricity System Operator (IESO), “Emissions and Grid Intensity (Ontario)—Data and Reports,” 2025. Available: https://www.ieso.ca/en/Power-Data/Data-Directory",
-    "[2] Coffee reference.",
-    "[3] Streaming reference."
+    "[1] University of Bristol and DIMPACT, “DIMPACT Video Streaming Carbon Modelling Guidance,” 2022. Available: https://dimpact.org/resources#video-streaming-guidance",
+    "[2] Independent Electricity System Operator, “Power Data—Emissions and Grid Intensity (Ontario),” 2025. Available: https://www.ieso.ca/en/Power-Data/Data-Directory",
+    "[3] J. Poore and T. Nemecek, “Reducing food’s environmental impacts through producers and consumers,” Science, vol. 360, no. 6392, pp. 987–992, 2018. Available: https://doi.org/10.1126/science.aaq0216"
   ]
 }

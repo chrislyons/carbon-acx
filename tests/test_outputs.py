@@ -91,3 +91,18 @@ def test_default_export_writes_hashed_artifacts(monkeypatch):
                 pointer_payload = json.loads(pointer_path.read_text(encoding="utf-8"))
                 if pointer_payload.get("build_hash") not in existing_names:
                     pointer_path.unlink()
+
+
+def test_export_can_write_a_relocatable_build_pointer(monkeypatch, tmp_path):
+    artifact_root = tmp_path / "artifacts"
+    monkeypatch.setattr(derive_mod, "ARTIFACT_ROOT", artifact_root)
+    monkeypatch.setenv("ACX_OUTPUT_ROOT", str(artifact_root))
+    monkeypatch.setenv("ACX_POINTER_ARTIFACT_DIR", ".")
+    monkeypatch.setenv("ACX_ALLOW_OUTPUT_RM", "1")
+    monkeypatch.setenv("ACX_GENERATED_AT", "2024-01-01T00:00:00+00:00")
+
+    derive_mod.export_view(EmptyStore())
+
+    pointer = json.loads((artifact_root / "latest-build.json").read_text(encoding="utf-8"))
+    assert pointer["artifact_dir"] == "."
+    assert (artifact_root / "calc" / "outputs" / "manifest.json").exists()

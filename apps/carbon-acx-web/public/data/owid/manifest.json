@@ -2,6 +2,7 @@
   "schemaVersion": "acx.owid-source/1-0-0",
   "provider": "Our World in Data",
   "chartId": "annual-co2-emissions-per-country",
+  "sourceId": "SRC.OWID.CO2.2025",
   "metric": "Annual CO\u2082 emissions",
   "dataUrl": "https://ourworldindata.org/grapher/annual-co2-emissions-per-country.csv",
   "metadataUrl": "https://ourworldindata.org/grapher/annual-co2-emissions-per-country.metadata.json",

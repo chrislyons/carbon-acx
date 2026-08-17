@@ -99,7 +99,7 @@ Emissions associated with digital services: social media, LLM queries, OTT video
     - Each layer has its own flow group; comparisons appear as parallel flows.
 - **References panel**:
     - Must union all [n] references from the active layer(s).
-    - Each entry in references/*.txt tagged by layer.
+    - Each entry in `dist/artifacts/references/*.txt` is tagged by layer.
 
 ***
 

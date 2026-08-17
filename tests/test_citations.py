@@ -5,9 +5,11 @@ from calc import citations
 
 
 def test_citation_ordering():
-    refs = citations.references_for(["coffee", "streaming"])
+    refs = citations.references_for(["SRC.POORE2018", "SRC.DIMPACT.2021"])
     formatted = [citations.format_ieee(ref.numbered(idx)) for idx, ref in enumerate(refs, start=1)]
-    assert formatted == ["[1] Coffee reference.", "[2] Streaming reference."]
+    assert [ref.key for ref in refs] == ["SRC.POORE2018", "SRC.DIMPACT.2021"]
+    assert formatted[0].startswith("[1] J. Poore and T. Nemecek")
+    assert formatted[1].startswith("[2] Carbon Trust and DIMPACT")
 
 
 def test_format_ieee_strips_existing_numbers():

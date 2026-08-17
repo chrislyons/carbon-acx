@@ -4,6 +4,15 @@ import owidContextJson from '@/generated/owid-context.json'
 
 export type ActivityCategory = 'transport' | 'food' | 'digital' | 'home' | 'shopping'
 
+export interface SourceEvidence {
+  sourceId: string
+  retrievedAt: string
+  reviewDueAt: string
+  evidenceSha256: string
+  verificationRunUrl: string
+  rawArtifactName: string
+}
+
 export interface ActivityEvidence {
   activityId: string
   emissionFactorId: string
@@ -16,6 +25,7 @@ export interface ActivityEvidence {
   sourceIds: string[]
   sourceCitations: string[]
   sourceUrls: string[]
+  sourceEvidence: SourceEvidence[]
   methodNotes: string | null
   uncertainty: { lowGPerUnit: number | null; highGPerUnit: number | null }
   publicationStatus: 'published' | 'unavailable'
@@ -48,11 +58,80 @@ export interface CatalogActivity {
   unavailabilityReason: string | null
 }
 
+export interface AiScenarioSourceRef {
+  sourceId: string
+  role: string
+  locator: string
+  retrievedAt: string
+  citation: string
+  url: string
+  sourceEvidence: SourceEvidence | null
+}
+
+export interface AiScenario {
+  scenarioId: string
+  activityId: string
+  providerId: string
+  serviceId: string
+  modelId: string
+  modelVersion: string | null
+  modelGeneration: string
+  generationMode: string
+  modality: string
+  functionalUnit: string
+  tokenBasis: string | null
+  workload: {
+    profileId: string | null
+    inputTokens: number | string | null
+    outputTokens: number | string | null
+    reasoningTokens: number | string | null
+    hiddenReasoningDisclosure: string | null
+    batchSize: number | string | null
+    servingContext: string | null
+  }
+  media: {
+    widthPx: number | string | null
+    heightPx: number | string | null
+    frames: number | string | null
+    fps: number | string | null
+    denoisingSteps: number | string | null
+    durationSeconds: number | string | null
+    audioIncluded: string | null
+  }
+  energyWh: number | null
+  energyWhLow: number | string | null
+  energyWhHigh: number | string | null
+  energyComponents: unknown[] | Record<string, unknown> | null
+  scopeBoundary: string
+  pueTreatment: string
+  carbonGPerUnit: number | null
+  carbonGPerUnitLow: number | string | null
+  carbonGPerUnitHigh: number | string | null
+  carbonAccounting: {
+    method: string | null
+    components: unknown[] | Record<string, unknown> | null
+    gridIntensityGPerKwh: number | string | null
+    gridRegion: string | null
+    gridVintageYear: number | string | null
+  }
+  serviceRegion: string | null
+  vintageYear: number | null
+  retrievedAt: string
+  uncertainty: unknown[] | Record<string, unknown> | null
+  publicationStatus: 'published' | 'estimate' | 'unavailable'
+  sourceRefs: AiScenarioSourceRef[]
+  notes: string | null
+}
+
+export interface AiScenarioDataset {
+  schemaVersion: string
+  records: AiScenario[]
+}
+
 export interface CategoryInfo {
   name: string
   color: string
 }
-
 export type BenchmarkScope = 'national' | 'province' | string
 export type BenchmarkAccountingBasis = 'territorial'
 export type BenchmarkLandUseChange = 'excluded'
@@ -69,9 +148,11 @@ export interface Benchmark {
   sourceId: string | null
   sourceCitation: string | null
   sourceUrl: string | null
+  sourceEvidence: SourceEvidence | null
   populationSourceId: string | null
   populationCitation: string | null
   populationSourceUrl: string | null
+  populationSourceEvidence: SourceEvidence | null
   notes: string | null
   accountingBasis: BenchmarkAccountingBasis
   landUseChange: BenchmarkLandUseChange
@@ -89,6 +170,7 @@ export interface CatalogDataset {
   schemaVersion: string
   generatedAt: string
   activities: CatalogActivity[]
+  aiScenarios: AiScenarioDataset
 }
 
 export interface OwidContextPoint {

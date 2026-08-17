@@ -7,25 +7,21 @@ workflow and uploaded as artifacts.
 
 ## Files
 
-- `sources_manifest.csv` – ledger describing every discovered source. The
-  `stored_as` column always points to the expected location in `refs/raw/`, but
-  the referenced file is ephemeral and ignored by Git.
-- `ALLOW_MISSING.txt` – newline-delimited `source_id` values that are temporarily
-  exempt from manifest coverage checks.
-- `source_id_overrides.json` – optional mapping for assigning canonical
-  `source_id` values to tricky URLs or documents.
+- `sources_manifest.csv` – the sole retrieval ledger. Every active source must
+  have a 2xx response, byte metadata, `verification_run_url`, and
+  `raw_artifact_name`; raw and normalized files remain artifact-only.
 
 ## Workflows
 
 1. Run `poetry run python -m calc.refs_fetch --mode check` locally to verify
-   discovery coverage.
-2. Trigger `Fetch References (manual)` workflow when new sources are added or
-   stale. The workflow downloads binaries, updates the manifest, and uploads the
-   binaries as artifacts.
+   active-source coverage.
+2. Trigger `Fetch References (manual)` when new sources are added or stale. The
+   workflow downloads binaries, records its immutable run URL and raw artifact
+   name, updates the ledger, and uploads the binaries as artifacts.
 3. (Optional) Run `poetry run python -m calc.refs_normalize` locally to generate
    Markdown extracts for offline previewing.
-4. Run `poetry run python -m calc.refs_audit` before committing to ensure all
-   references are recorded and hashes match.
+4. Run `poetry run python -m calc.refs_audit --as-of YYYY-MM-DD` before
+   committing to validate metadata and, where artifacts are present, hashes.
 
 > **Remember:** Only CSV/JSON/Markdown metadata are checked in. The `refs/raw/`
 > and `refs/normalized/` directories are ignored to enforce an artifact-only

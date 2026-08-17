@@ -15,7 +15,7 @@ related:
 
 :codex-file-citation[codex-file-citation]{line_range_start=1 line_range_end=50 path=calc/outputs/figures/stacked.json git_url="https://github.com/chrislyons/carbon-acx/blob/main/calc/outputs/figures/stacked.json#L1-L50"}  
 
-:codex-file-citation[codex-file-citation]{line_range_start=1 line_range_end=4 path=calc/outputs/references/stacked_refs.txt git_url="https://github.com/chrislyons/carbon-acx/blob/main/calc/outputs/references/stacked_refs.txt#L1-L4"}  
+::codex-file-citation[codex-file-citation]{line_range_start=1 line_range_end=4 path=dist/artifacts/references/stacked_refs.txt git_url="https://github.com/chrislyons/carbon-acx/blob/main/dist/artifacts/references/stacked_refs.txt#L1-L4"}
 
 - The Dash application now consumes the prebuilt artifacts, offering layer-aware controls and Plotly visualizations that surface reference hints in the hover UI via the new component modules.  
 

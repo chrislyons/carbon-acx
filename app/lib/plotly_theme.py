@@ -23,8 +23,8 @@ DENSE_LAYOUT: LayoutDict = dict(
     legend=dict(orientation="h", yanchor="top", y=1.02, x=0, font=dict(size=12)),
     font=dict(size=12),
     hoverlabel=dict(font_size=12),
-    xaxis=dict(tickfont=dict(size=11), titlefont=dict(size=12), automargin=True),
-    yaxis=dict(tickfont=dict(size=11), titlefont=dict(size=12), automargin=True),
+    xaxis=dict(tickfont=dict(size=11), title=dict(font=dict(size=12)), automargin=True),
+    yaxis=dict(tickfont=dict(size=11), title=dict(font=dict(size=12)), automargin=True),
     bargap=0.10,
     legend_tracegroupgap=6,
 )

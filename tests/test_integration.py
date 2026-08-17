@@ -38,14 +38,14 @@ class GoldenStore:
             EmissionFactor(
                 activity_id="coffee",
                 value_g_per_unit=2.0,
-                source_id="coffee",
+                source_id="SRC.POORE2018",
                 vintage_year=2022,
             ),
             EmissionFactor(
                 activity_id="stream",
                 is_grid_indexed=True,
                 electricity_kwh_per_unit=0.25,
-                source_id="streaming",
+                source_id="SRC.DIMPACT.STREAMING.2022",
                 vintage_year=2023,
             ),
         ]

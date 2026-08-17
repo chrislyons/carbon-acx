@@ -21,7 +21,7 @@ Overview
 ## Data assets
 
 - The repository includes small demo datasets: activities (coffee cup, streaming), emission factors (fixed coffee intensity, grid-indexed streaming factor), a single activity schedule tied to a hybrid Toronto profile, two profiles, grid intensity for Ontario/Canada, a units registry, and IEEE-formatted source metadata.
-- Reference snippets for coffee, streaming, and supporting sources live under `calc/references/`, aligning with the citation keys referenced in data and figure exports.
+- Reference metadata for the active data and figure exports is sourced from `data/sources.csv`.
 
 ## Application layer
 

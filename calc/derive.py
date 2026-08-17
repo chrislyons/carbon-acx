@@ -53,7 +53,9 @@ OUTPUT_ROOT_ENV = "ACX_OUTPUT_ROOT"
 GENERATED_AT_ENV = "ACX_GENERATED_AT"
 ALLOW_OUTPUT_RM_ENV = "ACX_ALLOW_OUTPUT_RM"
 REPO_ROOT = Path(__file__).resolve().parent.parent
-ARTIFACT_ROOT = REPO_ROOT / "dist" / "artifacts"
+ARTIFACT_ROOT = Path(
+    os.getenv("ACX_ARTIFACT_ROOT", str(REPO_ROOT / "dist" / "artifacts"))
+).resolve()
 BUILD_HASH_RE = re.compile(r"^[0-9a-f]{12}$")
 EXPORT_COLUMNS = [
     "profile_id",
@@ -1789,10 +1791,9 @@ def export_view(
     except ValueError:
         pass
     else:
-        ARTIFACT_ROOT.mkdir(parents=True, exist_ok=True)
         pointer_payload = {
             "build_hash": build_hash,
-            "artifact_dir": str(output_root_path),
+            "artifact_dir": os.getenv("ACX_POINTER_ARTIFACT_DIR", str(output_root_path)),
         }
         _write_json(ARTIFACT_ROOT / "latest-build.json", pointer_payload)
 
@@ -1807,7 +1808,7 @@ def _parse_export_args(argv: Sequence[str]) -> Any:
         "--output-root",
         type=Path,
         default=None,
-        help="Base directory for generated calc/outputs (defaults to the package directory)",
+        help="Base directory for generated artifacts (defaults to dist/artifacts)",
     )
     parser.add_argument(
         "--db",

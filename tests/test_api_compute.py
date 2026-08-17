@@ -86,9 +86,9 @@ def test_compute_profile_shape_and_latency(sqlite_db: Path) -> None:
 
 def test_overrides_modify_activity(sqlite_db: Path) -> None:
     base = _load_profile(sqlite_db)
-    tweaked = _load_profile(sqlite_db, overrides={"FOOD.COFFEE.CUP.HOT": 12.5})
+    tweaked = _load_profile(sqlite_db, overrides={"BUILDING.OFFICE.M2.YEAR": 12.5})
 
-    base_value = _bubble_value(base, "FOOD.COFFEE.CUP.HOT")
-    tweaked_value = _bubble_value(tweaked, "FOOD.COFFEE.CUP.HOT")
+    base_value = _bubble_value(base, "BUILDING.OFFICE.M2.YEAR")
+    tweaked_value = _bubble_value(tweaked, "BUILDING.OFFICE.M2.YEAR")
     assert base_value != pytest.approx(tweaked_value)
     assert tweaked_value > 0
