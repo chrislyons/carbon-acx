@@ -1,8 +1,13 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 
 type Theme = 'light' | 'dark'
+
+function isTextEntryTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false
+  return target.isContentEditable || ['INPUT', 'SELECT', 'TEXTAREA'].includes(target.tagName)
+}
 
 interface ThemeContextType {
   theme: Theme
@@ -15,22 +20,46 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>('light')
 
+  const setTheme = useCallback((newTheme: Theme) => {
+    setThemeState(newTheme)
+    localStorage.setItem('carbon-acx-theme', newTheme)
+    document.documentElement.setAttribute('data-theme', newTheme)
+  }, [])
+
+  const toggleTheme = useCallback(() => {
+    setThemeState((currentTheme) => {
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark'
+      localStorage.setItem('carbon-acx-theme', newTheme)
+      document.documentElement.setAttribute('data-theme', newTheme)
+      return newTheme
+    })
+  }, [])
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (
+        event.key !== '\\'
+        || event.altKey
+        || event.ctrlKey
+        || event.metaKey
+        || event.shiftKey
+        || event.repeat
+        || isTextEntryTarget(event.target)
+      ) return
+      event.preventDefault()
+      toggleTheme()
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [toggleTheme])
+
   useEffect(() => {
     const saved = localStorage.getItem('carbon-acx-theme') as Theme | null
     const initialTheme = saved === 'dark' ? 'dark' : 'light'
     setThemeState(initialTheme)
     document.documentElement.setAttribute('data-theme', initialTheme)
   }, [])
-
-  const setTheme = (newTheme: Theme) => {
-    setThemeState(newTheme)
-    localStorage.setItem('carbon-acx-theme', newTheme)
-    document.documentElement.setAttribute('data-theme', newTheme)
-  }
-
-  const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark')
-  }
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>

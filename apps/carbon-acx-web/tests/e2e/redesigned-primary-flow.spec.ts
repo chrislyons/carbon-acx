@@ -11,6 +11,23 @@ test('front door presents three explicit jobs', async ({ page }) => {
     await expect(page.getByRole('link', { name, exact: true })).toHaveAttribute('href', href)
   }
 })
+
+test('backslash toggles theme outside text entry only', async ({ page }) => {
+  await page.addInitScript(() => localStorage.removeItem('carbon-acx-theme'))
+  await page.goto('/')
+  await expect(page.getByRole('button', { name: 'Switch to dark mode' })).toBeVisible()
+
+  await page.keyboard.press('\\')
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+
+  await page.getByLabel('Annual distance').fill('1250')
+  await page.keyboard.press('\\')
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+
+  await page.getByRole('button', { name: 'Switch to light mode' }).focus()
+  await page.keyboard.press('\\')
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
+})
 test('methodology primer explains the derived school-run record', async ({ page }) => {
   await page.goto('/methodology#primer')
   await expect(page.getByRole('heading', { name: 'Learn how to read a carbon estimate' })).toBeVisible()
