@@ -48,7 +48,7 @@ def person_km_dataset():
             value_g_per_unit=200.0,
             uncert_low_g_per_unit=150.0,
             uncert_high_g_per_unit=250.0,
-            source_id="SRC.DEMO",
+            source_id="SRC.DIMPACT.2021",
             scope_boundary="WTT+TTW",
         ),
         EmissionFactor(
@@ -140,7 +140,7 @@ def test_intensity_matrix_person_km_rows(tmp_path, person_km_dataset):
     assert math.isclose(
         car_row["annual_kg"], expected_fu * car_row["intensity_g_per_fu"] / 1000, rel_tol=1e-6
     )
-    assert car_row["source_ids_csv"] == "SRC.DEMO"
+    assert car_row["source_ids_csv"] == "SRC.DIMPACT.2021"
 
     csv_path = tmp_path / "intensity_matrix.csv"
     assert csv_path.exists()

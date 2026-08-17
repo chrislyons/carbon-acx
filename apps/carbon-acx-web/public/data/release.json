@@ -1,45 +1,79 @@
 {
   "schemaVersion": "acx.public-release/1-0-0",
-  "generatedAt": "2026-08-04T22:48:09+00:00",
+  "generatedAt": "2026-08-17T17:00:00Z",
   "inputs": {
-    "data/activities.csv": "8fc0746762ff2288a0a7268cdba050cccc5a9f963d342e7f127fc645198e64be",
+    "data/activities.csv": "4f67bfe5eed8cd36211002dad914b4ea2af499f7c9850786766cd366fefc3eae",
+    "data/activity_fu_map.csv": "5b3c3c248d1b815232b97b327ea163e3526d678b343fbc3756c20e6cb125c0c0",
+    "data/activity_schedule.csv": "26279443373628bb408eb601b2cdb385933b3d67fd7c7661c8a8d9ceeb3c09b6",
+    "data/ai_scenarios.csv": "8f966f3f5dd6b7ffb21c1203d5bc484aa76b20827f1b5c80009ee4edfdcdee9c",
+    "data/assets.csv": "77bb50687dc6b305a0dbb072bf40a339261592896e884a32acc459806b56cce2",
     "data/benchmarks.csv": "26b3b457644c6f3cbdce3ceeb3e12f03f18784a78b69f0e97864d87d968b45fd",
-    "data/emission_factors.csv": "b8e51a0a76ff7d0a949b3f21b09f390bcb55718cb66232d6ce1ecb1c6557b772",
-    "data/grid_intensity.csv": "7b587a4b3fca7258e2e552ee07d5d3345d0618ffb0fe269b4dd16bc24e5dee43",
+    "data/carbon_pricing.csv": "250478f335e945898c6755ae45e79a8cc0d04d352843497722f7262c44de8f45",
+    "data/dataflow_manifest.csv": "0860dff3c71f2f409ef033defeff9a8235042d54eb63672f4bd70ef5adfd767f",
+    "data/dependencies.csv": "cc32ce1885b495498bb5275e5401efc93532e49bf73be1ffcca4a7a569eab2a2",
+    "data/emission_factors.csv": "ad34a6ad016eda6ef5a2e8f300fed8d2ee80d899ec51c0175d6eba64031f8949",
+    "data/entities.csv": "6430bdbe7894354da4ac182304ec2ba41e7e50cfcf5f1fa3fbbaeecec7d8a2a9",
+    "data/equity_benchmarks.csv": "964377a5ffc46a2e74147ca7ddcab64b12b4cb526495d0528d93251ee0f6e857",
+    "data/feedback_loops.csv": "99ad238b10d31bbbf7a3078a57f658d69a84ce7454711982f21771c8c7a5a06b",
+    "data/functional_units.csv": "b69173956a89e40456a04e9e105605c899c98eaa12fb149341344ff2938923eb",
+    "data/grid_intensity.csv": "eef48ccab8eb9c7d4ad766cce601fcba5ef90ec01c2b9d91a284b426b7013eb4",
+    "data/icons.csv": "d456ba71d5991db070440e087bdd97848af1d9ea12d2e68788d64b56b7767475",
+    "data/layers.csv": "ac1124abc311aa9cbab6de0834d0f9911b35da9534e0c0513197e15aa631a6d0",
+    "data/operations.csv": "087385b6ec2c5e0d17d4d33b2ebd37ae6adae9f17c93c5df7bdf9b8eb0d14613",
     "data/owid/annual-co2-emissions-per-country.csv": "3343aa2c0adddd1f9857b2b889057dcc377a61f1dc23bfcd5ab17963338bd9f8",
     "data/owid/annual-co2-emissions-per-country.metadata.json": "87efb1319a3ae77340b04a198e509d9ed51dc5e7c45a347649479c8f9e9614a5",
-    "data/owid/manifest.json": "89b3ff83a4f27627c9f2df703f6a3140eccf978c4485a8dd67d197c9ec845c46",
-    "data/sources.csv": "ba7955881322437a260bf9de270914314a1c7de926c8115382228436d1fe23a4",
-    "scripts/generate_web_calculator_data.py": "2e3959adaabf24afb43df5b2481c122b67297c1030c596e76877ba725bf6ded6"
+    "data/owid/manifest.json": "a24408fd89411d30d0dd40686ae10b5648543eaa918b7cce6e2ca49d8aeac7f8",
+    "data/profiles.csv": "481f48a4bd2e5228b14f88163c5d39524e800e0a1d3c62b8fe72dc1c2a62c511",
+    "data/sectors.csv": "bb7b55fc4e05c1d738c791036dace3bbfa97e8ad1953a3b6ae9ea98531be2d3c",
+    "data/sites.csv": "8341af48d8baa8b7b9d9bf40faf4807bb9b943c1c97775f8ed5f7ddcdcb95c40",
+    "data/source_decisions.csv": "fa78fe3664c30b207ea02a9da0851bf70f74acd62b8d03f4314418a0a8392ce4",
+    "data/sources.csv": "747e0b67bf119916585435c7d7a412bd7f37d1197b7b5f7edebb98766dcb5bdc",
+    "data/units.csv": "ac7fc205596b064d60ab410833c1577fa372ce6c8fea296330b47dc126dc7f76",
+    "refs/sources_manifest.csv": "e3e6e929833749031be8301f088c000176d9daf2029d1d35e2e9ca558ebccf8d",
+    "scripts/generate_web_calculator_data.py": "0b9b6daffb8934fc0f48e454d7bbe5b554f7fedeb67832b9022a7bf89e080289"
   },
   "authorities": {
     "calculator": {
-      "schemaVersion": "acx.web-calculator/1-4-0",
+      "schemaVersion": "acx.web-calculator/1-5-0",
       "path": "/data/calculator-data.json",
-      "sha256": "70f70e2655c5acc67ba8de736d8df1c4f9874094ee218abc2abd03bf9bf108d5"
+      "sha256": "98a44f6f18ddb492c64c85ce9795669c26d64a3c16fb8331ed2e7cf979549972"
     },
     "catalog": {
-      "schemaVersion": "acx.web-calculator/1-4-0",
+      "schemaVersion": "acx.web-calculator/1-5-0",
       "path": "/data/catalog-data.json",
-      "sha256": "a6a38ebc16514ae88ef583d2fce67812cd3cd6dbfad0b9c055f4bda1aca37426"
+      "sha256": "2de78008714b282ace590b8eb071370007a1aa310daa27d2afc7c03c72fef284"
     },
     "sources": {
       "schemaVersion": "acx.web-sources/1-0-0",
       "path": "/data/sources.json",
-      "sha256": "1cf7e40fb6a36f754ebca1aaf59d8001c886572bc211274caa2e22f59050be66"
+      "sha256": "89c1643682c8231b9940cc8a667be0e1fd978654aa5381e66f636214f549d82b"
     },
     "owidContext": {
       "schemaVersion": "acx.owid-context/1-0-0",
       "path": "/data/owid-context.json",
-      "sha256": "19a338392c23d45c98b99d36721bbd49fea4e34e885f88f0a736351aa79a49ef"
+      "sha256": "0c8b6455f32d9c4d05ebdad65846bb4ab0753437422f2d4068be6c81b470c65b"
     }
   },
   "sourceRegistryPath": "/data/sources.json",
   "owid": {
     "status": "available",
-    "contextSha256": "19a338392c23d45c98b99d36721bbd49fea4e34e885f88f0a736351aa79a49ef",
+    "contextSha256": "0c8b6455f32d9c4d05ebdad65846bb4ab0753437422f2d4068be6c81b470c65b",
     "sourceManifestPath": "/data/owid/manifest.json",
     "sourceDataPath": "/data/owid/annual-co2-emissions-per-country.csv",
-    "sourceMetadataPath": "/data/owid/annual-co2-emissions-per-country.metadata.json"
+    "sourceMetadataPath": "/data/owid/annual-co2-emissions-per-country.metadata.json",
+    "rawAuthorities": {
+      "manifest.json": {
+        "path": "/data/owid/manifest.json",
+        "sha256": "a24408fd89411d30d0dd40686ae10b5648543eaa918b7cce6e2ca49d8aeac7f8"
+      },
+      "annual-co2-emissions-per-country.csv": {
+        "path": "/data/owid/annual-co2-emissions-per-country.csv",
+        "sha256": "3343aa2c0adddd1f9857b2b889057dcc377a61f1dc23bfcd5ab17963338bd9f8"
+      },
+      "annual-co2-emissions-per-country.metadata.json": {
+        "path": "/data/owid/annual-co2-emissions-per-country.metadata.json",
+        "sha256": "87efb1319a3ae77340b04a198e509d9ed51dc5e7c45a347649479c8f9e9614a5"
+      }
+    }
   }
 }

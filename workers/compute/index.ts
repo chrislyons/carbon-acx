@@ -1,19 +1,13 @@
 /**
- * Experimental Worker compute surface.
- *
- * Source-of-truth compute lives in `calc/service.py::compute_profile`.
- * Keep this route limited to parity work until it matches the Python contract.
+ * The Worker compute route is fail-closed until its provenance is verified.
  */
-
-import { computeFigures, getDatasetVersion, OverrideMap } from './runtime';
 
 const JSON_TYPE = 'application/json; charset=utf-8';
 const ALLOWED_ORIGIN = '*';
-
-interface ComputeRequestPayload {
-  profile_id: unknown;
-  overrides: unknown;
-}
+const UNAVAILABLE_PAYLOAD = {
+  error: 'unavailable',
+  message: 'Compute data is unavailable because its provenance has not been verified.',
+};
 
 function withCors(response: Response): Response {
   const headers = new Headers(response.headers);
@@ -41,65 +35,6 @@ function normalisePath(pathname: string): string {
   return pathname;
 }
 
-function normaliseOverrides(value: unknown): OverrideMap {
-  if (value == null) {
-    return {};
-  }
-  if (typeof value !== 'object' || Array.isArray(value)) {
-    throw new TypeError('overrides must be a JSON object');
-  }
-  const overrides: OverrideMap = {};
-  for (const [key, raw] of Object.entries(value as Record<string, unknown>)) {
-    if (typeof key !== 'string' || key.trim().length === 0) {
-      throw new TypeError('override keys must be non-empty strings');
-    }
-    if (raw == null) {
-      continue;
-    }
-    const numeric = Number(raw);
-    if (!Number.isFinite(numeric)) {
-      throw new TypeError(`override value for ${key} must be numeric`);
-    }
-    overrides[key] = numeric;
-  }
-  return overrides;
-}
-
-function resolveRequestPayload(payload: ComputeRequestPayload): { profileId: string; overrides: OverrideMap } {
-  const profileId = payload.profile_id;
-  if (typeof profileId !== 'string' || profileId.trim().length === 0) {
-    throw new TypeError('profile_id must be a non-empty string');
-  }
-  const overrides = normaliseOverrides(payload.overrides);
-  return { profileId: profileId.trim(), overrides };
-}
-
-async function handleCompute(request: Request): Promise<Response> {
-  if (request.method !== 'POST') {
-    return jsonError(405, 'method not allowed');
-  }
-
-  let payload: ComputeRequestPayload;
-  try {
-    payload = (await request.json()) as ComputeRequestPayload;
-  } catch (error) {
-    return jsonError(400, error instanceof Error ? error.message : 'invalid JSON payload');
-  }
-
-  let context;
-  try {
-    context = resolveRequestPayload(payload);
-  } catch (error) {
-    return jsonError(400, error instanceof Error ? error.message : 'invalid payload');
-  }
-
-  const result = computeFigures({ profileId: context.profileId, overrides: context.overrides });
-  return jsonResponse(result, { status: 200 });
-}
-
-function handleHealth(): Response {
-  return jsonResponse({ ok: true, dataset: getDatasetVersion() });
-}
 
 export default {
   async fetch(request: Request): Promise<Response> {
@@ -114,11 +49,11 @@ export default {
       if (request.method !== 'GET') {
         return jsonError(405, 'method not allowed');
       }
-      return handleHealth();
+      return jsonResponse({ ok: true, compute: 'unavailable' });
     }
 
     if (pathname === '/api/compute') {
-      return handleCompute(request);
+      return jsonResponse(UNAVAILABLE_PAYLOAD, { status: 503 });
     }
 
     if (pathname.startsWith('/api/compute/')) {

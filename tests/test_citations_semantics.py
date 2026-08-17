@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import csv
+import json
 from pathlib import Path
+
+from scripts.generate_web_calculator_data import _active_source_ids
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT / "data"
@@ -102,16 +105,21 @@ def test_sources_ieee_citations_include_availability() -> None:
     )
 
 
-def test_artifact_references_exist() -> None:
-    artifacts_dir = ROOT / "site" / "public" / "artifacts"
-    missing = []
-    for artifact in sorted(artifacts_dir.glob("*.json")):
-        references_path = artifact.with_suffix(".References.txt")
-        if not references_path.exists():
-            missing.append(str(references_path))
-    assert not missing, "Expected References.txt for artifacts: " + ", ".join(missing)
+def test_generated_source_authority_matches_registry() -> None:
+    generated = json.loads(
+        (ROOT / "apps" / "carbon-acx-web" / "src" / "generated" / "sources.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    expected_ids = _active_source_ids(ROOT)
+    actual_ids = {row["source_id"] for row in generated["sources"]}
+    assert actual_ids == expected_ids
+    assert len(generated["sources"]) == len(expected_ids)
 
 
-def test_harvest_manifest_present() -> None:
-    manifest_path = ROOT / "references" / "manifest.csv"
-    assert manifest_path.exists(), "Missing references/manifest.csv"
+def test_canonical_reference_ledger_present() -> None:
+    manifest_path = ROOT / "refs" / "sources_manifest.csv"
+    assert manifest_path.exists(), "Missing refs/sources_manifest.csv"
+    header = manifest_path.read_text(encoding="utf-8").splitlines()[0]
+    assert "verification_run_url" in header
+    assert "raw_artifact_name" in header

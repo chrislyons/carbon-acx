@@ -136,7 +136,7 @@ Compared to ad-hoc spreadsheets or monolithic BI stacks, Carbon ACX emphasises:
 - **Emission computation engine** calculates annual emissions, uncertainty bounds, and grid-indexed adjustments with reusable helpers (`calc/derive.py`).
 - **Hashed artifact outputs** prevent accidental overwrites and provide immutable build directories under `dist/artifacts/<hash>` with a `latest-build.json` pointer (`calc/derive.py`).
 - **Figure slicing utilities** derive stacked bar, bubble, and Sankey payloads from the export view with consistent metadata (`calc/figures.py`).
-- **Citation management** resolves and formats IEEE references from `calc/references/*.txt`, deduplicating sources automatically (`calc/citations.py`).
+- **Citation management** resolves and formats IEEE references from `data/sources.csv`, deduplicating sources automatically (`calc/citations.py`).
 - **Dash exploration UI** renders Plotly figures, disclosure copy, NA notices, and reference tables straight from the derived bundle (`app/app.py` and `app/components`).
 - **Static site renderer** packages figures, manifest summaries, and disclosure content into a deployable single-page app (`scripts/build_site.py`, `site/`).
 - **Cloudflare Pages function** optionally proxies `/carbon-acx/*` routes to an upstream origin while applying caching headers (`functions/carbon-acx/[[path]].ts`).
@@ -317,7 +317,7 @@ Key outputs within the selected root:
 
 - `calc/outputs/export_view.csv` and `.json` — tabular emissions dataset with metadata header comments.
 - `calc/outputs/figures/{stacked,bubble,sankey}.json` — Plotly payloads trimmed for client use.
-- `calc/outputs/references/*_refs.txt` — IEEE-formatted reference lists for each figure.
+- `dist/artifacts/references/*_refs.txt` — IEEE-formatted reference lists for each figure.
 - `calc/outputs/manifest.json` — Snapshot metadata (generated timestamp, layer coverage, regional vintages, citation keys).
 
 
@@ -558,7 +558,7 @@ Carbon ACX follows a conventional GitHub workflow (see `CONTRIBUTING.md`):
 - Confirmation that linting, tests, and builds passed.
 - Notes about data source updates or new references.
 
-1. Expect code review on data hygiene, reproducibility, and reference integrity. Changes touching `data/` or `calc/references/` should document provenance in the PR description.
+1. Expect code review on data hygiene, reproducibility, and reference integrity. Changes touching `data/` or `refs/sources_manifest.csv` should document provenance in the PR description.
 
 
 
@@ -690,7 +690,7 @@ Legend: ✅ implemented · 🚧 in-progress or partially scaffolded · 🧭 plan
 
 **How do I add a new reference?**
 
-: Drop an IEEE-formatted text file in `calc/references/` and reference its stem in emission factors or grid intensity rows. Run `make build` to propagate the citation into artefacts.
+:: Drop an IEEE-formatted source row into `data/sources.csv` and reference its stable ID in emission factors or grid intensity rows. Run `make build` to propagate the citation into audited artifacts.
 
 
 

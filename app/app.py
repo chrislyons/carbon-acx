@@ -41,7 +41,7 @@ else:
 ARTIFACT_ROOT = REPO_ROOT / "dist" / "artifacts"
 
 ARTIFACT_ENV = "ACX_ARTIFACT_DIR"
-DEFAULT_ARTIFACT_DIR = Path(__file__).resolve().parent.parent / "calc" / "outputs"
+DEFAULT_ARTIFACT_DIR = ARTIFACT_ROOT
 FIGURE_NAMES = ("stacked", "bubble", "sankey", "feedback")
 DEPENDENCY_MAP_NAME = "dependency_map.json"
 
@@ -67,9 +67,13 @@ def _cached_json_payload(path: str) -> dict | None:
         return None
 
 
-@lru_cache(maxsize=None)
+def _artifact_manifest_root() -> Path:
+    env_value = os.environ.get(ARTIFACT_ENV)
+    return Path(env_value).expanduser() if env_value else ARTIFACT_ROOT
+
+
 def _manifest_index_payload() -> Mapping[str, object] | None:
-    path = ARTIFACT_ROOT / "manifest.json"
+    path = _artifact_manifest_root() / "manifest.json"
     if not path.exists():
         return None
     try:
@@ -84,7 +88,7 @@ def _resolve_artifact_path(path: str | None) -> Path | None:
         return None
     candidate = Path(path.strip())
     if not candidate.is_absolute():
-        candidate = ARTIFACT_ROOT / path.strip().lstrip("/\\")
+        candidate = _artifact_manifest_root() / path.strip().lstrip("/\\")
     return candidate
 
 

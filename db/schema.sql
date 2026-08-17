@@ -5,7 +5,8 @@ CREATE TABLE sources (
     ieee_citation TEXT,
     url TEXT,
     year INTEGER,
-    license TEXT
+    license TEXT,
+    review_due_at TEXT
 );
 
 CREATE TABLE units (

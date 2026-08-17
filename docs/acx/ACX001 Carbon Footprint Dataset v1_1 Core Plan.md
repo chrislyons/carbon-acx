@@ -160,7 +160,7 @@ Canonical registry of allowed units.
 
 - `export_view.csv/json` (wide, profile × activity).
 - `figures/*.csv/json` (slices for Plotly visualizations).
-- `references/*.txt` (ordered IEEE references per figure).
+- `dist/artifacts/references/*.txt` (ordered IEEE references per figure).
 - Metadata added to exports: `generated_at`, `method`.
 
 ***

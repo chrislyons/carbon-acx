@@ -15,6 +15,7 @@ import httpx
 
 OWID_SOURCE_SCHEMA_VERSION = "acx.owid-source/1-0-0"
 OWID_PROVIDER = "Our World in Data"
+OWID_SOURCE_ID = "SRC.OWID.CO2.2025"
 OWID_CHART_ID = "annual-co2-emissions-per-country"
 OWID_METRIC = "Annual CO₂ emissions"
 OWID_DATA_URL = "https://ourworldindata.org/grapher/annual-co2-emissions-per-country.csv"
@@ -174,6 +175,7 @@ def _manifest_from_context(
     return {
         "schemaVersion": OWID_SOURCE_SCHEMA_VERSION,
         "provider": OWID_PROVIDER,
+        "sourceId": OWID_SOURCE_ID,
         "chartId": OWID_CHART_ID,
         "metric": OWID_METRIC,
         "dataUrl": OWID_DATA_URL,
@@ -199,6 +201,7 @@ def _validate_manifest(manifest: dict[str, object]) -> None:
     required = {
         "schemaVersion",
         "provider",
+        "sourceId",
         "chartId",
         "metric",
         "dataUrl",
@@ -222,6 +225,7 @@ def _validate_manifest(manifest: dict[str, object]) -> None:
         raise OwidValidationError("OWID manifest is missing a required selection field")
     expected = {
         "schemaVersion": OWID_SOURCE_SCHEMA_VERSION,
+        "sourceId": OWID_SOURCE_ID,
         "provider": OWID_PROVIDER,
         "chartId": OWID_CHART_ID,
         "metric": OWID_METRIC,

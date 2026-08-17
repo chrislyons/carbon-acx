@@ -6,7 +6,7 @@ test('published Atlas and calculator records expose narrative detail and linked 
   for (const heading of ['What this measures', 'Where the data comes from', 'How to use this record', 'Limits', 'Worked arithmetic']) {
     await expect(page.locator('.detail-pane').getByRole('heading', { name: heading })).toBeVisible()
   }
-  await expect(page.locator('.detail-pane').getByRole('link', { name: /Environment and Climate Change Canada/ })).toHaveAttribute('href', /publications\.gc\.ca/)
+  await expect(page.locator('.detail-pane').getByRole('link', { name: /Environment and Climate Change Canada/ })).toHaveAttribute('href', /canada\.ca\/en\/environment-climate-change/)
 
   await page.goto('/calculator')
   await page.getByRole('button', { name: /Transport/ }).click()
@@ -15,7 +15,7 @@ test('published Atlas and calculator records expose narrative detail and linked 
   await page.getByRole('button', { name: 'Factor evidence' }).click()
   await expect(page.getByRole('heading', { name: 'What this measures' })).toBeVisible()
   await expect(page.getByText(/1,000 kilometres × 180 g CO₂e/)).toBeVisible()
-  await expect(page.locator('.detail-pane').getByRole('link', { name: /Environment and Climate Change Canada/ })).toHaveAttribute('href', /publications\.gc\.ca/)
+  await expect(page.locator('.detail-pane').getByRole('link', { name: /Environment and Climate Change Canada/ })).toHaveAttribute('href', /canada\.ca\/en\/environment-climate-change/)
 })
 
 test('Activity Atlas labels unavailable data instead of zero', async ({ page }) => {

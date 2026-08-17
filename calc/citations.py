@@ -1,21 +1,20 @@
 from __future__ import annotations
 
+import csv
+import re
+from collections.abc import Mapping
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 from typing import List, Sequence
-import re
 
-from collections.abc import Mapping
-
-REFERENCES_DIR = Path(__file__).parent / "references"
-
+SOURCES_PATH = Path(__file__).resolve().parents[1] / "data" / "sources.csv"
 _IEEE_NUMBER_PREFIX = re.compile(r"^\s*\[\d+\]\s*")
 
 
 @dataclass(frozen=True)
 class Reference:
-    """Structured reference loaded from the repository."""
+    """Structured citation resolved from the canonical source registry."""
 
     key: str
     citation: str
@@ -29,11 +28,15 @@ class Reference:
 
 @lru_cache(maxsize=None)
 def _load_reference(key: str) -> Reference:
-    path = REFERENCES_DIR / f"{key}.txt"
-    if not path.exists():
-        raise KeyError(f"Unknown reference: {key}")
-    text = path.read_text(encoding="utf-8").strip()
-    return Reference(key=key, citation=text)
+    with SOURCES_PATH.open(newline="", encoding="utf-8") as handle:
+        for row in csv.DictReader(handle):
+            if (row.get("source_id") or "").strip() != key:
+                continue
+            citation = (row.get("ieee_citation") or "").strip()
+            if not citation:
+                raise KeyError(f"Source has no citation: {key}")
+            return Reference(key=key, citation=citation)
+    raise KeyError(f"Unknown source: {key}")
 
 
 _REFERENCE_FIELDS = (
@@ -73,7 +76,7 @@ def _flatten(obj: object | None) -> List[str]:
 
 
 def references_for(obj: object | None) -> List[Reference]:
-    """Resolve and de-duplicate references associated with an object."""
+    """Resolve and de-duplicate source IDs associated with an object."""
 
     keys = _flatten(obj)
     seen: set[str] = set()

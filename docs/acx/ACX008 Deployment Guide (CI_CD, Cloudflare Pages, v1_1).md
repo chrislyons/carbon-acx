@@ -17,7 +17,7 @@ Define a reproducible build-and-deploy process for **carbon-acx**: build artifac
 ## **1. Deployment model**
 
 - **Authoritative data**: CSVs in /data/ on main.
-- **Build outputs**: calc/outputs/ → JSON/CSV figure slices and references/*.txt.
+- **Build outputs:** `dist/artifacts/` → JSON/CSV figure slices and `dist/artifacts/references/*.txt`.
 - **UI**: static client (no server runtime). Local dev uses Dash; production uses a lightweight static page that loads prebuilt JSON/refs.
 - **Hosting**: Cloudflare Pages (static hosting over a GitHub repo). [1]
 - **CI**: GitHub Actions runs tests/linters, builds outputs, and publishes pages on main. [2]
@@ -48,7 +48,7 @@ Define a reproducible build-and-deploy process for **carbon-acx**: build artifac
 
 - calc/outputs/export_view.json and .csv
 - calc/outputs/figures/{stacked,bubble,sankey}.json (and .csv parity)
-- calc/outputs/references/{stacked_refs.txt,bubble_refs.txt,sankey_refs.txt}
+- `dist/artifacts/references/{stacked_refs.txt,bubble_refs.txt,sankey_refs.txt}`
 - calc/outputs/manifest.json (regions, vintages, sources included)
 - site/ (static UI bundle that fetches the above JSON/TXT)
 
@@ -77,7 +77,7 @@ Define a reproducible build-and-deploy process for **carbon-acx**: build artifac
 - A minimal static frontend (Vanilla/React) in /site/ loads:
     - /artifacts/manifest.json
     - /artifacts/figures/*.json
-    - /artifacts/references/*.txt
+    - `/artifacts/references/*.txt`
 - Client-side Plotly renders the three visuals.
 - References pane displays the IEEE list; all hover tooltips show bracketed [n].
 - No external calls; no auth; entirely static.

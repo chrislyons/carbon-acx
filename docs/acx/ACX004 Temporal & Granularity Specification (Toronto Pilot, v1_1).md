@@ -163,7 +163,7 @@ Metered integration requires consistent units and the same **daily core layer** 
 - **Weekly/Annual summaries** derived from the daily core; identical field names but with period instead of date.
 - **Metadata:** prepend to CSV and embed in JSON:
     - generated_at (ISO 8601 UTC), method=v1.1, reference_year=2025.
-- **References per figure** remain in calc/outputs/references/ with strict ordering [1]..[n].
+- **References per figure** remain in `dist/artifacts/references/` with strict ordering [1]..[n].
 
 ***
 

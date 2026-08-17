@@ -14,7 +14,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-SCHEMA_VERSION = "acx.web-calculator/1-4-0"
+SCHEMA_VERSION = "acx.web-calculator/1-5-0"
+AI_SCENARIOS_SCHEMA_VERSION = "acx.ai-scenarios/1-0-0"
 SOURCES_SCHEMA_VERSION = "acx.web-sources/1-0-0"
 OWID_CONTEXT_SCHEMA_VERSION = "acx.owid-context/1-0-0"
 PUBLIC_RELEASE_SCHEMA_VERSION = "acx.public-release/1-0-0"
@@ -40,6 +41,7 @@ OWID_METADATA_URL = (
 OWID_CHART_URL = "https://ourworldindata.org/grapher/annual-co2-emissions-per-country"
 OWID_CHART_ID = "annual-co2-emissions-per-country"
 OWID_METRIC = "Annual CO₂ emissions"
+SOURCE_ID_RE = re.compile(r"\bSRC(?:\.[A-Za-z0-9_-]+)+")
 
 CATEGORY_INFO = {
     "transport": {"name": "Transport", "color": "#1f6f68"},
@@ -75,7 +77,6 @@ SELECTED_ACTIVITIES = [
     ("digital", "MEDIA.STREAM.UHD.HOUR"),
     ("digital", "SOCIAL.INSTAGRAM.HOUR"),
     ("digital", "MUSIC.STREAM.STANDARD.HOUR"),
-    ("digital", "AI.USAGE.GPT.QUERY"),
     ("home", "ENERGY.NATGAS.M3"),
     ("home", "MUNI.WATER.POTABLE.M3"),
     ("home", "REFR.APPL.FRIDGE.OP.YEAR"),
@@ -113,6 +114,9 @@ def _load_csv(path: Path) -> list[dict[str, str]]:
         rows = list(csv.DictReader(handle))
     for row in rows:
         for key in list(row.keys()):
+            if key is None:
+                row.pop(key)
+                continue
             if key.strip() != key:
                 row[key.strip()] = row.pop(key)
     return rows
@@ -220,6 +224,84 @@ def _source_url_for(source_id: str, sources: dict[str, dict[str, str]]) -> str:
     return url
 
 
+SOURCE_SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+
+
+def _load_source_provenance(
+    root: Path, sources: dict[str, dict[str, str]]
+) -> dict[str, dict[str, str]]:
+    """Attach immutable retrieval and adjudication metadata to registry rows."""
+
+    ledger_path = root / "refs/sources_manifest.csv"
+    decisions_path = root / "data/source_decisions.csv"
+    ledger_rows: dict[str, dict[str, str]] = {}
+    decision_rows: dict[str, dict[str, str]] = {}
+    if ledger_path.is_file():
+        with ledger_path.open(newline="", encoding="utf-8") as handle:
+            ledger_rows = {
+                (row.get("source_id") or "").strip(): dict(row)
+                for row in csv.DictReader(handle)
+                if (row.get("source_id") or "").strip()
+            }
+    if decisions_path.is_file():
+        with decisions_path.open(newline="", encoding="utf-8") as handle:
+            for row in csv.DictReader(handle):
+                if (
+                    (row.get("dataset_path") or "").strip() == "sources.csv"
+                    and (row.get("record_id") or "").strip()
+                    and (row.get("source_id") or "").strip()
+                ):
+                    decision_rows[(row.get("source_id") or "").strip()] = dict(row)
+    if not ledger_path.is_file():
+        return sources
+
+    enriched: dict[str, dict[str, str]] = {}
+    for source_id, source in sources.items():
+        ledger = ledger_rows.get(source_id, {})
+        decision = decision_rows.get(source_id, {})
+        row = dict(source)
+        row["_ledger_sha256"] = (ledger.get("sha256") or "").strip().lower()
+        row["_ledger_fetched_at"] = (ledger.get("fetched_at") or "").strip()
+        row["_verification_run_url"] = (ledger.get("verification_run_url") or "").strip()
+        row["_raw_artifact_name"] = (ledger.get("raw_artifact_name") or "").strip()
+        row["_decision"] = (decision.get("decision") or "").strip()
+        row["_decision_evidence_sha256"] = (decision.get("evidence_sha256") or "").strip().lower()
+        enriched[source_id] = row
+    return enriched
+
+
+def _source_evidence(source_id: str, sources: dict[str, dict[str, str]]) -> dict[str, str] | None:
+    """Return the ledger binding for a source, or skip legacy unit-test fixtures."""
+
+    source = sources.get(source_id)
+    if source is None:
+        return None
+    if "_ledger_sha256" not in source:
+        return None
+    digest = source["_ledger_sha256"]
+    if not SOURCE_SHA256_RE.fullmatch(digest):
+        raise ValueError(f"Missing source ledger hash for {source_id}")
+    if source.get("_decision") not in {"verified", "corrected", "consolidated"}:
+        raise ValueError(f"Source decision is not publishable for {source_id}")
+    if source.get("_decision_evidence_sha256") != digest:
+        raise ValueError(f"Source decision hash mismatch for {source_id}")
+    fetched_at = source.get("_ledger_fetched_at", "")
+    if (
+        not fetched_at
+        or not source.get("_verification_run_url")
+        or not source.get("_raw_artifact_name")
+    ):
+        raise ValueError(f"Source ledger attestation is incomplete for {source_id}")
+    return {
+        "sourceId": source_id,
+        "retrievedAt": fetched_at,
+        "reviewDueAt": source.get("review_due_at", ""),
+        "evidenceSha256": digest,
+        "verificationRunUrl": source["_verification_run_url"],
+        "rawArtifactName": source["_raw_artifact_name"],
+    }
+
+
 def _factor_evidence(
     activity: dict[str, str],
     factor: dict[str, str],
@@ -273,6 +355,13 @@ def _factor_evidence(
             electricity_high * grid_row.g_per_kwh if electricity_high is not None else None
         )
 
+    source_evidence = [
+        evidence
+        for source in source_ids
+        if (evidence := _source_evidence(source, sources)) is not None
+    ]
+    if len(source_evidence) != len(source_ids):
+        raise ValueError(f"Source ledger evidence is incomplete for {activity_id}")
     if value_g_per_unit is None:
         raise ValueError(f"Unable to resolve emission factor for {activity_id}")
 
@@ -290,6 +379,7 @@ def _factor_evidence(
             "sourceIds": source_ids,
             "sourceCitations": source_citations,
             "sourceUrls": source_urls,
+            "sourceEvidence": source_evidence,
             "methodNotes": (factor.get("method_notes") or "").strip() or None,
             "uncertainty": {
                 "lowGPerUnit": uncertainty_low,
@@ -315,6 +405,7 @@ def _unavailable_evidence(
         "sourceIds": [],
         "sourceCitations": [],
         "sourceUrls": [],
+        "sourceEvidence": [],
         "methodNotes": ((factor or {}).get("method_notes") or "").strip() or None,
         "uncertainty": {"lowGPerUnit": None, "highGPerUnit": None},
         "publicationStatus": "unavailable",
@@ -382,10 +473,14 @@ def build_benchmarks(
             "sourceId": source_id,
             "sourceCitation": source_citation,
             "sourceUrl": _source_url_for(source_id, sources) if source_id else None,
+            "sourceEvidence": _source_evidence(source_id, sources) if source_id else None,
             "populationSourceId": population_source_id,
             "populationCitation": population_citation,
             "populationSourceUrl": (
                 _source_url_for(population_source_id, sources) if population_source_id else None
+            ),
+            "populationSourceEvidence": (
+                _source_evidence(population_source_id, sources) if population_source_id else None
             ),
             "notes": (row.get("notes") or "").strip() or None,
             "accountingBasis": accounting_basis,
@@ -400,12 +495,219 @@ def _load_inputs(repo_root: Path) -> tuple[
     dict[str, dict[str, str]],
     dict[str, list[GridIntensityRow]],
 ]:
+    activities = {row["activity_id"]: row for row in _load_csv(repo_root / "data/activities.csv")}
+    factors = _load_csv(repo_root / "data/emission_factors.csv")
+    sources = {row["source_id"]: row for row in _load_csv(repo_root / "data/sources.csv")}
     return (
-        {row["activity_id"]: row for row in _load_csv(repo_root / "data/activities.csv")},
-        _load_csv(repo_root / "data/emission_factors.csv"),
-        {row["source_id"]: row for row in _load_csv(repo_root / "data/sources.csv")},
+        activities,
+        factors,
+        _load_source_provenance(repo_root, sources),
         _grid_lookup(_load_csv(repo_root / "data/grid_intensity.csv")),
     )
+
+
+AI_SCENARIO_STATUSES = {"published", "estimate", "unavailable"}
+AI_SCENARIO_CARBON_METHODS = {"", "derived-grid", "direct-disclosure", "lifecycle-assessment"}
+
+
+def _scenario_optional_number(row: dict[str, str], field: str) -> float | int | str | None:
+    value = (row.get(field) or "").strip()
+    if not value:
+        return None
+    try:
+        number = float(value)
+    except ValueError:
+        return value
+    if not math.isfinite(number):
+        raise ValueError(f"AI scenario field {field} must be finite")
+    return int(number) if number.is_integer() else number
+
+
+def _scenario_json(row: dict[str, str], field: str, scenario_id: str) -> Any:
+    value = (row.get(field) or "").strip()
+    if not value:
+        return None
+    try:
+        parsed = json.loads(value)
+    except json.JSONDecodeError as error:
+        raise ValueError(f"{scenario_id}: {field} is not valid JSON") from error
+    if not isinstance(parsed, (dict, list)):
+        raise ValueError(f"{scenario_id}: {field} must be a JSON object or array")
+    return parsed
+
+
+def _build_ai_scenarios(root: Path, sources: dict[str, dict[str, str]]) -> dict[str, Any]:
+    path = root / "data/ai_scenarios.csv"
+    rows = _load_csv(path)
+    if not rows:
+        raise ValueError("data/ai_scenarios.csv contains no scenario rows")
+
+    records: list[dict[str, Any]] = []
+    seen_ids: set[str] = set()
+    for row in rows:
+        scenario_id = (row.get("scenario_id") or "").strip()
+        if not scenario_id or scenario_id in seen_ids:
+            raise ValueError(f"AI scenario IDs must be unique and non-empty: {scenario_id}")
+        seen_ids.add(scenario_id)
+
+        required = (
+            "activity_id",
+            "provider_id",
+            "service_id",
+            "model_id",
+            "model_generation",
+            "generation_mode",
+            "modality",
+            "functional_unit",
+            "scope_boundary",
+            "pue_treatment",
+            "source_id",
+            "source_role",
+            "source_locator",
+            "vintage_year",
+            "retrieved_at",
+            "publication_status",
+        )
+        missing = [field for field in required if not (row.get(field) or "").strip()]
+        if missing:
+            raise ValueError(f"{scenario_id}: missing required fields: {', '.join(missing)}")
+
+        source_id = row["source_id"].strip()
+        if source_id not in sources:
+            raise ValueError(f"{scenario_id}: source is not registered: {source_id}")
+        status = row["publication_status"].strip()
+        if status not in AI_SCENARIO_STATUSES:
+            raise ValueError(f"{scenario_id}: invalid publication status {status}")
+        carbon_method = (row.get("carbon_accounting_method") or "").strip()
+        if carbon_method not in AI_SCENARIO_CARBON_METHODS:
+            raise ValueError(f"{scenario_id}: invalid carbon accounting method {carbon_method}")
+        energy = _scenario_optional_number(row, "energy_wh")
+        energy_low = _scenario_optional_number(row, "energy_wh_low")
+        energy_high = _scenario_optional_number(row, "energy_wh_high")
+        carbon = _scenario_optional_number(row, "carbon_g_per_unit")
+        if status != "unavailable" and energy is None and carbon is None:
+            raise ValueError(f"{scenario_id}: available scenarios need energy or carbon")
+        if isinstance(energy, str) or isinstance(carbon, str):
+            raise ValueError(f"{scenario_id}: energy and carbon values must be numeric")
+        if energy_low is not None and energy_high is not None:
+            if not isinstance(energy_low, (int, float)) or not isinstance(
+                energy_high, (int, float)
+            ):
+                raise ValueError(f"{scenario_id}: energy bounds must be numeric")
+            if energy_low > energy_high or (
+                isinstance(energy, (int, float)) and not energy_low <= energy <= energy_high
+            ):
+                raise ValueError(f"{scenario_id}: energy bounds are not ordered")
+        if carbon_method in {"direct-disclosure", "lifecycle-assessment"}:
+            if not isinstance(carbon, (int, float)):
+                raise ValueError(f"{scenario_id}: {carbon_method} requires carbon_g_per_unit")
+            if not (row.get("carbon_components") or "").strip():
+                raise ValueError(f"{scenario_id}: carbon accounting needs components")
+        if carbon_method == "derived-grid":
+            raise ValueError(
+                f"{scenario_id}: derived-grid scenarios must be resolved only after grid metadata is selected"
+            )
+        if (row.get("modality") or "").strip() == "image":
+            for field in ("width_px", "height_px", "denoising_steps"):
+                if not (row.get(field) or "").strip():
+                    raise ValueError(f"{scenario_id}: image scenario missing {field}")
+        if (row.get("modality") or "").strip() == "video":
+            for field in (
+                "width_px",
+                "height_px",
+                "frames",
+                "fps",
+                "denoising_steps",
+                "duration_seconds",
+                "audio_included",
+            ):
+                if not (row.get(field) or "").strip():
+                    raise ValueError(f"{scenario_id}: video scenario missing {field}")
+
+        energy_components = _scenario_json(row, "energy_components", scenario_id)
+        carbon_components = _scenario_json(row, "carbon_components", scenario_id)
+        uncertainty = _scenario_json(row, "uncertainty", scenario_id)
+        source = sources[source_id]
+        source_evidence = _source_evidence(source_id, sources)
+        if source_evidence is None:
+            raise ValueError(f"Source ledger evidence is incomplete for {scenario_id}")
+        records.append(
+            {
+                "scenarioId": scenario_id,
+                "activityId": row["activity_id"].strip(),
+                "providerId": row["provider_id"].strip(),
+                "serviceId": row["service_id"].strip(),
+                "modelId": row["model_id"].strip(),
+                "modelVersion": (row.get("model_version") or "").strip() or None,
+                "modelGeneration": row["model_generation"].strip(),
+                "generationMode": row["generation_mode"].strip(),
+                "modality": row["modality"].strip(),
+                "functionalUnit": row["functional_unit"].strip(),
+                "tokenBasis": (row.get("token_basis") or "").strip() or None,
+                "workload": {
+                    "profileId": (row.get("workload_profile_id") or "").strip() or None,
+                    "inputTokens": _scenario_optional_number(row, "input_tokens"),
+                    "outputTokens": _scenario_optional_number(row, "output_tokens"),
+                    "reasoningTokens": _scenario_optional_number(row, "reasoning_tokens"),
+                    "hiddenReasoningDisclosure": (
+                        row.get("hidden_reasoning_disclosure") or ""
+                    ).strip()
+                    or None,
+                    "batchSize": _scenario_optional_number(row, "batch_size"),
+                    "servingContext": (row.get("serving_context") or "").strip() or None,
+                },
+                "media": {
+                    "widthPx": _scenario_optional_number(row, "width_px"),
+                    "heightPx": _scenario_optional_number(row, "height_px"),
+                    "frames": _scenario_optional_number(row, "frames"),
+                    "fps": _scenario_optional_number(row, "fps"),
+                    "denoisingSteps": _scenario_optional_number(row, "denoising_steps"),
+                    "durationSeconds": _scenario_optional_number(row, "duration_seconds"),
+                    "audioIncluded": (row.get("audio_included") or "").strip() or None,
+                },
+                "energyWh": energy,
+                "energyWhLow": energy_low,
+                "energyWhHigh": energy_high,
+                "energyComponents": energy_components,
+                "scopeBoundary": row["scope_boundary"].strip(),
+                "pueTreatment": row["pue_treatment"].strip(),
+                "carbonGPerUnit": carbon,
+                "carbonGPerUnitLow": _scenario_optional_number(row, "carbon_low_g_per_unit"),
+                "carbonGPerUnitHigh": _scenario_optional_number(row, "carbon_high_g_per_unit"),
+                "carbonAccounting": {
+                    "method": carbon_method or None,
+                    "components": carbon_components,
+                    "gridIntensityGPerKwh": _scenario_optional_number(
+                        row, "grid_intensity_g_per_kwh"
+                    ),
+                    "gridRegion": (row.get("grid_region") or "").strip() or None,
+                    "gridVintageYear": _scenario_optional_number(row, "grid_vintage_year"),
+                },
+                "serviceRegion": (row.get("service_region") or "").strip() or None,
+                "vintageYear": _int_or_none(row.get("vintage_year")),
+                "retrievedAt": row["retrieved_at"].strip(),
+                "uncertainty": uncertainty,
+                "publicationStatus": status,
+                "sourceRefs": [
+                    {
+                        "sourceId": source_id,
+                        "role": row["source_role"].strip(),
+                        "locator": row["source_locator"].strip(),
+                        "retrievedAt": (source_evidence or {}).get(
+                            "retrievedAt", row["retrieved_at"].strip()
+                        ),
+                        "citation": source.get("ieee_citation", "").strip(),
+                        "url": source.get("url", "").strip(),
+                        "sourceEvidence": source_evidence,
+                    }
+                ],
+                "notes": (row.get("notes") or "").strip() or None,
+            }
+        )
+    return {
+        "schemaVersion": AI_SCENARIOS_SCHEMA_VERSION,
+        "records": records,
+    }
 
 
 def _build_payload(root: Path, generated_at: str) -> dict[str, Any]:
@@ -475,10 +777,12 @@ def _build_catalog_payload(root: Path, generated_at: str) -> dict[str, Any]:
                 "unavailabilityReason": unavailable_reason,
             }
         )
+    ai_scenarios = _build_ai_scenarios(root, sources)
     return {
         "schemaVersion": SCHEMA_VERSION,
         "generatedAt": generated_at,
         "activities": catalog,
+        "aiScenarios": ai_scenarios,
     }
 
 
@@ -489,10 +793,46 @@ def build_catalog_payload(
     return _build_catalog_payload(root, generated_at or _generated_at())
 
 
+def _collect_source_ids(value: object, source_ids: set[str]) -> None:
+    if isinstance(value, dict):
+        for nested in value.values():
+            _collect_source_ids(nested, source_ids)
+    elif isinstance(value, list):
+        for nested in value:
+            _collect_source_ids(nested, source_ids)
+    elif isinstance(value, str):
+        source_ids.update(SOURCE_ID_RE.findall(value))
+
+
+def _active_source_ids(root: Path) -> set[str]:
+    source_ids: set[str] = set()
+    for path in sorted((root / "data").glob("*.csv")):
+        if path.name in {"sources.csv", "source_decisions.csv", "dataflow_manifest.csv"}:
+            continue
+        for row in _load_csv(path):
+            _collect_source_ids(row, source_ids)
+    owid_manifest = root / OWID_MANIFEST_RELATIVE
+    if owid_manifest.is_file():
+        _collect_source_ids(json.loads(owid_manifest.read_text(encoding="utf-8")), source_ids)
+    return source_ids
+
+
 def _build_sources_payload(root: Path) -> dict[str, Any]:
+    registry_rows = _load_csv(root / "data/sources.csv")
+    sources = {
+        row["source_id"]: row for row in registry_rows if (row.get("source_id") or "").strip()
+    }
+    enriched_sources = _load_source_provenance(root, sources)
+    active_ids = _active_source_ids(root)
+    active_rows = [
+        row
+        for row in registry_rows
+        if (row.get("source_id") or "").strip() in active_ids
+        and _source_evidence(row["source_id"], enriched_sources) is not None
+    ]
     return {
         "schemaVersion": SOURCES_SCHEMA_VERSION,
-        "sources": _load_csv(root / "data/sources.csv"),
+        "sources": active_rows,
     }
 
 
@@ -581,6 +921,7 @@ def _validate_owid_manifest(
     expected = {
         "schemaVersion": "acx.owid-source/1-0-0",
         "provider": "Our World in Data",
+        "sourceId": "SRC.OWID.CO2.2025",
         "chartId": OWID_CHART_ID,
         "metric": OWID_METRIC,
         "dataUrl": OWID_DATA_URL,
@@ -717,16 +1058,25 @@ def build_owid_context_payload(repo_root: Path | None = None) -> dict[str, Any]:
 
 def _release_inputs(root: Path, snapshot_files: dict[str, bytes] | None) -> dict[str, str | None]:
     relative_paths = {
-        Path("data/activities.csv"),
-        Path("data/benchmarks.csv"),
-        Path("data/emission_factors.csv"),
-        Path("data/grid_intensity.csv"),
-        Path("data/sources.csv"),
         Path("scripts/generate_web_calculator_data.py"),
         OWID_DATA_RELATIVE,
         OWID_METADATA_RELATIVE,
         OWID_MANIFEST_RELATIVE,
     }
+    manifest_path = root / "data/dataflow_manifest.csv"
+    if manifest_path.is_file():
+        relative_paths.update(
+            {
+                Path("data/dataflow_manifest.csv"),
+                Path("data/source_decisions.csv"),
+                Path("refs/sources_manifest.csv"),
+            }
+        )
+        with manifest_path.open(newline="", encoding="utf-8") as handle:
+            for row in csv.DictReader(handle):
+                dataset = (row.get("dataset_path") or "").strip()
+                if dataset:
+                    relative_paths.add(Path("data") / dataset)
     inputs: dict[str, str | None] = {}
     for relative_path in sorted(relative_paths, key=lambda path: path.as_posix()):
         if relative_path in {OWID_DATA_RELATIVE, OWID_METADATA_RELATIVE, OWID_MANIFEST_RELATIVE}:
@@ -753,6 +1103,17 @@ def _build_release_payload(
     public_context = PUBLIC_DATA_ROOT / "owid-context.json"
     context = json.loads(context_bytes)
     available = context.get("status") == "available"
+    owid_raw_authorities = (
+        {
+            filename: {
+                "path": f"/data/owid/{filename}",
+                "sha256": _sha256_bytes(authorities[OWID_PUBLIC_ROOT / filename]),
+            }
+            for filename in OWID_RAW_FILENAMES
+        }
+        if snapshot_files is not None
+        else None
+    )
     return {
         "schemaVersion": PUBLIC_RELEASE_SCHEMA_VERSION,
         "generatedAt": generated_at,
@@ -790,6 +1151,7 @@ def _build_release_payload(
             "sourceMetadataPath": (
                 "/data/owid/annual-co2-emissions-per-country.metadata.json" if available else None
             ),
+            "rawAuthorities": owid_raw_authorities,
         },
     }
 
@@ -951,6 +1313,14 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     repo_root = Path(args.repo_root).resolve()
     output_root = Path(args.output_root).resolve()
+    required_inputs = (
+        repo_root / "data/dataflow_manifest.csv",
+        repo_root / "data/source_decisions.csv",
+        repo_root / "refs/sources_manifest.csv",
+    )
+    missing_inputs = [str(path) for path in required_inputs if not path.is_file()]
+    if missing_inputs:
+        raise ValueError(f"Missing publication audit inputs: {', '.join(missing_inputs)}")
     authorities, remove_paths = _all_authority_bytes(repo_root, _generated_at())
     _validate_authority_bytes(authorities)
     _commit_authorities(output_root, authorities, remove_paths)

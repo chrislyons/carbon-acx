@@ -65,7 +65,7 @@ Define the **visualization strategy and user experience** for the carbon-acx pla
 
 - **Purpose:** List full IEEE references for all [n] tags visible in current view.
 - **Implementation:** app/components/references.py.
-- **Inputs:** references/*.txt.
+- **Inputs:** `dist/artifacts/references/*.txt`.
 - **Features:**
     - Scrollable panel, plain-text numbered references.
     - Syncs with hover indices.
@@ -83,7 +83,7 @@ Define the **visualization strategy and user experience** for the carbon-acx pla
 
 ### **3.2 Reference files**
 
-- For each figure: references/<figure>_refs.txt
+- For each figure: `dist/artifacts/references/<figure>_refs.txt`
 - Strictly IEEE formatted, numbered [1]..[n].
 - Hover indices match list order.
 
@@ -143,7 +143,7 @@ All toggles are client-side only, reading pre-computed JSON slices.
 
 - **tests/test_figures.py** (to be added):
     - Every figure slice must load without error.
-    - Every [n] in a slice must resolve to a line in references/*.txt.
+    - Every [n] in a slice must resolve to a line in `dist/artifacts/references/*.txt`.
     - Every total shown in a chart must equal the sum of its parts within rounding tolerance.
 - **Manual checks:**
     - Run make app locally and confirm toggles and refs behave.
@@ -166,7 +166,7 @@ All toggles are client-side only, reading pre-computed JSON slices.
 - calc/figures.py: pure data slicers for each view.
 - calc/citations.py: enforces IEEE ordering.
 - calc/outputs/figures/*.json,csv: machine-readable figure slices.
-- calc/outputs/references/*.txt: reference lists.
+- `dist/artifacts/references/*.txt`: reference lists.
 - docs/ACX007_VIS_PLAN.md: this document.
 
 ***

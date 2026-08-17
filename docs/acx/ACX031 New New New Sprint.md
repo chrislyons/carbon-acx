@@ -488,7 +488,7 @@ alt_id,activity_id,activity_name,functional_unit_id,fu_name,intensity_g_per_fu,i
 
 **References:**
 
-	•	Also produce calc/outputs/references/intensity_refs.txt as the union of sources used, ordered by first appearance. Reuse citation utilities.
+	•	Also produce `dist/artifacts/references/intensity_refs.txt` as the union of sources used, ordered by first appearance. Reuse citation utilities.
 
 **Tests:**
 
@@ -500,7 +500,7 @@ alt_id,activity_id,activity_name,functional_unit_id,fu_name,intensity_g_per_fu,i
 
 **Acceptance:**
 
-	•	Running make build now creates calc/outputs/intensity_matrix.csv and references/intensity_refs.txt.
+	•	Running `make build` now creates `dist/artifacts/intensity_matrix.csv` and `dist/artifacts/references/intensity_refs.txt`.
 
 	•	CSV parses without NA coercion (true blanks remain blank).
 
@@ -528,7 +528,7 @@ calc(outputs): add intensity_matrix (g/FU) + refs (CDX004, implements ACX021)
 
 **Implement app/components/intensity.py:**
 
-	•	Load calc/outputs/intensity_matrix.csv and references/intensity_refs.txt.
+*Load `dist/artifacts/intensity_matrix.csv` and `dist/artifacts/references/intensity_refs.txt`.
 
 	•	Provide:
 
@@ -754,7 +754,7 @@ package:
 
 	cp -r calc/outputs/* dist/artifacts/
 
-Confirm intensity_matrix.csv and references/intensity_refs.txt are included.
+Confirm `dist/artifacts/intensity_matrix.csv` and `dist/artifacts/references/intensity_refs.txt` are included.
 
 	2.	If the static site exists (site/), ensure the Intensity tab loads data from /artifacts/.
 

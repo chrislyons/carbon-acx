@@ -94,6 +94,10 @@ def test_fetch_replaces_complete_snapshot_after_both_responses_validate(tmp_path
     assert manifest["metadataSha256"] == fetcher._sha256(METADATA_BYTES)
     assert (output_dir / "annual-co2-emissions-per-country.csv").read_bytes() == CSV_BYTES
     assert json.loads((output_dir / "manifest.json").read_bytes())["entityCode"] == "CAN"
+    assert (
+        json.loads((output_dir / "manifest.json").read_bytes())["sourceId"]
+        == fetcher.OWID_SOURCE_ID
+    )
 
 
 def test_fetch_atomic_directory_rollback_restores_prior_bytes(

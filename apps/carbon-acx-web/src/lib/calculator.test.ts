@@ -185,8 +185,8 @@ describe('editorial public data helpers', () => {
   })
 
   it('partitions the catalogue into personal, systems, and industrial modes', () => {
-    expect(CATALOG_ACTIVITIES.filter((activity) => getAtlasMode(activity) === 'personal')).toHaveLength(22)
-    expect(CATALOG_ACTIVITIES.filter((activity) => getAtlasMode(activity) === 'systems')).toHaveLength(44)
+    expect(CATALOG_ACTIVITIES.filter((activity) => getAtlasMode(activity) === 'personal')).toHaveLength(21)
+    expect(CATALOG_ACTIVITIES.filter((activity) => getAtlasMode(activity) === 'systems')).toHaveLength(47)
     expect(CATALOG_ACTIVITIES.filter((activity) => getAtlasMode(activity) === 'industrial')).toHaveLength(40)
   })
 })
