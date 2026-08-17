@@ -21,7 +21,7 @@ test('published Atlas and calculator records expose narrative detail and linked 
 test('Activity Atlas labels unavailable data instead of zero', async ({ page }) => {
   await page.goto('/explore')
   await page.getByRole('button', { name: /Canadian systems/ }).click()
-  await page.getByRole('button', { name: 'stream Not available' }).click()
+  await page.locator('.atlas-record').filter({ hasText: 'Unavailable' }).first().click()
   await expect(page.locator('.detail-pane').getByText('Not available')).toBeVisible()
   await expect(page.getByText('No numeric zero is substituted.')).toBeVisible()
 })

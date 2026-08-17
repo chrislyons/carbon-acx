@@ -1,7 +1,16 @@
 import Link from 'next/link'
+import { BenchmarkSpectrum } from '@/components/viz/BenchmarkSpectrum'
 import type { Benchmark } from '@/lib/calculator'
 
-export function BenchmarkContext({ benchmark, percentage }: { benchmark: Benchmark; percentage: number }) {
+export function BenchmarkContext({
+  benchmark,
+  percentage,
+  totalEmissions,
+}: {
+  benchmark: Benchmark
+  percentage: number
+  totalEmissions: number
+}) {
   const year = benchmark.year ?? 'Not specified'
   const geography = [benchmark.regionCode ?? 'Not specified', benchmark.scope ?? 'Not specified'].join(' · ')
 
@@ -13,6 +22,7 @@ export function BenchmarkContext({ benchmark, percentage }: { benchmark: Benchma
         This worksheet is {percentage.toFixed(1)}% of the selected per-capita annual scale. The comparison is context,
         not a direct organizational inventory.
       </p>
+      <BenchmarkSpectrum totalEmissions={totalEmissions} benchmark={benchmark} />
       <dl>
         <div><dt>Geography / scope</dt><dd>{geography}</dd></div>
         <div><dt>Year</dt><dd>{year}</dd></div>
