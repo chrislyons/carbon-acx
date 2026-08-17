@@ -158,9 +158,9 @@ describe('visualization adapters', () => {
     const publishedCount = groups.reduce((sum, group) => sum + group.publishedCount, 0)
     const unavailableCount = groups.reduce((sum, group) => sum + group.unavailableCount, 0)
 
-    expect(systems).toHaveLength(44)
-    expect(publishedCount).toBe(34)
-    expect(unavailableCount).toBe(10)
+    expect(systems).toHaveLength(47)
+    expect(publishedCount).toBe(30)
+    expect(unavailableCount).toBe(17)
     expect(groups).toEqual([...groups].sort((a, b) => a.label.localeCompare(b.label)))
     for (const group of groups) {
       expect(group.records).toEqual(

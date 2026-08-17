@@ -4,10 +4,11 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { EvidenceBadge, SourceList } from '@/components/content'
 import { ImpactTrace } from '@/components/viz/ImpactTrace'
-import { CATEGORY_INFO, calculateEmissions, encodeCalculatorInputs, getActivityById } from '@/lib/calculator'
+import { ACTIVITIES, CATEGORY_INFO, calculateEmissions, encodeCalculatorInputs, getActivityById } from '@/lib/calculator'
 
 const activity = getActivityById('TRAN.SCHOOLRUN.CAR.KM')!
 const initialQuantity = 1_000
+const publishedActivityCount = ACTIVITIES.filter((item) => item.evidence.publicationStatus === 'published').length
 
 export function TraceEstimate() {
   const [quantity, setQuantity] = useState(initialQuantity)
@@ -27,7 +28,7 @@ export function TraceEstimate() {
   }
 
   return (
-    <section className="trace-estimate ruled-section" aria-labelledby="trace-title">
+    <section className="trace-estimate" aria-labelledby="trace-title">
       <div className="trace-estimate__lead">
         <p className="section-kicker">Trace one number</p>
         <h1 id="trace-title">What does one year of driving look like in carbon terms?</h1>
@@ -50,7 +51,7 @@ export function TraceEstimate() {
           <span className="evidence-chip">Vintage · {activity.evidence.vintageYear}</span>
           <span className="evidence-chip">Uncertainty · {activity.evidence.uncertainty.lowGPerUnit == null || activity.evidence.uncertainty.highGPerUnit == null ? 'Not quantified' : `${activity.evidence.uncertainty.lowGPerUnit}–${activity.evidence.uncertainty.highGPerUnit} g / ${activity.unitLabel}`}</span>
         </div>
-        <p className="evidence-rail__example">Example: 1 of 22 published activities</p>
+        <p className="evidence-rail__example">Example: 1 of {publishedActivityCount} published activities</p>
         <SourceList sourceIds={activity.evidence.sourceIds} citations={activity.evidence.sourceCitations} urls={activity.evidence.sourceUrls} />
       </aside>
     </section>

@@ -20,7 +20,7 @@ export function Header() {
     <header className="site-header">
       <div className="page-shell site-header__inner">
         <Link href="/" className="site-header__brand">
-          Carbon ACX <span>evidence-led carbon literacy</span>
+          Carbon ACX <span>carbon literacy</span>
         </Link>
         <nav aria-label="Primary" className="site-header__desktop-nav">
           {links.map((link) => (

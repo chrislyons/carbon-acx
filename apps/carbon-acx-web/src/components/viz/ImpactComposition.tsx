@@ -28,7 +28,7 @@ export function ImpactComposition({
   const { ref, width } = useContainerWidth<HTMLDivElement>()
   const gradientPrefix = useId().replaceAll(':', '')
   const positionedFlow = useMemo<PositionedFlow | null>(() => {
-    if (width < 720 || !flow.links.length) return null
+    if (width < 640 || !flow.links.length) return null
 
     const height = Math.max(320, flow.nodes.length * 42)
     const layout = sankey<ImpactFlowNode, ImpactFlowLink>()

@@ -1,6 +1,11 @@
 import { BookOpenText, ScanSearch, ShoppingBasket } from 'lucide-react'
 import Link from 'next/link'
 import { TraceEstimate } from '@/components/experience/TraceEstimate'
+import { ACTIVITIES, CATALOG_ACTIVITIES } from '@/lib/calculator'
+
+const publishedCalculatorCount = ACTIVITIES.filter((activity) => activity.evidence.publicationStatus === 'published').length
+const publishedCatalogueCount = CATALOG_ACTIVITIES.filter((activity) => activity.evidence.publicationStatus === 'published').length
+const unavailableCatalogueCount = CATALOG_ACTIVITIES.length - publishedCatalogueCount
 
 export default function HomePage() {
   return (
@@ -21,7 +26,7 @@ export default function HomePage() {
           <h2>Estimate an activity</h2>
           <p>Build an editable annual worksheet from published activity records. Every included quantity keeps its factor and source trail visible.</p>
           <Link className="text-link" href="/calculator">Estimate an activity</Link>
-          <small>22 published calculator activities</small>
+          <small>{publishedCalculatorCount} published calculator activities</small>
         </article>
         <article>
           <ScanSearch aria-hidden="true" className="job-path__icon" size={30} />
@@ -29,7 +34,7 @@ export default function HomePage() {
           <h2>Inspect the evidence</h2>
           <p>Browse the Activity Atlas by layer and inspect record-level boundary, geography, vintage, uncertainty, and source links.</p>
           <Link className="text-link" href="/explore">Inspect the evidence</Link>
-          <small>106 catalogue records · 96 published · 10 unavailable</small>
+          <small>{CATALOG_ACTIVITIES.length} catalogue records · {publishedCatalogueCount} published · {unavailableCatalogueCount} unavailable</small>
         </article>
       </section>
     </div>

@@ -209,13 +209,18 @@ a {
 
 /* Shared shell. Long-form/supporting routes stay narrower than data journeys. */
 .editorial-page {
-  width: min(100% - 2rem, 92rem);
+  width: min(100% - 2rem, 87.5rem);
   margin-inline: auto;
   padding-block: clamp(1rem, 2.5vw, 2.5rem) clamp(2rem, 5vw, 5rem);
 }
 
+
+.page-shell--reading {
+  padding-block: clamp(2.5rem, 4vw, 3.5rem);
+}
+
 .page-shell {
-  width: min(100% - 2rem, 76rem);
+  width: min(100% - 2rem, 87.5rem);
   margin-inline: auto;
 }
 
@@ -314,12 +319,19 @@ a {
 .mode-switcher__button,
 .site-header__mobile-toggle {
   min-height: 44px;
-  border: 1px solid var(--rule);
   border-radius: 0;
   padding: 0.35rem 0.65rem;
   background: transparent;
   color: inherit;
   font: 600 0.72rem/1 var(--font-mono);
+}
+
+.mode-switcher__button {
+  border: 0;
+}
+
+.site-header__mobile-toggle {
+  border: 1px solid var(--rule);
 }
 
 .site-header__mobile-toggle,
@@ -2003,13 +2015,10 @@ textarea:focus {
   }
 }
 
-@media (max-width: 420px) {
-  .editorial-page {
-    width: min(100% - 1.25rem, 92rem);
-  }
 
+@media (max-width: 420px) {
   .page-shell {
-    width: min(100% - 1.25rem, 76rem);
+    width: min(100% - 1.25rem, 87.5rem);
   }
 
   .activity-shelf__grid {

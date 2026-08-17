@@ -125,7 +125,7 @@ function LearningCard({
 
 export default function LearnPage() {
   return (
-    <div className="page-shell max-w-6xl py-10 sm:py-14">
+    <div className="page-shell page-shell--reading max-w-6xl py-10 sm:py-14">
       <p className="section-kicker">Learn</p>
       <h1 className="section-title max-w-3xl">Read a carbon estimate from the record outward.</h1>
       <p className="section-copy mt-4 max-w-3xl">
