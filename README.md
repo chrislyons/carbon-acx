@@ -6,7 +6,7 @@
 
 > **Current dataset version:** v1.2
 
-Carbon ACX is a public carbon-literacy web app and open reference stack. It turns auditable CSV inputs into a reproducible dataset, then publishes annual activity estimates, an evidence-first Activity Atlas, and static Cloudflare Pages bundles. The web calculator/catalogue authorities use `acx.web-calculator/1-4-0`; the versioned source envelope uses `acx.web-sources/1-0-0`. Every public calculation uses a cited, published factor; incomplete records are shown as unavailable rather than converted to zero.
+Carbon ACX is a public carbon-literacy web app and open reference stack. It turns auditable CSV inputs into a reproducible dataset, then publishes annual activity estimates, an evidence-first Activity Atlas, and static Cloudflare Pages bundles. The web calculator/catalogue authorities use `acx.web-calculator/1-5-0`; the versioned source envelope uses `acx.web-sources/1-0-0`. Every public calculation uses a cited, published factor; incomplete records are shown as unavailable rather than converted to zero.
 
 ---
 
@@ -32,7 +32,7 @@ At widths of 700px or less, the shared header replaces its desktop links with a 
 | **Source-of-truth data** | Canonical CSVs for activities, emission factors, schedules, grid intensity, and more live under `data/`, ready for rebuilds and audits. |
 | **Derivation toolkit** | `python -m calc.derive` validates inputs, composes emissions, exports intensity matrices, and emits immutable manifests with hashed figures in `dist/artifacts/`. |
 | **Primary web app** | `apps/carbon-acx-web/` contains the static Next.js public product: Start here, Estimate, Activity Atlas, Learn, How we know, and the Evidence library. |
-| **Published-data contract** | `scripts/generate_web_calculator_data.py` emits `acx.web-calculator/1-4-0` calculator/catalogue records, the `acx.web-sources/1-0-0` source envelope, and the offline `acx.owid-context/1-0-0` plus `acx.public-release/1-0-0` authorities from canonical data; incomplete records remain unavailable rather than zero. |
+| **Published-data contract** | `scripts/generate_web_calculator_data.py` emits `acx.web-calculator/1-5-0` calculator/catalogue records, the `acx.ai-scenarios/1-0-0` source-backed catalogue scenarios, the `acx.web-sources/1-0-0` source envelope, and the offline `acx.owid-context/1-0-0` plus `acx.public-release/1-0-0` authorities from canonical data; incomplete records remain unavailable rather than zero. |
 | **Packaging automation** | `make package` builds the static Next.js export into `dist/site`, then packages immutable raw artifacts and Pages metadata beside it. |
 
 ## At-a-glance layers
@@ -102,7 +102,7 @@ Layer descriptions, types, and activities are sourced directly from `data/layers
 make build
 ```
 
-`make build` invokes `python -m calc.derive` with guardrails that write immutable artefacts to `dist/artifacts/<hash>` and refresh intensity matrices for downstream clients.
+`make build` runs the data and ledger audits, derives into a temporary sibling, validates the collection manifests, and atomically promotes `dist/artifacts/`. The generated `latest-build.json` and `manifest.json` bind the collection to its build hash. The default Dash artifact root is `dist/artifacts`.
 
 ### Explore the experiences
 
@@ -119,13 +119,22 @@ make build
 - When you need intensity tables or exports for downstream models, run `python -m calc.derive intensity --fu all` or use the Make targets that wrap it for consistency.
 - Keep UI icon assignments in sync via `data/icons.csv` so layer and activity surfaces stay backed by committed assets.
 
+## Provenance and release gates
+
+- `data/dataflow_manifest.csv` declares every canonical dataset, record key, provenance field, source field, derivation input, and publication surface.
+- `data/source_decisions.csv` records source adjudication, evidence hashes, review dates, and affected outputs. `data/sources.csv` is the canonical citation registry; `refs/sources_manifest.csv` is the retrieval ledger.
+- Run `ACX_AUDIT_DATE=YYYY-MM-DD make data-audit` before publishing. It is fail-closed for undeclared files, duplicate keys, unresolved sources, stale reviews, missing decisions, and invalid ledger metadata.
+- `make build-web` regenerates the calculator, catalogue, source, OWID-context, release, and byte-parity public authorities. `make package` builds the static Pages bundle and hash-verifiable artifacts.
+- The Worker compute endpoint remains unavailable until provenance is verified: non-OPTIONS `/api/compute` requests return the exact HTTP 503 unavailable contract, and `/api/health` reports `compute: "unavailable"`.
+
+
 ---
 
 - `make doctor` validates the pinned Node, pnpm, Python, and Poetry versions used by the recovery baseline.
-- `make validate` runs Ruff, Black, doc linters, pytest, and asset validation in one pass.
+- `make validate` runs Ruff, Black, documentation lint, pytest, asset validation, and the data/ledger audit in one pass.
 - `make package` builds the static public app, copies it to `dist/site`, packages raw artifacts, and writes immutable caching headers for Cloudflare Pages.
 - `pnpm --filter carbon-acx-web test:e2e` covers evidence arithmetic, benchmarks, unavailable data, the 2D fallback, mobile navigation disclosure, route overflow at 390 × 844, removed Worlds navigation, artifact verification, and serious/critical Axe violations.
-- Additional helpers include `make sbom`, `make catalog`, and reference-oriented scripts in `tools/` for maintaining compliance and citation integrity.
+- Additional helpers include `make sbom`, `make catalog`, and the source-ledger commands in `calc/` and `tools/citations/`.
 
 ---
 
@@ -147,7 +156,7 @@ make build
 
 ## FAQ & tips
 
-- Artefacts live under `dist/artifacts/<hash>`; update `ACX_ARTIFACT_DIR` if you need the Dash app to point at a custom bundle.
+- Artefacts live under `dist/artifacts/`; `latest-build.json` selects the current hash-bound collection. Set `ACX_ARTIFACT_DIR` to a different complete collection when running the Dash app.
 - `ACX_DATA_BACKEND` lets you swap between CSV and SQLite builds using the same derivation entry points (`make build-backend`).
 - Avoid using the contiguous token spelled “F a s t A P I” in docs to satisfy repository hygiene checks.
 

@@ -51,6 +51,8 @@ jobs:
           poetry-version: "1.8.3"
       - name: Verify pinned toolchain
         run: ./scripts/bootstrap.sh --check-only
+      - name: Set audit date
+        run: echo "ACX_AUDIT_DATE=$(date -u +%F)" >> "$GITHUB_ENV"
 
       - name: Install workspace dependencies
         run: pnpm install --frozen-lockfile -w
@@ -78,6 +80,7 @@ jobs:
           make validate-manifests
           make validate-diff-fixtures
           make build-static
+          make publication-audit
 
       - name: Upload data artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
@@ -154,3 +157,6 @@ jobs:
       - run: poetry install --no-interaction --extras "db"
       - name: Run pytest
         run: poetry run pytest -q
+
+      - name: Run Worker containment test
+        run: node --import tsx --test workers/compute/index.test.ts

@@ -27,17 +27,18 @@ jobs:
       - name: Install dependencies
         run: poetry install --no-interaction --with dev --extras "db"
 
+      - name: Set audit date
+        run: echo "ACX_AUDIT_DATE=$(date -u +%F)" >> "$GITHUB_ENV"
       - name: Run make validate
         run: make validate
 
       - name: Run pytest
         run: poetry run pytest -q
 
-      - name: Scan claims for citations
-        run: poetry run python tools/citations/scan_claims.py
+      - name: Scan canonical dataflow
+        run: poetry run python tools/citations/scan_claims.py --as-of "$ACX_AUDIT_DATE"
 
-      - name: Build artifact references
-        run: poetry run python tools/citations/references_builder.py --all
-
-      - name: Verify harvested references
-        run: poetry run python tools/citations/harvest.py --check
+      - name: Audit source ledger metadata
+        run: poetry run python -m calc.refs_audit --metadata-only --as-of "$ACX_AUDIT_DATE"
+      - name: Audit generated publication authorities
+        run: poetry run python scripts/audit_publication.py --as-of "$ACX_AUDIT_DATE"

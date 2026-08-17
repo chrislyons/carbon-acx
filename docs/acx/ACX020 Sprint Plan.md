@@ -24,7 +24,7 @@ related:
 
 **Title:** feat(calc): add figures pipeline (stacked/bubble/sankey) + IEEE refs
 
-**Intent:** Implement calc/citations.py and calc/figures.py, and extend calc/derive.py to output calc/outputs/figures/{stacked,bubble,sankey}.json plus calc/outputs/references/*_refs.txt, preserving low/mean/high and daily→annual semantics.
+**Intent:** Implement `calc/citations.py` and `calc/figures.py`, and extend `calc/derive.py` to output `dist/artifacts/figures/{stacked,bubble,sankey}.json` plus `dist/artifacts/references/*_refs.txt`, preserving low/mean/high and daily→annual semantics.
 
 **Changes:**
 

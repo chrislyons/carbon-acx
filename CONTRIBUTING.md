@@ -6,14 +6,16 @@ predictable across pull requests.
 
 ## Getting started
 
-1. Install toolchain prerequisites listed in the [README](README.md#local-development).
+1. Install toolchain prerequisites listed in the [README](README.md#prerequisites).
 2. Create a new branch from `main`.
-3. Run the local quality targets at least once before opening your pull request:
+3. Run the audit-aware quality targets before opening your pull request:
 
    ```bash
-   make lint
-   make test
-   make build site package
+   ACX_AUDIT_DATE=YYYY-MM-DD make validate
+   ACX_AUDIT_DATE=YYYY-MM-DD make package
+   pnpm --filter carbon-acx-web test
+   pnpm --filter carbon-acx-web typecheck
+   node --import tsx --test workers/compute/index.test.ts
    ```
 
 ## Pull request checklist
@@ -26,8 +28,12 @@ Include the following confirmations in every pull request description:
 - [ ] **Sources-first / null-first** — every new measurement references a
       `source_id` from `data/sources.csv`, and missing or unverifiable values are
       left `null` rather than guessed.
-- [ ] **Tests** — `make lint`, `make test`, and `make build site package` were
-      run locally and relevant fixture updates are included.
+- [ ] **Provenance contracts** — update `data/dataflow_manifest.csv` and
+      `data/source_decisions.csv` for new or adjudicated records; active sources
+      have a current `review_due_at` and a matching `refs/sources_manifest.csv`
+      ledger row.
+- [ ] **Tests and release gates** — `make validate`, `make package`, the web
+      unit/type checks, and the Worker contract test were run locally.
 - [ ] **Activities & emission factors** — additions or edits in
       `data/activities.csv` and `data/emission_factors.csv` include matching
       schedule/profile entries when required.
@@ -35,8 +41,9 @@ Include the following confirmations in every pull request description:
       temporal coverage and region identifiers.
 - [ ] **Profiles** — new rows in `data/profiles.csv` describe the profile type,
       unit, and default interpretation in the accompanying source reference.
-- [ ] **References** — any new `source_id` has a complete citation in
-      `data/sources.csv` and supporting material is attached to the pull request.
+- [ ] **Source registry and ledger** — any new `source_id` has a complete
+      citation in `data/sources.csv`, a current review date, and a matching
+      retrieval-ledger record.
 - [ ] **Parity** — backend parity tests pass locally (`pytest
       tests/test_backend_parity.py`).
 
@@ -68,12 +75,15 @@ Include the following confirmations in every pull request description:
 - When a profile replaces an existing series, deprecate the prior row by
   updating its `sunset_vintage`.
 
-## Updating references
+## Updating the source registry and ledger
 
-- Amend `data/sources.csv` with complete bibliographic details for every new
-  source: title, publisher, publication year, URL, and access timestamp.
-- Store supporting PDFs or spreadsheets in external storage and link them in
-  the pull request description when licenses permit.
+- Amend `data/sources.csv` with complete bibliographic details, a license or
+  rights value, and `review_due_at` exactly one year after verified retrieval.
+- Update `data/source_decisions.csv` when a record or source is corrected,
+  consolidated, or culled. Include the evidence hash and affected outputs.
+- Keep `refs/sources_manifest.csv` aligned with active sources. Raw and
+  normalized retrieval files are artifact-only and must not be committed as
+  binaries.
 
 ## Acceptance expectations
 

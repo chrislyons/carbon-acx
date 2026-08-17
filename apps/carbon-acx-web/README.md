@@ -5,7 +5,7 @@ A static Next.js App Router site for Carbon ACX’s public carbon-literacy inter
 ## Architecture
 
 - **Next App Router static export** — no API routes or runtime data service.
-- **Authoritative generated data** — `src/generated/calculator-data.json`, `catalog-data.json`, and the versioned `sources.json` envelope are produced from repository CSV authorities. The calculator/catalogue schema is `acx.web-calculator/1-4-0`; do not hand-edit generated files.
+- **Authoritative generated data** — `src/generated/calculator-data.json`, `catalog-data.json`, and the versioned `sources.json` envelope are produced from repository CSV authorities. The calculator/catalogue schema is `acx.web-calculator/1-5-0`; `catalog-data.json` also carries the `acx.ai-scenarios/1-0-0` source-backed scenario records. Do not hand-edit generated files.
 - **Offline OWID context** — `src/generated/owid-context.json`, `release-data.json`, and `/public/data/` copies are generated from the pinned `data/owid/` snapshot. The context schema is `acx.owid-context/1-0-0`; the release schema is `acx.public-release/1-0-0`. It is labelled macro context only, never a factor or benchmark.
 - **Public routes** — `/`, `/calculator`, `/explore`, `/explore/3d`, `/learn`, `/methodology`, `/manifests`, and `/manifests/[id]`. The methodology primer is at `/methodology#primer`; the learning route uses only generated catalogue records.
 - **Artifacts** — raw immutable artifacts remain available under `/artifacts/`; manifest pages verify fetched bytes against declared SHA-256 digests in the browser.

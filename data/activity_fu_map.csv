@@ -71,10 +71,6 @@ AGRI.BEEF.CARCASS.KG,FU.KG,fu = mass_kg,
 AGRI.POULTRY.READY.KG,FU.KG,fu = mass_kg,
 FOOD.COFFEE.ROASTED.KG,FU.KG,fu = mass_kg,
 IND_LIGHT.CONSTRUCTION.SITE_DAY,FU.SITE_DAY,fu = site_days,site_days defaults to one active site-day
-AI.USAGE.GPT.QUERY,FU.TOKEN_K,fu = tokens/1000,default tokens=1000 if not provided
-AI.USAGE.ANTHROPIC.QUERY,FU.TOKEN_K,fu = tokens/1000,default tokens=1000
-AI.USAGE.GOOGLE.QUERY,FU.TOKEN_K,fu = tokens/1000,default tokens=1000
-AI.IMAGE.GENERATION.PROMPT,FU.PROMPT,fu = prompts,prompts defaults to 1 if not provided
 CLOTHING.TSHIRT.COTTON,FU.GARMENT,fu = servings,one garment purchased per event (servings = 1)
 CLOTHING.JEANS.DENIM,FU.GARMENT,fu = servings,one garment purchased per event (servings = 1)
 CLOTHING.JACKET.SYNTH,FU.GARMENT,fu = servings,one garment purchased per event (servings = 1)

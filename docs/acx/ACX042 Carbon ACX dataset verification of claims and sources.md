@@ -88,4 +88,4 @@ Reviewed claims and referenced material surfaced in the Carbon ACX repo areas yo
 
 ***
 
-If you want, I can now turn this into a CI-enforced checklist (tests that fail on: missing `source_id`, mixed electricity scopes, missing vintage_year, or ranges without provenance) and a `References.txt` builder that assembles the IEEE list per artifact.
+If you want, I can now turn this into a CI-enforced checklist (tests that fail on: missing `source_id`, mixed electricity scopes, missing `vintage_year`, or ranges without provenance) and an audited per-artifact citation text builder that assembles the IEEE list from the canonical source registry.

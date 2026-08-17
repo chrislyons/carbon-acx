@@ -1,2 +1,0 @@
-# Add source_id values here to temporarily bypass manifest coverage checks.
-# Lines beginning with `#` are ignored.

@@ -283,7 +283,7 @@ Tasks
 
 1. Export CSV of current export_view slice.
 2. Export PNG of current canvas (client-side render to image).
-3. Export References.txt (IEEE list in current view order).
+3. Export per-artifact reference text (IEEE list in current view order).
 
 Tests
 

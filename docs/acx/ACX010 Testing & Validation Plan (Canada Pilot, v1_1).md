@@ -66,7 +66,7 @@ Establish a **comprehensive testing and validation framework** for carbon-acx. T
 - **Checks**:
     - Every source_id in CSVs resolves to sources.csv.
     - sources.csv rows must contain IEEE string, URL, year ≤ current year.
-    - Every [n] in figure slices (figures/*.json) maps to line in references/*.txt.
+    - Every [n] in figure slices (figures/*.json) maps to a line in `dist/artifacts/references/*.txt`.
 - **Implementation**: pytest test_citations.py.
 
 ### **2.6 Figure Slice Integrity**

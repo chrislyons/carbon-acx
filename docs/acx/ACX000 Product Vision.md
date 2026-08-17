@@ -339,7 +339,7 @@ This avoids brittle “3/7 office days” notes and supports seasonal commuting 
 ## **8) Interop and storage formats**
 
 - **Columnar + JSON Schema**: Maintain canonical Parquet files for analytics; publish CSV for accessibility; publish a JSON Schema (or Pydantic models) for API/validation.
-- **API readiness**: If you’ll serve Plotly dashboards, expose a small HTTP endpoint that returns: dataset, calc parameters, and a generated References.txt (IEEE layout) bound to the exact calc_run_id.
+- **API readiness**: If you’ll serve Plotly dashboards, expose a small HTTP endpoint returning the dataset, calculation parameters, and per-artifact reference text (IEEE layout) bound to the exact `calc_run_id`.
 
 ## **9) Visualization contracts (Plotly)**
 
@@ -348,7 +348,7 @@ This avoids brittle “3/7 office days” notes and supports seasonal commuting 
     - trace_query (saved SQL or JSON spec for the exact slice),
     - hover_template with placeholders for [citation_order],
     - caption_text (short) plus figure_notes (long-form assumptions).
-- **Downloadables**: Persist per-figure CSV snapshots and a References.txt generated from sources.ieee_citation in the *exact in-text order* used by that figure.
+- **Downloadables**: Persist per-figure CSV snapshots and reference text generated from `sources.ieee_citation` in the *exact in-text order* used by that figure.
 
 ## **10) Governance and reproducibility**
 
@@ -409,7 +409,7 @@ With these deltas, you’ll have a future-proof, reproducible data spine that su
 
 - **Units in labels**: Always include units in axis titles/legends, e.g., “Annual emissions (kg CO₂e)”.
 - **Citation numbers**: Square-bracket numerals inside hover labels and figure captions, mapping to a single **References** block displayed with the chart.
-- **Download affordances**: Provide buttons to download (a) the **exact CSV** used in the trace, and (b) the **References.txt** generated from sources.ieee_citation.
+- **Download affordances**: Provide buttons to download (a) the **exact CSV** used in the trace, and (b) the per-artifact reference text generated from `sources.ieee_citation`.
 - **Color/encodings**: Use a consistent category palette across figures; use **error bars** or a secondary figure for uncertainty to avoid overly busy stacks.
 
 ***

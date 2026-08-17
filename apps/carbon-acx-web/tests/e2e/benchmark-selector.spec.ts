@@ -15,6 +15,6 @@ test('calculator traces a 1000 km annual estimate to evidence and Ontario compar
   await expect(page.getByText('Why this matters')).toBeVisible()
   await expect(page.getByText('Nuclear + hydro grid keeps per-capita low')).toBeVisible()
   await expect(page.getByRole('link', { name: 'Read the compatible benchmark method' })).toHaveAttribute('href', '/methodology#benchmarks')
-  await expect(page.locator('.benchmark-context a[href^=\"https://publications.gc.ca\"]')).toBeVisible()
+  await expect(page.locator('.benchmark-context a[href^="https://www.canada.ca/en/environment-climate-change"]')).toBeVisible()
   await expect(page.getByText('Context only: this is a territorial/production-based per-capita scale, not a direct organizational or peer comparison.')).toBeVisible()
 })

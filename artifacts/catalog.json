@@ -50,6 +50,20 @@
       "default_unit": "1k_tokens"
     },
     {
+      "activity_id": "AI.USAGE.LLM.SCENARIO",
+      "label": "LLM inference scenario",
+      "category": "ai",
+      "layer_id": "online",
+      "default_unit": "scenario"
+    },
+    {
+      "activity_id": "AI.VIDEO.GENERATION.SCENARIO",
+      "label": "Video generation scenario",
+      "category": "ai",
+      "layer_id": "online",
+      "default_unit": "video_clip"
+    },
+    {
       "activity_id": "AMD.ACID.DRAINAGE.M3.YEAR",
       "label": "Acid mine drainage (m\u00b3\u00b7yr)",
       "category": "industrial_external",
@@ -681,7 +695,7 @@
     },
     {
       "activity_id": "TRAN.DELIVERY.TRUCK.CLASS6.KM",
-      "label": "Class-6 beverage delivery\u2014per kilometre",
+      "label": "Class-6 delivery truck\u2014per kilometre",
       "category": "logistics",
       "layer_id": "industrial_light",
       "default_unit": "km"
@@ -765,50 +779,6 @@
       "region": "GLOBAL",
       "vintage_year": 2018,
       "source_id": "SRC.POORE2018"
-    },
-    {
-      "activity_id": "AI.LLM.INFER.1K_TOKENS.GENERIC",
-      "unit": "1k_tokens",
-      "ef_value_central": null,
-      "ef_lo": null,
-      "ef_hi": null,
-      "scope_boundary": "Electricity LCA",
-      "region": "CA-ON",
-      "vintage_year": 2025,
-      "source_id": "SRC.LBNL.DC.2024"
-    },
-    {
-      "activity_id": "AI.USAGE.ANTHROPIC.QUERY",
-      "unit": "1k_tokens",
-      "ef_value_central": 250.0,
-      "ef_lo": 180.0,
-      "ef_hi": 350.0,
-      "scope_boundary": "Electricity LCA",
-      "region": "CA",
-      "vintage_year": 2023,
-      "source_id": "SRC.LUCCIONI.2023"
-    },
-    {
-      "activity_id": "AI.USAGE.GOOGLE.QUERY",
-      "unit": "1k_tokens",
-      "ef_value_central": 200.0,
-      "ef_lo": 150.0,
-      "ef_hi": 300.0,
-      "scope_boundary": "Electricity LCA",
-      "region": "CA",
-      "vintage_year": 2021,
-      "source_id": "SRC.PATTERSON.2022"
-    },
-    {
-      "activity_id": "AI.USAGE.GPT.QUERY",
-      "unit": "1k_tokens",
-      "ef_value_central": 280.0,
-      "ef_lo": 200.0,
-      "ef_hi": 400.0,
-      "scope_boundary": "Electricity LCA",
-      "region": "CA",
-      "vintage_year": 2023,
-      "source_id": "SRC.LUCCIONI.2023"
     },
     {
       "activity_id": "AMD.ACID.DRAINAGE.M3.YEAR",
@@ -932,6 +902,17 @@
       "source_id": "SRC.SCOPE3.DATA_TRANSFER.2024"
     },
     {
+      "activity_id": "CONF.AUDIO.PER_PARTICIPANT_HOUR",
+      "unit": "hour",
+      "ef_value_central": null,
+      "ef_lo": null,
+      "ef_hi": null,
+      "scope_boundary": "Electricity LCA",
+      "region": "CA-ON",
+      "vintage_year": 2024,
+      "source_id": "SRC.DIMPACT.2021"
+    },
+    {
       "activity_id": "CONF.HD.PARTICIPANT_HOUR",
       "unit": "hour",
       "ef_value_central": null,
@@ -1031,17 +1012,6 @@
       "source_id": "SRC.ECCC.NIR.2025"
     },
     {
-      "activity_id": "FOOD.COFFEE.CUP.HOT",
-      "unit": "cup",
-      "ef_value_central": 1.0,
-      "ef_lo": null,
-      "ef_hi": null,
-      "scope_boundary": "cradle-to-grave",
-      "region": "CA-ON",
-      "vintage_year": 2025,
-      "source_id": "SRC.DEMO"
-    },
-    {
       "activity_id": "FOOD.COFFEE.ROASTED.KG",
       "unit": "kg",
       "ef_value_central": 15000.0,
@@ -1084,6 +1054,50 @@
       "region": "CA",
       "vintage_year": 2018,
       "source_id": "SRC.POORE2018"
+    },
+    {
+      "activity_id": "IND_HEAVY.CEMENT.CLINKER.TONNE",
+      "unit": "tonne",
+      "ef_value_central": 870000.0,
+      "ef_lo": 820000.0,
+      "ef_hi": 920000.0,
+      "scope_boundary": "cradle-to-gate",
+      "region": "CA",
+      "vintage_year": 2023,
+      "source_id": "SRC.GNR.2023"
+    },
+    {
+      "activity_id": "IND_HEAVY.MINING.HAUL.TRUCK.HOUR",
+      "unit": "hour",
+      "ef_value_central": 280000.0,
+      "ef_lo": 230000.0,
+      "ef_hi": 330000.0,
+      "scope_boundary": "WTT+TTW",
+      "region": "CA-AB",
+      "vintage_year": 2024,
+      "source_id": "SRC.NRCAN.FREIGHT.2024"
+    },
+    {
+      "activity_id": "IND_HEAVY.REFINING.FIRED_UNIT.MMBTU",
+      "unit": "mmbtu",
+      "ef_value_central": 65000.0,
+      "ef_lo": 55000.0,
+      "ef_hi": 75000.0,
+      "scope_boundary": "gate-to-gate",
+      "region": "CA",
+      "vintage_year": 2024,
+      "source_id": "SRC.NRCAN.FUEL_LCA.2024"
+    },
+    {
+      "activity_id": "IND_HEAVY.STEEL.EAF.TONNE",
+      "unit": "tonne",
+      "ef_value_central": 480000.0,
+      "ef_lo": 400000.0,
+      "ef_hi": 560000.0,
+      "scope_boundary": "cradle-to-gate",
+      "region": "CA",
+      "vintage_year": 2023,
+      "source_id": "SRC.WORLDSTEEL.2023"
     },
     {
       "activity_id": "LOGI.AIR.TONNEKM",
@@ -1196,7 +1210,29 @@
       "source_id": "SRC.DIMPACT.2021"
     },
     {
+      "activity_id": "MEDIA.STREAM.SD.HOUR.MOBILE",
+      "unit": "hour",
+      "ef_value_central": null,
+      "ef_lo": null,
+      "ef_hi": null,
+      "scope_boundary": "Electricity LCA",
+      "region": "CA-ON",
+      "vintage_year": 2024,
+      "source_id": "SRC.DIMPACT.STREAMING.2022"
+    },
+    {
       "activity_id": "MEDIA.STREAM.UHD.HOUR",
+      "unit": "hour",
+      "ef_value_central": null,
+      "ef_lo": null,
+      "ef_hi": null,
+      "scope_boundary": "Electricity LCA",
+      "region": "CA-ON",
+      "vintage_year": 2024,
+      "source_id": "SRC.DIMPACT.STREAMING.2022"
+    },
+    {
+      "activity_id": "MEDIA.STREAM.UHD.HOUR.TV",
       "unit": "hour",
       "ef_value_central": null,
       "ef_lo": null,
@@ -1262,6 +1298,28 @@
       "source_id": "SRC.NATO.2023"
     },
     {
+      "activity_id": "MIL.MUNITIONS.DETONATED.TONNE",
+      "unit": "tonne",
+      "ef_value_central": 420000.0,
+      "ef_lo": 300000.0,
+      "ef_hi": 550000.0,
+      "scope_boundary": "gate-to-gate",
+      "region": "GLOBAL",
+      "vintage_year": 2024,
+      "source_id": "SRC.CEOBS.2023"
+    },
+    {
+      "activity_id": "MIL.MUNITIONS.DETONATION.EVENT",
+      "unit": "event",
+      "ef_value_central": 12500000.0,
+      "ef_lo": 5000000.0,
+      "ef_hi": 25000000.0,
+      "scope_boundary": "Modeled operations",
+      "region": "GLOBAL",
+      "vintage_year": 2024,
+      "source_id": "SRC.CEOBS.2023"
+    },
+    {
       "activity_id": "MIL.MUNITIONS.TONNE",
       "unit": "tonne",
       "ef_value_central": 2500000.0,
@@ -1306,6 +1364,28 @@
       "source_id": "SRC.NATO.2023"
     },
     {
+      "activity_id": "MODELED.WILDFIRE.EVENT",
+      "unit": "event",
+      "ef_value_central": 850000000.0,
+      "ef_lo": 450000000.0,
+      "ef_hi": 1250000000.0,
+      "scope_boundary": "Modeled operations",
+      "region": "CA",
+      "vintage_year": 2024,
+      "source_id": "SRC.ECCC.NIR.2025"
+    },
+    {
+      "activity_id": "MODELED.WILDFIRE.HECTARE",
+      "unit": "hectare",
+      "ef_value_central": 45000000.0,
+      "ef_lo": 25000000.0,
+      "ef_hi": 65000000.0,
+      "scope_boundary": "Modeled operations",
+      "region": "GLOBAL",
+      "vintage_year": 2023,
+      "source_id": "SRC.ECCC.NIR.2025"
+    },
+    {
       "activity_id": "MUNI.WASTE.INCINERATION.KG",
       "unit": "kg",
       "ef_value_central": 295.0,
@@ -1337,6 +1417,17 @@
       "region": "CA-ON",
       "vintage_year": 2023,
       "source_id": "SRC.TORONTO.WATER.AR2023"
+    },
+    {
+      "activity_id": "MUSIC.STREAM.STANDARD.HOUR",
+      "unit": "hour",
+      "ef_value_central": null,
+      "ef_lo": null,
+      "ef_hi": null,
+      "scope_boundary": "Electricity LCA",
+      "region": "CA-ON",
+      "vintage_year": 2024,
+      "source_id": "SRC.DIMPACT.2021"
     },
     {
       "activity_id": "OCEAN.ACIDIFICATION.PH.DEC",
@@ -1667,17 +1758,6 @@
       "region": "CA-ON",
       "vintage_year": 2024,
       "source_id": "SRC.CUTA.TTC.2017"
-    },
-    {
-      "activity_id": "stream",
-      "unit": null,
-      "ef_value_central": null,
-      "ef_lo": null,
-      "ef_hi": null,
-      "scope_boundary": "Electricity LCA",
-      "region": "CA-ON",
-      "vintage_year": 2025,
-      "source_id": "SRC.DIMPACT.2021"
     }
   ],
   "profiles": [
@@ -1748,42 +1828,42 @@
     },
     {
       "profile_id": "PRO.AB.24_39.HYBRID.2025",
-      "label": "Alberta Pros 24\u201339 \u2014 Hybrid (2025)",
+      "label": "Alberta Professional 24\u201339 \u2014 Hybrid (2025)",
       "region": "CA-AB"
     },
     {
       "profile_id": "PRO.AB.40_56.HYBRID.2025",
-      "label": "Alberta Pros 40\u201356 \u2014 Hybrid (2025)",
+      "label": "Alberta Professional 40\u201356 \u2014 Hybrid (2025)",
       "region": "CA-AB"
     },
     {
       "profile_id": "PRO.BC.24_39.HYBRID.2025",
-      "label": "British Columbia Pros 24\u201339 \u2014 Hybrid (2025)",
+      "label": "British Columbia Professional 24\u201339 \u2014 Hybrid (2025)",
       "region": "CA-BC"
     },
     {
       "profile_id": "PRO.BC.40_56.HYBRID.2025",
-      "label": "British Columbia Pros 40\u201356 \u2014 Hybrid (2025)",
+      "label": "British Columbia Professional 40\u201356 \u2014 Hybrid (2025)",
       "region": "CA-BC"
     },
     {
       "profile_id": "PRO.QC.24_39.HYBRID.2025",
-      "label": "Quebec Pros 24\u201339 \u2014 Hybrid (2025)",
+      "label": "Quebec Professional 24\u201339 \u2014 Hybrid (2025)",
       "region": "CA-QC"
     },
     {
       "profile_id": "PRO.QC.40_56.HYBRID.2025",
-      "label": "Quebec Pros 40\u201356 \u2014 Hybrid (2025)",
+      "label": "Quebec Professional 40\u201356 \u2014 Hybrid (2025)",
       "region": "CA-QC"
     },
     {
       "profile_id": "PRO.TO.24_39.HYBRID.2025",
-      "label": "Toronto Pros 24\u201339 \u2014 Hybrid (2025)",
+      "label": "Toronto Professional 24\u201339 \u2014 Hybrid (2025)",
       "region": "CA-ON"
     },
     {
       "profile_id": "PRO.TO.40_56.HYBRID.2025",
-      "label": "Toronto Pros 40\u201356 \u2014 Hybrid (2025)",
+      "label": "Toronto Professional 40\u201356 \u2014 Hybrid (2025)",
       "region": "CA-ON"
     },
     {
@@ -1815,9 +1895,16 @@
   "activity_schedule": [
     {
       "profile_id": "BASE.TO.PROF.HYBRID.2025",
-      "activity_id": "AI.USAGE.GPT.QUERY",
-      "basis": "daily",
-      "value": 10.0,
+      "activity_id": "BUILDING.RESIDENTIAL.M2.YEAR",
+      "basis": "weekly",
+      "value": 1.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "BASE.TO.PROF.HYBRID.2025",
+      "activity_id": "CONF.AUDIO.PER_PARTICIPANT_HOUR",
+      "basis": "weekly",
+      "value": 1.0,
       "office_days_only": true
     },
     {
@@ -1829,7 +1916,28 @@
     },
     {
       "profile_id": "BASE.TO.PROF.HYBRID.2025",
+      "activity_id": "FOOD.MEAL.CHICKEN.SERVING",
+      "basis": "weekly",
+      "value": 2.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "BASE.TO.PROF.HYBRID.2025",
+      "activity_id": "FOOD.MEAL.VEG.SERVING",
+      "basis": "weekly",
+      "value": 3.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "BASE.TO.PROF.HYBRID.2025",
       "activity_id": "MEDIA.STREAM.HD.HOUR",
+      "basis": "daily",
+      "value": 1.5,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "BASE.TO.PROF.HYBRID.2025",
+      "activity_id": "MUSIC.STREAM.STANDARD.HOUR",
       "basis": "daily",
       "value": 1.5,
       "office_days_only": false
@@ -1889,6 +1997,62 @@
       "basis": "daily",
       "value": 1.0,
       "office_days_only": true
+    },
+    {
+      "profile_id": "DEF.CA.GARRISON.2025",
+      "activity_id": "MIL.BASE.M2.YEAR",
+      "basis": "weekly",
+      "value": 1.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "DEF.CA.GARRISON.2025",
+      "activity_id": "MIL.FLIGHT.PKM",
+      "basis": "weekly",
+      "value": 5.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "DEF.CA.GARRISON.2025",
+      "activity_id": "MIL.MUNITIONS.DETONATED.TONNE",
+      "basis": "weekly",
+      "value": 1.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "DEF.CA.GARRISON.2025",
+      "activity_id": "MIL.NAVAL.TONNEKM",
+      "basis": "weekly",
+      "value": 3.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "DEF.CA.GARRISON.2025",
+      "activity_id": "MIL.VEHICLE.KM",
+      "basis": "weekly",
+      "value": 7.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "DEF.CA.INFRASTRUCTURE.2025",
+      "activity_id": "BUILDING.MILITARY.M2.YEAR",
+      "basis": "weekly",
+      "value": 1.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "DEF.CA.INFRASTRUCTURE.2025",
+      "activity_id": "ENERGY.KWH.DELIVERED",
+      "basis": "weekly",
+      "value": 1000.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "DEF.CA.INFRASTRUCTURE.2025",
+      "activity_id": "MIL.DEPOT.M2.YEAR",
+      "basis": "weekly",
+      "value": 1.0,
+      "office_days_only": false
     },
     {
       "profile_id": "EARTH.CA.BIOSPHERE.2025",
@@ -1955,7 +2119,49 @@
     },
     {
       "profile_id": "IND.TO.HEAVY.2025",
+      "activity_id": "IND_HEAVY.CEMENT.CLINKER.TONNE",
+      "basis": "weekly",
+      "value": 5.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "IND.TO.HEAVY.2025",
+      "activity_id": "IND_HEAVY.MINING.HAUL.TRUCK.HOUR",
+      "basis": "weekly",
+      "value": 35.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "IND.TO.HEAVY.2025",
+      "activity_id": "IND_HEAVY.REFINING.FIRED_UNIT.MMBTU",
+      "basis": "weekly",
+      "value": 7.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "IND.TO.HEAVY.2025",
+      "activity_id": "IND_HEAVY.STEEL.EAF.TONNE",
+      "basis": "weekly",
+      "value": 5.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "IND.TO.HEAVY.2025",
       "activity_id": "LOGI.AIR.TONNEKM",
+      "basis": "weekly",
+      "value": 7.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "IND.TO.HEAVY.2025",
+      "activity_id": "LOGI.SHIPPING.BULK.TONNEKM",
+      "basis": "weekly",
+      "value": 5.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "IND.TO.HEAVY.2025",
+      "activity_id": "LOGI.SHIPPING.CONTAINER.TONNEKM",
       "basis": "weekly",
       "value": 7.0,
       "office_days_only": false
@@ -2007,6 +2213,27 @@
       "activity_id": "TAILINGS.POND.M2.YEAR",
       "basis": "weekly",
       "value": 1.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "IND_LIGHT.ON.CONSTRUCTION.2025",
+      "activity_id": "ENERGY.KWH.DELIVERED",
+      "basis": "weekly",
+      "value": 100.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "IND_LIGHT.ON.CONSTRUCTION.2025",
+      "activity_id": "MATERIAL.CEMENT.KG",
+      "basis": "weekly",
+      "value": 200.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "IND_LIGHT.ON.CONSTRUCTION.2025",
+      "activity_id": "TRAN.CONSTRUCT.TRUCK.KM",
+      "basis": "weekly",
+      "value": 50.0,
       "office_days_only": false
     },
     {
@@ -2101,29 +2328,92 @@
       "office_days_only": false
     },
     {
-      "profile_id": "ONLINE.TO.CONSUMER.2025",
-      "activity_id": "AI.LLM.INFER.1K_TOKENS.GENERIC",
+      "profile_id": "MAT.CA.LABS.2025",
+      "activity_id": "CHEM.POLYMER.TONNE",
+      "basis": "weekly",
+      "value": 0.2,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "MAT.CA.LABS.2025",
+      "activity_id": "CHEM.RDX.TONNE",
+      "basis": "weekly",
+      "value": 0.1,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "MAT.CA.LABS.2025",
+      "activity_id": "CHEM.TNT.TONNE",
+      "basis": "weekly",
+      "value": 0.1,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "MAT.CA.LABS.2025",
+      "activity_id": "ENERGY.KWH.DELIVERED",
+      "basis": "weekly",
+      "value": 500.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "ONLINE.AB.CONSUMER.2025",
+      "activity_id": "MEDIA.STREAM.HD.HOUR",
+      "basis": "daily",
+      "value": 2.5,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "ONLINE.AB.CONSUMER.2025",
+      "activity_id": "SOCIAL.INSTAGRAM.HOUR",
+      "basis": "daily",
+      "value": 1.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "ONLINE.BC.CONSUMER.2025",
+      "activity_id": "MEDIA.STREAM.HD.HOUR",
+      "basis": "daily",
+      "value": 2.5,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "ONLINE.BC.CONSUMER.2025",
+      "activity_id": "SOCIAL.INSTAGRAM.HOUR",
+      "basis": "daily",
+      "value": 1.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "ONLINE.QC.CONSUMER.2025",
+      "activity_id": "MEDIA.STREAM.HD.HOUR",
+      "basis": "daily",
+      "value": 2.5,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "ONLINE.QC.CONSUMER.2025",
+      "activity_id": "SOCIAL.INSTAGRAM.HOUR",
       "basis": "daily",
       "value": 1.0,
       "office_days_only": false
     },
     {
       "profile_id": "ONLINE.TO.CONSUMER.2025",
-      "activity_id": "AI.USAGE.ANTHROPIC.QUERY",
-      "basis": "daily",
-      "value": 3.0,
-      "office_days_only": false
-    },
-    {
-      "profile_id": "ONLINE.TO.CONSUMER.2025",
-      "activity_id": "AI.USAGE.GOOGLE.QUERY",
-      "basis": "daily",
-      "value": 2.0,
+      "activity_id": "CLOUD.DOWNLOAD.GB",
+      "basis": "weekly",
+      "value": 15.0,
       "office_days_only": false
     },
     {
       "profile_id": "ONLINE.TO.CONSUMER.2025",
       "activity_id": "CLOUD.STORAGE.SYNC.GB_MONTH",
+      "basis": "weekly",
+      "value": 1.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "ONLINE.TO.CONSUMER.2025",
+      "activity_id": "CONF.AUDIO.PER_PARTICIPANT_HOUR",
       "basis": "weekly",
       "value": 1.0,
       "office_days_only": false
@@ -2137,9 +2427,37 @@
     },
     {
       "profile_id": "ONLINE.TO.CONSUMER.2025",
+      "activity_id": "DOWNLOAD.GAME.CONSOLE.50GB",
+      "basis": "weekly",
+      "value": 0.0769230769230769,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "ONLINE.TO.CONSUMER.2025",
+      "activity_id": "MEDIA.STREAM.HD.HOUR",
+      "basis": "daily",
+      "value": 2.5,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "ONLINE.TO.CONSUMER.2025",
       "activity_id": "MEDIA.STREAM.HD.HOUR.TV",
       "basis": "weekly",
       "value": 7.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "ONLINE.TO.CONSUMER.2025",
+      "activity_id": "MEDIA.STREAM.SD.HOUR.MOBILE",
+      "basis": "daily",
+      "value": 0.5,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "ONLINE.TO.CONSUMER.2025",
+      "activity_id": "MEDIA.STREAM.UHD.HOUR.TV",
+      "basis": "weekly",
+      "value": 3.0,
       "office_days_only": false
     },
     {
@@ -2151,9 +2469,121 @@
     },
     {
       "profile_id": "ONLINE.TO.CONSUMER.2025",
+      "activity_id": "SOCIAL.INSTAGRAM.HOUR",
+      "basis": "daily",
+      "value": 1.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "ONLINE.TO.CONSUMER.2025",
       "activity_id": "SOCIAL.TIKTOK.HOUR",
       "basis": "daily",
       "value": 1.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "PRO.AB.24_39.HYBRID.2025",
+      "activity_id": "FOOD.MEAL.BEEF.SERVING",
+      "basis": "weekly",
+      "value": 5.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "PRO.AB.24_39.HYBRID.2025",
+      "activity_id": "SOCIAL.INSTAGRAM.HOUR",
+      "basis": "daily",
+      "value": 0.8,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "PRO.AB.40_56.HYBRID.2025",
+      "activity_id": "FOOD.MEAL.BEEF.SERVING",
+      "basis": "weekly",
+      "value": 3.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "PRO.AB.40_56.HYBRID.2025",
+      "activity_id": "SOCIAL.LINKEDIN.HOUR",
+      "basis": "daily",
+      "value": 0.3,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "PRO.BC.24_39.HYBRID.2025",
+      "activity_id": "MEDIA.STREAM.HD.HOUR",
+      "basis": "daily",
+      "value": 2.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "PRO.BC.24_39.HYBRID.2025",
+      "activity_id": "SOCIAL.INSTAGRAM.HOUR",
+      "basis": "daily",
+      "value": 0.8,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "PRO.BC.40_56.HYBRID.2025",
+      "activity_id": "FOOD.MEAL.BEEF.SERVING",
+      "basis": "weekly",
+      "value": 3.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "PRO.BC.40_56.HYBRID.2025",
+      "activity_id": "SOCIAL.LINKEDIN.HOUR",
+      "basis": "daily",
+      "value": 0.3,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "PRO.QC.24_39.HYBRID.2025",
+      "activity_id": "MEDIA.STREAM.HD.HOUR",
+      "basis": "daily",
+      "value": 2.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "PRO.QC.24_39.HYBRID.2025",
+      "activity_id": "SOCIAL.INSTAGRAM.HOUR",
+      "basis": "daily",
+      "value": 0.8,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "PRO.QC.40_56.HYBRID.2025",
+      "activity_id": "FOOD.MEAL.BEEF.SERVING",
+      "basis": "weekly",
+      "value": 3.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "PRO.QC.40_56.HYBRID.2025",
+      "activity_id": "SOCIAL.LINKEDIN.HOUR",
+      "basis": "daily",
+      "value": 0.3,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "PRO.TO.24_39.HYBRID.2025",
+      "activity_id": "BUILDING.OFFICE.M2.YEAR",
+      "basis": "weekly",
+      "value": 1.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "PRO.TO.24_39.HYBRID.2025",
+      "activity_id": "DEVICE.LAPTOP.UNIT",
+      "basis": "weekly",
+      "value": 0.0009615384615385,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "PRO.TO.24_39.HYBRID.2025",
+      "activity_id": "DEVICE.SMARTPHONE.UNIT",
+      "basis": "weekly",
+      "value": 0.0019230769230769,
       "office_days_only": false
     },
     {
@@ -2161,6 +2591,20 @@
       "activity_id": "FOOD.COFFEE.CUP.HOT",
       "basis": "weekly",
       "value": 5.0,
+      "office_days_only": true
+    },
+    {
+      "profile_id": "PRO.TO.40_56.HYBRID.2025",
+      "activity_id": "FOOD.MEAL.BEEF.SERVING",
+      "basis": "weekly",
+      "value": 3.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "PRO.TO.40_56.HYBRID.2025",
+      "activity_id": "TRAN.TTC.SUBWAY.KM",
+      "basis": "daily",
+      "value": 1.0,
       "office_days_only": true
     },
     {
@@ -2273,6 +2717,20 @@
       "activity_id": "MIL.CONFLICT.MONTH",
       "basis": "weekly",
       "value": 0.2307692307692307,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "PROFILE.WAR.UKRAINE.2022",
+      "activity_id": "MIL.MUNITIONS.DETONATION.EVENT",
+      "basis": "weekly",
+      "value": 4.0,
+      "office_days_only": false
+    },
+    {
+      "profile_id": "PROFILE.WAR.UKRAINE.2022",
+      "activity_id": "MODELED.WILDFIRE.HECTARE",
+      "basis": "weekly",
+      "value": 1.0,
       "office_days_only": false
     }
   ],

@@ -300,7 +300,7 @@ Banned tokens: Awaiting, placeholder, SRC.OLD, TBD.
 - calc/figures.py: ensure slices always include value_low/high when known.
 - tests/test_figures.py:
     - All calc/outputs/figures/*.json parse.
-    - Hover indices present in JSON are a subset of references/*_refs.txt.
+    - Hover indices present in `dist/artifacts/references/*_refs.txt`.
     - Totals equal parts within tolerance.
 
 **Acceptance**

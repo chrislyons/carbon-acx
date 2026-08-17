@@ -300,7 +300,7 @@ related:
 
 :codex-file-citation[codex-file-citation]{line_range_start=1 line_range_end=45 path=calc/outputs/figures/stacked.json git_url="https://github.com/chrislyons/carbon-acx/blob/main/calc/outputs/figures/stacked.json#L1-L45"}  
 
-:codex-file-citation[codex-file-citation]{line_range_start=1 line_range_end=4 path=calc/outputs/references/export_view_refs.txt git_url="https://github.com/chrislyons/carbon-acx/blob/main/calc/outputs/references/export_view_refs.txt#L1-L4"}  
+::codex-file-citation[codex-file-citation]{line_range_start=1 line_range_end=4 path=dist/artifacts/references/export_view_refs.txt git_url="https://github.com/chrislyons/carbon-acx/blob/main/dist/artifacts/references/export_view_refs.txt#L1-L4"}
 
 :codex-file-citation[codex-file-citation]{line_range_start=51 line_range_end=187 path=scripts/build_site.py git_url="https://github.com/chrislyons/carbon-acx/blob/main/scripts/build_site.py#L51-L187"}  
 

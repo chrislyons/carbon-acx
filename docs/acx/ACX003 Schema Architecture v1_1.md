@@ -159,7 +159,7 @@ Outputs written to `/calc/outputs/` as CSV and JSON, with prepended metadata:
 # method=v1.1
 ```
 
-References: per-figure IEEE refs in `calc/outputs/references/*.txt`.
+References: per-figure IEEE refs in `dist/artifacts/references/*.txt`.
 
 ***
 

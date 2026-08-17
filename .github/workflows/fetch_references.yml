@@ -42,12 +42,15 @@ jobs:
         run: |
           poetry run python -m calc.refs_fetch --mode fetch \
             ${INPUT_ONLY:+--only "$INPUT_ONLY"} \
-            ${HAS_ALLOW:+--domains domains_allowlist.txt}
+            ${HAS_ALLOW:+--domains domains_allowlist.txt} \
+            --verification-run-url "$REFERENCE_RUN_URL" \
+            --raw-artifact-name "$REFERENCE_ARTIFACT_NAME"
         env:
           INPUT_ONLY: ${{ inputs.only_ids }}
           HAS_ALLOW: >-
             ${{ inputs.domains_allowlist != '' && '1' || '' }}
-
+          REFERENCE_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          REFERENCE_ARTIFACT_NAME: refs-raw-${{ github.run_id }}
       - name: Normalize
         if: ${{ inputs.normalize }}
         run: |
@@ -55,6 +58,14 @@ jobs:
             ${INPUT_ONLY:+--only "$INPUT_ONLY"}
         env:
           INPUT_ONLY: ${{ inputs.only_ids }}
+      - name: Set audit date
+        run: echo "ACX_AUDIT_DATE=$(date -u +%F)" >> "$GITHUB_ENV"
+
+      - name: Verify staged reference ledger
+        run: |
+          poetry run python -m calc.refs_audit --as-of "$ACX_AUDIT_DATE"
+      - name: Audit canonical dataflow
+        run: make data-audit
 
       - name: Upload raw refs as artifact
         if: always()
@@ -94,9 +105,7 @@ jobs:
             - `refs-normalized-${{ github.run_id }}`
           add-paths: |
             refs/sources_manifest.csv
-            refs/ALLOW_MISSING.txt
             refs/README.md
-            refs/source_id_overrides.json
             calc/refs_*.py
             calc/refs_util.py
           branch: refs/update-${{ github.run_id }}

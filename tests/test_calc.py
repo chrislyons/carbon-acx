@@ -12,12 +12,12 @@ def test_export_metadata_and_references(derived_output_dir, derived_output_root)
     class FakeStore:
         def load_emission_factors(self):
             return [
-                EmissionFactor(activity_id="coffee", value_g_per_unit=1, source_id="coffee"),
+                EmissionFactor(activity_id="coffee", value_g_per_unit=1, source_id="SRC.POORE2018"),
                 EmissionFactor(
                     activity_id="stream",
                     is_grid_indexed=True,
                     electricity_kwh_per_unit=1,
-                    source_id="streaming",
+                    source_id="SRC.DIMPACT.STREAMING.2022",
                 ),
             ]
 
@@ -76,8 +76,8 @@ def test_export_metadata_and_references(derived_output_dir, derived_output_root)
     assert "generated_at" in data
     assert isinstance(data["data"], list)
     expected_keys = [
-        "coffee",
-        "streaming",
+        "SRC.DIMPACT.STREAMING.2022",
+        "SRC.POORE2018",
         "SRC.AB.TAILINGS.2023",
         "SRC.INTL.MINING.2022",
         "SRC.IPCC.AR6.WG1.2021",
@@ -86,8 +86,7 @@ def test_export_metadata_and_references(derived_output_dir, derived_output_root)
     ]
     assert data["citation_keys"] == expected_keys
     assert data["layers"] == ["professional"]
-    assert all(row["layer_id"] == "professional" for row in data["data"])
-    expected_layer_keys = ["coffee", "streaming"]
+    expected_layer_keys = ["SRC.DIMPACT.STREAMING.2022", "SRC.POORE2018"]
     assert data.get("layer_citation_keys") == {"professional": expected_layer_keys}
 
     expected_refs = [

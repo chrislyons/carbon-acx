@@ -12,8 +12,10 @@ from app import app as app_module
 class LayeredStore:
     def load_emission_factors(self):
         return [
-            EmissionFactor(activity_id="coffee", value_g_per_unit=1, source_id="coffee"),
-            EmissionFactor(activity_id="stream", value_g_per_unit=2, source_id="streaming"),
+            EmissionFactor(activity_id="coffee", value_g_per_unit=1, source_id="SRC.POORE2018"),
+            EmissionFactor(
+                activity_id="stream", value_g_per_unit=2, source_id="SRC.DIMPACT.STREAMING.2022"
+            ),
         ]
 
     def load_profiles(self):
@@ -61,14 +63,14 @@ def test_layer_filter_and_reference_union(monkeypatch, derived_output_dir, deriv
 
     professional = app_module._filter_payload(figures_store["stacked"], "professional")
     assert professional["layers"] == ["professional"]
-    assert professional["citation_keys"] == ["coffee"]
-    assert professional.get("layer_citation_keys") == {"professional": ["coffee"]}
+    assert professional["citation_keys"] == ["SRC.POORE2018"]
+    assert professional.get("layer_citation_keys") == {"professional": ["SRC.POORE2018"]}
     assert all(row.get("layer_id") == "professional" for row in professional.get("data", []))
 
     online = app_module._filter_payload(figures_store["stacked"], "online")
     assert online["layers"] == ["online"]
-    assert online["citation_keys"] == ["streaming"]
-    assert online.get("layer_citation_keys") == {"online": ["streaming"]}
+    assert online["citation_keys"] == ["SRC.DIMPACT.STREAMING.2022"]
+    assert online.get("layer_citation_keys") == {"online": ["SRC.DIMPACT.STREAMING.2022"]}
     assert all(row.get("layer_id") == "online" for row in online.get("data", []))
 
     reference_lookup = app_module._reference_lookup(app_module._reference_keys(figures_store))

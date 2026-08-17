@@ -35,9 +35,9 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 def test_generated_web_calculator_data_uses_published_evidence() -> None:
     payload = build_payload()
 
-    assert SCHEMA_VERSION == "acx.web-calculator/1-4-0"
+    assert SCHEMA_VERSION == "acx.web-calculator/1-5-0"
     assert payload["schemaVersion"] == SCHEMA_VERSION
-    assert len(payload["activities"]) == 22
+    assert len(payload["activities"]) == 21
     car = payload["activities"][0]
     assert car["id"] == "TRAN.SCHOOLRUN.CAR.KM"
     assert car["evidence"]["publicationStatus"] == "published"
@@ -55,6 +55,48 @@ def test_generated_web_calculator_data_uses_published_evidence() -> None:
         and "SRC.DEMO" not in activity["evidence"]["sourceIds"]
         for activity in payload["activities"]
     )
+
+
+def test_calculator_generation_requires_source_ledger(tmp_path: Path) -> None:
+    shutil.copytree(REPO_ROOT / "data", tmp_path / "data")
+
+    with pytest.raises(ValueError, match="Source ledger evidence is incomplete"):
+        build_payload(tmp_path)
+
+
+def test_ai_scenarios_are_typed_and_not_calculator_factors() -> None:
+    payload = build_catalog_payload()
+
+    scenarios = payload["aiScenarios"]
+    assert scenarios["schemaVersion"] == "acx.ai-scenarios/1-0-0"
+    assert len(scenarios["records"]) == 28
+    assert {record["publicationStatus"] for record in scenarios["records"]} >= {
+        "published",
+        "estimate",
+        "unavailable",
+    }
+    google = next(
+        record
+        for record in scenarios["records"]
+        if record["scenarioId"] == "SCN.GOOGLE.GEMINI.APPS.PROMPT.2025"
+    )
+    assert google["functionalUnit"] == "prompt"
+    assert google["energyWh"] == 0.24
+    assert google["carbonAccounting"]["method"] == "direct-disclosure"
+    assert google["sourceRefs"][0]["sourceId"] == "SRC.ELSWORTH.GOOGLE.2025"
+
+    calculator_ids = {activity["id"] for activity in build_payload()["activities"]}
+    assert "AI.USAGE.GPT.QUERY" not in calculator_ids
+    for activity_id in (
+        "AI.LLM.INFER.1K_TOKENS.GENERIC",
+        "AI.USAGE.GPT.QUERY",
+        "AI.USAGE.ANTHROPIC.QUERY",
+        "AI.USAGE.GOOGLE.QUERY",
+        "AI.IMAGE.GENERATION.PROMPT",
+    ):
+        activity = next(item for item in payload["activities"] if item["id"] == activity_id)
+        assert activity["emissionFactor"] is None
+        assert activity["evidence"]["publicationStatus"] == "unavailable"
 
 
 def test_sources_use_versioned_envelope_and_grid_metadata_aligns() -> None:
@@ -122,8 +164,9 @@ def test_missing_source_url_is_hard_failure_for_selected_factor() -> None:
 
 def test_catalog_missing_source_url_is_unavailable_without_zero(tmp_path: Path) -> None:
     shutil.copytree(REPO_ROOT / "data", tmp_path / "data")
+    shutil.copytree(REPO_ROOT / "refs", tmp_path / "refs")
     source_path = tmp_path / "data/sources.csv"
-    fieldnames = ["source_id", "ieee_citation", "url", "year", "license"]
+    fieldnames = ["source_id", "ieee_citation", "url", "year", "license", "review_due_at"]
     with source_path.open(newline="", encoding="utf-8") as handle:
         rows = list(csv.DictReader(handle))
     for row in rows:
@@ -294,19 +337,28 @@ def test_release_authorities_keep_public_pairs_byte_identical() -> None:
     assert authorities[SOURCES_OUTPUT] == authorities[PUBLIC_DATA_ROOT / "sources.json"]
     assert authorities[OWID_CONTEXT_OUTPUT] == authorities[PUBLIC_DATA_ROOT / "owid-context.json"]
     assert authorities[RELEASE_OUTPUT] == authorities[PUBLIC_DATA_ROOT / "release.json"]
+    release = json.loads(authorities[RELEASE_OUTPUT])
+    assert set(release["owid"]["rawAuthorities"]) == {
+        "manifest.json",
+        "annual-co2-emissions-per-country.csv",
+        "annual-co2-emissions-per-country.metadata.json",
+    }
 
 
 def test_changing_only_owid_snapshot_bytes_preserves_acx_authorities(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     required_paths = [
         "data/activities.csv",
+        "data/ai_scenarios.csv",
         "data/benchmarks.csv",
         "data/emission_factors.csv",
         "data/grid_intensity.csv",
         "data/sources.csv",
+        "data/source_decisions.csv",
         "data/owid/annual-co2-emissions-per-country.csv",
         "data/owid/annual-co2-emissions-per-country.metadata.json",
         "data/owid/manifest.json",
+        "refs/sources_manifest.csv",
         "scripts/generate_web_calculator_data.py",
     ]
     for relative_path in required_paths:
@@ -332,10 +384,13 @@ def test_unavailable_release_removes_stale_public_owid_files(tmp_path: Path) -> 
     repo_root = tmp_path / "repo"
     for relative_path in (
         "data/activities.csv",
+        "data/ai_scenarios.csv",
         "data/benchmarks.csv",
         "data/emission_factors.csv",
         "data/grid_intensity.csv",
         "data/sources.csv",
+        "data/source_decisions.csv",
+        "refs/sources_manifest.csv",
         "scripts/generate_web_calculator_data.py",
     ):
         destination = repo_root / relative_path
