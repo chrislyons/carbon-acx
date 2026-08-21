@@ -51,3 +51,54 @@ test('health reports unavailable compute data', async () => {
   assert.equal(response.status, 200);
   assert.deepEqual(await response.json(), { ok: true, compute: 'unavailable' });
 });
+
+test('health rejects non-GET methods', async () => {
+  const response = await fetchWorker('/api/health', { method: 'POST' });
+
+  assert.equal(response.status, 405);
+  assert.deepEqual(await response.json(), { error: 'method not allowed' });
+});
+
+test('compute stays unavailable for every non-OPTIONS method', async () => {
+  for (const method of ['PUT', 'DELETE', 'PATCH'] as const) {
+    const response = await fetchWorker('/api/compute', { method });
+
+    assert.equal(response.status, 503, method);
+    assert.equal(await response.text(), JSON.stringify(unavailable), method);
+  }
+});
+
+test('compute subpaths are not implemented', async () => {
+  const response = await fetchWorker('/api/compute/v1/run');
+
+  assert.equal(response.status, 404);
+  assert.deepEqual(await response.json(), { error: 'endpoint not implemented' });
+});
+
+test('unknown paths are not found', async () => {
+  const response = await fetchWorker('/api/unknown');
+
+  assert.equal(response.status, 404);
+  assert.deepEqual(await response.json(), { error: 'not found' });
+});
+
+test('carbon-acx prefix is normalised', async () => {
+  const response = await fetchWorker('/carbon-acx/api/health');
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), { ok: true, compute: 'unavailable' });
+});
+
+test('security headers ride on every response', async () => {
+  const unavailableResponse = await fetchWorker('/api/compute');
+  assert.equal(unavailableResponse.headers.get('x-content-type-options'), 'nosniff');
+  assert.equal(unavailableResponse.headers.get('referrer-policy'), 'no-referrer');
+
+  const health = await fetchWorker('/api/health');
+  assert.equal(health.headers.get('x-content-type-options'), 'nosniff');
+  assert.equal(health.headers.get('referrer-policy'), 'no-referrer');
+
+  const preflight = await fetchWorker('/api/compute', { method: 'OPTIONS' });
+  assert.equal(preflight.headers.get('cache-control'), 'no-store');
+  assert.equal(preflight.headers.get('x-content-type-options'), 'nosniff');
+});

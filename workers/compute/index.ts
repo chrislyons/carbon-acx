@@ -14,6 +14,8 @@ function withCors(response: Response): Response {
   headers.set('access-control-allow-origin', ALLOWED_ORIGIN);
   headers.set('access-control-allow-methods', 'GET,POST,OPTIONS');
   headers.set('access-control-allow-headers', 'content-type');
+  headers.set('x-content-type-options', 'nosniff');
+  headers.set('referrer-policy', 'no-referrer');
   return new Response(response.body, { status: response.status, headers });
 }
 
@@ -39,7 +41,9 @@ function normalisePath(pathname: string): string {
 export default {
   async fetch(request: Request): Promise<Response> {
     if (request.method === 'OPTIONS') {
-      return withCors(new Response(null, { status: 204 }));
+      return withCors(
+        new Response(null, { status: 204, headers: { 'cache-control': 'no-store' } }),
+      );
     }
 
     const url = new URL(request.url);
