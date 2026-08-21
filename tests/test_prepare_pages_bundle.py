@@ -56,3 +56,19 @@ def test_prepare_pages_bundle_requires_directories(tmp_path: Path) -> None:
     site_root.mkdir()
     with pytest.raises(FileNotFoundError):
         prepare_pages_bundle(site_root, artifacts_dir)
+
+
+def test_headers_template_carries_security_policies() -> None:
+    lines = [line.strip() for line in HEADERS_TEMPLATE.splitlines() if line.strip()]
+    assert lines[0] == "/*"
+    for expected in (
+        "X-Content-Type-Options: nosniff",
+        "Referrer-Policy: strict-origin-when-cross-origin",
+        "X-Frame-Options: DENY",
+        "Permissions-Policy: camera=(), microphone=(), geolocation=()",
+        "Strict-Transport-Security: max-age=31536000; includeSubDomains",
+    ):
+        assert expected in lines
+    csp = next(line for line in lines if line.startswith("Content-Security-Policy:"))
+    for directive in ("default-src 'self'", "frame-ancestors 'none'", "object-src 'none'"):
+        assert directive in csp
