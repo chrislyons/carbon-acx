@@ -11,14 +11,14 @@ from jsonschema import Draft202012Validator
 REPO_ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT_ROOT = REPO_ROOT / "dist" / "artifacts"
 MANIFEST_DIR = ARTIFACT_ROOT / "manifests"
-SCHEMA_PATH = REPO_ROOT / "site" / "public" / "schemas" / "figure-manifest.schema.json"
+SCHEMA_PATH = REPO_ROOT / "tools" / "validator" / "schemas" / "figure-manifest.schema.json"
 INDEX_PATH = ARTIFACT_ROOT / "manifest.json"
 
 
 @pytest.fixture(scope="session")
 def figure_manifest_validator() -> Draft202012Validator:
     if not SCHEMA_PATH.exists():
-        pytest.skip("Figure manifest schema is missing; run make build first")
+        pytest.fail("Figure manifest schema is missing; run make build first")
     schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
     return Draft202012Validator(schema)
 

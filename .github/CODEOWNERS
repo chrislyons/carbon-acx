@@ -11,6 +11,5 @@
 /calc/dal.py          @acx-eng-owner
 /docs/*.md            @acx-docs-owner
 /app/*                @acx-ux-owner
-/site/*               @acx-ux-owner
 Makefile              @acx-cicd-owner
 /.github/workflows/*  @acx-cicd-owner
