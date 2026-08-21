@@ -55,6 +55,37 @@ function sanitiseArtifactKey(raw: string): string {
   return cleaned.join("/");
 }
 
+const UPSTREAM_REQUEST_HEADERS = [
+  "accept",
+  "accept-encoding",
+  "user-agent",
+  "range",
+] as const;
+
+function pickUpstreamHeaders(headers: Headers): Headers {
+  const forwarded = new Headers();
+  for (const name of UPSTREAM_REQUEST_HEADERS) {
+    const value = headers.get(name);
+    if (value !== null) {
+      forwarded.set(name, value);
+    }
+  }
+  return forwarded;
+}
+
+function resolveUpstreamOrigin(raw: string | undefined): string | undefined {
+  const trimmed = raw?.trim().replace(/\/+$/, "");
+  if (!trimmed || !trimmed.toLowerCase().startsWith("https://")) {
+    return undefined;
+  }
+  return trimmed;
+}
+
+function sanitiseProxyPath(stripped: string): string {
+  const leading = stripped.startsWith("/") ? "/" : "";
+  return leading + sanitiseArtifactKey(stripped);
+}
+
 function resolveContentType(path: string): string | null {
   const dot = path.lastIndexOf(".");
   if (dot === -1) {
@@ -139,7 +170,7 @@ async function handleArtifactRequest(
     const upstreamUrl = `${trimmedOrigin}/artifacts/${sanitizedKey}${url.search}`;
     const upstreamRequest = new Request(upstreamUrl, {
       method: request.method,
-      headers: request.headers,
+      headers: pickUpstreamHeaders(request.headers),
     });
     const upstreamResponse = await fetch(upstreamRequest);
     if (upstreamResponse.ok) {
@@ -190,17 +221,18 @@ export const onRequest: PagesFunction<{
   const url = new URL(request.url);
 
   if (url.pathname.startsWith(`${base.withTrailingSlash}artifacts/`)) {
-    return handleArtifactRequest(ctx, base, env.CARBON_ACX_ORIGIN);
+    return handleArtifactRequest(ctx, base, resolveUpstreamOrigin(env.CARBON_ACX_ORIGIN));
   }
 
-  const suffix = stripBasePath(url.pathname, base) + (url.search || "");
-  const origin = env.CARBON_ACX_ORIGIN?.replace(/\/$/, "");
+  const suffix =
+    sanitiseProxyPath(stripBasePath(url.pathname, base)) + (url.search || "");
+  const origin = resolveUpstreamOrigin(env.CARBON_ACX_ORIGIN);
 
   if (origin) {
     const target = origin + (suffix || "/");
     const init: RequestInit = {
       method,
-      headers: request.headers,
+      headers: pickUpstreamHeaders(request.headers),
     };
     const resp = await fetch(new Request(target, init));
     const out = new Response(resp.body, resp);
