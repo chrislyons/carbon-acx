@@ -5,6 +5,7 @@ import json
 import math
 import os
 import shutil
+import sys
 import datetime as _datetime_module
 import hashlib
 import re
@@ -1328,6 +1329,8 @@ def export_view(
 
     rows: List[dict] = []
     derived_rows: List[dict] = []
+    excluded_missing_profile = 0
+    excluded_missing_ef = 0
     resolved_profile_ids: set[str] = set()
     manifest_regions: set[str] = set()
     manifest_layers: set[str] = set()
@@ -1346,6 +1349,10 @@ def export_view(
         emission = None
         layer_id = _resolve_layer_id(sched, profile, activity)
 
+        if profile is None:
+            excluded_missing_profile += 1
+        if ef is None:
+            excluded_missing_ef += 1
         if profile and ef:
             if ef.vintage_year is not None:
                 manifest_ef_vintages.add(int(ef.vintage_year))
@@ -1425,6 +1432,16 @@ def export_view(
                 "layer_id": layer_id,
                 "upstream_chain": upstream_chain,
             }
+        )
+
+    excluded_null_emissions = sum(1 for row in rows if row["annual_emissions_g"] is None)
+    if excluded_missing_profile or excluded_missing_ef or excluded_null_emissions:
+        print(
+            "export_view: excluded or null emissions — "
+            f"missing_profile={excluded_missing_profile} "
+            f"missing_emission_factor={excluded_missing_ef} "
+            f"null_emission_rows={excluded_null_emissions}",
+            file=sys.stderr,
         )
 
     sorted_rows = _sort_export_rows(rows)
