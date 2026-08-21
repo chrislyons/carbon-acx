@@ -30,7 +30,7 @@
     "data/sources.csv": "747e0b67bf119916585435c7d7a412bd7f37d1197b7b5f7edebb98766dcb5bdc",
     "data/units.csv": "ac7fc205596b064d60ab410833c1577fa372ce6c8fea296330b47dc126dc7f76",
     "refs/sources_manifest.csv": "e3e6e929833749031be8301f088c000176d9daf2029d1d35e2e9ca558ebccf8d",
-    "scripts/generate_web_calculator_data.py": "0b9b6daffb8934fc0f48e454d7bbe5b554f7fedeb67832b9022a7bf89e080289"
+    "scripts/generate_web_calculator_data.py": "235473d10edcee905cd0eb81a18ff2b27f01f97a01927b0d6ecdde08177b97db"
   },
   "authorities": {
     "calculator": {

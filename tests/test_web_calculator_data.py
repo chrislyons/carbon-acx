@@ -4,7 +4,7 @@ import csv
 import json
 import shutil
 from pathlib import Path
-
+from typing import Any
 import pytest
 
 from scripts.generate_web_calculator_data import (
@@ -22,6 +22,8 @@ from scripts.generate_web_calculator_data import (
     _factor_evidence,
     _grid_lookup,
     _load_csv,
+    _load_source_provenance,
+    _build_ai_scenarios,
     build_benchmarks,
     build_catalog_payload,
     build_owid_context_payload,
@@ -445,3 +447,71 @@ def test_atomic_authority_commit_rolls_back_on_replacement_failure(
 
     for relative_path, content in before.items():
         assert (output_root / relative_path).read_bytes() == content
+
+
+def _mutated_ai_scenarios(tmp_path: Path, scenario_id: str, **overrides: str) -> dict[str, Any]:
+    shutil.copytree(REPO_ROOT / "data", tmp_path / "data")
+    path = tmp_path / "data" / "ai_scenarios.csv"
+    rows = list(csv.DictReader(path.open()))
+    fieldnames = list(rows[0].keys())
+    for row in rows:
+        if row["scenario_id"] == scenario_id:
+            row.update(overrides)
+    with path.open("w", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+    sources = {row["source_id"]: row for row in _load_csv(REPO_ROOT / "data" / "sources.csv")}
+    sources = _load_source_provenance(REPO_ROOT, sources)
+    return _build_ai_scenarios(tmp_path, sources)
+
+
+def test_ai_scenario_rejects_unsupported_carbon_method(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="invalid carbon accounting method"):
+        _mutated_ai_scenarios(
+            tmp_path,
+            "SCN.GOOGLE.GEMINI.APPS.PROMPT.2025",
+            carbon_accounting_method="derived-grid",
+        )
+
+
+def test_ai_scenario_rejects_negative_energy(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="energy_wh must be non-negative"):
+        _mutated_ai_scenarios(tmp_path, "SCN.GOOGLE.GEMINI.APPS.PROMPT.2025", energy_wh="-0.24")
+
+
+def test_ai_scenario_rejects_tokens_without_basis(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="token counts require a concrete token_basis"):
+        _mutated_ai_scenarios(tmp_path, "SCN.JEGHAM.GPT41.100+300", token_basis="not disclosed")
+
+
+def test_ai_scenario_rejects_media_token_counts(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="must not carry token counts"):
+        _mutated_ai_scenarios(tmp_path, "SCN.LUCCIONI.IMAGE.INFERENCE.2024", input_tokens="100")
+
+
+def test_ai_scenario_rejects_incompatible_functional_unit(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="incompatible"):
+        _mutated_ai_scenarios(
+            tmp_path, "SCN.LUCCIONI.IMAGE.INFERENCE.2024", functional_unit="response"
+        )
+
+
+def test_ai_scenario_requires_workload_profile_when_available(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="need a workload_profile_id"):
+        _mutated_ai_scenarios(tmp_path, "SCN.MISTRAL.LECHAT.RESPONSE.2025", workload_profile_id="")
+
+
+def test_ai_scenario_rejects_zero_media_param(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="positive fps"):
+        _mutated_ai_scenarios(tmp_path, "SCN.DELAVANDE.WAN2.1.T2V.1.3B.VIDEO.2025", fps="0")
+
+
+def test_ai_scenario_allows_undisclosed_media_params() -> None:
+    payload = build_catalog_payload()
+    luccioni = next(
+        record
+        for record in payload["aiScenarios"]["records"]
+        if record["scenarioId"] == "SCN.LUCCIONI.IMAGE.INFERENCE.2024"
+    )
+    assert luccioni["media"]["widthPx"] == "not disclosed"

@@ -507,7 +507,15 @@ def _load_inputs(repo_root: Path) -> tuple[
 
 
 AI_SCENARIO_STATUSES = {"published", "estimate", "unavailable"}
-AI_SCENARIO_CARBON_METHODS = {"", "derived-grid", "direct-disclosure", "lifecycle-assessment"}
+AI_SCENARIO_CARBON_METHODS = {"", "direct-disclosure", "lifecycle-assessment"}
+AI_SCENARIO_MODALITIES = {"text", "image", "video"}
+AI_SCENARIO_UNIT_BY_MODALITY = {
+    "text": {"prompt", "response", "inference"},
+    "image": {"image"},
+    "video": {"video_clip"},
+}
+AI_SCENARIO_TOKEN_FIELDS = ("input_tokens", "output_tokens", "reasoning_tokens")
+AI_SCENARIO_NON_TOKEN_BASES = {"", "not disclosed", "not applicable"}
 
 
 def _scenario_optional_number(row: dict[str, str], field: str) -> float | int | str | None:
@@ -534,6 +542,21 @@ def _scenario_json(row: dict[str, str], field: str, scenario_id: str) -> Any:
     if not isinstance(parsed, (dict, list)):
         raise ValueError(f"{scenario_id}: {field} must be a JSON object or array")
     return parsed
+
+
+def _require_disclosed_or_positive(
+    row: dict[str, str], scenario_id: str, label: str, field: str
+) -> None:
+    raw = (row.get(field) or "").strip()
+    if not raw:
+        raise ValueError(f"{scenario_id}: {label} scenario missing {field}")
+    if raw == "not disclosed":
+        return
+    value = _scenario_optional_number(row, field)
+    if isinstance(value, str) or value <= 0:
+        raise ValueError(
+            f"{scenario_id}: {label} scenario needs positive {field} or 'not disclosed'"
+        )
 
 
 def _build_ai_scenarios(root: Path, sources: dict[str, dict[str, str]]) -> dict[str, Any]:
@@ -581,6 +604,23 @@ def _build_ai_scenarios(root: Path, sources: dict[str, dict[str, str]]) -> dict[
         carbon_method = (row.get("carbon_accounting_method") or "").strip()
         if carbon_method not in AI_SCENARIO_CARBON_METHODS:
             raise ValueError(f"{scenario_id}: invalid carbon accounting method {carbon_method}")
+        modality = row["modality"].strip()
+        if modality not in AI_SCENARIO_MODALITIES:
+            raise ValueError(f"{scenario_id}: invalid modality {modality}")
+        functional_unit = row["functional_unit"].strip()
+        if functional_unit not in AI_SCENARIO_UNIT_BY_MODALITY[modality]:
+            raise ValueError(
+                f"{scenario_id}: functional unit {functional_unit} is incompatible "
+                f"with {modality} scenarios"
+            )
+        token_basis = (row.get("token_basis") or "").strip()
+        has_token_counts = any((row.get(f) or "").strip() for f in AI_SCENARIO_TOKEN_FIELDS)
+        if modality in {"image", "video"} and has_token_counts:
+            raise ValueError(f"{scenario_id}: {modality} scenarios must not carry token counts")
+        if has_token_counts and token_basis in AI_SCENARIO_NON_TOKEN_BASES:
+            raise ValueError(f"{scenario_id}: token counts require a concrete token_basis")
+        if status != "unavailable" and not (row.get("workload_profile_id") or "").strip():
+            raise ValueError(f"{scenario_id}: available scenarios need a workload_profile_id")
         energy = _scenario_optional_number(row, "energy_wh")
         energy_low = _scenario_optional_number(row, "energy_wh_low")
         energy_high = _scenario_optional_number(row, "energy_wh_high")
@@ -598,31 +638,29 @@ def _build_ai_scenarios(root: Path, sources: dict[str, dict[str, str]]) -> dict[
                 isinstance(energy, (int, float)) and not energy_low <= energy <= energy_high
             ):
                 raise ValueError(f"{scenario_id}: energy bounds are not ordered")
-        if carbon_method in {"direct-disclosure", "lifecycle-assessment"}:
-            if not isinstance(carbon, (int, float)):
-                raise ValueError(f"{scenario_id}: {carbon_method} requires carbon_g_per_unit")
-            if not (row.get("carbon_components") or "").strip():
-                raise ValueError(f"{scenario_id}: carbon accounting needs components")
-        if carbon_method == "derived-grid":
-            raise ValueError(
-                f"{scenario_id}: derived-grid scenarios must be resolved only after grid metadata is selected"
-            )
-        if (row.get("modality") or "").strip() == "image":
-            for field in ("width_px", "height_px", "denoising_steps"):
-                if not (row.get(field) or "").strip():
-                    raise ValueError(f"{scenario_id}: image scenario missing {field}")
-        if (row.get("modality") or "").strip() == "video":
-            for field in (
+        for field_name, number in (
+            ("energy_wh", energy),
+            ("energy_wh_low", energy_low),
+            ("energy_wh_high", energy_high),
+            ("carbon_g_per_unit", carbon),
+        ):
+            if isinstance(number, (int, float)) and number < 0:
+                raise ValueError(f"{scenario_id}: {field_name} must be non-negative")
+        if modality == "image":
+            for field_name in ("width_px", "height_px", "denoising_steps"):
+                _require_disclosed_or_positive(row, scenario_id, "image", field_name)
+        if modality == "video":
+            for field_name in (
                 "width_px",
                 "height_px",
                 "frames",
                 "fps",
                 "denoising_steps",
                 "duration_seconds",
-                "audio_included",
             ):
-                if not (row.get(field) or "").strip():
-                    raise ValueError(f"{scenario_id}: video scenario missing {field}")
+                _require_disclosed_or_positive(row, scenario_id, "video", field_name)
+            if not (row.get("audio_included") or "").strip():
+                raise ValueError(f"{scenario_id}: video scenario missing audio_included")
 
         energy_components = _scenario_json(row, "energy_components", scenario_id)
         carbon_components = _scenario_json(row, "carbon_components", scenario_id)
