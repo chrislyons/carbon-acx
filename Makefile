@@ -8,6 +8,7 @@ PACKAGED_ARTIFACTS_DIR := $(DIST_DIR)/packaged-artifacts
 PACKAGED_MANIFEST := $(PACKAGED_ARTIFACTS_DIR)/manifest.json
 CATALOG_PATH := artifacts/catalog.json
 AUDIT_AS_OF ?= $(if $(ACX_AUDIT_DATE),$(ACX_AUDIT_DATE),$(shell date -u +%F))
+DEFAULT_GENERATED_AT = 1970-01-01T00:00:00+00:00
 .PHONY: install lint test audit ci_build_pages app format validate release build-backend build package sbom build-static \
         db_init db_import db_export build_csv build_db citations-scan refs-check refs-fetch refs-normalize refs-audit \
         data-audit publication-audit verify_manifests catalog validate-manifests validate-diff-fixtures build-web bootstrap doctor owid-context-update

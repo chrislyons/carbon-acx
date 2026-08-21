@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import shutil
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -106,3 +107,17 @@ def test_export_can_write_a_relocatable_build_pointer(monkeypatch, tmp_path):
     pointer = json.loads((artifact_root / "latest-build.json").read_text(encoding="utf-8"))
     assert pointer["artifact_dir"] == "."
     assert (artifact_root / "calc" / "outputs" / "manifest.json").exists()
+
+
+def test_resolve_generated_at_honours_env(monkeypatch):
+    epoch = "1970-01-01T00:00:00+00:00"
+    monkeypatch.setenv("ACX_GENERATED_AT", epoch)
+    assert derive_mod._resolve_generated_at() == epoch
+
+
+def test_resolve_generated_at_falls_back_to_utc_now(monkeypatch):
+    monkeypatch.delenv("ACX_GENERATED_AT", raising=False)
+    resolved = derive_mod._resolve_generated_at()
+    assert resolved.endswith("+00:00")
+    parsed = datetime.fromisoformat(resolved)
+    assert abs(datetime.now(timezone.utc) - parsed) < timedelta(minutes=5)
