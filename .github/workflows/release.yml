@@ -22,13 +22,30 @@ jobs:
           python-version: '3.11'
 
       - name: Install Poetry
-        run: pip install poetry==1.7.1
+        run: pip install poetry==1.8.3
+
+      - name: Verify pinned toolchain
+        run: ./scripts/bootstrap.sh --check-only
 
       - name: Configure Poetry
         run: poetry config virtualenvs.create false
 
       - name: Install dependencies
         run: poetry install --with dev --extras db --no-root
+
+      - name: Validate data and provenance gates
+        env:
+          ACX_GENERATED_AT: "1970-01-01T00:00:00+00:00"
+          ACX_AUDIT_DATE: "1970-01-01"
+        run: |
+          make validate
+          make verify_manifests
+          make validate-manifests
+
+      - name: Build verified artifacts
+        env:
+          ACX_GENERATED_AT: "1970-01-01T00:00:00+00:00"
+        run: make build
 
       - name: Generate SBOM
         run: make sbom
