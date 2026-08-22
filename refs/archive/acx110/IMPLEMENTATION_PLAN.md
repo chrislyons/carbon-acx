@@ -1,3 +1,4 @@
+<!-- Archived ACX110: completed plan retained for history; not wired into any build. -->
 # Carbon ACX v2 — Implementation Plan
 
 ## Vision

@@ -1,3 +1,4 @@
+# Archived ACX110: superseded by layer pipeline; site/public target pruned in ACX109; not wired into any build.
 from __future__ import annotations
 
 import argparse

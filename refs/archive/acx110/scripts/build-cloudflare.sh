@@ -1,3 +1,4 @@
+# Archived ACX110: superseded by Cloudflare Pages deploy from apps/carbon-acx-web/dist; not wired into any build.
 #!/usr/bin/env bash
 # Build script for Cloudflare Pages deployment
 # Runs Next.js build then @cloudflare/next-on-pages adapter from the correct directory

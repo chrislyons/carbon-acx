@@ -1,3 +1,4 @@
+<!-- Archived ACX110: SSR fix landed in the Next app; status note retained for history. -->
 # Three.js SSR Fix Status
 
 **Issue:** TypeError: can't access property "S", ge is undefined

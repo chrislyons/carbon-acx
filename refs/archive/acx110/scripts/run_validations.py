@@ -1,3 +1,4 @@
+# Archived ACX110: superseded by tools/validator + publication/data audits; not wired into any build.
 """Repository data validation and determinism checks.
 
 This script bundles the bespoke validation steps requested for the
