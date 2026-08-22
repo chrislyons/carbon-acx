@@ -1,33 +1,29 @@
+"""Dataset orchestrators: full export view and intensity matrix construction."""
+
 from __future__ import annotations
 
-import ast
-import json
+import hashlib
 import math
 import os
-import shutil
 import sys
-import datetime as _datetime_module
-import hashlib
-import re
 from collections import defaultdict
-from dataclasses import asdict, dataclass
-from decimal import Decimal, ROUND_HALF_UP
+from dataclasses import asdict
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence
 
 import pandas as pd
 
-from . import citations, figures, manifest as manifest_module
-from .figures_manifest import (
+from .. import citations, figures
+from .. import manifest as manifest_module
+from ..citations import collect_activity_source_keys
+from ..dal import DataStore, choose_backend
+from ..figures_manifest import (
+    FigureManifestArtifacts,
     build_collection_index,
     build_figure_manifest,
     bundle_manifest_artifacts,
-    FigureManifestArtifacts,
 )
-from .upstream import dependency_metadata
-from .api import collect_activity_source_keys
-from .dal import DataStore, choose_backend
-from .schema import (
+from ..schema import (
     Activity,
     ActivityFunctionalUnitMap,
     ActivitySchedule,
@@ -36,730 +32,54 @@ from .schema import (
     GridIntensity,
     LayerId,
     Operation,
-    Profile,
     RegionCode,
     load_activities as schema_load_activities,
     load_activity_dependencies,
     load_activity_fu_map,
     load_assets as schema_load_assets,
     load_entities as schema_load_entities,
-    load_functional_units,
     load_feedback_loops as schema_load_feedback_loops,
+    load_functional_units,
     load_operations as schema_load_operations,
     load_sites as schema_load_sites,
 )
-
-FLOAT_QUANTISER = Decimal("0.000001")
-OUTPUT_ROOT_ENV = "ACX_OUTPUT_ROOT"
-GENERATED_AT_ENV = "ACX_GENERATED_AT"
-ALLOW_OUTPUT_RM_ENV = "ACX_ALLOW_OUTPUT_RM"
-REPO_ROOT = Path(__file__).resolve().parent.parent
-ARTIFACT_ROOT = Path(
-    os.getenv("ACX_ARTIFACT_ROOT", str(REPO_ROOT / "dist" / "artifacts"))
-).resolve()
-BUILD_HASH_RE = re.compile(r"^[0-9a-f]{12}$")
-EXPORT_COLUMNS = [
-    "profile_id",
-    "activity_id",
-    "layer_id",
-    "activity_name",
-    "activity_category",
-    "scope_boundary",
-    "emission_factor_vintage_year",
-    "grid_region",
-    "grid_vintage_year",
-    "annual_emissions_g",
-    "annual_emissions_g_low",
-    "annual_emissions_g_high",
-    "upstream_chain",
-]
-
-INTENSITY_COLUMNS = [
-    "alt_id",
-    "alternative",
-    "record_type",
-    "activity_id",
-    "activity_name",
-    "functional_unit_id",
-    "fu_name",
-    "intensity_g_per_fu",
-    "intensity_low_g_per_fu",
-    "intensity_high_g_per_fu",
-    "annual_fu",
-    "annual_kg",
-    "method_notes",
-    "scope_boundary",
-    "region",
-    "source_ids_csv",
-]
-
-_UNIT_VARIABLE_HINTS: dict[str, tuple[str, ...]] = {
-    "km": ("distance_km", "route_km"),
-    "kilometre": ("distance_km", "route_km"),
-    "kilometer": ("distance_km", "route_km"),
-    "passenger-km": ("distance_km", "route_km"),
-    "passenger_km": ("distance_km", "route_km"),
-    "passenger-kilometre": ("distance_km", "route_km"),
-    "passenger_kilometre": ("distance_km", "route_km"),
-    "hour": ("hours",),
-    "participant-hour": ("hours",),
-    "participant_hour": ("hours",),
-    "serving": ("servings",),
-    "servings": ("servings",),
-    "garment": ("servings",),
-    "wear": ("servings",),
-    "prompt": ("prompts",),
-    "site_day": ("site_days",),
-    "mmbtu": ("mmbtu", "energy_mmbtu"),
-    "tonne": ("tonnes", "mass_tonnes"),
-    "1k_tokens": ("tokens", "token_k"),
-    "gb": ("gb_transferred", "data_gb"),
-    "gigabyte": ("gb_transferred", "data_gb"),
-    "server_hour": ("server_hours", "it_server_hours"),
-    "rack_month": ("rack_months", "rack_equivalent_months"),
-    "hectare": ("hectares_burned", "area_hectares"),
-    "event": ("events",),
-}
-
-_CASE_TO_LITRE_MULTIPLIER = 24.0 * 0.355
-_CASE_TO_LITRE_NOTE = "Derived litres_delivered from cases_delivered using 24 × 0.355 L per case."
-
-datetime = _datetime_module.datetime
-timezone = _datetime_module.timezone
-
-_FORMULA_PATTERN = re.compile(r"^fu\s*=\s*(.+)$")
-_VARIABLE_NAME_PATTERN = re.compile(r"^[a-z_]+$")
-
-
-class _FormulaValidationError(ValueError):
-    """Internal marker for invalid functional unit formulas."""
-
-
-def _coerce_numeric(value: Any) -> float:
-    if isinstance(value, (int, float, Decimal)):
-        return float(value)
-    raise TypeError(f"Unsupported value type for formula evaluation: {type(value)!r}")
-
-
-def _evaluate_formula_node(node: ast.AST, variables: Mapping[str, Any]) -> Optional[float]:
-    if isinstance(node, ast.Expression):
-        return _evaluate_formula_node(node.body, variables)
-
-    if isinstance(node, ast.BinOp) and isinstance(node.op, (ast.Add, ast.Sub, ast.Mult, ast.Div)):
-        left = _evaluate_formula_node(node.left, variables)
-        right = _evaluate_formula_node(node.right, variables)
-        if left is None or right is None:
-            return None
-        if isinstance(node.op, ast.Add):
-            return left + right
-        if isinstance(node.op, ast.Sub):
-            return left - right
-        if isinstance(node.op, ast.Mult):
-            return left * right
-        if isinstance(node.op, ast.Div):
-            return left / right
-
-    if isinstance(node, ast.UnaryOp) and isinstance(node.op, (ast.UAdd, ast.USub)):
-        operand = _evaluate_formula_node(node.operand, variables)
-        if operand is None:
-            return None
-        if isinstance(node.op, ast.UAdd):
-            return +operand
-        if isinstance(node.op, ast.USub):
-            return -operand
-
-    if isinstance(node, ast.Name):
-        if not _VARIABLE_NAME_PATTERN.fullmatch(node.id):
-            raise _FormulaValidationError(f"Invalid variable name: {node.id}")
-        if node.id not in variables:
-            return None
-        value = variables[node.id]
-        if value is None:
-            return None
-        try:
-            return _coerce_numeric(value)
-        except TypeError as exc:  # pragma: no cover - defensive guard
-            raise _FormulaValidationError(str(exc)) from exc
-
-    if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
-        return float(node.value)
-
-    raise _FormulaValidationError(
-        f"Unsupported expression element: {ast.dump(node, include_attributes=False)}"
-    )
-
-
-def evaluate_functional_unit_formula(
-    formula: Optional[str], variables: Mapping[str, Any]
-) -> Optional[float]:
-    """Evaluate a functional unit conversion formula against provided variables.
-
-    The evaluator only supports a constrained arithmetic grammar with the operators
-    ``+``, ``-``, ``*`` and ``/`` alongside numeric literals and snake_case
-    variable references. When a variable referenced by the formula is missing or
-    resolves to ``None``, ``None`` is returned to indicate that a functional unit
-    could not be derived. Any structural issues with the formula will raise a
-    :class:`ValueError`.
-    """
-
-    if formula is None:
-        return None
-
-    formula = formula.strip()
-    if not formula:
-        return None
-
-    match = _FORMULA_PATTERN.match(formula)
-    if not match:
-        raise ValueError(f"Unsupported functional unit formula: {formula}")
-
-    rhs = match.group(1).strip()
-    if not rhs:
-        return None
-
-    try:
-        parsed = ast.parse(rhs, mode="eval")
-    except SyntaxError as exc:  # pragma: no cover - defensive guard
-        raise ValueError(f"Invalid functional unit formula: {formula}") from exc
-
-    try:
-        result = _evaluate_formula_node(parsed, variables)
-    except _FormulaValidationError as exc:
-        raise ValueError(str(exc)) from exc
-
-    return result
-
-
-def _quantize_float(value: float) -> float:
-    if math.isnan(value) or math.isinf(value):
-        return value
-    quantised = Decimal(str(value)).quantize(FLOAT_QUANTISER, rounding=ROUND_HALF_UP)
-    return float(quantised)
-
-
-def _coerce_none(value: Any) -> Any:
-    if value is None:
-        return None
-    if isinstance(value, (list, tuple, dict, set)):
-        return value
-    try:
-        if pd.isna(value):
-            return None
-    except TypeError:
-        pass
-    return value
-
-
-def _normalise_value(value: Any) -> Any:
-    coerced = _coerce_none(value)
-    if coerced is None:
-        return None
-    if isinstance(coerced, float):
-        return _quantize_float(coerced)
-    if isinstance(coerced, Decimal):
-        return _quantize_float(float(coerced))
-    if isinstance(coerced, dict):
-        return {key: _normalise_value(val) for key, val in coerced.items()}
-    if isinstance(coerced, list):
-        return [_normalise_value(item) for item in coerced]
-    if isinstance(coerced, tuple):
-        return tuple(_normalise_value(item) for item in coerced)
-    return coerced
-
-
-def _normalise_mapping(record: dict) -> dict:
-    return {key: _normalise_value(record.get(key)) for key in EXPORT_COLUMNS if key in record} | {
-        key: _normalise_value(value) for key, value in record.items() if key not in EXPORT_COLUMNS
-    }
-
-
-def _normalise_category_label(value: Any) -> str:
-    if value is None:
-        return "uncategorized"
-    try:
-        if pd.isna(value):
-            return "uncategorized"
-    except TypeError:
-        pass
-    text = str(value)
-    return text if text else "uncategorized"
-
-
-def _env_flag(name: str) -> bool:
-    value = os.getenv(name)
-    if value is None:
-        return False
-    return value.strip().lower() in {"1", "true", "yes", "on"}
-
-
-def is_safe_output_dir(path: Path, repo_root: Path) -> bool:
-    if _env_flag(ALLOW_OUTPUT_RM_ENV):
-        return True
-
-    repo_artifacts = (repo_root / "dist" / "artifacts").resolve()
-    resolved = path.resolve()
-    try:
-        relative = resolved.relative_to(repo_artifacts)
-    except ValueError:
-        return False
-
-    if not relative.parts:
-        return False
-
-    build_segment = relative.parts[0]
-    return bool(BUILD_HASH_RE.fullmatch(build_segment))
-
-
-def _prepare_output_dir(path: Path) -> None:
-    if not is_safe_output_dir(path, REPO_ROOT):
-        raise ValueError(
-            "Refusing to clear output directory outside dist/artifacts build guardrails: "
-            f"{path}. Set ACX_ALLOW_OUTPUT_RM=1 to override."
-        )
-
-    if path.exists():
-        for child in path.iterdir():
-            if child.name == ".gitkeep":
-                continue
-            if child.is_dir():
-                shutil.rmtree(child)
-            else:
-                child.unlink()
-    path.mkdir(parents=True, exist_ok=True)
-
-
-def _resolve_output_root(output_root: Path | str | None, repo_root: Path) -> Path:
-    if output_root is not None:
-        candidate = Path(output_root)
-    else:
-        env_root = os.getenv(OUTPUT_ROOT_ENV)
-        if env_root:
-            candidate = Path(env_root)
-        else:
-            candidate = ARTIFACT_ROOT
-
-    if not candidate.is_absolute():
-        candidate = (repo_root / candidate).resolve()
-    else:
-        candidate = candidate.resolve()
-
-    return candidate
-
-
-def _apply_build_hash(base_root: Path, repo_root: Path, build_hash: str) -> Path:
-    repo_artifacts = (repo_root / "dist" / "artifacts").resolve()
-    base_resolved = base_root.resolve()
-    try:
-        relative = base_resolved.relative_to(repo_artifacts)
-    except ValueError:
-        return base_resolved
-
-    parts = relative.parts
-    if parts and BUILD_HASH_RE.fullmatch(parts[0]):
-        return base_resolved
-
-    return repo_artifacts.joinpath(build_hash, *parts)
-
-
-def _compute_build_hash(manifest_payload: Mapping[str, Any], rows: List[dict]) -> str:
-    digest_source = json.dumps(
-        {"manifest": manifest_payload, "rows": rows},
-        sort_keys=True,
-        separators=(",", ":"),
-        default=str,
-    ).encode("utf-8")
-    return hashlib.sha256(digest_source).hexdigest()[:12]
-
-
-def _sort_export_rows(rows: List[dict]) -> List[dict]:
-    def sort_key(row: dict) -> tuple:
-        grid_year = row.get("grid_vintage_year")
-        ef_year = row.get("emission_factor_vintage_year")
-        return (
-            str(row.get("profile_id") or ""),
-            str(row.get("activity_id") or ""),
-            str(row.get("layer_id") or ""),
-            str(row.get("grid_region") or ""),
-            -1 if grid_year in (None, "") else int(grid_year),
-            -1 if ef_year in (None, "") else int(ef_year),
-        )
-
-    return sorted(rows, key=sort_key)
-
-
-def _write_json(path: Path, payload: Any) -> None:
-    normalised = _normalise_value(payload)
-    path.write_text(json.dumps(normalised, indent=2, sort_keys=True), encoding="utf-8")
-
-
-def _stable_json_dumps(payload: Any) -> str:
-    normalised = _normalise_value(payload)
-    return json.dumps(normalised, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
-
-
-def _is_truthy_env(value: str | None) -> bool:
-    if value is None:
-        return False
-    return value.strip().lower() not in {"0", "false", "no", "off"}
-
-
-def _resolve_generated_at() -> str:
-    env_value = os.getenv(GENERATED_AT_ENV)
-    if env_value:
-        return env_value
-    return datetime.now(timezone.utc).isoformat()
-
-
-def get_grid_intensity(
-    profile: Profile,
-    grid_lookup: Mapping[str | RegionCode, Optional[float]],
-    region_override: Optional[str | RegionCode] = None,
-    mix_region: Optional[str | RegionCode] = None,
-    use_canada_average: Optional[bool] = None,
-) -> Optional[float]:
-    if region_override:
-        return grid_lookup.get(region_override)
-    if mix_region:
-        return grid_lookup.get(mix_region)
-    if use_canada_average:
-        fallback = grid_lookup.get(RegionCode.CA) or grid_lookup.get("CA")
-        if fallback is not None:
-            return fallback
-        values = [value for value in grid_lookup.values() if value is not None]
-        if values:
-            return sum(values) / len(values)
-        return None
-    if profile and profile.default_grid_region:
-        return grid_lookup.get(profile.default_grid_region)
-    return None
-
-
-def _layer_value(value: LayerId | str | None) -> str | None:
-    if value is None:
-        return None
-    if isinstance(value, LayerId):
-        return value.value
-    return str(value)
-
-
-def _normalise_layer_hint(value: str) -> str:
-    return re.sub(r"[^a-z0-9]+", "_", value.strip().lower()).strip("_")
-
-
-def _resolve_layer_hint(value: object | None) -> Optional[str]:
-    if value is None:
-        return None
-    if isinstance(value, LayerId):
-        return value.value
-
-    text = str(value).strip()
-    if not text:
-        return None
-
-    upper = text.upper()
-    for prefix, layer in _LAYER_PREFIXES:
-        if upper.startswith(prefix):
-            return layer.value
-
-    normalised = _normalise_layer_hint(text)
-    hinted = _LAYER_NAME_HINTS.get(normalised)
-    if hinted is not None:
-        return hinted.value
-
-    return None
-
-
-def _resolve_layer_id(
-    sched: ActivitySchedule | None,
-    profile: Profile | None,
-    activity: Activity | None,
-) -> Optional[str]:
-    for source in (sched, profile, activity):
-        if source is None:
-            continue
-        layer = getattr(source, "layer_id", None)
-        resolved = _layer_value(layer)
-        if resolved:
-            return resolved
-
-    hint_sources = (
-        getattr(sched, "profile_id", None),
-        getattr(profile, "profile_id", None),
-        getattr(sched, "activity_id", None),
-        getattr(activity, "activity_id", None),
-        getattr(activity, "category", None),
-    )
-    for candidate in hint_sources:
-        hinted = _resolve_layer_hint(candidate)
-        if hinted:
-            return hinted
-
-    return LayerId.PROFESSIONAL.value
-
-
-def _office_ratio(profile: Profile) -> Optional[float]:
-    if profile.office_days_per_week is None:
-        return None
-    return float(profile.office_days_per_week) / 5
-
-
-def _weekly_quantity(sched: ActivitySchedule, profile: Profile) -> Optional[float]:
-    if sched.quantity_per_week is not None:
-        weekly = float(sched.quantity_per_week)
-    elif sched.freq_per_week is not None:
-        weekly = float(sched.freq_per_week)
-    elif sched.freq_per_day is not None:
-        if sched.office_only or sched.office_days_only:
-            if profile.office_days_per_week is None:
-                return None
-            days = float(profile.office_days_per_week)
-        else:
-            days = 7.0
-        weekly = float(sched.freq_per_day) * days
-    else:
-        weekly = None
-
-    if weekly is None:
-        return None
-
-    ratio = _office_ratio(profile)
-    if sched.office_only and sched.freq_per_day is None:
-        if ratio is None:
-            return None
-        weekly *= ratio
-    if sched.office_days_only and sched.freq_per_day is None:
-        if ratio is None:
-            return None
-        weekly *= ratio
-
-    return weekly
-
-
-@dataclass(frozen=True)
-class EmissionDetails:
-    mean: Optional[float]
-    low: Optional[float]
-    high: Optional[float]
-
-    def as_dict(self) -> dict:
-        payload = {"mean": self.mean}
-        if self.low is not None:
-            payload["low"] = self.low
-        if self.high is not None:
-            payload["high"] = self.high
-        return payload
-
-
-def compute_emission(
-    sched: ActivitySchedule,
-    profile: Profile,
-    ef: EmissionFactor,
-    grid_lookup: Mapping[str | RegionCode, Optional[float]],
-) -> Optional[float]:
-    details = compute_emission_details(sched, profile, ef, grid_lookup)
-    return details.mean
-
-
-def compute_emission_details(
-    sched: ActivitySchedule,
-    profile: Profile,
-    ef: EmissionFactor,
-    grid_lookup: Mapping[str | RegionCode, Optional[float]],
-    grid_row: GridIntensity | None = None,
-) -> EmissionDetails:
-    weekly_quantity = _weekly_quantity(sched, profile)
-    if weekly_quantity is None:
-        return EmissionDetails(mean=None, low=None, high=None)
-
-    quantity = weekly_quantity * 52
-
-    if ef.value_g_per_unit is not None:
-        factor = float(ef.value_g_per_unit)
-        mean = quantity * factor
-        low = (
-            quantity * float(ef.uncert_low_g_per_unit)
-            if ef.uncert_low_g_per_unit is not None
-            else None
-        )
-        high = (
-            quantity * float(ef.uncert_high_g_per_unit)
-            if ef.uncert_high_g_per_unit is not None
-            else None
-        )
-        return EmissionDetails(mean=mean, low=low, high=high)
-
-    if ef.is_grid_indexed:
-        intensity = None
-        if grid_row and grid_row.intensity_g_per_kwh is not None:
-            intensity = float(grid_row.intensity_g_per_kwh)
-        if intensity is None:
-            intensity = get_grid_intensity(
-                profile,
-                grid_lookup,
-                sched.region_override,
-                sched.mix_region,
-                sched.use_canada_average,
-            )
-        if intensity is None or ef.electricity_kwh_per_unit is None:
-            return EmissionDetails(mean=None, low=None, high=None)
-
-        kwh = float(ef.electricity_kwh_per_unit)
-        mean = quantity * float(intensity) * kwh
-
-        intensity_low = (
-            float(grid_row.intensity_low_g_per_kwh)
-            if grid_row and grid_row.intensity_low_g_per_kwh is not None
-            else None
-        )
-        intensity_high = (
-            float(grid_row.intensity_high_g_per_kwh)
-            if grid_row and grid_row.intensity_high_g_per_kwh is not None
-            else None
-        )
-        kwh_low = (
-            float(ef.electricity_kwh_per_unit_low)
-            if ef.electricity_kwh_per_unit_low is not None
-            else None
-        )
-        kwh_high = (
-            float(ef.electricity_kwh_per_unit_high)
-            if ef.electricity_kwh_per_unit_high is not None
-            else None
-        )
-
-        low = None
-        high = None
-        if intensity_low is not None or kwh_low is not None:
-            low = (
-                quantity
-                * (intensity_low if intensity_low is not None else float(intensity))
-                * (kwh_low if kwh_low is not None else kwh)
-            )
-        if intensity_high is not None or kwh_high is not None:
-            high = (
-                quantity
-                * (intensity_high if intensity_high is not None else float(intensity))
-                * (kwh_high if kwh_high is not None else kwh)
-            )
-
-        return EmissionDetails(mean=mean, low=low, high=high)
-
-    return EmissionDetails(mean=None, low=None, high=None)
-
-
-def _format_references(citation_keys: List[str]) -> List[str]:
-    references = citations.references_for(citation_keys)
-    return [citations.format_ieee(ref.numbered(idx)) for idx, ref in enumerate(references, start=1)]
-
-
-def _write_reference_file(directory: Path, stem: str, references: List[str]) -> str:
-    directory.mkdir(parents=True, exist_ok=True)
-    text = "\n".join(references)
-    if references:
-        text += "\n"
-    (directory / f"{stem}_refs.txt").write_text(text, encoding="utf-8")
-    return text
-
-
-def _schedule_variable_map(sched: ActivitySchedule) -> dict[str, float]:
-    data = sched.model_dump(exclude_none=True)
-    variables: dict[str, float] = {}
-    for key, value in data.items():
-        if isinstance(value, (int, float)):
-            variables[key] = float(value)
-    return variables
-
-
-def _operation_variable_map(
-    operation: Operation,
-    provided: Mapping[str, Mapping[str, Any]] | None,
-) -> tuple[dict[str, float], list[str]]:
-    source: Mapping[str, Any] | None = None
-    if provided and operation.operation_id in provided:
-        candidate = provided[operation.operation_id]
-        if isinstance(candidate, Mapping):
-            source = candidate
-
-    variables: dict[str, float] = {}
-    if source:
-        for key, value in source.items():
-            try:
-                variables[str(key)] = float(value)  # type: ignore[arg-type]
-            except (TypeError, ValueError):  # pragma: no cover - defensive
-                continue
-
-    notes: list[str] = []
-    if "litres_delivered" not in variables:
-        cases_value = variables.get("cases_delivered")
-        if cases_value is not None:
-            litres = float(cases_value) * _CASE_TO_LITRE_MULTIPLIER
-            variables["litres_delivered"] = litres
-            notes.append(_CASE_TO_LITRE_NOTE)
-
-    throughput_value = getattr(operation, "throughput_value", None)
-    if throughput_value is not None:
-        try:
-            value = float(throughput_value)
-        except (TypeError, ValueError):  # pragma: no cover - defensive
-            value = None
-        if value is not None:
-            variables.setdefault("throughput_value", value)
-
-            unit = (operation.throughput_unit or "").strip().lower()
-            if unit in {"kg", "kilogram", "kilograms"}:
-                variables.setdefault("waste_mass_kg", value)
-                variables.setdefault("mass_kg", value)
-            elif unit in {"m3", "m^3", "cubic metre", "cubic meter"}:
-                variables.setdefault("volume_m3", value)
-                variables.setdefault("volume_cubic_metres", value)
-            elif unit in {"l", "litre", "liter", "litres", "liters"}:
-                variables.setdefault("volume_l", value)
-
-    return variables, notes
-
-
-def _activity_unit_value_from_mapping(
-    variables: Mapping[str, Any],
-    activity: Activity | None,
-    ef: EmissionFactor | None,
-) -> Optional[float]:
-    candidates: list[str] = []
-    if ef and ef.unit:
-        candidates.extend(_UNIT_VARIABLE_HINTS.get(str(ef.unit).lower(), ()))
-    if activity and activity.default_unit:
-        candidates.extend(_UNIT_VARIABLE_HINTS.get(activity.default_unit.lower(), ()))
-
-    ordered: list[str] = []
-    seen: set[str] = set()
-    for name in candidates:
-        if name in seen:
-            continue
-        seen.add(name)
-        ordered.append(name)
-
-    for fallback in ("distance_km", "route_km", "hours"):
-        if fallback not in seen:
-            ordered.append(fallback)
-            seen.add(fallback)
-
-    for name in ordered:
-        value = variables.get(name)
-        if value is None:
-            continue
-        try:
-            return float(value)
-        except (TypeError, ValueError):  # pragma: no cover - defensive
-            continue
-    return None
-
-
-def _activity_unit_value(
-    sched: ActivitySchedule,
-    activity: Activity | None,
-    ef: EmissionFactor,
-) -> Optional[float]:
-    variables = _schedule_variable_map(sched)
-    return _activity_unit_value_from_mapping(variables, activity, ef)
+from ..upstream import dependency_metadata
+from ..utils.clock import resolve_generated_at
+from ..utils.env import env_flag
+from ..utils.labels import normalise_category_label
+from .emissions import (
+    EmissionDetails,
+    compute_emission_details,
+    get_grid_intensity,
+    resolve_grid_row,
+    weekly_quantity,
+)
+from .formulas import (
+    activity_unit_value,
+    activity_unit_value_from_mapping,
+    evaluate_functional_unit_formula,
+    operation_variable_map,
+    schedule_variable_map,
+)
+from .io import (
+    ARTIFACT_ROOT,
+    EXPORT_COLUMNS,
+    INTENSITY_COLUMNS,
+    REPO_ROOT,
+    apply_build_hash,
+    compute_build_hash,
+    normalise_mapping,
+    normalise_value,
+    prepare_output_dir,
+    resolve_output_root,
+    sort_export_rows,
+    stable_json_dumps,
+    write_json,
+    write_reference_file,
+)
+from .layers import resolve_layer_id
+
+__all__ = ["build_intensity_matrix", "export_view"]
 
 
 def _dedupe_preserve_order(values: Iterable[str | None]) -> list[str]:
@@ -836,7 +156,7 @@ def build_intensity_matrix(
     for op in operations_seq:
         operations_by_activity[op.activity_id].append(op)
 
-    operation_variable_map = operation_variables or {}
+    operation_variables_map = operation_variables or {}
 
     activity_fu_seq = (
         list(activity_fu_map)
@@ -889,12 +209,12 @@ def build_intensity_matrix(
                 if profile is None:
                     continue
 
-                variables = _schedule_variable_map(sched)
+                variables = schedule_variable_map(sched)
                 fu_value = evaluate_functional_unit_formula(mapping.conversion_formula, variables)
                 if fu_value is None or not math.isfinite(fu_value) or fu_value <= 0:
                     continue
 
-                activity_units = _activity_unit_value(sched, activity, ef)
+                activity_units = activity_unit_value(sched, activity, ef)
                 if (
                     activity_units is None
                     or not math.isfinite(activity_units)
@@ -925,7 +245,7 @@ def build_intensity_matrix(
                         )
                 elif ef.is_grid_indexed:
                     if grid_by_region:
-                        grid_row = _resolve_grid_row(sched, profile, grid_by_region)
+                        grid_row = resolve_grid_row(sched, profile, grid_by_region)
                     grid_intensity = None
                     grid_low = None
                     grid_high = None
@@ -983,7 +303,7 @@ def build_intensity_matrix(
                 if intensity_mean is None or not math.isfinite(intensity_mean):
                     continue
 
-                weekly_frequency = _weekly_quantity(sched, profile) if profile else None
+                weekly_frequency = weekly_quantity(sched, profile) if profile else None
                 daily_frequency = (
                     (float(weekly_frequency) / 7.0) if weekly_frequency is not None else None
                 )
@@ -1052,7 +372,9 @@ def build_intensity_matrix(
             if fu_id and operation.functional_unit_id and operation.functional_unit_id != fu_id:
                 continue
 
-            variables, assumption_notes = _operation_variable_map(operation, operation_variable_map)
+            variables, assumption_notes = operation_variable_map(
+                operation, operation_variables_map
+            )
             fu_value = evaluate_functional_unit_formula(mapping.conversion_formula, variables)
 
             intensity_mean = None
@@ -1062,7 +384,7 @@ def build_intensity_matrix(
 
             activity_units = None
             if variables:
-                activity_units = _activity_unit_value_from_mapping(variables, activity, ef)
+                activity_units = activity_unit_value_from_mapping(variables, activity, ef)
 
             if (
                 ef is not None
@@ -1147,38 +469,11 @@ def build_intensity_matrix(
         csv_path = output_dir / "intensity_matrix.csv"
         df.to_csv(csv_path, index=False, na_rep="")
 
-        references = _format_references(reference_order)
+        references = citations.format_references(reference_order)
         reference_dir = output_dir / "references"
-        _write_reference_file(reference_dir, "intensity", references)
+        write_reference_file(reference_dir, "intensity", references)
 
     return df
-
-
-def _resolve_grid_row(
-    sched: ActivitySchedule,
-    profile: Profile | None,
-    grid_by_region: Mapping[str | RegionCode, GridIntensity],
-) -> Optional[GridIntensity]:
-    if sched.region_override is not None:
-        region_key = sched.region_override
-    elif sched.mix_region is not None:
-        region_key = sched.mix_region
-    elif sched.use_canada_average:
-        region_key = RegionCode.CA
-    elif profile and profile.default_grid_region is not None:
-        region_key = profile.default_grid_region
-    else:
-        region_key = None
-
-    if region_key is None:
-        return None
-
-    grid = grid_by_region.get(region_key)
-    if grid is None and hasattr(region_key, "value"):
-        grid = grid_by_region.get(region_key.value)
-    if grid is None and isinstance(region_key, RegionCode):
-        grid = grid_by_region.get(region_key.value)
-    return grid
 
 
 def export_view(
@@ -1347,7 +642,7 @@ def export_view(
         grid_row: Optional[GridIntensity] = None
         details = EmissionDetails(mean=None, low=None, high=None)
         emission = None
-        layer_id = _resolve_layer_id(sched, profile, activity)
+        layer_id = resolve_layer_id(sched, profile, activity)
 
         if profile is None:
             excluded_missing_profile += 1
@@ -1357,7 +652,7 @@ def export_view(
             if ef.vintage_year is not None:
                 manifest_ef_vintages.add(int(ef.vintage_year))
             if ef.is_grid_indexed:
-                grid_row = _resolve_grid_row(sched, profile, grid_by_region)
+                grid_row = resolve_grid_row(sched, profile, grid_by_region)
                 if grid_row is not None:
                     region_value = (
                         grid_row.region.value
@@ -1444,8 +739,8 @@ def export_view(
             file=sys.stderr,
         )
 
-    sorted_rows = _sort_export_rows(rows)
-    normalised_rows = [_normalise_mapping(row) for row in sorted_rows]
+    sorted_rows = sort_export_rows(rows)
+    normalised_rows = [normalise_mapping(row) for row in sorted_rows]
     df = pd.DataFrame(normalised_rows, columns=EXPORT_COLUMNS)
 
     citation_keys = sorted(collect_activity_source_keys(derived_rows))
@@ -1455,7 +750,7 @@ def export_view(
             citation_keys.append(key)
     resolved_profiles = sorted(resolved_profile_ids)
     profile_arg = resolved_profiles if resolved_profiles else None
-    generated_at = _resolve_generated_at()
+    generated_at = resolve_generated_at()
     sorted_layers = sorted(manifest_layers)
 
     layer_key_sets: dict[str, set[str]] = {}
@@ -1487,7 +782,8 @@ def export_view(
         layer_citation_keys[layer] = ordered + remaining
 
     layer_references: dict[str, List[str]] = {
-        layer: _format_references(layer_citation_keys.get(layer, [])) for layer in sorted_layers
+        layer: citations.format_references(layer_citation_keys.get(layer, []))
+        for layer in sorted_layers
     }
 
     reference_index_lookup = {key: idx for idx, key in enumerate(citation_keys, start=1)}
@@ -1505,7 +801,7 @@ def export_view(
         activity_key = row.get("activity_id")
         activity_id = str(activity_key) if activity_key is not None else None
         category_raw = row.get("activity_category")
-        category_key = _normalise_category_label(category_raw)
+        category_key = normalise_category_label(category_raw)
 
         if category_key:
             stacked_groups[(layer_key, category_key)].update(keys)
@@ -1558,7 +854,7 @@ def export_view(
         metadata["layer_citation_keys"] = layer_citation_keys
     if layer_references:
         metadata["layer_references"] = layer_references
-    references = _format_references(citation_keys)
+    references = citations.format_references(citation_keys)
     metadata["references"] = references
 
     csv_metadata = {k: v for k, v in metadata.items() if k not in {"references", "data"}}
@@ -1573,7 +869,7 @@ def export_view(
     ordered_keys = [key for key in csv_order if key in csv_metadata]
     remaining_keys = [key for key in csv_metadata if key not in csv_order]
 
-    manifest_payload = {
+    export_manifest_payload = {
         "generated_at": generated_at,
         "regions": sorted(manifest_regions),
         "vintages": {
@@ -1587,22 +883,22 @@ def export_view(
         "layers": sorted_layers,
     }
     if layer_citation_keys:
-        manifest_payload["layer_citation_keys"] = layer_citation_keys
+        export_manifest_payload["layer_citation_keys"] = layer_citation_keys
     if layer_references:
-        manifest_payload["layer_references"] = layer_references
+        export_manifest_payload["layer_references"] = layer_references
 
-    build_hash = _compute_build_hash(manifest_payload, normalised_rows)
-    base_output_root = _resolve_output_root(output_root, REPO_ROOT)
-    output_root_path = _apply_build_hash(base_output_root, REPO_ROOT, build_hash)
+    build_hash = compute_build_hash(export_manifest_payload, normalised_rows)
+    base_output_root = resolve_output_root(output_root, REPO_ROOT)
+    output_root_path = apply_build_hash(base_output_root, REPO_ROOT, build_hash)
 
     out_dir = Path(output_root_path) / "calc" / "outputs"
-    _prepare_output_dir(out_dir)
+    prepare_output_dir(out_dir)
     figure_dir = out_dir / "figures"
     reference_dir = out_dir / "references"
-    _prepare_output_dir(figure_dir)
-    _prepare_output_dir(reference_dir)
+    prepare_output_dir(figure_dir)
+    prepare_output_dir(reference_dir)
 
-    _write_reference_file(reference_dir, "export_view", references)
+    write_reference_file(reference_dir, "export_view", references)
 
     artifact_figure_dir = ARTIFACT_ROOT / "figures"
     artifact_reference_dir = ARTIFACT_ROOT / "references"
@@ -1611,7 +907,7 @@ def export_view(
         path.mkdir(parents=True, exist_ok=True)
 
     figure_manifests: list[FigureManifestArtifacts] = []
-    hashed_preferred = _is_truthy_env(os.getenv("ACX040_HASHED"))
+    hashed_preferred = env_flag("ACX040_HASHED")
 
     build_intensity_matrix(
         ds=datastore,
@@ -1629,7 +925,7 @@ def export_view(
     export_csv_path = out_dir / "export_view.csv"
     with export_csv_path.open("w", encoding="utf-8") as fh:
         for key in ordered_keys + sorted(remaining_keys):
-            value_payload = _normalise_value(csv_metadata[key])
+            value_payload = normalise_value(csv_metadata[key])
             if isinstance(value_payload, (dict, list)):
                 value_str = repr(value_payload)
             else:
@@ -1640,28 +936,28 @@ def export_view(
     records = [{column: row.get(column) for column in EXPORT_COLUMNS} for row in normalised_rows]
     payload = dict(metadata)
     payload["data"] = records
-    _write_json(out_dir / "export_view.json", payload)
+    write_json(out_dir / "export_view.json", payload)
 
     dependency_payload = {
         activity_id: [dict(entry) for entry in entries]
         for activity_id, entries in sorted(dependency_map.items())
     }
     if dependency_payload:
-        _write_json(out_dir / "dependency_map.json", dependency_payload)
+        write_json(out_dir / "dependency_map.json", dependency_payload)
 
-    def _with_layer_id(payload: Mapping[str, Any]) -> dict[str, Any]:
-        """Return ``payload`` with a normalised ``layer_id`` field."""
+    def _with_layer_id(entry_payload: Mapping[str, Any]) -> dict[str, Any]:
+        """Return ``entry_payload`` with a normalised ``layer_id`` field."""
 
-        value = payload.get("layer_id") if isinstance(payload, Mapping) else None
+        value = entry_payload.get("layer_id") if isinstance(entry_payload, Mapping) else None
         if isinstance(value, LayerId):
             layer_value: str | None = value.value
         elif isinstance(value, str):
             layer_value = value
         else:
             layer_value = None
-        if payload.get("layer_id") == layer_value:
-            return dict(payload)
-        normalised = dict(payload)
+        if entry_payload.get("layer_id") == layer_value:
+            return dict(entry_payload)
+        normalised = dict(entry_payload)
         normalised["layer_id"] = layer_value
         return normalised
 
@@ -1716,9 +1012,9 @@ def export_view(
         meta["data"] = data
         trimmed_meta = figures.trim_figure_payload(meta)
         legacy_figure_path = figure_dir / f"{name}.json"
-        _write_json(legacy_figure_path, trimmed_meta)
+        write_json(legacy_figure_path, trimmed_meta)
 
-        stable_payload = _stable_json_dumps(trimmed_meta)
+        stable_payload = stable_json_dumps(trimmed_meta)
         figure_sha256 = hashlib.sha256(stable_payload.encode("utf-8")).hexdigest()
         hash_prefix = figure_sha256[:8]
 
@@ -1727,7 +1023,7 @@ def export_view(
         artifact_legacy_figure.write_text(stable_payload, encoding="utf-8")
         artifact_hashed_figure.write_text(stable_payload, encoding="utf-8")
 
-        reference_text = _write_reference_file(reference_dir, name, references)
+        reference_text = write_reference_file(reference_dir, name, references)
         references_bytes = reference_text.encode("utf-8")
         references_sha256 = hashlib.sha256(references_bytes).hexdigest()
         artifact_legacy_reference = artifact_reference_dir / f"{name}_refs.txt"
@@ -1754,8 +1050,8 @@ def export_view(
             legacy_references_path=artifact_legacy_reference,
             artifact_root=ARTIFACT_ROOT,
         )
-        manifest_payload = figure_manifest.model_dump(mode="json")
-        manifest_json = _stable_json_dumps(manifest_payload)
+        figure_manifest_payload = figure_manifest.model_dump(mode="json")
+        manifest_json = stable_json_dumps(figure_manifest_payload)
         manifest_sha256 = hashlib.sha256(manifest_json.encode("utf-8")).hexdigest()
         legacy_manifest_path = artifact_manifest_dir / f"{name}.manifest.json"
         hashed_manifest_path = artifact_manifest_dir / f"{name}.{hash_prefix}.manifest.json"
@@ -1780,9 +1076,9 @@ def export_view(
 
     manifest_module.generate_all(out_dir)
 
-    manifest = dict(manifest_payload)
+    manifest = dict(export_manifest_payload)
     manifest["build_hash"] = build_hash
-    _write_json(out_dir / "manifest.json", manifest)
+    write_json(out_dir / "manifest.json", manifest)
 
     dataset_manifest_path = out_dir / "manifest.json"
     dataset_manifest_sha256 = hashlib.sha256(dataset_manifest_path.read_bytes()).hexdigest()
@@ -1800,7 +1096,7 @@ def export_view(
             dataset_manifest_sha256=dataset_manifest_sha256,
             artifact_root=ARTIFACT_ROOT,
         )
-        index_json = _stable_json_dumps(index_model.model_dump(mode="json"))
+        index_json = stable_json_dumps(index_model.model_dump(mode="json"))
         (ARTIFACT_ROOT / "manifest.json").write_text(index_json, encoding="utf-8")
 
     try:
@@ -1812,133 +1108,6 @@ def export_view(
             "build_hash": build_hash,
             "artifact_dir": os.getenv("ACX_POINTER_ARTIFACT_DIR", str(output_root_path)),
         }
-        _write_json(ARTIFACT_ROOT / "latest-build.json", pointer_payload)
+        write_json(ARTIFACT_ROOT / "latest-build.json", pointer_payload)
 
     return df
-
-
-def _parse_export_args(argv: Sequence[str]) -> Any:
-    import argparse
-
-    parser = argparse.ArgumentParser(description="Generate ACX derived outputs")
-    parser.add_argument(
-        "--output-root",
-        type=Path,
-        default=None,
-        help="Base directory for generated artifacts (defaults to dist/artifacts)",
-    )
-    parser.add_argument(
-        "--db",
-        type=Path,
-        default=None,
-        help="Path to the SQL database when using sqlite or duckdb backends",
-    )
-    parser.add_argument(
-        "--backend",
-        choices=("csv", "sqlite", "duckdb"),
-        default=None,
-        help="Override ACX_DATA_BACKEND for this invocation",
-    )
-    return parser.parse_args(argv)
-
-
-def _parse_intensity_args(argv: Sequence[str]) -> Any:
-    import argparse
-
-    parser = argparse.ArgumentParser(description="Generate intensity matrix outputs")
-    parser.add_argument(
-        "--output-dir",
-        type=Path,
-        default=ARTIFACT_ROOT,
-        help="Directory to store intensity artifacts (defaults to dist/artifacts)",
-    )
-    parser.add_argument(
-        "--fu",
-        dest="functional_unit",
-        default=None,
-        help="Functional unit identifier to filter on; use 'all' for every unit",
-    )
-    parser.add_argument(
-        "--profile",
-        dest="profile_id",
-        default=None,
-        help="Profile identifier to filter on",
-    )
-    parser.add_argument(
-        "--db",
-        type=Path,
-        default=None,
-        help="Path to the SQL database when using sqlite or duckdb backends",
-    )
-    parser.add_argument(
-        "--backend",
-        choices=("csv", "sqlite", "duckdb"),
-        default=None,
-        help="Override ACX_DATA_BACKEND for this invocation",
-    )
-    return parser.parse_args(argv)
-
-
-def main(argv: Sequence[str] | None = None) -> None:
-    argv = list(argv or [])
-    command = "export"
-    if argv and argv[0] in {"export", "intensity"}:
-        command = str(argv.pop(0))
-
-    if command == "export":
-        args = _parse_export_args(argv)
-        datastore = choose_backend(backend=args.backend, db_path=args.db)
-        export_view(datastore, output_root=args.output_root)
-        return
-
-    if command == "intensity":
-        args = _parse_intensity_args(argv)
-        datastore = choose_backend(backend=args.backend, db_path=args.db)
-        fu_option = args.functional_unit
-        fu_id = None if fu_option is None or str(fu_option).lower() == "all" else fu_option
-        build_intensity_matrix(
-            profile_id=args.profile_id,
-            fu_id=fu_id,
-            ds=datastore,
-            output_dir=args.output_dir,
-        )
-        return
-
-    raise ValueError(f"Unsupported command: {command}")
-
-
-if __name__ == "__main__":
-    import sys
-
-    main(sys.argv[1:])
-_LAYER_PREFIXES: list[tuple[str, LayerId]] = [
-    ("PRO.", LayerId.PROFESSIONAL),
-    ("ONLINE.", LayerId.ONLINE),
-    ("IND.TO.LIGHT.", LayerId.INDUSTRIAL_LIGHT),
-    ("IND.TO.HEAVY.", LayerId.INDUSTRIAL_HEAVY),
-    ("IND.MIL.", LayerId.INDUSTRIAL_HEAVY_MILITARY),
-    ("IND.EMB.", LayerId.INDUSTRIAL_HEAVY_EMBODIED),
-    ("DEF.BASE.", LayerId.BUILDINGS_DEFENSE),
-    ("MODEL.CONFLICT.", LayerId.MODELED_EVENTS),
-    ("CHEM.DEF.", LayerId.MATERIALS_CHEMICALS),
-    ("SEC.PRIV.", LayerId.PERSONAL_SECURITY_LAYER),
-]
-
-_LAYER_NAME_HINTS: dict[str, LayerId] = {
-    "professional": LayerId.PROFESSIONAL,
-    "online": LayerId.ONLINE,
-    "industrial_light": LayerId.INDUSTRIAL_LIGHT,
-    "light_industrial": LayerId.INDUSTRIAL_LIGHT,
-    "industrial_heavy": LayerId.INDUSTRIAL_HEAVY,
-    "heavy_industrial": LayerId.INDUSTRIAL_HEAVY,
-    "military_ops": LayerId.INDUSTRIAL_HEAVY_MILITARY,
-    "military_operations": LayerId.INDUSTRIAL_HEAVY_MILITARY,
-    "weapons_production": LayerId.INDUSTRIAL_HEAVY_EMBODIED,
-    "bases_infrastructure": LayerId.BUILDINGS_DEFENSE,
-    "conflict_scenarios": LayerId.MODELED_EVENTS,
-    "modeled_events": LayerId.MODELED_EVENTS,
-    "defense_supply_chain": LayerId.MATERIALS_CHEMICALS,
-    "materials_chemicals": LayerId.MATERIALS_CHEMICALS,
-    "private_security": LayerId.PERSONAL_SECURITY_LAYER,
-    "personal_security_layer": LayerId.PERSONAL_SECURITY_LAYER,
-}

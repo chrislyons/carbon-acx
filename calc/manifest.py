@@ -9,7 +9,7 @@ import subprocess
 from pathlib import Path
 from typing import Mapping, Sequence
 
-from .figures import _resolve_generated_at
+from .utils.clock import resolve_generated_at
 from .utils.hashio import sha256_bytes, sha256_concat, sha256_text
 
 SCHEMA_VERSION = "1.2.0"
@@ -181,7 +181,7 @@ def generate_all(output_dir: Path | str | None = None) -> list[Path]:
     source_files = (
         _source_filenames(dataset_paths) if dataset_paths else [str(path) for path in DATASET_FILES]
     )
-    created_at = _resolve_generated_at()
+    created_at = resolve_generated_at()
     manifest_paths: list[Path] = []
 
     if not figure_dir.exists():
