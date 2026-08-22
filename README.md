@@ -107,7 +107,7 @@ make build
 ### Explore the experiences
 
 - **Public routes:** `/`, `/calculator`, `/explore`, `/explore/3d`, `/learn`, `/methodology`, and the secondary `/manifests` Evidence library.
-- **Dash app:** `make app` launches the local Dash server reading derived artifacts for analyst exploration.
+- **Dash analyst explorer (local-only, unsupported):** `make app` launches the legacy Dash server for analyst exploration. It is frozen — local-only, excluded from CI and deploy pipelines, and no longer receiving fixes; the supported experience is the Next.js web app.
 - **Static preview:** after `make package`, run `wrangler pages dev dist/site` to inspect the production-style static bundle and `/artifacts/`.
 
 ---
