@@ -74,6 +74,8 @@ INTENSITY_COLUMNS = [
     "intensity_g_per_fu",
     "intensity_low_g_per_fu",
     "intensity_high_g_per_fu",
+    "annual_fu",
+    "annual_kg",
     "method_notes",
     "scope_boundary",
     "region",

@@ -27,9 +27,9 @@ class FrozenDateTime:
 
 
 def _patch_time(monkeypatch):
-    monkeypatch.setattr(derive_mod, "datetime", FrozenDateTime)
-    monkeypatch.setattr(derive_mod.figures, "datetime", FrozenDateTime)
-    monkeypatch.setattr(figures, "datetime", FrozenDateTime)
+    # resolve_generated_at lives in calc.utils.clock; patch its owning module.
+    from calc.utils import clock as clock_module
+    monkeypatch.setattr(clock_module, "datetime", FrozenDateTime)
 
 
 class GoldenStore:

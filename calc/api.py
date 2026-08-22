@@ -8,6 +8,8 @@ from typing import Any, Dict, List, Tuple
 import yaml
 
 from . import citations, schema
+from .citations import collect_activity_source_keys
+from .derive.emissions import compute_emission
 
 
 @dataclass(frozen=True)
@@ -86,43 +88,6 @@ def _collect_activity_sources(
     return sources
 
 
-def _row_value(row: object, key: str) -> Any:
-    if isinstance(row, Mapping):
-        return row.get(key)
-    return getattr(row, key, None)
-
-
-def _collect_row_sources(row: object) -> list[str]:
-    emission = _row_value(row, "annual_emissions_g")
-    if emission is None:
-        return []
-
-    keys: list[str] = []
-    candidates = (
-        "citation_keys",
-        "source_ids",
-        "source_id",
-        "emission_factor",
-        "grid_intensity",
-    )
-    for field in candidates:
-        value = _row_value(row, field)
-        if value is None:
-            continue
-        for ref in citations.references_for(value):
-            keys.append(ref.key)
-    return keys
-
-
-def collect_activity_source_keys(rows: Iterable[object]) -> set[str]:
-    """Return unique citation keys referenced by derived rows."""
-
-    keys: set[str] = set()
-    for row in rows:
-        keys.update(_collect_row_sources(row))
-    return keys
-
-
 def get_aggregates(data_dir: Path, cfg_path: Path) -> tuple[Aggregates, list[str]]:
     """Load data, compute emissions and return aggregates plus reference keys."""
 
@@ -156,15 +121,16 @@ def get_aggregates(data_dir: Path, cfg_path: Path) -> tuple[Aggregates, list[str
     by_activity: Dict[str, float] = {}
     source_keys: List[str] = []
 
-    from . import derive
-
+    # ``collect_activity_source_keys`` lives in :mod:`calc.citations` (a leaf
+    # module) so both this API and the derive pipeline import it without an
+    # api<->derive cycle; it is re-exported above for backwards compatibility.
     for sched in schedules:
         if sched.profile_id != profile_id:
             continue
         ef = emission_factors.get(sched.activity_id)
         if ef is None:
             continue
-        emission = derive.compute_emission(sched, profile, ef, grid_lookup)
+        emission = compute_emission(sched, profile, ef, grid_lookup)
         if emission is None:
             continue
         by_activity[sched.activity_id] = by_activity.get(sched.activity_id, 0.0) + emission
