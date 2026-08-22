@@ -1,12 +1,12 @@
 AGENTS.md for carbon-acx
 
 Purpose
-Define safe and efficient use of AI assistants (e.g., Claude Code) within the Carbon ACX repository. Maintain code quality, security, and provenance while enabling AI-assisted development.
+Define safe and efficient use of AI coding agents within the Carbon ACX repository. Maintain code quality, security, and provenance while enabling AI-assisted development.
 
 ⸻
 
 1. Scope
-	•	Primary assistant: Claude Code
+	•	Primary assistants: AI coding agents
 	•	Permitted tasks: Component scaffolding, refactors, tests, documentation, typed API clients, small features, data pipelines, deployment boilerplate
 	•	Excluded: Secrets, production data, architectural changes without review, or unvetted dependencies
 
@@ -58,7 +58,7 @@ Cloudflare Workers	wrangler secret put <NAME> or dashboard UI
 
 All AI-generated changes must be human-reviewed.
 	•	PR label: ai-generated
-	•	Commit footer: Generated-by: claude-code
+	•	No commit attribution trailers; authorship is recorded via the PR `ai-generated` label only
 	•	Approval required for changes to: Workers config, CI workflows, build system files, and auth/security code.
 
 ⸻
@@ -111,4 +111,4 @@ Quick Checklist
 
 ⸻
 
-Last reviewed: 2025-10-12
+Last reviewed: 2026-08-22
