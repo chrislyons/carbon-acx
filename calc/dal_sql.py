@@ -164,25 +164,116 @@ class SqlStore:
         return [GridIntensity(**row) for row in rows]
 
     def load_layers(self) -> Sequence[Layer]:
-        return []
+        rows = self._fetch_all(
+            """
+            SELECT layer_id, layer_name, layer_type, description
+            FROM layers
+            ORDER BY layer_id
+            """
+        )
+        return [Layer(**row) for row in rows]
 
     def load_entities(self) -> Sequence[Entity]:
-        return []
+        rows = self._fetch_all(
+            """
+            SELECT entity_id, name, type, parent_entity_id, notes
+            FROM entities
+            ORDER BY entity_id
+            """
+        )
+        return [Entity(**row) for row in rows]
 
     def load_sites(self) -> Sequence[Site]:
-        return []
+        rows = self._fetch_all(
+            """
+            SELECT site_id, entity_id, name, region_code, lat, lon, notes
+            FROM sites
+            ORDER BY site_id
+            """
+        )
+        return [Site(**row) for row in rows]
 
     def load_assets(self) -> Sequence[Asset]:
-        return []
+        rows = self._fetch_all(
+            """
+            SELECT asset_id, site_id, asset_type, name, year, power_rating_kw,
+                   fuel_type, notes
+            FROM assets
+            ORDER BY asset_id
+            """
+        )
+        return [Asset(**row) for row in rows]
 
     def load_operations(self) -> Sequence[Operation]:
-        return []
+        rows = self._fetch_all(
+            """
+            SELECT operation_id, asset_id, activity_id, layer_id, functional_unit_id,
+                   utilization_basis, period_start, period_end, throughput_value,
+                   throughput_unit, notes
+            FROM operations
+            ORDER BY operation_id
+            """
+        )
+        operations = [Operation(**row) for row in rows]
+        if not operations:
+            return operations
+
+        valid_layers = {layer.layer_id for layer in self.load_layers()}
+        missing = sorted(
+            {
+                operation.layer_id
+                for operation in operations
+                if operation.layer_id not in valid_layers
+            }
+        )
+        if missing:
+            missing_labels = ", ".join(layer.value for layer in missing)
+            raise ValueError(f"Unknown layer_id referenced by operations: {missing_labels}")
+        return operations
 
     def load_activity_dependencies(self) -> Sequence[ActivityDependency]:
-        return []
+        # No ORDER BY: consumers depend on the CSV row order of dependencies.csv,
+        # which the import path preserves as table insertion order (mirroring the
+        # DuckDB store, which reads the file sequentially).
+        rows = self._fetch_all(
+            """
+            SELECT child_activity_id, parent_operation_id, share, notes
+            FROM dependencies
+            """
+        )
+        return [ActivityDependency(**row) for row in rows]
+
+    def _feedback_loops_table_exists(self) -> bool:
+        if self._backend == "sqlite":
+            rows = self._fetch_all(
+                """
+                SELECT 1 FROM sqlite_master
+                WHERE type = 'table' AND name = 'feedback_loops'
+                """
+            )
+        else:
+            rows = self._fetch_all(
+                """
+                SELECT 1 FROM information_schema.tables
+                WHERE table_name = 'feedback_loops'
+                """
+            )
+        return bool(rows)
 
     def load_feedback_loops(self) -> Sequence[FeedbackLoop]:
-        return []
+        # feedback_loops is optional data: the CSV and DuckDB stores treat a
+        # missing file as empty, so an absent table mirrors that behaviour.
+        if not self._feedback_loops_table_exists():
+            return []
+        rows = self._fetch_all(
+            """
+            SELECT loop_id, trigger_activity_id, response_activity_id, sign,
+                   lag_years, strength, source_id, notes
+            FROM feedback_loops
+            ORDER BY loop_id
+            """
+        )
+        return [FeedbackLoop(**row) for row in rows]
 
     def __enter__(self) -> "SqlStore":
         return self
