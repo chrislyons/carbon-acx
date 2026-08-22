@@ -1,12 +1,22 @@
 'use client'
-
+import dynamic from 'next/dynamic'
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { ActivityMark } from '@/components/calculator/ActivityMark'
 import { ActivityShelf } from '@/components/calculator/ActivityShelf'
 import { ScenarioPane } from '@/components/calculator/ScenarioPane'
 import { BenchmarkContext, DataState, EvidenceBadge, FactorRecordDetails } from '@/components/content'
-import { ImpactComposition } from '@/components/viz/ImpactComposition'
+
+const ImpactComposition = dynamic(
+  () => import('@/components/viz/ImpactComposition').then((mod) => mod.ImpactComposition),
+  {
+    loading: () => (
+      <div className="empty-ruled-field" aria-live="polite">
+        Loading impact composition…
+      </div>
+    ),
+  },
+)
 import {
   CATEGORY_INFO,
   DEFAULT_BENCHMARK_KEY,

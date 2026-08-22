@@ -19,6 +19,9 @@ export default function RootLayout({
   return (
     <html lang="en" data-theme="light" suppressHydrationWarning>
       <head>
+        <link rel="preload" href="/fonts/GeneralSans-Variable.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        <link rel="preload" href="/fonts/CabinetGrotesk-Variable.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        <link rel="preload" href="/fonts/JetBrainsMono-Variable.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
         <script
           dangerouslySetInnerHTML={{
             __html: `try{var t=localStorage.getItem('carbon-acx-theme');if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t)}}catch(e){}`,
