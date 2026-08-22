@@ -57,6 +57,7 @@ function CalculatorContent() {
   const evidenceRestoreId = useRef<string | null>(null)
   const [benchmarkKey, setBenchmarkKey] = useState(DEFAULT_BENCHMARK_KEY)
   const [scenarioGrams, setScenarioGrams] = useState(0)
+  const [scenarioFocusId, setScenarioFocusId] = useState<string | undefined>(undefined)
   const [shared, setShared] = useState(false)
   const [copied, setCopied] = useState(false)
   const [announcement, setAnnouncement] = useState('')
@@ -166,6 +167,13 @@ function CalculatorContent() {
     if (evidenceId) evidenceRestoreId.current = evidenceId
     setEvidenceId(null)
   }
+  const chooseScenario = (activity: Activity) => {
+    setScenarioFocusId(activity.id)
+    setAnnouncement(`${activity.name} scenario picker opened below the worksheet.`)
+    window.setTimeout(() => {
+      document.getElementById('ai-scenario-pane')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 50)
+  }
 
   return (
     <div className="editorial-page worksheet">
@@ -190,7 +198,13 @@ function CalculatorContent() {
           </button>
         ))}
       </nav>
-      <ActivityShelf category={activeCategory} activities={activities} selectedIds={selectedIds} onAdd={add} />
+      <ActivityShelf
+        category={activeCategory}
+        activities={activities}
+        selectedIds={selectedIds}
+        onAdd={add}
+        onChooseScenario={chooseScenario}
+      />
       <div className="basket-header ruled-section">
         <div>
           <p className="section-kicker">Selected activities</p>
@@ -225,7 +239,7 @@ function CalculatorContent() {
           evidenceId={evidenceId}
         />
       </div>
-      <ScenarioPane onPublishedGrams={setScenarioGrams} />
+      <ScenarioPane onPublishedGrams={setScenarioGrams} preselectedActivityId={scenarioFocusId} />
       {evidenceId ? (
         <EvidencePane
           activity={getActivityById(evidenceId)!}

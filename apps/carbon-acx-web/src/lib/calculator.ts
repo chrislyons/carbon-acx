@@ -37,7 +37,9 @@ export interface Activity {
   category: ActivityCategory
   unit: string
   unitLabel: string
-  emissionFactor: number
+  emissionFactor: number | null
+  scenarioBacked?: boolean
+  unavailabilityReason?: string
   description: string
   unitDefinition: string
   notes: string
@@ -56,6 +58,7 @@ export interface CatalogActivity {
   emissionFactor: number | null
   evidence: ActivityEvidence
   unavailabilityReason: string | null
+  scenarioBacked?: boolean
 }
 
 export interface AiScenarioSourceRef {
@@ -236,6 +239,7 @@ export type SkippedInputReason =
   | 'unavailable-activity'
   | 'non-positive-quantity'
   | 'non-finite-quantity'
+  | 'missing-emission-factor'
 
 export interface SkippedInput {
   activityId: string
@@ -442,6 +446,10 @@ export function calculateEmissions(inputs: CalculatorInput[]): CalculatorSummary
       skipped.push({ ...input, reason: 'unavailable-activity' })
       continue
     }
+    if (activity.emissionFactor == null) {
+      skipped.push({ ...input, reason: 'missing-emission-factor' })
+      continue
+    }
 
     const emissions = input.quantity * activity.emissionFactor
     results.push({
@@ -504,7 +512,7 @@ export function decodeCalculatorInputs(encoded: string): Record<string, number> 
 export type AtlasMode = 'personal' | 'systems' | 'industrial'
 
 export function getAtlasMode(activity: CatalogActivity): AtlasMode {
-  if (ACTIVITY_BY_ID.has(activity.id)) return 'personal'
+  if (ACTIVITY_BY_ID.has(activity.id) && !activity.scenarioBacked) return 'personal'
   if (['professional', 'online', 'industrial_light'].includes(activity.evidence.layerId)) return 'systems'
   return 'industrial'
 }
