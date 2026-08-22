@@ -65,3 +65,38 @@ def test_sql_store_matches_csv(sqlite_db: Path) -> None:
         ) == _normalise(list(sql_store.load_grid_intensity()), "region", "vintage_year")
     finally:
         sql_store.close()
+
+
+def test_sql_store_matches_csv_entity_hierarchy(sqlite_db: Path) -> None:
+    csv_store = CsvStore()
+    sql_store = SqlStore(sqlite_db)
+    try:
+        assert _normalise(list(csv_store.load_layers()), "layer_id") == _normalise(
+            list(sql_store.load_layers()), "layer_id"
+        )
+        assert _normalise(list(csv_store.load_entities()), "entity_id") == _normalise(
+            list(sql_store.load_entities()), "entity_id"
+        )
+        assert _normalise(list(csv_store.load_sites()), "site_id") == _normalise(
+            list(sql_store.load_sites()), "site_id"
+        )
+        assert _normalise(list(csv_store.load_assets()), "asset_id") == _normalise(
+            list(sql_store.load_assets()), "asset_id"
+        )
+        assert _normalise(list(csv_store.load_operations()), "operation_id") == _normalise(
+            list(sql_store.load_operations()), "operation_id"
+        )
+        assert _normalise(
+            list(csv_store.load_activity_dependencies()),
+            "child_activity_id",
+            "parent_operation_id",
+        ) == _normalise(
+            list(sql_store.load_activity_dependencies()),
+            "child_activity_id",
+            "parent_operation_id",
+        )
+        assert _normalise(list(csv_store.load_feedback_loops()), "loop_id") == _normalise(
+            list(sql_store.load_feedback_loops()), "loop_id"
+        )
+    finally:
+        sql_store.close()
