@@ -303,6 +303,72 @@ export function comparisonToBenchmark(totalEmissions: number, benchmark: Benchma
   return benchmark.annualGrams > 0 ? (totalEmissions / benchmark.annualGrams) * 100 : 0
 }
 
+export type ScenarioModality = 'text' | 'image' | 'video'
+
+export interface ScenarioQuery {
+  activityId: string
+  modality?: ScenarioModality
+  functionalUnit?: string
+  providerId?: string
+  modelId?: string
+}
+
+export type ScenarioResolution =
+  | { status: 'published'; scenario: AiScenario }
+  | { status: 'estimate'; scenario: AiScenario }
+  | { status: 'unavailable'; reason: string }
+
+const AI_SCENARIOS: AiScenarioDataset = CATALOG_DATASET.aiScenarios
+
+export function getAiActivities(): CatalogActivity[] {
+  return CATALOG_ACTIVITIES.filter(
+    (activity) => activity.id.startsWith('AI.') && activity.evidence.publicationStatus !== 'published',
+  )
+}
+
+export function listScenariosForActivity(activityId: string): AiScenario[] {
+  return AI_SCENARIOS.records.filter((record) => record.activityId === activityId)
+}
+
+function toResolution(scenario: AiScenario): ScenarioResolution {
+  if (scenario.publicationStatus === 'published') return { status: 'published', scenario }
+  if (scenario.publicationStatus === 'estimate') return { status: 'estimate', scenario }
+  return {
+    status: 'unavailable',
+    reason:
+      scenario.scenarioId === 'SCN.ANTHROPIC.CLAUDE3.UNAVAILABLE.2024'
+        ? 'This provider has not disclosed per-query energy or carbon data.'
+        : 'The selected scenario has no usable publication.',
+  }
+}
+
+export function resolveScenarioById(scenarioId: string): ScenarioResolution {
+  const matches = AI_SCENARIOS.records.filter((record) => record.scenarioId === scenarioId)
+  if (matches.length === 0) return { status: 'unavailable', reason: 'No matching scenario.' }
+  if (matches.length > 1) return { status: 'unavailable', reason: 'Ambiguous scenario key.' }
+  return toResolution(matches[0])
+}
+
+export function resolveAiScenario(query: ScenarioQuery): ScenarioResolution {
+  const matches = AI_SCENARIOS.records.filter(
+    (record) =>
+      record.activityId === query.activityId &&
+      (query.modality === undefined || record.modality === query.modality) &&
+      (query.functionalUnit === undefined || record.functionalUnit === query.functionalUnit) &&
+      (query.providerId === undefined || record.providerId === query.providerId) &&
+      (query.modelId === undefined || record.modelId === query.modelId),
+  )
+  if (matches.length === 0) return { status: 'unavailable', reason: 'No matching scenario.' }
+  if (matches.length > 1) return { status: 'unavailable', reason: 'Ambiguous scenario key.' }
+  return toResolution(matches[0])
+}
+
+export function scenarioAnnualGrams(scenario: AiScenario, quantity: number): number | null {
+  if (!Number.isFinite(quantity) || quantity <= 0) return null
+  if (typeof scenario.carbonGPerUnit !== 'number' || scenario.carbonGPerUnit < 0) return null
+  return quantity * scenario.carbonGPerUnit
+}
+
 const ACTIVITY_BY_ID: ReadonlyMap<string, Activity> = new Map(
   ACTIVITIES.map((activity) => [activity.id, activity]),
 )

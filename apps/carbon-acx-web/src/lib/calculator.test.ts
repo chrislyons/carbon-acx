@@ -10,9 +10,13 @@ import {
   getBenchmark,
   getBenchmarkOptions,
   CATALOG_ACTIVITIES,
+  CATALOG_DATASET,
   decodeCalculatorInputs,
   encodeCalculatorInputs,
   getAtlasMode,
+  resolveAiScenario,
+  resolveScenarioById,
+  scenarioAnnualGrams,
 } from '@/lib/calculator'
 
 describe('calculator dataset', () => {
@@ -188,5 +192,88 @@ describe('editorial public data helpers', () => {
     expect(CATALOG_ACTIVITIES.filter((activity) => getAtlasMode(activity) === 'personal')).toHaveLength(21)
     expect(CATALOG_ACTIVITIES.filter((activity) => getAtlasMode(activity) === 'systems')).toHaveLength(47)
     expect(CATALOG_ACTIVITIES.filter((activity) => getAtlasMode(activity) === 'industrial')).toHaveLength(40)
+  })
+})
+
+describe('ai scenario resolution', () => {
+  const PUBLISHED_ID = 'SCN.GOOGLE.GEMINI.APPS.PROMPT.2025'
+  const GOOGLE_ACTIVITY = 'AI.USAGE.GOOGLE.QUERY'
+  const MISTRAL_PUBLISHED = 'SCN.MISTRAL.LECHAT.RESPONSE.2025'
+  const ANTHROPIC_UNAVAILABLE = 'SCN.ANTHROPIC.CLAUDE3.UNAVAILABLE.2024'
+
+  it('resolves an exact scenario id to its publication status', () => {
+    const published = resolveScenarioById(PUBLISHED_ID)
+    expect(published.status).toBe('published')
+    if (published.status !== 'unavailable') {
+      expect(published.scenario.scenarioId).toBe(PUBLISHED_ID)
+      expect(published.scenario.functionalUnit).toBe('prompt')
+    }
+  })
+
+  it('never falls back to a nearest match', () => {
+    expect(resolveScenarioById('SCN.DOES.NOT.EXIST.1999')).toEqual({
+      status: 'unavailable',
+      reason: 'No matching scenario.',
+    })
+    expect(
+      resolveAiScenario({ activityId: 'AI.USAGE.LLM.SCENARIO', modality: 'video' }),
+    ).toEqual({
+      status: 'unavailable',
+      reason: 'No matching scenario.',
+    })
+  })
+
+  it('rejects workload-incompatible keys instead of guessing', () => {
+    // The shared LLM activity carries text scenarios only; a video query must not match.
+    const mismatched = resolveAiScenario({
+      activityId: 'AI.USAGE.LLM.SCENARIO',
+      modality: 'video',
+      functionalUnit: 'video_clip',
+    })
+    expect(mismatched.status).toBe('unavailable')
+
+    const ambiguous = resolveAiScenario({
+      activityId: 'AI.USAGE.LLM.SCENARIO',
+      modality: 'text',
+    })
+    expect(ambiguous).toEqual({ status: 'unavailable', reason: 'Ambiguous scenario key.' })
+
+    const exact = resolveAiScenario({
+      activityId: 'AI.USAGE.LLM.SCENARIO',
+      modality: 'text',
+      functionalUnit: 'prompt',
+      providerId: 'Google',
+      modelId: 'Gemini Apps',
+    })
+    expect(exact.status).toBe('published')
+    if (exact.status === 'published') {
+      expect(exact.scenario.scenarioId).toBe('SCN.GOOGLE.GEMINI.APPS.PROMPT.2025')
+    }
+  })
+
+  it('maps unavailable-status records to an explicit reason', () => {
+    const resolution = resolveScenarioById(ANTHROPIC_UNAVAILABLE)
+    expect(resolution.status).toBe('unavailable')
+    if (resolution.status === 'unavailable') {
+      expect(resolution.reason).toMatch(/not disclosed/i)
+    }
+  })
+
+  it('multiplies published scenarios into annual grams and refuses invalid input', () => {
+    const resolution = resolveScenarioById(MISTRAL_PUBLISHED)
+    expect(resolution.status).toBe('published')
+    if (resolution.status !== 'published') return
+    const grams = scenarioAnnualGrams(resolution.scenario, 365)
+    expect(grams).toBeCloseTo(365 * (resolution.scenario.carbonGPerUnit as number))
+    expect(scenarioAnnualGrams(resolution.scenario, 0)).toBeNull()
+    expect(scenarioAnnualGrams(resolution.scenario, Number.NaN)).toBeNull()
+  })
+
+  it('keeps estimates out of totals by construction', () => {
+    const estimate = CATALOG_DATASET.aiScenarios.records.find((record) => record.publicationStatus === 'estimate')
+    expect(estimate).toBeDefined()
+    if (!estimate) return
+    const resolution = resolveScenarioById(estimate.scenarioId)
+    expect(resolution.status).toBe('estimate')
   })
 })

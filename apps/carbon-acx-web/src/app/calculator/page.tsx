@@ -4,6 +4,7 @@ import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { ActivityMark } from '@/components/calculator/ActivityMark'
 import { ActivityShelf } from '@/components/calculator/ActivityShelf'
+import { ScenarioPane } from '@/components/calculator/ScenarioPane'
 import { BenchmarkContext, DataState, EvidenceBadge, FactorRecordDetails } from '@/components/content'
 import { ImpactComposition } from '@/components/viz/ImpactComposition'
 import {
@@ -45,6 +46,7 @@ function CalculatorContent() {
   const [evidenceId, setEvidenceId] = useState<string | null>(null)
   const evidenceRestoreId = useRef<string | null>(null)
   const [benchmarkKey, setBenchmarkKey] = useState(DEFAULT_BENCHMARK_KEY)
+  const [scenarioGrams, setScenarioGrams] = useState(0)
   const [shared, setShared] = useState(false)
   const [copied, setCopied] = useState(false)
   const [announcement, setAnnouncement] = useState('')
@@ -87,11 +89,11 @@ function CalculatorContent() {
     if (Object.keys(safe).length) localStorage.setItem(STORAGE_KEY, JSON.stringify(safe))
     else localStorage.removeItem(STORAGE_KEY)
   }, [inputs])
-
   const summary = useMemo(
     () => calculateEmissions(Object.entries(inputs).map(([activityId, quantity]) => ({ activityId, quantity }))),
     [inputs],
   )
+  const combinedTotal = summary.totalEmissions + scenarioGrams
   const benchmark = getBenchmark(benchmarkKey) ?? getBenchmark(DEFAULT_BENCHMARK_KEY)!
   const selected = selectedIds.map(getActivityById).filter((activity): activity is Activity => Boolean(activity))
   const activities = getActivitiesByCategory(activeCategory)
@@ -206,12 +208,14 @@ function CalculatorContent() {
         </section>
         <ResultPanel
           summary={summary}
+          additionalGrams={scenarioGrams}
           benchmarkKey={benchmarkKey}
           setBenchmarkKey={setBenchmarkKey}
           benchmark={benchmark}
           evidenceId={evidenceId}
         />
       </div>
+      <ScenarioPane onPublishedGrams={setScenarioGrams} />
       {evidenceId ? (
         <EvidencePane
           activity={getActivityById(evidenceId)!}
@@ -316,27 +320,35 @@ function ActivityEditor({
 
 function ResultPanel({
   summary,
+  additionalGrams,
   benchmarkKey,
   setBenchmarkKey,
   benchmark,
   evidenceId,
 }: {
   summary: CalculatorSummary
+  additionalGrams: number
   benchmarkKey: string
   setBenchmarkKey: (key: string) => void
   benchmark: Benchmark
   evidenceId: string | null
 }) {
   const categories = Object.entries(summary.byCategory).filter(([, grams]) => grams > 0) as [ActivityCategory, number][]
-  const percentage = comparisonToBenchmark(summary.totalEmissions, benchmark)
-  const status = summary.results.length > 0
-    ? `${formatEmissions(summary.totalEmissions)} per year.`
+  const combinedTotal = summary.totalEmissions + additionalGrams
+  const percentage = comparisonToBenchmark(combinedTotal, benchmark)
+  const hasTotal = summary.results.length > 0 || additionalGrams > 0
+  const status = hasTotal
+    ? `${formatEmissions(combinedTotal)} per year.`
     : 'Add a valid annual quantity to see a total.'
   return (
     <aside className="result-composition" aria-label="Worksheet result">
-      <p className="section-kicker">Worksheet total</p>
-      <h2>{summary.results.length > 0 ? `${formatEmissions(summary.totalEmissions)}/year` : 'Add a valid annual quantity'}</h2>
+      <h2>{hasTotal ? `${formatEmissions(combinedTotal)}/year` : 'Add a valid annual quantity'}</h2>
       <p className="result-composition__live" role="status" aria-live="polite">{evidenceId ? `${status} Evidence detail open.` : status}</p>
+      {additionalGrams > 0 ? (
+        <p className="equation">
+          Includes a published AI scenario: {formatEmissions(additionalGrams)} per year.
+        </p>
+      ) : null}
       {categories.length ? (
         <div className="composition-bar" aria-label="Category contribution">
           {categories.map(([category, grams]) => (
@@ -371,7 +383,7 @@ function ResultPanel({
             <strong>Selected activities</strong> versus <strong>{benchmark.label} ({benchmark.year ?? 'Not specified'})</strong>:{' '}
             {percentage.toFixed(1)}% of this scale. {benchmark.accountingBasis}/production-based, excluding LULUCF.
           </p>
-          <BenchmarkContext benchmark={benchmark} percentage={percentage} totalEmissions={summary.totalEmissions} />
+          <BenchmarkContext benchmark={benchmark} percentage={percentage} totalEmissions={combinedTotal} />
         </>
       ) : null}
     </aside>
