@@ -1,3 +1,5 @@
+'use client'
+
 import { Check, Plus } from 'lucide-react'
 import { ActivityMark } from '@/components/calculator/ActivityMark'
 import { EvidenceBadge } from '@/components/content'
