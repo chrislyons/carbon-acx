@@ -26,6 +26,12 @@ ORDER_CLAUSES: dict[str, str] = {
     "emission_factors": "ORDER BY ef_id",
     "activity_schedule": "ORDER BY profile_id, activity_id",
     "grid_intensity": "ORDER BY region_code, vintage_year",
+    "layers": "ORDER BY layer_id",
+    "entities": "ORDER BY entity_id",
+    "sites": "ORDER BY site_id",
+    "assets": "ORDER BY asset_id",
+    "operations": "ORDER BY operation_id",
+    "feedback_loops": "ORDER BY loop_id",
 }
 
 TABLE_ORDER = [
@@ -36,6 +42,13 @@ TABLE_ORDER = [
     "emission_factors",
     "activity_schedule",
     "grid_intensity",
+    "layers",
+    "entities",
+    "sites",
+    "assets",
+    "operations",
+    "dependencies",
+    "feedback_loops",
 ]
 
 

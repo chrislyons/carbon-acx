@@ -284,3 +284,79 @@ BEGIN
             THEN RAISE(ABORT, 'vintage_year cannot exceed current year')
     END;
 END;
+
+
+CREATE TABLE layers (
+    layer_id TEXT PRIMARY KEY,
+    layer_name TEXT NOT NULL,
+    layer_type TEXT NOT NULL,
+    description TEXT,
+    ui_optional TEXT,
+    icon_slug TEXT,
+    example_activities TEXT,
+    CHECK (layer_type IN ('industry', 'civilian', 'crosscut'))
+);
+
+CREATE TABLE entities (
+    entity_id TEXT PRIMARY KEY,
+    name TEXT,
+    type TEXT NOT NULL,
+    parent_entity_id TEXT,
+    notes TEXT
+);
+
+CREATE TABLE sites (
+    site_id TEXT PRIMARY KEY,
+    entity_id TEXT NOT NULL,
+    name TEXT,
+    region_code TEXT,
+    lat REAL,
+    lon REAL,
+    notes TEXT
+);
+
+CREATE TABLE assets (
+    asset_id TEXT PRIMARY KEY,
+    site_id TEXT NOT NULL,
+    asset_type TEXT,
+    name TEXT,
+    year INTEGER,
+    power_rating_kw REAL,
+    fuel_type TEXT,
+    notes TEXT
+);
+
+CREATE TABLE operations (
+    operation_id TEXT PRIMARY KEY,
+    asset_id TEXT NOT NULL,
+    activity_id TEXT NOT NULL,
+    layer_id TEXT NOT NULL,
+    functional_unit_id TEXT,
+    utilization_basis TEXT,
+    period_start TEXT,
+    period_end TEXT,
+    throughput_value REAL,
+    throughput_unit TEXT,
+    notes TEXT
+);
+
+CREATE TABLE dependencies (
+    child_activity_id TEXT NOT NULL,
+    parent_operation_id TEXT NOT NULL,
+    share REAL NOT NULL,
+    notes TEXT,
+    PRIMARY KEY (child_activity_id, parent_operation_id),
+    CHECK (share > 0 AND share <= 1)
+);
+
+CREATE TABLE feedback_loops (
+    loop_id TEXT PRIMARY KEY,
+    trigger_activity_id TEXT NOT NULL,
+    response_activity_id TEXT NOT NULL,
+    sign TEXT NOT NULL,
+    lag_years TEXT,
+    strength REAL,
+    source_id TEXT,
+    notes TEXT,
+    CHECK (sign IN ('+', '-'))
+);
