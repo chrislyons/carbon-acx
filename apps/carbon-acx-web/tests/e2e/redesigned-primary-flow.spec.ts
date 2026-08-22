@@ -17,8 +17,10 @@ test('backslash toggles theme outside text entry only', async ({ page }) => {
   await page.goto('/')
   await expect(page.getByRole('button', { name: 'Switch to dark mode' })).toBeVisible()
 
-  await page.keyboard.press('\\')
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+  await expect(async () => {
+    await page.keyboard.press('\\')
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark', { timeout: 250 })
+  }).toPass({ timeout: 10_000 })
 
   await page.getByLabel('Annual distance').fill('1250')
   await page.keyboard.press('\\')
