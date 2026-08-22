@@ -92,7 +92,7 @@ export function ScenarioPane({
         <article className="activity-editor">
           <div className="activity-editor__identity">
             <div>
-              <EvidenceHeader activityName={selectedActivity?.name ?? null} reason={selectedActivity?.unavailabilityReason ?? null} />
+              <EvidenceHeader activityName={selectedActivity?.name ?? null} />
             </div>
           </div>
           <div className="activity-editor__control">
@@ -183,19 +183,13 @@ export function ScenarioPane({
   )
 }
 
-function EvidenceHeader({
-  activityName,
-  reason,
-}: {
-  activityName: string | null
-  reason: string | null
-}) {
+function EvidenceHeader({ activityName }: { activityName: string | null }) {
   if (!activityName) {
     return <p className="section-kicker">Documented provider scenarios</p>
   }
   return (
     <>
-      <p className="section-kicker">{reason ?? 'Catalogue record'}</p>
+      <p className="section-kicker">Catalogue record</p>
       <h3>{activityName}</h3>
     </>
   )
