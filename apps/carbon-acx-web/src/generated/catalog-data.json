@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "acx.web-calculator/1-5-0",
+  "schemaVersion": "acx.web-calculator/1-6-0",
   "generatedAt": "2026-08-17T17:00:00Z",
   "activities": [
     {
@@ -286,7 +286,8 @@
         },
         "publicationStatus": "unavailable"
       },
-      "unavailabilityReason": "'Missing emission factor for AI.USAGE.LLM.SCENARIO'"
+      "unavailabilityReason": "'Missing emission factor for AI.USAGE.LLM.SCENARIO'",
+      "scenarioBacked": true
     },
     {
       "id": "AI.VIDEO.GENERATION.SCENARIO",
