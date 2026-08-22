@@ -1,3 +1,4 @@
+# Archived ACX110: superseded; diagnostic for the pruned layers.json surface; not wired into any build.
 #!/usr/bin/env bash
 set -euo pipefail
 

@@ -1,3 +1,4 @@
+# Archived ACX110: superseded by data-audit/refs_audit; site/public target pruned in ACX109; not wired into any build.
 #!/usr/bin/env python3
 """Audit seeded layers and their surface area across data and UI artifacts."""
 from __future__ import annotations

@@ -1,3 +1,4 @@
+# Archived ACX110: exercised archived scripts/build_site.py; not wired into any build.
 from __future__ import annotations
 
 from pathlib import Path
