@@ -369,6 +369,25 @@ export function scenarioAnnualGrams(scenario: AiScenario, quantity: number): num
   return quantity * scenario.carbonGPerUnit
 }
 
+const STALE_VINTAGE_YEARS = 5
+
+export function scenarioStaleVintage(scenario: AiScenario, now: Date = new Date()): string | null {
+  const reviewDueAt = scenario.sourceRefs[0]?.sourceEvidence?.reviewDueAt
+  if (reviewDueAt) {
+    const due = new Date(reviewDueAt)
+    if (!Number.isNaN(due.getTime()) && due.getTime() < now.getTime()) {
+      return `Source review was due ${reviewDueAt.slice(0, 10)}; treat values as aging.`
+    }
+  }
+  if (typeof scenario.vintageYear === 'number') {
+    const age = now.getUTCFullYear() - scenario.vintageYear
+    if (age > STALE_VINTAGE_YEARS) {
+      return `Scenario vintage ${scenario.vintageYear} is over ${STALE_VINTAGE_YEARS} years old.`
+    }
+  }
+  return null
+}
+
 const ACTIVITY_BY_ID: ReadonlyMap<string, Activity> = new Map(
   ACTIVITIES.map((activity) => [activity.id, activity]),
 )

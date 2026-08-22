@@ -546,6 +546,18 @@ a {
   font: 650 var(--text-lg)/1.1 var(--font-display);
 }
 
+.data-state__chip {
+  display: inline-block;
+  margin-right: 0.5rem;
+  padding: 0.1rem 0.45rem;
+  border: 1px solid var(--signal);
+  color: var(--signal);
+  font: 600 var(--text-xs)/1.4 var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  vertical-align: middle;
+}
+
 .data-state--warning {
   border-left-color: var(--signal);
 }

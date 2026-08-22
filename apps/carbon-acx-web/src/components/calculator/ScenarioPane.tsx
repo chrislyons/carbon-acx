@@ -9,6 +9,7 @@ import {
   listScenariosForActivity,
   resolveScenarioById,
   scenarioAnnualGrams,
+  scenarioStaleVintage,
   type AiScenario,
   type ScenarioResolution,
 } from '@/lib/calculator'
@@ -156,13 +157,16 @@ export function ScenarioPane({
           {resolution.reason} Nothing was added to your annual total.
         </DataState>
       ) : resolution.status === 'estimate' ? (
-        <DataState title="Estimate — not included in your total" tone="warning">
+        <DataState title="Estimate — not included in your total" tone="warning" badge="estimate">
           This scenario is published as an estimate and stays outside calculator arithmetic under
           ACX107. Review the evidence below before citing it anywhere.
           <ScenarioEvidence scenario={resolution.scenario} />
         </DataState>
       ) : (
-        <DataState title={`Included in your total: ${formatEmissions(publishedGrams ?? 0)} per year`}>
+        <DataState
+          title={`Included in your total: ${formatEmissions(publishedGrams ?? 0)} per year`}
+          badge={scenarioStaleVintage(resolution.scenario) ? 'stale-vintage' : undefined}
+        >
           {quantity > 0 && typeof resolution.scenario.carbonGPerUnit === 'number' ? (
             <p className="equation">
               {quantity} {unitLabel(resolution.scenario)} ×{' '}

@@ -18,6 +18,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" data-theme="light" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var t=localStorage.getItem('carbon-acx-theme');if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t)}}catch(e){}`,
+          }}
+        />
+      </head>
       <body className="min-h-screen bg-background text-foreground antialiased">
         <a href="#main-content" className="skip-link">
           Skip to main content
