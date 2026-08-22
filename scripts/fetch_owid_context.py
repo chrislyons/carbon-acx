@@ -49,6 +49,7 @@ except ImportError:  # direct execution: python3 scripts/fetch_owid_context.py
     )
 
 __all__ = [
+    "_sha256",
     "OWID_CHART_ID",
     "OWID_CHART_URL",
     "OWID_DATA_URL",

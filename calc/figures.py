@@ -38,7 +38,6 @@ def _load_config() -> dict:
     return data
 
 
-
 def build_metadata(
     method: str,
     profile_ids: Iterable[str] | None = None,
