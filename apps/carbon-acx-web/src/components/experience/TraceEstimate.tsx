@@ -7,6 +7,8 @@ import { ImpactTrace } from '@/components/viz/ImpactTrace'
 import { ACTIVITIES, CATEGORY_INFO, calculateEmissions, encodeCalculatorInputs, getActivityById } from '@/lib/calculator'
 
 const activity = getActivityById('TRAN.SCHOOLRUN.CAR.KM')!
+// Fixed curated activity: the generator contract guarantees a published factor here.
+const activityFactor = activity.emissionFactor ?? 0
 const initialQuantity = 1_000
 const publishedActivityCount = ACTIVITIES.filter((item) => item.evidence.publicationStatus === 'published').length
 
@@ -39,7 +41,7 @@ export function TraceEstimate() {
           <span>kilometres</span>
         </label>
         {invalid ? <p id="trace-distance-error" role="alert" className="field-error">Enter a positive annual distance. <span>Showing the last valid amount.</span></p> : null}
-        <ImpactTrace quantity={quantity} factor={activity.emissionFactor} unitLabel={activity.unitLabel} emissions={result.emissions} color={CATEGORY_INFO[activity.category].color} />
+        <ImpactTrace quantity={quantity} factor={activityFactor} unitLabel={activity.unitLabel} emissions={result.emissions} color={CATEGORY_INFO[activity.category].color} />
         <Link className="text-link text-link--primary" href={`/calculator?data=${encodeCalculatorInputs({ [activity.id]: quantity })}`}>Continue with this estimate</Link>
       </div>
       <aside className="evidence-rail" aria-label="Factor evidence">

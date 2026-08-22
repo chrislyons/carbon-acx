@@ -23,10 +23,14 @@ describe('calculator dataset', () => {
   it('loads only published activities with complete evidence', () => {
     expect(ACTIVITIES.length).toBeGreaterThan(0)
     expect(Object.keys(CATEGORY_INFO)).toHaveLength(5)
+    const scenarioBacked = ACTIVITIES.filter((activity) => activity.scenarioBacked)
+    expect(scenarioBacked.map((activity) => activity.id)).toEqual(['AI.USAGE.LLM.SCENARIO'])
+    const standard = ACTIVITIES.filter((activity) => !activity.scenarioBacked)
     expect(
-      ACTIVITIES.every(
+      standard.every(
         (activity) =>
           activity.evidence.publicationStatus === 'published' &&
+          activity.emissionFactor != null &&
           activity.evidence.sourceIds.length > 0 &&
           activity.evidence.sourceCitations.length > 0 &&
           activity.evidence.sourceUrls.length === activity.evidence.sourceIds.length &&

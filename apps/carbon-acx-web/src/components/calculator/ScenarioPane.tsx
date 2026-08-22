@@ -56,13 +56,22 @@ function ScenarioEvidence({ scenario }: { scenario: AiScenario }) {
 
 export function ScenarioPane({
   onPublishedGrams,
+  preselectedActivityId,
 }: {
   onPublishedGrams: (grams: number) => void
+  preselectedActivityId?: string
 }) {
   const aiActivities = useMemo(() => getAiActivities(), [])
   const [activityId, setActivityId] = useState('')
   const [scenarioId, setScenarioId] = useState('')
   const [quantityDraft, setQuantityDraft] = useState('')
+
+  useEffect(() => {
+    if (preselectedActivityId) {
+      setActivityId(preselectedActivityId)
+      setScenarioId('')
+    }
+  }, [preselectedActivityId])
 
   const scenarios = activityId ? listScenariosForActivity(activityId) : []
   const quantity = Number(quantityDraft)
@@ -77,7 +86,7 @@ export function ScenarioPane({
   const selectedActivity = aiActivities.find((activity) => activity.id === activityId)
 
   return (
-    <section className="scenario-pane ruled-section" aria-labelledby="scenario-pane-title">
+    <section id="ai-scenario-pane" className="scenario-pane ruled-section" aria-labelledby="scenario-pane-title">
       <div className="activity-shelf__heading">
         <div>
           <p className="section-kicker">Research layer</p>
