@@ -6,7 +6,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
-from typing import List, Sequence
+from typing import Iterable, List, Sequence
 
 SOURCES_PATH = Path(__file__).resolve().parents[1] / "data" / "sources.csv"
 _IEEE_NUMBER_PREFIX = re.compile(r"^\s*\[\d+\]\s*")
@@ -98,4 +98,54 @@ def format_ieee(ref: Reference) -> str:
     return f"[{ref.index}] {text}"
 
 
-__all__ = ["Reference", "format_ieee", "references_for"]
+def format_references(citation_keys: Sequence[str]) -> List[str]:
+    """Return IEEE-formatted reference strings for ``citation_keys`` in order."""
+
+    references = references_for(citation_keys)
+    return [format_ieee(ref.numbered(idx)) for idx, ref in enumerate(references, start=1)]
+
+
+def _row_value(row: object, key: str) -> object | None:
+    if isinstance(row, Mapping):
+        return row.get(key)
+    return getattr(row, key, None)
+
+
+def _collect_row_sources(row: object) -> List[str]:
+    emission = _row_value(row, "annual_emissions_g")
+    if emission is None:
+        return []
+
+    keys: List[str] = []
+    candidates = (
+        "citation_keys",
+        "source_ids",
+        "source_id",
+        "emission_factor",
+        "grid_intensity",
+    )
+    for field in candidates:
+        value = _row_value(row, field)
+        if value is None:
+            continue
+        for ref in references_for(value):
+            keys.append(ref.key)
+    return keys
+
+
+def collect_activity_source_keys(rows: Iterable[object]) -> set[str]:
+    """Return unique citation keys referenced by derived rows."""
+
+    keys: set[str] = set()
+    for row in rows:
+        keys.update(_collect_row_sources(row))
+    return keys
+
+
+__all__ = [
+    "Reference",
+    "collect_activity_source_keys",
+    "format_ieee",
+    "format_references",
+    "references_for",
+]

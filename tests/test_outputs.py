@@ -8,6 +8,9 @@ from pathlib import Path
 import pytest
 
 import calc.derive as derive_mod
+from calc.derive import pipeline as derive_pipeline
+from calc.derive.io import prepare_output_dir
+from calc.utils.clock import resolve_generated_at
 
 
 class EmptyStore:
@@ -35,14 +38,14 @@ def _read_manifest_hash(manifest_path: Path) -> str:
 def test_prepare_output_dir_rejects_external_path(monkeypatch, tmp_path):
     monkeypatch.delenv("ACX_ALLOW_OUTPUT_RM", raising=False)
     with pytest.raises(ValueError):
-        derive_mod._prepare_output_dir(tmp_path / "unsafe")
+        prepare_output_dir(tmp_path / "unsafe")
 
 
 def test_prepare_output_dir_requires_hash_under_artifacts(monkeypatch):
     monkeypatch.delenv("ACX_ALLOW_OUTPUT_RM", raising=False)
-    unsafe_path = derive_mod.ARTIFACT_ROOT / "calc" / "outputs"
+    unsafe_path = derive_pipeline.ARTIFACT_ROOT / "calc" / "outputs"
     with pytest.raises(ValueError):
-        derive_mod._prepare_output_dir(unsafe_path)
+        prepare_output_dir(unsafe_path)
 
 
 def test_export_view_rejects_root_output(monkeypatch):
@@ -57,7 +60,7 @@ def test_default_export_writes_hashed_artifacts(monkeypatch):
     monkeypatch.delenv("ACX_ALLOW_OUTPUT_RM", raising=False)
     monkeypatch.setenv("ACX_GENERATED_AT", "2024-01-01T00:00:00+00:00")
 
-    artifact_root = derive_mod.ARTIFACT_ROOT
+    artifact_root = derive_pipeline.ARTIFACT_ROOT
     existing_names = set()
     if artifact_root.exists():
         existing_names = {item.name for item in artifact_root.iterdir()}
@@ -96,7 +99,7 @@ def test_default_export_writes_hashed_artifacts(monkeypatch):
 
 def test_export_can_write_a_relocatable_build_pointer(monkeypatch, tmp_path):
     artifact_root = tmp_path / "artifacts"
-    monkeypatch.setattr(derive_mod, "ARTIFACT_ROOT", artifact_root)
+    monkeypatch.setattr(derive_pipeline, "ARTIFACT_ROOT", artifact_root)
     monkeypatch.setenv("ACX_OUTPUT_ROOT", str(artifact_root))
     monkeypatch.setenv("ACX_POINTER_ARTIFACT_DIR", ".")
     monkeypatch.setenv("ACX_ALLOW_OUTPUT_RM", "1")
@@ -112,12 +115,13 @@ def test_export_can_write_a_relocatable_build_pointer(monkeypatch, tmp_path):
 def test_resolve_generated_at_honours_env(monkeypatch):
     epoch = "1970-01-01T00:00:00+00:00"
     monkeypatch.setenv("ACX_GENERATED_AT", epoch)
-    assert derive_mod._resolve_generated_at() == epoch
+    assert resolve_generated_at() == epoch
 
 
 def test_resolve_generated_at_falls_back_to_utc_now(monkeypatch):
     monkeypatch.delenv("ACX_GENERATED_AT", raising=False)
-    resolved = derive_mod._resolve_generated_at()
+    resolved = resolve_generated_at()
     assert resolved.endswith("+00:00")
     parsed = datetime.fromisoformat(resolved)
+    assert parsed.microsecond == 0  # canonical seconds precision
     assert abs(datetime.now(timezone.utc) - parsed) < timedelta(minutes=5)

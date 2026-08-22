@@ -12,7 +12,6 @@ def test_export_metadata_reports_resolved_profiles(
     figures.invalidate_cache()
     fake_loader = functools.lru_cache(maxsize=1)(lambda: {"default_profile": "WRONG"})
     monkeypatch.setattr(figures, "_load_config", fake_loader)
-    monkeypatch.setattr(derive_mod.figures, "_load_config", fake_loader)
 
     class FakeStore:
         def load_emission_factors(self):

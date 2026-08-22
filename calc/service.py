@@ -14,7 +14,13 @@ import pandas as pd
 from . import citations, figures
 from .upstream import dependency_metadata
 from .api import collect_activity_source_keys
+from .citations import format_references as _format_references
 from .dal import DataStore, choose_backend
+from .derive.emissions import EmissionDetails, compute_emission_details, resolve_grid_row
+from .derive.io import EXPORT_COLUMNS, normalise_mapping, sort_export_rows
+from .derive.layers import resolve_layer_id
+from .utils.clock import resolve_generated_at
+from .utils.labels import normalise_category_label
 from .schema import (
     Activity,
     ActivitySchedule,
@@ -32,12 +38,6 @@ from .schema import (
     load_operations as schema_load_operations,
     load_sites as schema_load_sites,
 )
-
-# ``calc.derive`` hosts the bulk of the data orchestration logic for the static
-# build pipeline.  The live compute path mirrors that behaviour to ensure API
-# results stay aligned with the existing artefacts.  Importing the helpers keeps
-# the implementation compact without duplicating the transformation logic.
-from . import derive
 
 COMPUTE_PROFILE_CONTRACT_VERSION = "acx.compute-profile/1-0-0"
 
@@ -172,11 +172,7 @@ def _collect_layer_references(
             layer_citation_keys[layer] = ordered + remaining
 
     layer_references: dict[str, list[str]] = {
-        layer: [
-            citations.format_ieee(ref.numbered(idx))
-            for idx, ref in enumerate(citations.references_for(keys), start=1)
-        ]
-        for layer, keys in layer_citation_keys.items()
+        layer: _format_references(keys) for layer, keys in layer_citation_keys.items()
     }
     return layer_citation_keys, layer_references
 
@@ -204,7 +200,7 @@ def _reference_maps(
         activity_value = row.get("activity_id")
         activity_key = str(activity_value) if activity_value is not None else None
         category_raw = row.get("activity_category")
-        category_key = derive._normalise_category_label(category_raw)
+        category_key = normalise_category_label(category_raw)
 
         if category_key:
             stacked_groups[(layer_key, category_key)].update(keys)
@@ -477,18 +473,18 @@ def compute_profile(
             ef = emission_factors.get(sched.activity_id)
             activity = activities.get(sched.activity_id)
 
-            layer_id = derive._resolve_layer_id(sched, profile, activity)
+            layer_id = resolve_layer_id(sched, profile, activity)
             if layer_id:
                 manifest_layers.add(layer_id)
 
             grid_row: GridIntensity | None = None
-            details = derive.EmissionDetails(mean=None, low=None, high=None)
+            details = EmissionDetails(mean=None, low=None, high=None)
             emission = None
             if ef:
                 if ef.vintage_year is not None:
                     manifest_ef_vintages.add(int(ef.vintage_year))
                 if ef.is_grid_indexed:
-                    grid_row = derive._resolve_grid_row(sched, profile, grid_by_region)
+                    grid_row = resolve_grid_row(sched, profile, grid_by_region)
                     if grid_row is not None:
                         region_value = (
                             grid_row.region.value
@@ -506,7 +502,7 @@ def compute_profile(
                                     manifest_vintage_matrix[region_key] = year
                         elif grid_row.vintage_year is not None:
                             manifest_grid_vintages.add(int(grid_row.vintage_year))
-                details = derive.compute_emission_details(sched, profile, ef, grid_lookup, grid_row)
+                details = compute_emission_details(sched, profile, ef, grid_lookup, grid_row)
                 emission = details.mean
 
             upstream_chain: list[dict[str, Any]] | None = None
@@ -565,16 +561,16 @@ def compute_profile(
                 }
             )
 
-        sorted_rows = derive._sort_export_rows(rows)
-        normalised_rows = [derive._normalise_mapping(row) for row in sorted_rows]
-        df = pd.DataFrame(normalised_rows, columns=derive.EXPORT_COLUMNS)
+        sorted_rows = sort_export_rows(rows)
+        normalised_rows = [normalise_mapping(row) for row in sorted_rows]
+        df = pd.DataFrame(normalised_rows, columns=EXPORT_COLUMNS)
 
         citation_keys = sorted(collect_activity_source_keys(derived_rows))
         loop_citation_keys = sorted({loop.source_id for loop in feedback_loops if loop.source_id})
         for key in loop_citation_keys:
             if key and key not in citation_keys:
                 citation_keys.append(key)
-        generated_at = derive._resolve_generated_at()
+        generated_at = resolve_generated_at()
         profile_list = sorted(resolved_profiles)
         layers_sorted = sorted(manifest_layers)
 
@@ -609,19 +605,12 @@ def compute_profile(
                         existing_set.add(key)
                 layer_citation_keys[layer] = existing
             layer_references = {
-                layer: [
-                    citations.format_ieee(ref.numbered(idx))
-                    for idx, ref in enumerate(citations.references_for(keys), start=1)
-                ]
-                for layer, keys in layer_citation_keys.items()
+                layer: _format_references(keys) for layer, keys in layer_citation_keys.items()
             }
 
         stacked_map, bubble_map, sankey_map = _reference_maps(derived_rows, citation_keys)
 
-        references = [
-            citations.format_ieee(ref.numbered(idx))
-            for idx, ref in enumerate(citations.references_for(citation_keys), start=1)
-        ]
+        references = _format_references(citation_keys)
 
         manifest_payload = _build_manifest_payload(
             generated_at=generated_at,
