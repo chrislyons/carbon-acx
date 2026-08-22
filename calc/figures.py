@@ -3,8 +3,6 @@ from __future__ import annotations
 from collections.abc import Iterable, Mapping
 from typing import Any, MutableMapping, Sequence
 from dataclasses import dataclass
-import datetime as _datetime_module
-import os
 from functools import lru_cache
 from pathlib import Path
 
@@ -13,6 +11,8 @@ import yaml
 
 from .dal.aliases import coalesce_alias_columns, remap_columns
 from .schema import Activity, FeedbackLoop, LayerId
+from .utils.clock import resolve_generated_at
+from .utils.labels import normalise_category_label
 
 CONFIG_PATH = Path(__file__).parent / "config.yaml"
 
@@ -22,10 +22,8 @@ ANNUAL_EMISSIONS_UNITS = {
     "unit": "g_co2e",
     "label": "Annual emissions (g CO₂e)",
 }
+
 DEFAULT_GENERATED_AT = "1970-01-01T00:00:00+00:00"
-GENERATED_AT_ENV = "ACX_GENERATED_AT"
-datetime = _datetime_module.datetime
-timezone = _datetime_module.timezone
 
 
 @lru_cache(maxsize=1)
@@ -39,14 +37,6 @@ def _load_config() -> dict:
         raise TypeError("Configuration must be a mapping")
     return data
 
-
-def _resolve_generated_at(value: str | None = None) -> str:
-    if value:
-        return value
-    env_value = os.getenv(GENERATED_AT_ENV)
-    if env_value:
-        return env_value
-    return datetime.now(timezone.utc).isoformat()
 
 
 def build_metadata(
@@ -68,7 +58,7 @@ def build_metadata(
             profile_value = None
 
     metadata = {
-        "generated_at": _resolve_generated_at(generated_at),
+        "generated_at": resolve_generated_at(generated_at),
         "profile": profile_value,
         "method": method,
     }
@@ -132,12 +122,6 @@ def _extract_values(row: pd.Series) -> dict | None:
     return _bounds(mean, low, high)
 
 
-def _normalise_category(value: Any) -> str:
-    if value is None or (isinstance(value, float) and pd.isna(value)):
-        return "uncategorized"
-    return str(value)
-
-
 def _normalise_layer(value: Any) -> str | None:
     if value is None or (isinstance(value, float) and pd.isna(value)):
         return None
@@ -189,7 +173,7 @@ def slice_stacked(
     frame = coalesce_alias_columns(frame)
     frame = frame.rename(columns=remap_columns(frame.columns))
     has_sector = "sector" in frame.columns
-    frame["activity_category"] = frame["activity_category"].map(_normalise_category)
+    frame["activity_category"] = frame["activity_category"].map(normalise_category_label)
     frame["layer_id"] = frame["layer_id"].map(_normalise_layer)
     if has_sector:
         frame["sector"] = frame["sector"].map(_normalise_sector)
@@ -274,7 +258,7 @@ def slice_bubble(
         lambda row: row["activity_name"] if row["activity_name"] else row["activity_id"],
         axis=1,
     )
-    frame["activity_category"] = frame["activity_category"].map(_normalise_category)
+    frame["activity_category"] = frame["activity_category"].map(normalise_category_label)
     frame["layer_id"] = frame["layer_id"].map(_normalise_layer)
     if has_sector:
         frame["sector"] = frame["sector"].map(_normalise_sector)
@@ -380,7 +364,7 @@ def slice_sankey(
         lambda row: row["activity_name"] if row["activity_name"] else row["activity_id"],
         axis=1,
     )
-    frame["activity_category"] = frame["activity_category"].map(_normalise_category)
+    frame["activity_category"] = frame["activity_category"].map(normalise_category_label)
     frame["layer_id"] = frame["layer_id"].map(_normalise_layer)
     if has_sector:
         frame["sector"] = frame["sector"].map(_normalise_sector)
