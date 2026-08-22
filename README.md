@@ -15,7 +15,7 @@ Carbon ACX is a public carbon-literacy web app and open reference stack. It turn
 The primary public app is `apps/carbon-acx-web/` with eight routes:
 
 - **Start here** (`/`) introduces factor → annual estimate → source and states the product boundary.
-- **Estimate** (`/calculator`) accepts annual activity quantities, exposes the arithmetic and evidence for every result, and compares only against labelled Canadian territorial benchmarks.
+- **Estimate** (`/calculator`) accepts annual activity quantities, exposes the arithmetic and evidence for every result, resolves source-backed AI usage scenarios by exact key (published scenarios join the total; estimates and unavailable records stay out), and compares only against labelled Canadian territorial benchmarks.
 - **Explore** (`/explore`) is an Activity Atlas with opt-in filters for category, sector, layer, region, scope, and publication status. It never merges incompatible layers into a total.
 - **Spatial view** (`/explore/3d`) is an optional WebGL representation of already-calculated results; it preserves a complete 2D table when WebGL is unavailable or reduced motion is requested.
 - **Learn** (`/learn`) teaches the record contract through three source-backed, offline case studies without turning OWID context into a factor.

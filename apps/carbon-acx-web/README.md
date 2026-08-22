@@ -10,8 +10,11 @@ A static Next.js App Router site for Carbon ACX’s public carbon-literacy inter
 - **Public routes** — `/`, `/calculator`, `/explore`, `/explore/3d`, `/learn`, `/methodology`, `/manifests`, and `/manifests/[id]`. The methodology primer is at `/methodology#primer`; the learning route uses only generated catalogue records.
 - **Artifacts** — raw immutable artifacts remain available under `/artifacts/`; manifest pages verify fetched bytes against declared SHA-256 digests in the browser.
 - **Publication policy** — only finite, unit-matched factors with a cited source URL, region, scope boundary, GWP horizon, and vintage can be published. Demonstrative or incomplete records are unavailable, never zero.
+- **AI scenario layer** — the calculator resolves `acx.ai-scenarios/1-0-0` records by exact key (`resolveAiScenario`/`resolveScenarioById` in `src/lib/calculator.ts`). Published scenarios multiply into the annual total; estimates render as evidence-only cards excluded from totals (ACX107); unavailable records explain themselves. Scenario cards carry the data-state chip vocabulary: estimate, modeled, metered, stale-vintage (`DataState badge`, stale when review is past due or vintage exceeds five years).
+- **Performance budget** — route-level First Load JS is recorded in `docs/acx/ACX109 Production Grade Hardening Sprint.md`; heavy visualization chunks (`d3-sankey` via ImpactComposition) are lazy-loaded with a loading placeholder.
 
 ## Data generation
+
 From the repository root, refresh the pinned snapshot only when the OWID source is intentionally updated:
 
 ```sh

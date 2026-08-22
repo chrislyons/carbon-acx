@@ -4,8 +4,9 @@ Active catalog for Carbon ACX project documents.
 
 ## Recent Documents
 
+- [ACX109 Production Grade Hardening Sprint](./ACX109%20Production%20Grade%20Hardening%20Sprint.md)
 - [ACX108 Dataflow Integrity and Provenance Release Audit](./ACX108%20Dataflow%20Integrity%20and%20Provenance%20Release%20Audit.md)
-- [ACX107 LLM Inference Footprint Audit and Application Data Model](./ACX107%20LLM%20Inference%20Footprint%20and%20Application%20Data%20Model.md)
+- [ACX107 LLM Inference Footprint Audit and Application Data Model](./ACX107%20LLM%20Inference%20Footprint%20Audit%20and%20Application%20Data%20Model.md)
 - [ACX106 D3 Visualization Skill Port](./ACX106%20D3%20Visualization%20Skill%20Port.md)
 - [ACX105 Theme Accessibility and Action Control Audit](./ACX105%20Theme%20Accessibility%20and%20Action%20Control%20Audit.md)
 - [ACX104 Responsive Layout and Accessibility Merge](./ACX104%20Responsive%20Layout%20and%20Accessibility%20Merge.md)
@@ -117,8 +118,9 @@ Active catalog for Carbon ACX project documents.
 - [ACX105 Theme Accessibility and Action Control Audit](./ACX105%20Theme%20Accessibility%20and%20Action%20Control%20Audit.md)
 
 - [ACX106 D3 Visualization Skill Port](./ACX106%20D3%20Visualization%20Skill%20Port.md)
-- [ACX107 LLM Inference Footprint Audit and Application Data Model](./ACX107%20LLM%20Inference%20Footprint%20and%20Application%20Data%20Model.md)
+- [ACX107 LLM Inference Footprint Audit and Application Data Model](./ACX107%20LLM%20Inference%20Footprint%20Audit%20and%20Application%20Data%20Model.md)
 - [ACX108 Dataflow Integrity and Provenance Release Audit](./ACX108%20Dataflow%20Integrity%20and%20Provenance%20Release%20Audit.md)
+- [ACX109 Production Grade Hardening Sprint](./ACX109%20Production%20Grade%20Hardening%20Sprint.md)
 
 ## Navigation
 
@@ -132,4 +134,4 @@ Active catalog for Carbon ACX project documents.
 
 ---
 
-**Last Updated:** 2026-08-17
+**Last Updated:** 2026-08-21
