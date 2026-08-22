@@ -18,21 +18,6 @@ BOOLEAN_COLUMNS: dict[str, tuple[str, ...]] = {
     "activity_schedule": ("office_days_only",),
 }
 
-ORDER_CLAUSES: dict[str, str] = {
-    "sources": "ORDER BY source_id",
-    "units": "ORDER BY unit_code",
-    "activities": "ORDER BY activity_id",
-    "profiles": "ORDER BY profile_id",
-    "emission_factors": "ORDER BY ef_id",
-    "activity_schedule": "ORDER BY profile_id, activity_id",
-    "grid_intensity": "ORDER BY region_code, vintage_year",
-    "layers": "ORDER BY layer_id",
-    "entities": "ORDER BY entity_id",
-    "sites": "ORDER BY site_id",
-    "assets": "ORDER BY asset_id",
-    "operations": "ORDER BY operation_id",
-    "feedback_loops": "ORDER BY loop_id",
-}
 
 TABLE_ORDER = [
     "sources",
@@ -50,6 +35,11 @@ TABLE_ORDER = [
     "dependencies",
     "feedback_loops",
 ]
+
+# Export must round-trip authorities byte-faithfully: ORDER BY rowid follows
+# insertion (= authored CSV) order. Plain SELECT may satisfy via PK index scans,
+# silently reordering rows away from the authored sequence.
+ORDER_CLAUSES: dict[str, str] = {table: "ORDER BY rowid" for table in TABLE_ORDER}
 
 
 def _open_connection(db_path: Path, backend: str):
@@ -83,7 +73,7 @@ def _format_value(table: str, column: str, value: Any) -> str:
         default_false = table == "activity_schedule"
         return _format_bool(value, default_false=default_false)
     if isinstance(value, float):
-        return format(value, ".15g")
+        return repr(value)
     return str(value)
 
 
@@ -108,7 +98,7 @@ def _fetch_rows(conn, table: str, columns: Sequence[str]) -> list[list[Any]]:
 def _write_csv(path: Path, columns: Sequence[str], rows: list[list[Any]], table: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.writer(handle)
+        writer = csv.writer(handle, lineterminator="\n")
         writer.writerow(columns)
         for row in rows:
             writer.writerow(
