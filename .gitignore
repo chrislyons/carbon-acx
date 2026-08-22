@@ -60,3 +60,6 @@ refs/normalized/
 .claude/settings.local.json
 .claude/CLAUDE.local.md
 .claude/scratch/
+
+# Local sqlite build artifact
+acx.db
