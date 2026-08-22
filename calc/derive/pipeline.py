@@ -32,6 +32,7 @@ from ..schema import (
     GridIntensity,
     LayerId,
     Operation,
+    Profile,
     RegionCode,
     load_activities as schema_load_activities,
     load_activity_dependencies,
@@ -372,9 +373,7 @@ def build_intensity_matrix(
             if fu_id and operation.functional_unit_id and operation.functional_unit_id != fu_id:
                 continue
 
-            variables, assumption_notes = operation_variable_map(
-                operation, operation_variables_map
-            )
+            variables, assumption_notes = operation_variable_map(operation, operation_variables_map)
             fu_value = evaluate_functional_unit_formula(mapping.conversion_formula, variables)
 
             intensity_mean = None

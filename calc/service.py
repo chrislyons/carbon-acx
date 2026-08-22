@@ -11,7 +11,7 @@ from typing import Any, Iterable, Mapping
 
 import pandas as pd
 
-from . import citations, figures
+from . import figures
 from .upstream import dependency_metadata
 from .api import collect_activity_source_keys
 from .citations import format_references as _format_references

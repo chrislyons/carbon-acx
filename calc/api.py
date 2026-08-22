@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from collections.abc import Iterable, Mapping
-from typing import Any, Dict, List, Tuple
+from collections.abc import Iterable
+from typing import Dict, List, Tuple
 
 import yaml
 

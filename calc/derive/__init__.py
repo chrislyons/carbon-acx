@@ -18,7 +18,6 @@ The public surface of the former module is preserved 1:1 via re-exports below.
 
 from __future__ import annotations
 
-import datetime as _datetime_module
 
 from .. import citations, figures
 from .. import manifest as manifest_module
@@ -54,7 +53,12 @@ from ..schema import (
 from ..upstream import dependency_metadata
 from ..utils.clock import GENERATED_AT_ENV, datetime, timezone
 from .cli import main
-from .emissions import EmissionDetails, compute_emission, compute_emission_details, get_grid_intensity
+from .emissions import (
+    EmissionDetails,
+    compute_emission,
+    compute_emission_details,
+    get_grid_intensity,
+)
 from .formulas import evaluate_functional_unit_formula
 from .io import (
     ALLOW_OUTPUT_RM_ENV,
@@ -78,10 +82,13 @@ __all__ = [
     "BUILD_HASH_RE",
     "DataStore",
     "EmissionDetails",
+    "EmissionFactor",
     "EXPORT_COLUMNS",
     "FLOAT_QUANTISER",
     "FigureManifestArtifacts",
+    "FunctionalUnit",
     "GENERATED_AT_ENV",
+    "GridIntensity",
     "INTENSITY_COLUMNS",
     "LayerId",
     "Operation",
@@ -95,6 +102,7 @@ __all__ = [
     "bundle_manifest_artifacts",
     "citations",
     "collect_activity_source_keys",
+    "choose_backend",
     "compute_emission",
     "compute_emission_details",
     "datetime",
