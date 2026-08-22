@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "acx.web-calculator/1-5-0",
+  "schemaVersion": "acx.web-calculator/1-6-0",
   "generatedAt": "2026-08-17T17:00:00Z",
   "categories": {
     "transport": {
@@ -665,6 +665,39 @@
         },
         "publicationStatus": "published"
       }
+    },
+    {
+      "id": "AI.USAGE.LLM.SCENARIO",
+      "name": "LLM inference scenario",
+      "category": "digital",
+      "unit": "scenario",
+      "unitLabel": "scenario",
+      "emissionFactor": null,
+      "description": "Source-backed AI inference scenario selected by workload, model, modality, and accounting boundary.",
+      "unitDefinition": "scenario",
+      "unavailabilityReason": "No published emission factor: pick an exact AI scenario to value it.",
+      "notes": "Research-only scenario records are unavailable to the annual calculator until an exact scenario is selected.",
+      "evidence": {
+        "activityId": "AI.USAGE.LLM.SCENARIO",
+        "emissionFactorId": "",
+        "sectorId": "SECTOR.DIGITAL_INFRASTRUCTURE",
+        "layerId": "online",
+        "region": null,
+        "scopeBoundary": "",
+        "gwpHorizon": "",
+        "vintageYear": null,
+        "sourceIds": [],
+        "sourceCitations": [],
+        "sourceUrls": [],
+        "sourceEvidence": [],
+        "methodNotes": null,
+        "uncertainty": {
+          "lowGPerUnit": null,
+          "highGPerUnit": null
+        },
+        "publicationStatus": "unavailable"
+      },
+      "scenarioBacked": true
     },
     {
       "id": "ENERGY.NATGAS.M3",

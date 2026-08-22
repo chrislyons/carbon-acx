@@ -37,9 +37,9 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 def test_generated_web_calculator_data_uses_published_evidence() -> None:
     payload = build_payload()
 
-    assert SCHEMA_VERSION == "acx.web-calculator/1-5-0"
+    assert SCHEMA_VERSION == "acx.web-calculator/1-6-0"
     assert payload["schemaVersion"] == SCHEMA_VERSION
-    assert len(payload["activities"]) == 21
+    assert len(payload["activities"]) == 22
     car = payload["activities"][0]
     assert car["id"] == "TRAN.SCHOOLRUN.CAR.KM"
     assert car["evidence"]["publicationStatus"] == "published"
@@ -53,10 +53,29 @@ def test_generated_web_calculator_data_uses_published_evidence() -> None:
     assert car["unitDefinition"] == ""
     assert car["notes"] == "Passengers default to one when unspecified."
     assert all(
-        activity["evidence"]["publicationStatus"] == "published"
-        and "SRC.DEMO" not in activity["evidence"]["sourceIds"]
+        (
+            activity.get("scenarioBacked")
+            and activity["evidence"]["publicationStatus"] == "unavailable"
+            and activity["emissionFactor"] is None
+        )
+        or (
+            activity["evidence"]["publicationStatus"] == "published"
+            and "SRC.DEMO" not in activity["evidence"]["sourceIds"]
+        )
         for activity in payload["activities"]
     )
+
+
+def test_scenario_backed_llm_card_is_curated() -> None:
+    payload = build_payload()
+    llm = next(
+        activity for activity in payload["activities"] if activity["id"] == "AI.USAGE.LLM.SCENARIO"
+    )
+    assert llm["category"] == "digital"
+    assert llm["scenarioBacked"] is True
+    assert llm["emissionFactor"] is None
+    assert llm["unit"] == "scenario"
+    assert llm["evidence"]["publicationStatus"] == "unavailable"
 
 
 def test_calculator_generation_requires_source_ledger(tmp_path: Path) -> None:

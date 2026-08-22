@@ -30,8 +30,12 @@ except ImportError:  # direct execution: python3 scripts/generate_web_calculator
     )
 
 
-SCHEMA_VERSION = "acx.web-calculator/1-5-0"
+SCHEMA_VERSION = "acx.web-calculator/1-6-0"
 AI_SCENARIOS_SCHEMA_VERSION = "acx.ai-scenarios/1-0-0"
+
+# Curated shelf entries whose annual value comes from exact-match AI scenarios
+# rather than a published emission factor row.
+SCENARIO_BACKED_ACTIVITIES = frozenset({"AI.USAGE.LLM.SCENARIO"})
 SOURCES_SCHEMA_VERSION = "acx.web-sources/1-0-0"
 OWID_CONTEXT_SCHEMA_VERSION = "acx.owid-context/1-0-0"
 PUBLIC_RELEASE_SCHEMA_VERSION = "acx.public-release/1-0-0"
@@ -86,6 +90,7 @@ SELECTED_ACTIVITIES = [
     ("digital", "MEDIA.STREAM.UHD.HOUR"),
     ("digital", "SOCIAL.INSTAGRAM.HOUR"),
     ("digital", "MUSIC.STREAM.STANDARD.HOUR"),
+    ("digital", "AI.USAGE.LLM.SCENARIO"),
     ("home", "ENERGY.NATGAS.M3"),
     ("home", "MUNI.WATER.POTABLE.M3"),
     ("home", "REFR.APPL.FRIDGE.OP.YEAR"),
@@ -764,6 +769,28 @@ def _build_payload(root: Path, generated_at: str) -> dict[str, Any]:
         activity = activities.get(activity_id)
         if not activity:
             raise ValueError(f"Curated calculator activity is missing: {activity_id}")
+        if activity_id in SCENARIO_BACKED_ACTIVITIES:
+            # Scenario-backed cards carry no emission factor: the annual value
+            # comes from an exact-match AI scenario chosen in the UI (ACX107).
+            activity_payload.append(
+                {
+                    "id": activity_id,
+                    "name": _clean_name(activity["name"]),
+                    "category": category,
+                    "unit": activity["default_unit"],
+                    "unitLabel": _unit_label(activity["default_unit"]),
+                    "emissionFactor": None,
+                    "description": activity.get("description") or "",
+                    "unitDefinition": activity.get("unit_definition") or "",
+                    "unavailabilityReason": (
+                        "No published emission factor: pick an exact AI scenario to value it."
+                    ),
+                    "notes": activity.get("notes") or "",
+                    "evidence": _unavailable_evidence(activity, None),
+                    "scenarioBacked": True,
+                }
+            )
+            continue
         factor = _pick_factor(activity_id, factors)
         value_g_per_unit, evidence = _factor_evidence(activity, factor, sources, grid_rows)
         activity_payload.append(
@@ -822,6 +849,7 @@ def _build_catalog_payload(root: Path, generated_at: str) -> dict[str, Any]:
                 "emissionFactor": value_g_per_unit,
                 "evidence": evidence,
                 "unavailabilityReason": unavailable_reason,
+                **({"scenarioBacked": True} if activity_id in SCENARIO_BACKED_ACTIVITIES else {}),
             }
         )
     ai_scenarios = _build_ai_scenarios(root, sources)
