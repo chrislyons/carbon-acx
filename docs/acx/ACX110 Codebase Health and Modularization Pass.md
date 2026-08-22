@@ -109,6 +109,27 @@ Verification notes:
 
 Residual limitation: `activity_schedule`, `emission_factors`, `grid_intensity`, `layers` contain fields authored with redundant quotes (no commas inside); `csv.writer` minimal-quoting cannot reproduce that style. Content is byte-identical otherwise. A one-time cosmetic normalization of those four files would make the loop fully byte-faithful — deferred as an owner-approved data pass. Authorities were restored untouched after every probe.
 
+## 5c. Addendum: LLM usage card restored to Digital shelf (owner request)
+
+The ACX107 data-model update moved provider-query rows (`AI.USAGE.*`) out of emission factors into
+`acx.ai-scenarios/1-0-0` records; the calculator shelf dropped them, leaving the ScenarioPane as
+the only entry point. Repair on this branch:
+
+- Generator: `AI.USAGE.LLM.SCENARIO` rejoins `SELECTED_ACTIVITIES` under digital as a
+  **scenario-backed** card (`emissionFactor: null`, `scenarioBacked: true`, explicit
+  unavailability reason). Web-calculator schema bumped to `acx.web-calculator/1-6-0`.
+- Web: shelf renders a "Choose scenario" tile that preselects the activity in the ScenarioPane;
+  basket math guards null factors; Atlas mode partition unchanged (research record stays out of
+  personal mode).
+- Verification: publication audit byte-gate green after regeneration; pytest web-data 29 passed;
+  vitest 37 passed; typecheck/lint clean; Playwright 76 passed incl. new
+  `digital shelf card routes into the scenario picker`; live browser check confirmed published
+  Gemini × 730 prompts = 22 g CO₂e joining the annual total.
+
+Known repo quirk surfaced: Playwright's `next dev` webServer writes dev artifacts into `dist`
+(distDir), clobbering the static export; rebuild `pnpm --filter carbon-acx-web build` after e2e
+runs before serving `dist`.
+
 ## 6. Remaining risks and follow-ups (post-sprint backlog)
 
 1. **Factor-selection reconciliation** — deliberate data-release decision; pick one rule (last-wins vs region-preference) with governance sign-off.
