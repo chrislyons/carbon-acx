@@ -2821,3 +2821,16 @@ textarea:focus {
     padding-top: 1rem;
   }
 }
+.home-page {
+  padding-top: clamp(1rem, 2.5vw, 2.5rem);
+}
+
+.home-page .trace-estimate--routine {
+  padding-top: clamp(1.5rem, 4vw, 3.5rem);
+}
+
+@media (max-width: 420px) {
+  .home-page .trace-estimate--routine {
+    padding-top: 1rem;
+  }
+}
