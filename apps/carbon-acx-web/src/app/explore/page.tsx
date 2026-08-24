@@ -41,7 +41,7 @@ export default function ExplorePage() {
     <div className="editorial-page atlas">
       <header className="ruled-section">
         <p className="section-kicker">Evidence catalogue</p>
-        <h1>Read activity factors in their proper layer.</h1>
+        <h1 className="route-hero-title">Read activity factors in their proper layer.</h1>
         <p>{CATALOG_ACTIVITIES.length} records: {totalPublished} published and {totalUnavailable} unavailable. Factor magnitudes cannot be compared across incompatible units.</p>
       </header>
       <div className="mode-switcher" aria-label="Catalogue mode">

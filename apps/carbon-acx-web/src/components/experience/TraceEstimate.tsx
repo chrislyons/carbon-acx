@@ -66,7 +66,7 @@ export function TraceEstimate() {
     <section className="trace-estimate trace-estimate--routine" aria-labelledby="trace-title">
       <div className="trace-estimate__lead">
         <p className="section-kicker">Start with a familiar routine</p>
-        <h1 id="trace-title">What does one school run look like over a year?</h1>
+        <h1 id="trace-title" className="route-hero-title route-hero-title--home">What does one school run look like over a year?</h1>
         <p>Use the terms you already know. Carbon ACX derives passenger-kilometres from distance, legs, travel days, and weeks before applying the published factor.</p>
         <div className="trace-routine__modes" role="group" aria-label="Commute mode">
           {MODE_OPTIONS.map((option) => {

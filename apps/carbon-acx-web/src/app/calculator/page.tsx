@@ -142,7 +142,7 @@ function CalculatorContent() {
       ) : null}
       <header className="ruled-section worksheet__intro">
         <p className="section-kicker">Routine worksheet</p>
-        <h1>Trace the patterns you already know.</h1>
+        <h1 className="route-hero-title">Trace the patterns you already know.</h1>
         <p>Choose a familiar extent and cadence. The worksheet derives the annual quantity, keeps the factor provenance beside it, and never invents missing evidence.</p>
       </header>
       <div className="routine-layout">

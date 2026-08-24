@@ -2751,3 +2751,49 @@ textarea:focus {
     margin-top: 1rem;
   }
 }
+.route-hero-title {
+  max-width: 16ch;
+  margin-top: 0.7rem;
+  color: var(--ink);
+  font: 700 clamp(2.2rem, 4vw, 3.5rem)/0.95 var(--font-display);
+  letter-spacing: -0.05em;
+}
+
+.route-hero-title--home {
+  max-width: 16ch;
+  font-size: clamp(2.4rem, 5vw, 4.75rem);
+  line-height: 0.91;
+}
+
+@media (max-width: 420px) {
+  .route-hero-title {
+    font-size: clamp(2.1rem, 9vw, 3rem);
+  }
+
+  .route-hero-title--home {
+    font-size: clamp(2.1rem, 10vw, 3rem);
+  }
+}
+.trace-estimate h1.route-hero-title {
+  max-width: 16ch;
+  font-size: clamp(2.4rem, 5vw, 4.75rem);
+  line-height: 0.91;
+}
+
+.worksheet h1.route-hero-title,
+.atlas h1.route-hero-title {
+  max-width: 16ch;
+  font: 700 clamp(2.2rem, 4vw, 3.5rem)/0.95 var(--font-display);
+  letter-spacing: -0.05em;
+}
+
+@media (max-width: 420px) {
+  .trace-estimate h1.route-hero-title {
+    font-size: clamp(2.1rem, 10vw, 3rem);
+  }
+
+  .worksheet h1.route-hero-title,
+  .atlas h1.route-hero-title {
+    font-size: clamp(2.1rem, 9vw, 3rem);
+  }
+}

@@ -26,7 +26,7 @@ export default function MethodologyPage() {
   return (
     <div className="page-shell page-shell--reading max-w-5xl py-10 sm:py-14">
       <Eyebrow>How we know</Eyebrow>
-      <h1 className="section-title max-w-3xl">The published-data contract.</h1>
+      <h1 className="section-title route-hero-title max-w-3xl">The published-data contract.</h1>
       <p className="section-copy mt-4 max-w-3xl">
         Carbon ACX derives its public calculator and Activity Atlas from canonical CSV records. A visitor-facing
         estimate is only shown when its factor has a registered source, boundary, region, GWP horizon, and vintage.
