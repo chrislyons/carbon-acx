@@ -35,18 +35,22 @@ This document provides a concise, indexed reference for every **frontend surface
 
 | # | Panel / Surface | UI element (code anchor) | Choice options presented | What the choice controls |
 |---|-----------------|--------------------------|------------------------|--------------------------|
-| 1 | **Header (persistent navbar)** | `Header.tsx:34‑38` – theme‑switcher button | `Light` / `Dark` | Toggles global light/dark theme for the whole site. |
-| 2 | **Calculator** | `CalculatorPage.tsx:166‑178` – category‑button rail | One button per `ActivityCategory` (transport, food, digital, …) with label *“n activities”* | Sets `activeCategory` state; filters the activity shelf and all downstream computations. |
-| 3 | **Calculator** | `CalculatorPage.tsx:95‑96` – benchmark selector | Options returned by `getBenchmarkOptions()` (default + any custom benchmarks) | `benchmarkKey` drives the benchmark comparison shown in `ResultPanel`. |
-| 4 | **Calculator** | `CalculatorPage.tsx:97‑112` – activity‑tile toggle | Each activity tile has a “+ Add” / “‑ Remove” button; selected IDs accumulate in `selectedIds` | User builds the worksheet’s activity list; the `ResultPanel` only includes selected activities. |
-| 5 | **Explore (Atlas)** | `ExplorePage.tsx:16` – mode state | `personal`, `systems`, `industrial` (radio‑style tabs) | Switches the underlying catalogue slice (`personal` = calculator‑eligible, `systems` / `industrial` = broader layers). |
-| 6 | **Explore (Atlas)** | `ExplorePage.tsx:19‑21` – filter states | `category` (dropdown of all categories found in the current mode), `region` (all / specific region), `status` (`published`, `unavailable`, `all`) | Narrows the record list displayed in the atlas table; each filter updates the `filtered` memo. |
-| 7 | **Explore (Atlas)** | `ExplorePage.tsx:17‑18` – record selection | Clicking a table row selects a single `CatalogActivity`; the `DetailPane` opens for that record | Determines which record’s evidence metadata is shown in the right‑hand detail view. |
-| 8 | **Learn** | `LearnPage.tsx:15‑34` – case‑study cards | Each card represents a distinct `LearningRecord` (e.g., school‑run, home‑energy); clicking navigates to calculator or explore with pre‑filled quantities | User chooses which scenario to explore further. |
-| 9 | **Methodology** | `MethodologyPage.tsx:23` – benchmark options | List from `getBenchmarkOptions()` displayed in the “Benchmarks” section | User can view results relative to a chosen benchmark; the section toggles the active benchmark. |
-|10| **3‑D Visualization** | `ThreeDVisualizationPage.tsx:15‑16` – reduced‑motion toggle | `true` / `false` for reduced‑motion preference; also implicit mode based on selected activity category | Controls whether the WebGL canvas respects the user’s reduced‑motion setting. |
-|11| **Result Panel (Calculator)** | `CalculatorPage.tsx:317‑379` – download / export format | Options: “Copy emissions”, “Download CSV”, “Share link” (shown as buttons) | User chooses how to export or share the computed result. |
-|12| **Evidence Pane (Calculator)** | `EvidencePane.tsx:381‑411` – close action | Single button “Close” | Dismisses the source‑trail modal; not a list choice but included for completeness of “choice points” in the UI flow. |
+| 1 | **Homepage** | `TraceEstimate.tsx:37‑43` – annual-distance input | A positive annual distance | Sets the prefilled school-run estimate and the calculator continuation link. |
+| 2 | **Homepage** | `app/page.tsx:14‑39` – three job-path links | Understand / Estimate / Inspect | Chooses the user’s initial route: Methodology, Calculator, or Atlas. |
+| 3 | **Header** | `Header.tsx:25‑39` – primary nav and theme control | Five routes; Light / Dark | Changes route or global colour theme. These are utility choices, not part of the estimate narrative. |
+| 4 | **Calculator** | `calculator/page.tsx:178‑193` – category rail | One `ActivityCategory` at a time | Sets `activeCategory`, which changes the visible activity shelf. |
+| 5 | **Calculator** | `ActivityShelf.tsx` plus `calculator/page.tsx:111‑128` – add/remove activities | Any number of published activity records | Builds the worksheet list in `selectedIds`. |
+| 6 | **Calculator** | `calculator/page.tsx:303‑315` – annual-quantity field | A positive quantity per selected activity | Sets each record’s calculated contribution. This is essential input, not a list choice. |
+| 7 | **Calculator** | `calculator/page.tsx:383‑387` – comparison-basis select | Options from `getBenchmarkOptions()` | Changes the contextual comparison in `ResultPanel`; it does not alter the estimate. |
+| 8 | **Calculator: AI research layer** | `ScenarioPane.tsx:99‑114` – AI-activity select | Documented AI activities | Determines which scenario records are eligible for the next select. |
+| 9 | **Calculator: AI research layer** | `ScenarioPane.tsx:115‑130` – scenario select | Documented scenarios for the selected AI activity | Resolves the exact evidence record; only published scenarios contribute to the total. |
+|10| **Calculator: AI research layer** | `ScenarioPane.tsx:131‑145` – scenario quantity | A positive annual quantity | Calculates the selected published AI scenario’s contribution. |
+|11| **Explore (Atlas)** | `explore/page.tsx:48‑52` – catalogue-mode switch | Personal / household; Canadian systems; Industrial layers | Selects the catalogue layer and resets the three filters. |
+|12| **Explore (Atlas)** | `explore/page.tsx:96‑100` – filter toolbar | Category, Region, and Publication selects | Narrows records inside the active mode. |
+|13| **Explore (Atlas)** | `explore/page.tsx:64, 113` – coverage-map or table record selection | Any currently displayed record | Opens that record’s detail/evidence pane. |
+|14| **Explore (Atlas)** | `explore/page.tsx:67‑70` – “Data table” disclosure | Show / hide the tabular representation | Reveals an alternative, accessible record-browsing surface; it does not change data. |
+|15| **Learn** | `learn/page.tsx:15‑34, 119‑121` – three worked-example CTAs | Household school travel; small-office area; Canadian-system electricity | Opens the selected example in Calculator or Atlas. |
+|16| **3‑D activity lab** | `explore/3d/page.tsx:72‑78, 96‑102` – sphere or “Inspect evidence” selection | Any result already present in the worksheet | Opens evidence for one calculated record. Reduced-motion is detected from system preference, not chosen in this UI. |
 
 ---
 
