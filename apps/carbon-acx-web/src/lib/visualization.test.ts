@@ -8,14 +8,25 @@ import {
   type CalculatorSummary,
 } from '@/lib/calculator'
 import {
+  calculateRoutineWorksheet,
+  createActivityLine,
+  createScenarioLine,
+} from '@/lib/routines'
+import {
   buildActivityImpactData,
   buildAtlasCoverageGroups,
   buildImpactFlowData,
   humanizeCategory,
+  toImpactSummary,
+  toRoutineImpactSummary,
 } from '@/lib/visualization'
 
 function summaryFor(...inputs: { activityId: string; quantity: number }[]): CalculatorSummary {
   return calculateEmissions(inputs)
+}
+
+function impactFor(...inputs: { activityId: string; quantity: number }[]) {
+  return toImpactSummary(summaryFor(...inputs))
 }
 
 function withUncertainty(
@@ -37,12 +48,12 @@ function withUncertainty(
 
 describe('visualization adapters', () => {
   it('derives sorted impact rows and valid beef bounds', () => {
-    const data = buildActivityImpactData(summaryFor(
+    const data = buildActivityImpactData(impactFor(
       { activityId: 'TRAN.SCHOOLRUN.CAR.KM', quantity: 1_000 },
       { activityId: 'FOOD.MEAL.BEEF.SERVING', quantity: 10 },
     ))
 
-    expect(data.map((item) => item.activityId)).toEqual([
+    expect(data.map((item) => item.id)).toEqual([
       'TRAN.SCHOOLRUN.CAR.KM',
       'FOOD.MEAL.BEEF.SERVING',
     ])
@@ -67,7 +78,7 @@ describe('visualization adapters', () => {
       low,
       high,
     )
-    expect(buildActivityImpactData(summary)[0]).toMatchObject({
+    expect(buildActivityImpactData(toImpactSummary(summary))[0]).toMatchObject({
       lowEmissions: null,
       highEmissions: null,
       uncertainty: 'not-quantified',
@@ -75,15 +86,40 @@ describe('visualization adapters', () => {
   })
 
   it('keeps a published bicycle zero in ranked data but out of the flow', () => {
-    const summary = summaryFor({ activityId: 'TRAN.SCHOOLRUN.BIKE.KM', quantity: 1 })
-    const ranked = buildActivityImpactData(summary)
-    const flow = buildImpactFlowData(summary)
+    const ranked = buildActivityImpactData(impactFor({ activityId: 'TRAN.SCHOOLRUN.BIKE.KM', quantity: 1 }))
+    const flow = buildImpactFlowData(impactFor({ activityId: 'TRAN.SCHOOLRUN.BIKE.KM', quantity: 1 }))
 
     expect(ranked).toHaveLength(1)
-    expect(ranked[0]).toMatchObject({ emissions: 0, activityId: 'TRAN.SCHOOLRUN.BIKE.KM' })
+    expect(ranked[0]).toMatchObject({ emissions: 0, id: 'TRAN.SCHOOLRUN.BIKE.KM' })
     expect(flow.zeroResults).toEqual(ranked)
     expect(flow.nodes.map((node) => node.id)).toEqual(['total'])
     expect(flow.links).toEqual([])
+  })
+
+  it('keeps published AI results in digital flow and excludes estimate notices', () => {
+    const routineSummary = calculateRoutineWorksheet([
+      createActivityLine('TRAN.SCHOOLRUN.CAR.KM', {
+        oneWayKm: '8',
+        travelDaysPerWeek: '5',
+      }),
+      createScenarioLine('SCN.GOOGLE.GEMINI.APPS.PROMPT.2025', {
+        eventsPerUseDay: '12',
+        useDaysPerMonth: '12',
+      }),
+      createScenarioLine('SCN.OPENAI.CHATGPT.PROMPT.2025', {
+        eventsPerUseDay: '1',
+        useDaysPerMonth: '1',
+      }),
+    ])
+    const impact = toRoutineImpactSummary(routineSummary)
+    const flow = buildImpactFlowData(impact)
+
+    expect(impact.results.map((result) => result.id)).toContain(
+      'scenario:SCN.GOOGLE.GEMINI.APPS.PROMPT.2025',
+    )
+    expect(impact.byCategory.digital).toBeCloseTo(51.84, 10)
+    expect(routineSummary.notices.map((notice) => notice.status)).toEqual(['estimate'])
+    expect(flow.nodes.map((node) => node.id)).toContain('category:digital')
   })
 
   it('rejects unavailable catalogue records before visualization adapters run', () => {
@@ -96,15 +132,14 @@ describe('visualization adapters', () => {
     expect(summary.skipped).toEqual([
       { activityId: unavailable.id, quantity: 1, reason: 'unavailable-activity' },
     ])
-    expect(buildActivityImpactData(summary)).toEqual([])
+    expect(buildActivityImpactData(toImpactSummary(summary))).toEqual([])
   })
 
   it('builds positive-only category flow totals in deterministic order', () => {
-    const summary = summaryFor(
+    const flow = buildImpactFlowData(impactFor(
       { activityId: 'TRAN.SCHOOLRUN.CAR.KM', quantity: 1_000 },
       { activityId: 'FOOD.MEAL.BEEF.SERVING', quantity: 10 },
-    )
-    const flow = buildImpactFlowData(summary)
+    ))
 
     expect(flow.nodes.map((node) => node.id)).toEqual([
       'activity:TRAN.SCHOOLRUN.CAR.KM',
@@ -143,11 +178,11 @@ describe('visualization adapters', () => {
         category: 'food',
       },
     ])
-    const tied = buildActivityImpactData(summaryFor(
+    const tied = buildActivityImpactData(impactFor(
       { activityId: 'TRAN.SCHOOLRUN.CAR.KM', quantity: 500 },
       { activityId: 'FOOD.MEAL.CHICKEN.SERVING', quantity: 100 },
     ))
-    expect(tied.map((item) => item.activityName)).toEqual(['Meal with chicken', 'School run by car'])
+    expect(tied.map((item) => item.name)).toEqual(['Meal with chicken', 'School run by car'])
   })
 
   it('humanizes categories and counts Atlas publication states', () => {

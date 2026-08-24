@@ -11,8 +11,6 @@ import {
   getBenchmarkOptions,
   CATALOG_ACTIVITIES,
   CATALOG_DATASET,
-  decodeCalculatorInputs,
-  encodeCalculatorInputs,
   getAtlasMode,
   resolveAiScenario,
   resolveScenarioById,
@@ -178,15 +176,6 @@ describe('editorial public data helpers', () => {
     expect(calculateEmissions([{ activityId: 'TRAN.SCHOOLRUN.CAR.KM', quantity: 1_000 }]).totalEmissions).toBe(180_000)
   })
 
-  it('round-trips only known finite positive shared inputs', () => {
-    const encoded = encodeCalculatorInputs({
-      'TRAN.SCHOOLRUN.CAR.KM': 1_250,
-      'NOPE.NOT.REAL': 5,
-      'FOOD.MEAL.BEEF.SERVING': 0,
-      'HOME.ELECTRICITY.KWH': Number.NaN,
-    })
-    expect(decodeCalculatorInputs(encoded)).toEqual({ 'TRAN.SCHOOLRUN.CAR.KM': 1_250 })
-  })
 
   it('partitions the catalogue into personal, systems, and industrial modes', () => {
     expect(CATALOG_ACTIVITIES.filter((activity) => getAtlasMode(activity) === 'personal')).toHaveLength(21)

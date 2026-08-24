@@ -1,43 +1,51 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 
-test('published scenario joins the annual total with full evidence', async ({ page }) => {
+async function chooseAi(page: Page, groupName: RegExp) {
+  await page.getByRole('button', { name: /Digital use.*Trace/ }).click()
+  await page.getByRole('button', { name: /AI/ }).click()
+  await page.getByRole('button', { name: groupName }).click()
+}
+
+test('published AI scenario joins the annual total with evidence', async ({ page }) => {
   await page.goto('/calculator')
-  await page.getByLabel('AI activity').selectOption({ label: 'LLM inference scenario' })
-  const totalBefore = await page.locator('.result-composition h2').innerText()
-
-  await page.getByLabel('Scenario', { exact: true }).selectOption('SCN.GOOGLE.GEMINI.APPS.PROMPT.2025')
-  await page.getByLabel(/Annual quantity/).fill('100')
-
-  await expect(page.getByText(/Included in your total/)).toBeVisible()
-  await expect(page.getByText('Scope boundary')).toBeVisible()
-
-  const totalAfter = await page.locator('.result-composition h2').innerText()
-  expect(totalAfter).not.toEqual(totalBefore)
+  await chooseAi(page, /Google · Gemini Apps/)
+  await page.getByLabel(/Events per use day/).fill('12')
+  await page.getByLabel(/Use days per month/).fill('12')
+  await expect(page.getByText(/1,728 prompts per year/).first()).toBeVisible()
+  await page.getByRole('button', { name: 'Save routine' }).click()
+  await expect(page.getByText(/52 g CO₂e\/year/).first()).toBeVisible()
+  await expect(page.locator('.routine-line--compact')).toContainText('Google · Gemini Apps')
+  await page.locator('.routine-line--compact').getByRole('button', { name: 'Evidence' }).click()
+  await expect(page.getByText('Functional unit')).toBeVisible()
+  await expect(page.getByText(/0\.03 g CO₂e/)).toBeVisible()
 })
 
-test('estimate scenarios stay evidence-only and leave the total unchanged', async ({ page }) => {
+test('estimate AI scenarios stay evidence-only', async ({ page }) => {
   await page.goto('/calculator')
-  await page.getByLabel('AI activity').selectOption({ label: 'LLM inference scenario' })
-  await page.getByLabel('Scenario', { exact: true }).selectOption('SCN.JEGHAM.GPT41.100+300')
-
-  await page.getByLabel(/Annual quantity/).fill('1000')
-  await expect(page.getByText(/Estimate — not included in your total/)).toBeVisible()
-  await expect(page.locator('.result-composition h2')).toHaveText('Add a valid annual quantity')
+  await chooseAi(page, /OpenAI · ChatGPT/)
+  await page.getByLabel(/Events per use day/).fill('1')
+  await page.getByLabel(/Use days per month/).fill('1')
+  await page.getByRole('button', { name: 'Save routine' }).click()
+  await expect(page.locator('.routine-summary__notice--estimate')).toBeVisible()
+  await expect(page.locator('.routine-summary h2')).toHaveText('Add a valid routine')
 })
 
-test('unavailable scenarios explain themselves instead of zeroing', async ({ page }) => {
+test('unavailable AI scenarios explain themselves without entering totals', async ({ page }) => {
   await page.goto('/calculator')
-  await page.getByLabel('AI activity').selectOption({ label: 'LLM inference scenario' })
-  await page.getByLabel('Scenario', { exact: true }).selectOption('SCN.ANTHROPIC.CLAUDE3.UNAVAILABLE.2024')
-
-  await expect(page.getByText(/not disclosed per-query energy or carbon data/i)).toBeVisible()
+  await chooseAi(page, /Anthropic · Claude/)
+  await page.getByLabel(/Events per use day/).fill('1')
+  await page.getByLabel(/Use days per month/).fill('1')
+  await page.getByRole('button', { name: 'Save routine' }).click()
+  await expect(page.locator('.routine-summary__notice--unavailable')).toBeVisible()
+  await expect(page.locator('.routine-line--compact')).toContainText('Unavailable')
 })
 
-test('scenario selector is keyboard operable', async ({ page }) => {
+test('AI provider groups expose a model selector only for multiple exact scenarios', async ({ page }) => {
   await page.goto('/calculator')
-  const activity = page.getByLabel('AI activity')
-  await activity.focus()
-  await page.keyboard.type('LLM inference scenario')
-  await expect(activity).toHaveValue('AI.USAGE.LLM.SCENARIO')
-  await expect(page.getByLabel('Scenario', { exact: true })).toBeEnabled()
+  await page.getByRole('button', { name: /Digital use.*Trace/ }).click()
+  await page.getByRole('button', { name: /AI/ }).click()
+  await page.getByRole('button', { name: /benchmark · inference benchmark/ }).click()
+  await expect(page.getByLabel('Model or use case')).toBeVisible()
+  await page.getByLabel('Model or use case').selectOption({ index: 1 })
+  await expect(page.getByLabel(/Events per use day/)).toBeVisible()
 })

@@ -4,6 +4,7 @@ Active catalog for Carbon ACX project documents.
 
 ## Recent Documents
 
+- [ACX110 Narrative Calculator Implementation](./ACX110%20Narrative%20Calculator%20Implementation.md)
 - [ACX109 Production Grade Hardening Sprint](./ACX109%20Production%20Grade%20Hardening%20Sprint.md)
 - [ACX108 Dataflow Integrity and Provenance Release Audit](./ACX108%20Dataflow%20Integrity%20and%20Provenance%20Release%20Audit.md)
 - [ACX107 LLM Inference Footprint Audit and Application Data Model](./ACX107%20LLM%20Inference%20Footprint%20Audit%20and%20Application%20Data%20Model.md)
@@ -134,4 +135,4 @@ Active catalog for Carbon ACX project documents.
 
 ---
 
-**Last Updated:** 2026-08-21
+**Last Updated:** 2026-08-24

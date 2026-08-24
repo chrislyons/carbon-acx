@@ -51,6 +51,16 @@ def test_generated_web_calculator_data_uses_published_evidence() -> None:
     assert car["evidence"]["sourceCitations"]
     assert car["evidence"]["sourceUrls"]
     assert car["unitDefinition"] == ""
+    assert car["unit"] == "pkm"
+    assert car["unitLabel"] == "passenger-kilometres"
+    for activity_id in (
+        "TRAN.SCHOOLRUN.BIKE.KM",
+        "TRAN.TTC.SUBWAY.KM",
+        "TRAN.TTC.BUS.KM",
+    ):
+        activity = next(item for item in payload["activities"] if item["id"] == activity_id)
+        assert activity["unit"] == "pkm"
+        assert activity["unitLabel"] == "passenger-kilometres"
     assert car["notes"] == "Passengers default to one when unspecified."
     assert all(
         activity["evidence"]["publicationStatus"] == "published"

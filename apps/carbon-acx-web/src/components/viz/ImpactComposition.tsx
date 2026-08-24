@@ -4,8 +4,8 @@ import { CircleHelp } from 'lucide-react'
 import { sankey, sankeyLinkHorizontal, type SankeyGraph, type SankeyLink, type SankeyNode } from 'd3-sankey'
 import { useId, useMemo } from 'react'
 import { ActivityMark } from '@/components/calculator/ActivityMark'
-import { formatEmissions, type ActivityCategory, type CategoryInfo, type CalculatorSummary } from '@/lib/calculator'
-import { buildActivityImpactData, buildImpactFlowData, type ImpactFlowLink, type ImpactFlowNode } from '@/lib/visualization'
+import { formatEmissions, type ActivityCategory, type CategoryInfo } from '@/lib/calculator'
+import { buildActivityImpactData, buildImpactFlowData, type ImpactFlowLink, type ImpactFlowNode, type ImpactSummary } from '@/lib/visualization'
 import { useContainerWidth } from '@/components/viz/useContainerWidth'
 
 interface PositionedFlow {
@@ -20,7 +20,7 @@ export function ImpactComposition({
   summary,
   categoryInfo,
 }: {
-  summary: CalculatorSummary
+  summary: ImpactSummary
   categoryInfo: Record<ActivityCategory, CategoryInfo>
 }) {
   const ranked = useMemo(() => buildActivityImpactData(summary), [summary])
@@ -51,11 +51,11 @@ export function ImpactComposition({
       <div className="impact-composition__heading">
         <div>
           <p className="section-kicker">Contribution view</p>
-          <h3 id="impact-composition-title">Ranked activity impacts</h3>
+          <h3 id="impact-composition-title">Ranked routine impacts</h3>
         </div>
       </div>
       {ranked.length ? (
-        <ol className="impact-rank" aria-label="Ranked activity impacts">
+        <ol className="impact-rank" aria-label="Ranked routine impacts">
           {ranked.map((item) => {
             const color = categoryInfo[item.category].color
             const widthPercentage = item.emissions > 0 ? (item.emissions / maxEmissions) * 100 : 0
@@ -64,11 +64,11 @@ export function ImpactComposition({
               ? Math.max(0, ((item.highEmissions - item.lowEmissions) / maxEmissions) * 100)
               : 0
             return (
-              <li key={item.activityId} className="impact-rank__row">
+              <li key={item.id} className="impact-rank__row">
                 <div className="impact-rank__label">
-                  <ActivityMark category={item.category} activityId={item.activityId} size={24} />
+                  <ActivityMark category={item.category} activityId={item.id} size={24} />
                   <div>
-                    <strong>{item.activityName}</strong>
+                    <strong>{item.name}</strong>
                     <span>{item.quantity.toLocaleString('en-CA')} {item.unitLabel} · {categoryInfo[item.category].name}</span>
                   </div>
                 </div>

@@ -478,28 +478,6 @@ export function formatEmissions(grams: number): string {
   return `${Math.round(grams)} g CO₂e`
 }
 
-export function encodeCalculatorInputs(inputs: Record<string, number>): string {
-  const entries = Object.entries(inputs).filter(
-    ([activityId, quantity]) => getActivityById(activityId) && Number.isFinite(quantity) && quantity > 0,
-  )
-  return entries.length > 0 ? btoa(entries.map(([id, value]) => `${id}:${value}`).join(',')) : ''
-}
-
-export function decodeCalculatorInputs(encoded: string): Record<string, number> {
-  try {
-    return atob(encoded).split(',').reduce<Record<string, number>>((decoded, entry) => {
-      const separator = entry.lastIndexOf(':')
-      const activityId = entry.slice(0, separator)
-      const quantity = Number(entry.slice(separator + 1))
-      if (getActivityById(activityId) && Number.isFinite(quantity) && quantity > 0) {
-        decoded[activityId] = quantity
-      }
-      return decoded
-    }, {})
-  } catch {
-    return {}
-  }
-}
 
 export type AtlasMode = 'personal' | 'systems' | 'industrial'
 

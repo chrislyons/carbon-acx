@@ -4,10 +4,11 @@ import {
   type CatalogActivity,
   type CalculatorSummary,
 } from '@/lib/calculator'
+import type { WorksheetResult, WorksheetSummary } from '@/lib/routines'
 
 export interface ActivityImpactDatum {
-  activityId: string
-  activityName: string
+  id: string
+  name: string
   category: ActivityCategory
   quantity: number
   unitLabel: string
@@ -15,6 +16,11 @@ export interface ActivityImpactDatum {
   lowEmissions: number | null
   highEmissions: number | null
   uncertainty: 'bounded' | 'not-quantified'
+}
+
+export interface ImpactSummary {
+  results: ActivityImpactDatum[]
+  byCategory: Record<ActivityCategory, number>
 }
 
 export interface ImpactFlowNode {
@@ -50,10 +56,10 @@ export function humanizeCategory(value: string): string {
   return value.replaceAll('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase())
 }
 
-function compareByActivity(a: ActivityImpactDatum, b: ActivityImpactDatum): number {
+function compareByImpact(a: ActivityImpactDatum, b: ActivityImpactDatum): number {
   return b.emissions - a.emissions
-    || a.activityName.localeCompare(b.activityName)
-    || a.activityId.localeCompare(b.activityId)
+    || a.name.localeCompare(b.name)
+    || a.id.localeCompare(b.id)
 }
 
 function getBoundedEmissions(
@@ -84,40 +90,81 @@ function getBoundedEmissions(
     : null
 }
 
-export function buildActivityImpactData(summary: CalculatorSummary): ActivityImpactDatum[] {
-  return summary.results
-    .map((result) => {
-      const bounds = getBoundedEmissions(
-        result.quantity,
-        result.emissionFactor,
-        result.evidence.uncertainty.lowGPerUnit,
-        result.evidence.uncertainty.highGPerUnit,
-      )
-      return {
-        activityId: result.activityId,
-        activityName: result.activityName,
-        category: result.category,
-        quantity: result.quantity,
-        unitLabel: result.unitLabel,
-        emissions: result.emissions,
-        lowEmissions: bounds?.lowEmissions ?? null,
-        highEmissions: bounds?.highEmissions ?? null,
-        uncertainty: bounds ? 'bounded' : 'not-quantified',
-      } satisfies ActivityImpactDatum
-    })
-    .sort(compareByActivity)
+function impactDatum(
+  id: string,
+  name: string,
+  category: ActivityCategory,
+  quantity: number,
+  unitLabel: string,
+  emissionFactor: number,
+  emissions: number,
+  lowGPerUnit: number | null,
+  highGPerUnit: number | null,
+): ActivityImpactDatum {
+  const bounds = getBoundedEmissions(quantity, emissionFactor, lowGPerUnit, highGPerUnit)
+  return {
+    id,
+    name,
+    category,
+    quantity,
+    unitLabel,
+    emissions,
+    lowEmissions: bounds?.lowEmissions ?? null,
+    highEmissions: bounds?.highEmissions ?? null,
+    uncertainty: bounds ? 'bounded' : 'not-quantified',
+  }
 }
 
-export function buildImpactFlowData(summary: CalculatorSummary): ImpactFlowData {
+export function toImpactSummary(summary: CalculatorSummary): ImpactSummary {
+  return {
+    results: summary.results.map((result) => impactDatum(
+      result.activityId,
+      result.activityName,
+      result.category,
+      result.quantity,
+      result.unitLabel,
+      result.emissionFactor,
+      result.emissions,
+      result.evidence.uncertainty.lowGPerUnit,
+      result.evidence.uncertainty.highGPerUnit,
+    )),
+    byCategory: { ...summary.byCategory },
+  }
+}
+
+export function toRoutineImpactSummary(summary: WorksheetSummary): ImpactSummary {
+  return {
+    results: summary.results.map((result: WorksheetResult) => ({
+      id: result.source === 'scenario' ? result.lineKey : result.sourceId,
+      name: result.name,
+      category: result.category,
+      quantity: result.quantity,
+      unitLabel: result.unitLabel,
+      emissions: result.emissions,
+      lowEmissions: result.lowEmissions,
+      highEmissions: result.highEmissions,
+      uncertainty: result.lowEmissions !== null && result.highEmissions !== null
+        ? 'bounded'
+        : 'not-quantified',
+    })),
+    byCategory: { ...summary.byCategory },
+  }
+}
+
+export function buildActivityImpactData(summary: ImpactSummary): ActivityImpactDatum[] {
+  return [...summary.results].sort(compareByImpact)
+}
+
+export function buildImpactFlowData(summary: ImpactSummary): ImpactFlowData {
   const ranked = buildActivityImpactData(summary)
   const positiveActivities = ranked.filter((activity) => activity.emissions > 0)
   const positiveCategories = (Object.keys(CATEGORY_INFO) as ActivityCategory[])
     .filter((category) => summary.byCategory[category] > 0)
 
   const activityNodes: ImpactFlowNode[] = positiveActivities.map((activity) => ({
-    id: `activity:${activity.activityId}`,
+    id: `activity:${activity.id}`,
     kind: 'activity',
-    label: activity.activityName,
+    label: activity.name,
     category: activity.category,
   }))
   const categoryNodes: ImpactFlowNode[] = positiveCategories.map((category) => ({
@@ -128,8 +175,8 @@ export function buildImpactFlowData(summary: CalculatorSummary): ImpactFlowData 
   }))
 
   const activityLinks: ImpactFlowLink[] = positiveActivities.map((activity) => ({
-    id: `activity:${activity.activityId}->category:${activity.category}`,
-    source: `activity:${activity.activityId}`,
+    id: `activity:${activity.id}->category:${activity.category}`,
+    source: `activity:${activity.id}`,
     target: `category:${activity.category}`,
     value: activity.emissions,
     category: activity.category,

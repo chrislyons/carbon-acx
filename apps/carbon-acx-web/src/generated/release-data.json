@@ -1,8 +1,8 @@
 {
   "schemaVersion": "acx.public-release/1-0-0",
-  "generatedAt": "2026-08-17T17:00:00Z",
+  "generatedAt": "2026-08-24T18:04:56+00:00",
   "inputs": {
-    "data/activities.csv": "4f67bfe5eed8cd36211002dad914b4ea2af499f7c9850786766cd366fefc3eae",
+    "data/activities.csv": "b3aa7c12dbd1d7c4b9e89c4763d9105b05fbf18f4c31e494290815c2d7f713a5",
     "data/activity_fu_map.csv": "5b3c3c248d1b815232b97b327ea163e3526d678b343fbc3756c20e6cb125c0c0",
     "data/activity_schedule.csv": "26279443373628bb408eb601b2cdb385933b3d67fd7c7661c8a8d9ceeb3c09b6",
     "data/ai_scenarios.csv": "8f966f3f5dd6b7ffb21c1203d5bc484aa76b20827f1b5c80009ee4edfdcdee9c",
@@ -11,7 +11,7 @@
     "data/carbon_pricing.csv": "250478f335e945898c6755ae45e79a8cc0d04d352843497722f7262c44de8f45",
     "data/dataflow_manifest.csv": "0860dff3c71f2f409ef033defeff9a8235042d54eb63672f4bd70ef5adfd767f",
     "data/dependencies.csv": "cc32ce1885b495498bb5275e5401efc93532e49bf73be1ffcca4a7a569eab2a2",
-    "data/emission_factors.csv": "ad34a6ad016eda6ef5a2e8f300fed8d2ee80d899ec51c0175d6eba64031f8949",
+    "data/emission_factors.csv": "14b7433b22c9e9b35725313c73297074965d637d93f438c91226425b2bafc776",
     "data/entities.csv": "6430bdbe7894354da4ac182304ec2ba41e7e50cfcf5f1fa3fbbaeecec7d8a2a9",
     "data/equity_benchmarks.csv": "964377a5ffc46a2e74147ca7ddcab64b12b4cb526495d0528d93251ee0f6e857",
     "data/feedback_loops.csv": "99ad238b10d31bbbf7a3078a57f658d69a84ce7454711982f21771c8c7a5a06b",
@@ -36,12 +36,12 @@
     "calculator": {
       "schemaVersion": "acx.web-calculator/1-5-0",
       "path": "/data/calculator-data.json",
-      "sha256": "98a44f6f18ddb492c64c85ce9795669c26d64a3c16fb8331ed2e7cf979549972"
+      "sha256": "628304184cfcefbc10d11ed82e55d05261454191100537fff1972901109452b6"
     },
     "catalog": {
       "schemaVersion": "acx.web-calculator/1-5-0",
       "path": "/data/catalog-data.json",
-      "sha256": "2de78008714b282ace590b8eb071370007a1aa310daa27d2afc7c03c72fef284"
+      "sha256": "eb8e0226a38eb98b3d3d9647a5a8ce0696b5a81bc7179ceddf7537cf7d049b66"
     },
     "sources": {
       "schemaVersion": "acx.web-sources/1-0-0",
@@ -51,13 +51,13 @@
     "owidContext": {
       "schemaVersion": "acx.owid-context/1-0-0",
       "path": "/data/owid-context.json",
-      "sha256": "0c8b6455f32d9c4d05ebdad65846bb4ab0753437422f2d4068be6c81b470c65b"
+      "sha256": "0374c4c7649541598debe8e9581aba52a208abe2f577aeab8a9ea79111ce4fb5"
     }
   },
   "sourceRegistryPath": "/data/sources.json",
   "owid": {
     "status": "available",
-    "contextSha256": "0c8b6455f32d9c4d05ebdad65846bb4ab0753437422f2d4068be6c81b470c65b",
+    "contextSha256": "0374c4c7649541598debe8e9581aba52a208abe2f577aeab8a9ea79111ce4fb5",
     "sourceManifestPath": "/data/owid/manifest.json",
     "sourceDataPath": "/data/owid/annual-co2-emissions-per-country.csv",
     "sourceMetadataPath": "/data/owid/annual-co2-emissions-per-country.metadata.json",

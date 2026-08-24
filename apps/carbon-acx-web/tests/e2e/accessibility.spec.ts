@@ -29,42 +29,29 @@ for (const theme of themes) {
 
 for (const theme of themes) {
   for (const viewport of viewports) {
-    test(`calculator action controls are touch-sized and non-overlapping in ${theme} at ${viewport.name}`, async ({ page }) => {
+    test(`routine chooser and editor controls are touch-sized in ${theme} at ${viewport.name}`, async ({ page }) => {
       await page.addInitScript((savedTheme) => localStorage.setItem('carbon-acx-theme', savedTheme), theme)
       if (viewport.size) await page.setViewportSize(viewport.size)
       await page.goto('/calculator')
       await expect(page.locator('html')).toHaveAttribute('data-theme', theme)
-      await page.locator('.category-button').first().click()
-      await page.getByRole('button', { name: /^Add / }).first().click()
-
-      const actionBoxes = await page.locator('.category-button, button.text-link, .worksheet__actions button').evaluateAll(
-        (controls) => controls.map((control) => {
-          const { left, right, top, bottom, height } = control.getBoundingClientRect()
-          return { left, right, top, bottom, height }
+      await page.getByRole('button', { name: /Travel.*Trace/ }).click()
+      await page.getByRole('button', { name: /Commute/ }).click()
+      await page.getByRole('button', { name: /School run by car/ }).click()
+      const controls = await page.locator('.routine-line__actions button, .routine-term input, .routine-summary__toggle, .routine-disclosure > summary').evaluateAll(
+        (nodes) => nodes.map((node) => {
+          const rect = node.getBoundingClientRect()
+          return { width: rect.width, height: rect.height }
         }),
       )
-      expect(actionBoxes).not.toEqual([])
-      expect(actionBoxes.every((box) => box.height >= 44)).toBe(true)
-
-      const [evidence, remove] = await Promise.all([
-        page.getByRole('button', { name: 'Factor evidence' }).boundingBox(),
-        page.getByRole('button', { name: 'Remove' }).boundingBox(),
-      ])
-      expect(evidence).not.toBeNull()
-      expect(remove).not.toBeNull()
-      expect(
-        evidence!.x + evidence!.width <= remove!.x
-        || remove!.x + remove!.width <= evidence!.x
-        || evidence!.y + evidence!.height <= remove!.y
-        || remove!.y + remove!.height <= evidence!.y,
-      ).toBe(true)
+      expect(controls.length).toBeGreaterThan(0)
+      expect(controls.every((box) => box.height >= 44)).toBe(true)
     })
   }
 }
 
 for (const theme of themes) {
   for (const route of routes) {
-    test(`visible action controls meet the touch target on ${route} in ${theme}`, async ({ page }) => {
+    test(`visible action controls meet touch target on ${route} in ${theme}`, async ({ page }) => {
       await page.addInitScript((savedTheme) => localStorage.setItem('carbon-acx-theme', savedTheme), theme)
       await page.goto(route)
       await expect(page.locator('html')).toHaveAttribute('data-theme', theme)

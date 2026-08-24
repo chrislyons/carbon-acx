@@ -15,7 +15,6 @@ const modes: { id: AtlasMode; label: string; description: string }[] = [
 export default function ExplorePage() {
   const [mode, setMode] = useState<AtlasMode>('personal')
   const [selected, setSelected] = useState<CatalogActivity | null>(null)
-  const [table, setTable] = useState(false)
   const [category, setCategory] = useState('all')
   const [region, setRegion] = useState('all')
   const [status, setStatus] = useState('all')
@@ -50,24 +49,31 @@ export default function ExplorePage() {
           <button key={item.id} type="button" aria-pressed={mode === item.id} className={mode === item.id ? 'is-selected' : ''} onClick={() => switchMode(item.id)}><AtlasModeIcon mode={item.id} /><strong>{item.label}</strong><span>{item.description}</span></button>
         ))}
       </div>
-      <AtlasFilters
-        records={records}
-        categories={categories}
-        category={category}
-        region={region}
-        status={status}
-        setCategory={setCategory}
-        setRegion={setRegion}
-        setStatus={setStatus}
-      />
+      <details className="routine-disclosure atlas__filter-disclosure">
+        <summary>Narrow these results</summary>
+        <div className="routine-disclosure__body">
+          <AtlasFilters
+            records={records}
+            categories={categories}
+            category={category}
+            region={region}
+            status={status}
+            setCategory={setCategory}
+            setRegion={setRegion}
+            setStatus={setStatus}
+          />
+        </div>
+      </details>
       <div className="atlas__scan">
         <AtlasCoverageMap records={filtered} selectedId={selected?.id ?? null} onSelect={setSelected} />
         <DetailPane record={selected} outsideFilters={Boolean(selected && !filtered.some((record) => record.id === selected.id))} />
       </div>
-      <section className="ruled-section atlas__table">
-        <button type="button" className="text-link" aria-expanded={table} onClick={() => setTable((value) => !value)}>Data table</button>
-        {table ? <AtlasTable filtered={filtered} onSelect={setSelected} /> : null}
-      </section>
+      <details className="routine-disclosure atlas__table">
+        <summary>View all records</summary>
+        <div className="routine-disclosure__body">
+          <AtlasTable filtered={filtered} onSelect={setSelected} />
+        </div>
+      </details>
       <p className="atlas__lab-link"><Link className="text-link text-link--primary" href="/explore/3d">Open experimental 3D activity lab</Link></p>
     </div>
   )

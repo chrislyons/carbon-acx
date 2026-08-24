@@ -40,13 +40,12 @@ export function ActivityShelf({
               <button
                 type="button"
                 className="activity-tile__add"
-                aria-label={`Add ${activity.name} to your activity basket`}
+                aria-label={`${selected ? 'Edit' : 'Add'} ${activity.name} routine`}
                 aria-pressed={selected}
-                aria-disabled={selected}
                 onClick={() => onAdd(activity)}
               >
                 {selected ? <Check aria-hidden="true" size={18} strokeWidth={2.5} /> : <Plus aria-hidden="true" size={18} strokeWidth={2.5} />}
-                <span>{selected ? 'Added' : 'Add to basket'}</span>
+                <span>{selected ? 'Edit routine' : 'Start routine'}</span>
               </button>
             </article>
           )

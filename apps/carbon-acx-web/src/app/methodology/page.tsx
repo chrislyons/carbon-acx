@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import releaseDataJson from '@/generated/release-data.json'
 import { Disclosure, Eyebrow, OwidContextCard, SourceList } from '@/components/content'
-import { ACTIVITIES, CALCULATOR_DATASET, calculateEmissions, encodeCalculatorInputs, formatEmissions, getActivityById, getBenchmarkOptions } from '@/lib/calculator'
+import { ACTIVITIES, CALCULATOR_DATASET, formatEmissions, getActivityById, getBenchmarkOptions } from '@/lib/calculator'
+import { calculateRoutineWorksheet, createActivityLine, encodeRoutineWorksheet, deriveRoutineLine } from '@/lib/routines'
 
 const sourcePairs = ACTIVITIES.flatMap((activity) =>
   activity.evidence.sourceIds.map((sourceId, index) => [
@@ -12,12 +13,12 @@ const sourcePairs = ACTIVITIES.flatMap((activity) =>
 ).filter(([sourceId], index, all) => all.findIndex(([candidate]) => candidate === sourceId) === index)
 
 const primerActivity = getActivityById('TRAN.SCHOOLRUN.CAR.KM')!
-const primerQuantity = 1_000
-const primerResult = calculateEmissions([{ activityId: primerActivity.id, quantity: primerQuantity }]).results[0]!
-const primerUnit = primerActivity.unitLabel.endsWith('s')
-  ? primerActivity.unitLabel.slice(0, -1)
-  : primerActivity.unitLabel
-const primerEquation = `${primerQuantity.toLocaleString('en-CA')} ${primerActivity.unitLabel} × ${primerActivity.emissionFactor} g CO₂e / ${primerUnit} = ${formatEmissions(primerResult.emissions)}/year`
+const primerLine = createActivityLine(primerActivity.id, { oneWayKm: '8', travelDaysPerWeek: '5' })
+const primerDerivation = deriveRoutineLine(primerLine)
+const primerSummary = calculateRoutineWorksheet([primerLine])
+const primerResult = primerSummary.results[0]!
+const primerEquation = `8 km/leg × 2 legs/travel day × 5 travel days/week × 48 weeks/year = ${primerDerivation.quantity?.toLocaleString('en-CA')} passenger-kilometres/year; ${primerDerivation.quantity?.toLocaleString('en-CA')} × ${primerActivity.emissionFactor} g CO₂e / passenger-kilometre = ${formatEmissions(primerResult.emissions)}/year`
+const primerHref = `/calculator?data=${encodeRoutineWorksheet([primerLine])}`
 
 export default function MethodologyPage() {
   const benchmarks = getBenchmarkOptions()
@@ -37,12 +38,24 @@ export default function MethodologyPage() {
           <div className="primer-card__questions">
             <article>
               <h3>What is the equation?</h3>
-              <p>An activity quantity is multiplied by its published emission factor to make a transparent estimate.</p>
+              <p>An understandable routine has three grammar roles: user-authored extent and cadence terms, a derived annual functional quantity, and a published factor with its evidence. The equation is quantity × factor, not a hidden conversion.</p>
               <p className="working-example__equation">{primerEquation}</p>
             </article>
             <article>
+              <h3>Which terms did the user author?</h3>
+              <p>In this example, 8 km/leg, 2 legs/travel day, 5 travel days/week, and 48 weeks/year are explicit routine inputs. The worksheet preserves them as editable assumptions.</p>
+            </article>
+            <article>
+              <h3>What quantity is derived?</h3>
+              <p>The routine derives 3,840 passenger-kilometres/year. It is a functional-unit quantity, not a vehicle-kilometre claim.</p>
+            </article>
+            <article>
+              <h3>What factor is published?</h3>
+              <p>The car factor is {primerActivity.emissionFactor} g CO₂e per passenger-kilometre. The existing record assumes one passenger when occupancy is unspecified; no unsupported occupancy multiplier is invented.</p>
+            </article>
+            <article>
               <h3>What period does it cover?</h3>
-              <p>Calculator quantities use an annual convention: the quantity describes one year, and the result is shown as an annual estimate.</p>
+              <p>The four routine terms annualize one year of activity. The result remains an annual estimate while the factor stays in its published unit.</p>
             </article>
             <article>
               <h3>What is inside the boundary?</h3>
@@ -66,7 +79,7 @@ export default function MethodologyPage() {
             <p>{primerActivity.description}</p>
             <p className="working-example__equation">{primerEquation}</p>
             <div className="flex flex-wrap gap-3">
-              <Link className="text-link text-link--primary" href={`/calculator?data=${encodeCalculatorInputs({ [primerActivity.id]: primerQuantity })}`}>Open this example in the calculator</Link>
+              <Link className="text-link text-link--primary" href={primerHref}>Open this routine in the calculator</Link>
               <Link className="text-link" href="/explore">Inspect the published record</Link>
             </div>
           </div>
