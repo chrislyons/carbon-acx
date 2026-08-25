@@ -9,7 +9,8 @@ from tools.citations import scan_claims
 
 
 MANIFEST_HEADER = (
-    "dataset_path,record_key,provenance_columns,source_columns,derived_from,"
+    "stream_id,dataset_path,schema_version,record_key,transport,cadence,retention,"
+    "timestamp_policy,null_policy,provenance_columns,source_columns,derived_from,"
     "publication_surfaces\n"
 )
 
@@ -59,9 +60,9 @@ def inventory_fixture(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     )
     (data_dir / "dataflow_manifest.csv").write_text(
         MANIFEST_HEADER
-        + 'records.csv,record_id,"record_id=structural|source_id=structural|value=external",source_id,,derive\n'
-        + 'sources.csv,source_id,"source_id=structural|ieee_citation=external|url=external|year=external|license=external|review_due_at=external",, ,web-sources\n'
-        + 'owid/manifest.json,chartId|entityCode,"chartId=structural|entityCode=structural|sourceId=structural",sourceId,,owid-context\n',
+        + 'acx.records,records.csv,acx.records/1-0-0,record_id,repository-csv,release-gated,git-history,none,blank,"record_id=structural|source_id=structural|value=external",source_id,,derive\n'
+        + 'acx.sources,sources.csv,acx.sources/1-0-0,source_id,repository-csv,release-gated,git-history,iso-date,blank,"source_id=structural|ieee_citation=external|url=external|year=external|license=external|review_due_at=external",, ,web-sources\n'
+        + 'acx.owid-source,owid/manifest.json,acx.owid-source/1-0-0,chartId|entityCode,repository-json,manual-snapshot,git-history,rfc3339-utc,blank,"chartId=structural|entityCode=structural|sourceId=structural",sourceId,,owid-context\n',
         encoding="utf-8",
     )
     monkeypatch.setattr(scan_claims, "DATA_DIR", data_dir)
@@ -105,6 +106,32 @@ def test_unregistered_source_id_fails(inventory_fixture: Path) -> None:
     path.write_text("record_id,source_id,value\nrow-1,SRC.UNKNOWN,1\n", encoding="utf-8")
     _, errors = scan_claims.run_scan("2026-08-17")
     assert any("records.csv" in error and "SRC.UNKNOWN" in error for error in errors)
+
+
+def test_header_order_drift_fails(inventory_fixture: Path) -> None:
+    path = inventory_fixture / "records.csv"
+    path.write_text("source_id,record_id,value\nSRC.TEST,row-1,1\n", encoding="utf-8")
+    _, errors = scan_claims.run_scan("2026-08-17")
+    assert any(
+        "header must exactly match provenance_columns field order" in error for error in errors
+    )
+
+
+def test_noncanonical_null_literal_fails(inventory_fixture: Path) -> None:
+    path = inventory_fixture / "records.csv"
+    path.write_text("record_id,source_id,value\nrow-1,SRC.TEST,N/A\n", encoding="utf-8")
+    _, errors = scan_claims.run_scan("2026-08-17")
+    assert any("noncanonical null literal in value" in error for error in errors)
+
+
+def test_invalid_stream_metadata_fails(inventory_fixture: Path) -> None:
+    manifest_path = inventory_fixture / "dataflow_manifest.csv"
+    manifest_path.write_text(
+        manifest_path.read_text(encoding="utf-8").replace("repository-csv", "network-csv", 1),
+        encoding="utf-8",
+    )
+    _, errors = scan_claims.run_scan("2026-08-17")
+    assert any("invalid transport: network-csv" in error for error in errors)
 
 
 def test_report_is_opt_in(inventory_fixture: Path, tmp_path: Path) -> None:

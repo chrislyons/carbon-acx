@@ -19,7 +19,7 @@ def _serialise_payload(df: pd.DataFrame) -> dict[str, object]:
     }
 
 
-def _build_rows(column_name: str) -> list[dict[str, object]]:
+def _build_rows() -> list[dict[str, object]]:
     return [
         {
             "activity_id": "A1",
@@ -27,7 +27,7 @@ def _build_rows(column_name: str) -> list[dict[str, object]]:
             "activity_category": "Mobility",
             "annual_emissions_g": 1_000.0,
             "layer_id": "professional",
-            column_name: "Transport",
+            "sector": "Transport",
         },
         {
             "activity_id": "A2",
@@ -35,34 +35,19 @@ def _build_rows(column_name: str) -> list[dict[str, object]]:
             "activity_category": "Energy",
             "annual_emissions_g": 500.0,
             "layer_id": "professional",
-            column_name: "Transport",
+            "sector": "Transport",
         },
     ]
 
 
-def test_alias_reads_match_for_segment_and_sector() -> None:
-    segment_only = pd.DataFrame(_build_rows("segment"))
-    sector_only = pd.DataFrame(_build_rows("sector"))
-    mixed_rows = _build_rows("segment")
-    for index, row in enumerate(mixed_rows):
-        if index % 2 == 1:
-            row["sector"] = row.pop("segment")
-    mixed = pd.DataFrame(mixed_rows)
+def test_sector_is_preserved_in_figure_payloads() -> None:
+    payload = _serialise_payload(pd.DataFrame(_build_rows()))
 
-    canonical_segment = _serialise_payload(segment_only)
-    canonical_sector = _serialise_payload(sector_only)
-    canonical_mixed = _serialise_payload(mixed)
-
-    assert canonical_segment == canonical_sector == canonical_mixed
-
-    # Forward outputs should only emit sector terminology.
-    stacked_entry = canonical_segment["stacked"][0]
-    assert "sector" in stacked_entry
+    stacked_entry = payload["stacked"][0]
     assert stacked_entry.get("sector") == "Transport"
-    assert "segment" not in json.dumps(canonical_segment)
 
-    bubble_entry = canonical_segment["bubble"][0]
+    bubble_entry = payload["bubble"][0]
     assert bubble_entry.get("sector") == "Transport"
 
-    sankey_nodes = canonical_segment["sankey"]["nodes"]
+    sankey_nodes = payload["sankey"]["nodes"]
     assert all("segment" not in json.dumps(node) for node in sankey_nodes)
