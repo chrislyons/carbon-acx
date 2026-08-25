@@ -6,7 +6,7 @@
 
 > **Current dataset version:** v1.2
 
-Carbon ACX is a public carbon-literacy web app and open reference stack. It turns auditable CSV inputs into a reproducible dataset, then publishes annual activity estimates, an evidence-first Activity Atlas, and static Cloudflare Pages bundles. The web calculator/catalogue authorities use `acx.web-calculator/1-5-0`; the versioned source envelope uses `acx.web-sources/1-0-0`. Every public calculation uses a cited, published factor; incomplete records are shown as unavailable rather than converted to zero.
+Carbon ACX is a public carbon-literacy web app and open reference stack. It turns auditable CSV inputs into a reproducible dataset, then publishes annual activity estimates, an evidence-first Activity Atlas, and static Cloudflare Pages bundles. The calculator uses `acx.web-calculator/1-6-0`; the distinct catalog uses `acx.web-catalog/1-0-0`; `sources`, OWID context, and the public release are independently versioned authorities. `acx.stream-catalog/1-0-0` exposes their source-contract inventory. Every public calculation uses a cited, published factor; incomplete records are shown as unavailable rather than converted to zero.
 
 ---
 
@@ -32,7 +32,7 @@ At widths of 700px or less, the shared header replaces its desktop links with a 
 | **Source-of-truth data** | Canonical CSVs for activities, emission factors, schedules, grid intensity, and more live under `data/`, ready for rebuilds and audits. |
 | **Derivation toolkit** | `python -m calc.derive` validates inputs, composes emissions, exports intensity matrices, and emits immutable manifests with hashed figures in `dist/artifacts/`. |
 | **Primary web app** | `apps/carbon-acx-web/` contains the static Next.js public product: Start here, Estimate, Activity Atlas, Learn, How we know, and the Evidence library. |
-| **Published-data contract** | `scripts/generate_web_calculator_data.py` emits `acx.web-calculator/1-5-0` calculator/catalogue records, the `acx.ai-scenarios/1-0-0` source-backed catalogue scenarios, the `acx.web-sources/1-0-0` source envelope, and the offline `acx.owid-context/1-0-0` plus `acx.public-release/1-0-0` authorities from canonical data; incomplete records remain unavailable rather than zero. |
+| **Published-data contract** | `scripts/generate_web_calculator_data.py` emits `acx.web-calculator/1-6-0`, `acx.web-catalog/1-0-0`, source-backed `acx.ai-scenarios/1-1-0`, `acx.web-sources/1-1-0`, `acx.stream-catalog/1-0-0`, offline `acx.owid-context/1-1-0`, and `acx.public-release/1-1-0` authorities from canonical data. The release binds public-byte and input SHA-256 values; incomplete records remain unavailable rather than zero. |
 | **Packaging automation** | `make package` builds the static Next.js export into `dist/site`, then packages immutable raw artifacts and Pages metadata beside it. |
 
 ## At-a-glance layers
