@@ -1,5 +1,7 @@
 {
-  "schemaVersion": "acx.web-sources/1-0-0",
+  "schemaVersion": "acx.web-sources/1-1-0",
+  "streamId": "acx.web-sources",
+  "generatedAt": "2026-08-25T00:00:00+00:00",
   "sources": [
     {
       "source_id": "SRC.AB.TAILINGS.2023",

@@ -9,21 +9,38 @@ import os
 import re
 import shutil
 import tempfile
+import sys
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-SCHEMA_VERSION = "acx.web-calculator/1-5-0"
-AI_SCENARIOS_SCHEMA_VERSION = "acx.ai-scenarios/1-0-0"
-SOURCES_SCHEMA_VERSION = "acx.web-sources/1-0-0"
-OWID_CONTEXT_SCHEMA_VERSION = "acx.owid-context/1-0-0"
-PUBLIC_RELEASE_SCHEMA_VERSION = "acx.public-release/1-0-0"
+SCRIPT_REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(SCRIPT_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_REPO_ROOT))
+
+from tools.citations.scan_claims import load_manifest_specs  # noqa: E402
+
+SCHEMA_VERSION = "acx.web-calculator/1-6-0"
+CATALOG_SCHEMA_VERSION = "acx.web-catalog/1-0-0"
+AI_SCENARIOS_SCHEMA_VERSION = "acx.ai-scenarios/1-1-0"
+SOURCES_SCHEMA_VERSION = "acx.web-sources/1-1-0"
+OWID_CONTEXT_SCHEMA_VERSION = "acx.owid-context/1-1-0"
+PUBLIC_RELEASE_SCHEMA_VERSION = "acx.public-release/1-1-0"
+STREAM_CATALOG_SCHEMA_VERSION = "acx.stream-catalog/1-0-0"
+CALCULATOR_STREAM_ID = "acx.web-calculator"
+CATALOG_STREAM_ID = "acx.web-catalog"
+AI_SCENARIOS_STREAM_ID = "acx.ai-scenarios"
+SOURCES_STREAM_ID = "acx.web-sources"
+OWID_CONTEXT_STREAM_ID = "acx.owid-context"
+PUBLIC_RELEASE_STREAM_ID = "acx.public-release"
+STREAM_CATALOG_STREAM_ID = "acx.stream-catalog"
 DEFAULT_OUTPUT = Path("apps/carbon-acx-web/src/generated/calculator-data.json")
 DEFAULT_CATALOG_OUTPUT = Path("apps/carbon-acx-web/src/generated/catalog-data.json")
 SOURCES_OUTPUT = Path("apps/carbon-acx-web/src/generated/sources.json")
 OWID_CONTEXT_OUTPUT = Path("apps/carbon-acx-web/src/generated/owid-context.json")
 RELEASE_OUTPUT = Path("apps/carbon-acx-web/src/generated/release-data.json")
+STREAM_CATALOG_OUTPUT = Path("apps/carbon-acx-web/src/generated/stream-catalog.json")
 PUBLIC_DATA_ROOT = Path("apps/carbon-acx-web/public/data")
 OWID_DATA_RELATIVE = Path("data/owid/annual-co2-emissions-per-country.csv")
 OWID_METADATA_RELATIVE = Path("data/owid/annual-co2-emissions-per-country.metadata.json")
@@ -143,9 +160,23 @@ def _int_or_none(value: str | None) -> int | None:
     return int(number) if number is not None else None
 
 
+RFC3339_UTC_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|\+00:00)$")
+
+
+def _normalise_rfc3339_utc(value: str) -> str:
+    if not RFC3339_UTC_RE.fullmatch(value):
+        raise ValueError("generatedAt must be an RFC 3339 UTC timestamp")
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError as error:
+        raise ValueError("generatedAt must be an RFC 3339 UTC timestamp") from error
+    return parsed.astimezone(timezone.utc).replace(microsecond=0).isoformat()
+
+
 def _generated_at() -> str:
     override = os.getenv("ACX_GENERATED_AT")
-    return override or datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+    value = override or datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+    return _normalise_rfc3339_utc(value)
 
 
 def _clean_name(name: str) -> str:
@@ -559,7 +590,9 @@ def _require_disclosed_or_positive(
         )
 
 
-def _build_ai_scenarios(root: Path, sources: dict[str, dict[str, str]]) -> dict[str, Any]:
+def _build_ai_scenarios(
+    root: Path, sources: dict[str, dict[str, str]], generated_at: str
+) -> dict[str, Any]:
     path = root / "data/ai_scenarios.csv"
     rows = _load_csv(path)
     if not rows:
@@ -744,6 +777,8 @@ def _build_ai_scenarios(root: Path, sources: dict[str, dict[str, str]]) -> dict[
         )
     return {
         "schemaVersion": AI_SCENARIOS_SCHEMA_VERSION,
+        "streamId": AI_SCENARIOS_STREAM_ID,
+        "generatedAt": generated_at,
         "records": records,
     }
 
@@ -773,6 +808,7 @@ def _build_payload(root: Path, generated_at: str) -> dict[str, Any]:
         )
     return {
         "schemaVersion": SCHEMA_VERSION,
+        "streamId": CALCULATOR_STREAM_ID,
         "generatedAt": generated_at,
         "categories": CATEGORY_INFO,
         "activities": activity_payload,
@@ -784,7 +820,8 @@ def build_payload(
     repo_root: Path | None = None, *, generated_at: str | None = None
 ) -> dict[str, Any]:
     root = repo_root or Path(__file__).resolve().parent.parent
-    return _build_payload(root, generated_at or _generated_at())
+    timestamp = _normalise_rfc3339_utc(generated_at) if generated_at else _generated_at()
+    return _build_payload(root, timestamp)
 
 
 def _build_catalog_payload(root: Path, generated_at: str) -> dict[str, Any]:
@@ -815,9 +852,10 @@ def _build_catalog_payload(root: Path, generated_at: str) -> dict[str, Any]:
                 "unavailabilityReason": unavailable_reason,
             }
         )
-    ai_scenarios = _build_ai_scenarios(root, sources)
+    ai_scenarios = _build_ai_scenarios(root, sources, generated_at)
     return {
-        "schemaVersion": SCHEMA_VERSION,
+        "schemaVersion": CATALOG_SCHEMA_VERSION,
+        "streamId": CATALOG_STREAM_ID,
         "generatedAt": generated_at,
         "activities": catalog,
         "aiScenarios": ai_scenarios,
@@ -828,7 +866,8 @@ def build_catalog_payload(
     repo_root: Path | None = None, *, generated_at: str | None = None
 ) -> dict[str, Any]:
     root = repo_root or Path(__file__).resolve().parent.parent
-    return _build_catalog_payload(root, generated_at or _generated_at())
+    timestamp = _normalise_rfc3339_utc(generated_at) if generated_at else _generated_at()
+    return _build_catalog_payload(root, timestamp)
 
 
 def _collect_source_ids(value: object, source_ids: set[str]) -> None:
@@ -855,7 +894,7 @@ def _active_source_ids(root: Path) -> set[str]:
     return source_ids
 
 
-def _build_sources_payload(root: Path) -> dict[str, Any]:
+def _build_sources_payload(root: Path, generated_at: str) -> dict[str, Any]:
     registry_rows = _load_csv(root / "data/sources.csv")
     sources = {
         row["source_id"]: row for row in registry_rows if (row.get("source_id") or "").strip()
@@ -870,8 +909,49 @@ def _build_sources_payload(root: Path) -> dict[str, Any]:
     ]
     return {
         "schemaVersion": SOURCES_SCHEMA_VERSION,
+        "streamId": SOURCES_STREAM_ID,
+        "generatedAt": generated_at,
         "sources": active_rows,
     }
+
+
+def _build_stream_catalog_payload(root: Path, generated_at: str) -> dict[str, Any]:
+    specs, errors = load_manifest_specs(root / "data/dataflow_manifest.csv")
+    if errors:
+        raise ValueError("Invalid dataflow manifest: " + "; ".join(errors))
+    streams = [
+        {
+            "streamId": spec.stream_id,
+            "schemaVersion": spec.schema_version,
+            "sourceOfTruth": f"data/{spec.dataset_path}",
+            "recordKey": list(spec.record_fields),
+            "fieldOrder": list(spec.provenance),
+            "provenance": dict(spec.provenance),
+            "sourceColumns": list(spec.source_columns),
+            "derivedFrom": list(spec.derived_from),
+            "transport": spec.transport,
+            "cadence": spec.cadence,
+            "retention": spec.retention,
+            "timestampPolicy": spec.timestamp_policy,
+            "nullPolicy": spec.null_policy,
+            "publicationSurfaces": list(spec.publication_surfaces),
+        }
+        for spec in sorted(specs, key=lambda item: item.stream_id)
+    ]
+    return {
+        "schemaVersion": STREAM_CATALOG_SCHEMA_VERSION,
+        "streamId": STREAM_CATALOG_STREAM_ID,
+        "generatedAt": generated_at,
+        "streams": streams,
+    }
+
+
+def build_stream_catalog_payload(
+    repo_root: Path | None = None, *, generated_at: str | None = None
+) -> dict[str, Any]:
+    root = repo_root or Path(__file__).resolve().parent.parent
+    timestamp = _normalise_rfc3339_utc(generated_at) if generated_at else _generated_at()
+    return _build_stream_catalog_payload(root, timestamp)
 
 
 def _json_bytes(payload: dict[str, Any]) -> bytes:
@@ -1020,6 +1100,7 @@ def _build_owid_context_payload(
         return (
             {
                 "schemaVersion": OWID_CONTEXT_SCHEMA_VERSION,
+                "streamId": OWID_CONTEXT_STREAM_ID,
                 "status": "unavailable",
                 "generatedAt": generated_at,
                 "source": None,
@@ -1054,6 +1135,7 @@ def _build_owid_context_payload(
     points = _owid_points(data_bytes)
     context = {
         "schemaVersion": OWID_CONTEXT_SCHEMA_VERSION,
+        "streamId": OWID_CONTEXT_STREAM_ID,
         "status": "available",
         "generatedAt": generated_at,
         "source": {
@@ -1139,6 +1221,7 @@ def _build_release_payload(
     public_catalog = PUBLIC_DATA_ROOT / "catalog-data.json"
     public_sources = PUBLIC_DATA_ROOT / "sources.json"
     public_context = PUBLIC_DATA_ROOT / "owid-context.json"
+    public_stream_catalog = PUBLIC_DATA_ROOT / "stream-catalog.json"
     context = json.loads(context_bytes)
     available = context.get("status") == "available"
     owid_raw_authorities = (
@@ -1154,6 +1237,7 @@ def _build_release_payload(
     )
     return {
         "schemaVersion": PUBLIC_RELEASE_SCHEMA_VERSION,
+        "streamId": PUBLIC_RELEASE_STREAM_ID,
         "generatedAt": generated_at,
         "inputs": _release_inputs(root, snapshot_files),
         "authorities": {
@@ -1163,7 +1247,7 @@ def _build_release_payload(
                 "sha256": _sha256_bytes(authorities[public_calculator]),
             },
             "catalog": {
-                "schemaVersion": SCHEMA_VERSION,
+                "schemaVersion": CATALOG_SCHEMA_VERSION,
                 "path": "/data/catalog-data.json",
                 "sha256": _sha256_bytes(authorities[public_catalog]),
             },
@@ -1176,6 +1260,11 @@ def _build_release_payload(
                 "schemaVersion": OWID_CONTEXT_SCHEMA_VERSION,
                 "path": "/data/owid-context.json",
                 "sha256": _sha256_bytes(authorities[public_context]),
+            },
+            "streamCatalog": {
+                "schemaVersion": STREAM_CATALOG_SCHEMA_VERSION,
+                "path": "/data/stream-catalog.json",
+                "sha256": _sha256_bytes(authorities[public_stream_catalog]),
             },
         },
         "sourceRegistryPath": "/data/sources.json",
@@ -1209,21 +1298,30 @@ def write_catalog(output_path: Path, repo_root: Path | None = None) -> Path:
 def write_sources(output_path: Path, repo_root: Path | None = None) -> Path:
     root = repo_root or Path(__file__).resolve().parent.parent
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_bytes(_json_bytes(_build_sources_payload(root)))
+    output_path.write_bytes(_json_bytes(_build_sources_payload(root, _generated_at())))
+    return output_path
+
+
+def write_stream_catalog(output_path: Path, repo_root: Path | None = None) -> Path:
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_bytes(_json_bytes(build_stream_catalog_payload(repo_root)))
     return output_path
 
 
 def _authority_bytes(repo_root: Path, generated_at: str) -> dict[Path, bytes]:
+    generated_at = _normalise_rfc3339_utc(generated_at)
     return {
         DEFAULT_OUTPUT: _json_bytes(_build_payload(repo_root, generated_at)),
         DEFAULT_CATALOG_OUTPUT: _json_bytes(_build_catalog_payload(repo_root, generated_at)),
-        SOURCES_OUTPUT: _json_bytes(_build_sources_payload(repo_root)),
+        SOURCES_OUTPUT: _json_bytes(_build_sources_payload(repo_root, generated_at)),
+        STREAM_CATALOG_OUTPUT: _json_bytes(_build_stream_catalog_payload(repo_root, generated_at)),
     }
 
 
 def _all_authority_bytes(
     repo_root: Path, generated_at: str
 ) -> tuple[dict[Path, bytes], tuple[Path, ...]]:
+    generated_at = _normalise_rfc3339_utc(generated_at)
     authorities = _authority_bytes(repo_root, generated_at)
     context_payload, snapshot_files = _build_owid_context_payload(repo_root, generated_at)
     context_bytes = _json_bytes(context_payload)
@@ -1231,6 +1329,7 @@ def _all_authority_bytes(
     authorities[PUBLIC_DATA_ROOT / "calculator-data.json"] = authorities[DEFAULT_OUTPUT]
     authorities[PUBLIC_DATA_ROOT / "catalog-data.json"] = authorities[DEFAULT_CATALOG_OUTPUT]
     authorities[PUBLIC_DATA_ROOT / "sources.json"] = authorities[SOURCES_OUTPUT]
+    authorities[PUBLIC_DATA_ROOT / "stream-catalog.json"] = authorities[STREAM_CATALOG_OUTPUT]
     authorities[PUBLIC_DATA_ROOT / "owid-context.json"] = context_bytes
 
     remove_paths: list[Path] = []
@@ -1265,19 +1364,31 @@ def _validate_authority_bytes(authorities: dict[Path, bytes]) -> None:
         payload = json.loads(payload_bytes)
         if not isinstance(payload, dict):
             raise ValueError(f"Generated authority is not a JSON object: {relative_path}")
-        if relative_path.name == "sources.json":
-            if payload.get("schemaVersion") != SOURCES_SCHEMA_VERSION or not isinstance(
-                payload.get("sources"), list
-            ):
-                raise ValueError(f"Invalid generated source authority: {relative_path}")
-        elif relative_path.name == "owid-context.json":
-            if payload.get("schemaVersion") != OWID_CONTEXT_SCHEMA_VERSION:
-                raise ValueError(f"Invalid generated OWID context authority: {relative_path}")
-        elif relative_path.name in {"release-data.json", "release.json"}:
-            if payload.get("schemaVersion") != PUBLIC_RELEASE_SCHEMA_VERSION:
-                raise ValueError(f"Invalid generated release authority: {relative_path}")
-        elif payload.get("schemaVersion") != SCHEMA_VERSION:
-            raise ValueError(f"Invalid generated calculator authority: {relative_path}")
+        expected_contracts = {
+            "calculator-data.json": (SCHEMA_VERSION, CALCULATOR_STREAM_ID),
+            "catalog-data.json": (CATALOG_SCHEMA_VERSION, CATALOG_STREAM_ID),
+            "sources.json": (SOURCES_SCHEMA_VERSION, SOURCES_STREAM_ID),
+            "stream-catalog.json": (STREAM_CATALOG_SCHEMA_VERSION, STREAM_CATALOG_STREAM_ID),
+            "owid-context.json": (OWID_CONTEXT_SCHEMA_VERSION, OWID_CONTEXT_STREAM_ID),
+            "release-data.json": (PUBLIC_RELEASE_SCHEMA_VERSION, PUBLIC_RELEASE_STREAM_ID),
+            "release.json": (PUBLIC_RELEASE_SCHEMA_VERSION, PUBLIC_RELEASE_STREAM_ID),
+        }
+        expected_schema, expected_stream_id = expected_contracts[relative_path.name]
+        if (
+            payload.get("schemaVersion") != expected_schema
+            or payload.get("streamId") != expected_stream_id
+        ):
+            raise ValueError(f"Invalid generated authority contract: {relative_path}")
+        generated_at = payload.get("generatedAt")
+        if not isinstance(generated_at, str):
+            raise ValueError(f"Generated authority has no generatedAt timestamp: {relative_path}")
+        _normalise_rfc3339_utc(generated_at)
+        if relative_path.name == "sources.json" and not isinstance(payload.get("sources"), list):
+            raise ValueError(f"Invalid generated source authority: {relative_path}")
+        if relative_path.name == "stream-catalog.json" and not isinstance(
+            payload.get("streams"), list
+        ):
+            raise ValueError(f"Invalid generated stream catalog authority: {relative_path}")
 
 
 def _replace_file(source: Path, destination: Path) -> None:

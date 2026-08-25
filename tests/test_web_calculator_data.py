@@ -8,26 +8,30 @@ from typing import Any
 import pytest
 
 from scripts.generate_web_calculator_data import (
+    CATALOG_SCHEMA_VERSION,
     DEFAULT_CATALOG_OUTPUT,
     DEFAULT_OUTPUT,
     OWID_CONTEXT_OUTPUT,
     PUBLIC_DATA_ROOT,
     RELEASE_OUTPUT,
+    SCHEMA_VERSION,
     SOURCES_OUTPUT,
     SOURCES_SCHEMA_VERSION,
-    SCHEMA_VERSION,
+    STREAM_CATALOG_OUTPUT,
+    STREAM_CATALOG_SCHEMA_VERSION,
     _all_authority_bytes,
     _authority_bytes,
+    _build_ai_scenarios,
     _commit_authorities,
     _factor_evidence,
     _grid_lookup,
     _load_csv,
     _load_source_provenance,
-    _build_ai_scenarios,
     build_benchmarks,
     build_catalog_payload,
     build_owid_context_payload,
     build_payload,
+    build_stream_catalog_payload,
 )
 
 
@@ -35,10 +39,12 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_generated_web_calculator_data_uses_published_evidence() -> None:
-    payload = build_payload()
+    payload = build_payload(generated_at="2026-08-25T00:00:00+00:00")
 
-    assert SCHEMA_VERSION == "acx.web-calculator/1-5-0"
+    assert SCHEMA_VERSION == "acx.web-calculator/1-6-0"
     assert payload["schemaVersion"] == SCHEMA_VERSION
+    assert payload["streamId"] == "acx.web-calculator"
+    assert payload["generatedAt"] == "2026-08-25T00:00:00+00:00"
     assert len(payload["activities"]) == 21
     car = payload["activities"][0]
     assert car["id"] == "TRAN.SCHOOLRUN.CAR.KM"
@@ -67,10 +73,12 @@ def test_calculator_generation_requires_source_ledger(tmp_path: Path) -> None:
 
 
 def test_ai_scenarios_are_typed_and_not_calculator_factors() -> None:
-    payload = build_catalog_payload()
+    payload = build_catalog_payload(generated_at="2026-08-25T00:00:00+00:00")
 
     scenarios = payload["aiScenarios"]
-    assert scenarios["schemaVersion"] == "acx.ai-scenarios/1-0-0"
+    assert scenarios["schemaVersion"] == "acx.ai-scenarios/1-1-0"
+    assert scenarios["streamId"] == "acx.ai-scenarios"
+    assert scenarios["generatedAt"] == "2026-08-25T00:00:00+00:00"
     assert len(scenarios["records"]) == 28
     assert {record["publicationStatus"] for record in scenarios["records"]} >= {
         "published",
@@ -102,11 +110,11 @@ def test_ai_scenarios_are_typed_and_not_calculator_factors() -> None:
 
 
 def test_sources_use_versioned_envelope_and_grid_metadata_aligns() -> None:
-    sources = json.loads(
-        (REPO_ROOT / "apps/carbon-acx-web/src/generated/sources.json").read_text(encoding="utf-8")
-    )
-    assert SOURCES_SCHEMA_VERSION == "acx.web-sources/1-0-0"
+    sources = json.loads(_authority_bytes(REPO_ROOT, "2026-08-25T00:00:00+00:00")[SOURCES_OUTPUT])
+    assert SOURCES_SCHEMA_VERSION == "acx.web-sources/1-1-0"
     assert sources["schemaVersion"] == SOURCES_SCHEMA_VERSION
+    assert sources["streamId"] == "acx.web-sources"
+    assert sources["generatedAt"] == "2026-08-25T00:00:00+00:00"
     assert isinstance(sources["sources"], list)
 
     payload = build_payload()
@@ -121,6 +129,30 @@ def test_sources_use_versioned_envelope_and_grid_metadata_aligns() -> None:
         == 2
     )
     assert all(evidence["sourceUrls"])
+
+
+def test_stream_catalog_exposes_ordered_canonical_contracts() -> None:
+    catalog = build_stream_catalog_payload(generated_at="2026-08-25T00:00:00+00:00")
+
+    assert catalog["schemaVersion"] == STREAM_CATALOG_SCHEMA_VERSION
+    assert catalog["streamId"] == "acx.stream-catalog"
+    assert catalog["generatedAt"] == "2026-08-25T00:00:00+00:00"
+    assert [stream["streamId"] for stream in catalog["streams"]] == sorted(
+        stream["streamId"] for stream in catalog["streams"]
+    )
+    activities = next(
+        stream for stream in catalog["streams"] if stream["streamId"] == "acx.activities"
+    )
+    assert activities["sourceOfTruth"] == "data/activities.csv"
+    assert activities["recordKey"] == ["activity_id"]
+    assert activities["fieldOrder"][:3] == ["activity_id", "sector_id", "layer_id"]
+    assert activities["transport"] == "repository-csv"
+    assert activities["nullPolicy"] == "blank"
+
+
+def test_generated_authorities_reject_non_utc_timestamps() -> None:
+    with pytest.raises(ValueError, match="RFC 3339 UTC"):
+        build_payload(generated_at="2026-08-25T01:00:00+01:00")
 
 
 def test_generated_web_calculator_data_propagates_grid_factor_ranges() -> None:
@@ -272,7 +304,8 @@ def test_benchmark_derivation_is_enforced(tmp_path: Path) -> None:
 def test_owid_context_is_pinned_and_sorted() -> None:
     context = build_owid_context_payload(REPO_ROOT)
 
-    assert context["schemaVersion"] == "acx.owid-context/1-0-0"
+    assert context["schemaVersion"] == "acx.owid-context/1-1-0"
+    assert context["streamId"] == "acx.owid-context"
     assert context["status"] == "available"
     assert context["selection"] == {"entity": "Canada", "code": "CAN"}
     assert context["basis"] == {
@@ -337,9 +370,21 @@ def test_release_authorities_keep_public_pairs_byte_identical() -> None:
         authorities[DEFAULT_CATALOG_OUTPUT] == authorities[PUBLIC_DATA_ROOT / "catalog-data.json"]
     )
     assert authorities[SOURCES_OUTPUT] == authorities[PUBLIC_DATA_ROOT / "sources.json"]
+    assert (
+        authorities[STREAM_CATALOG_OUTPUT] == authorities[PUBLIC_DATA_ROOT / "stream-catalog.json"]
+    )
     assert authorities[OWID_CONTEXT_OUTPUT] == authorities[PUBLIC_DATA_ROOT / "owid-context.json"]
     assert authorities[RELEASE_OUTPUT] == authorities[PUBLIC_DATA_ROOT / "release.json"]
     release = json.loads(authorities[RELEASE_OUTPUT])
+    assert set(release["authorities"]) == {
+        "calculator",
+        "catalog",
+        "sources",
+        "streamCatalog",
+        "owidContext",
+    }
+    assert release["authorities"]["catalog"]["schemaVersion"] == CATALOG_SCHEMA_VERSION
+    assert release["authorities"]["streamCatalog"]["schemaVersion"] == STREAM_CATALOG_SCHEMA_VERSION
     assert set(release["owid"]["rawAuthorities"]) == {
         "manifest.json",
         "annual-co2-emissions-per-country.csv",
@@ -349,21 +394,11 @@ def test_release_authorities_keep_public_pairs_byte_identical() -> None:
 
 def test_changing_only_owid_snapshot_bytes_preserves_acx_authorities(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
-    required_paths = [
-        "data/activities.csv",
-        "data/ai_scenarios.csv",
-        "data/benchmarks.csv",
-        "data/emission_factors.csv",
-        "data/grid_intensity.csv",
-        "data/sources.csv",
-        "data/source_decisions.csv",
-        "data/owid/annual-co2-emissions-per-country.csv",
-        "data/owid/annual-co2-emissions-per-country.metadata.json",
-        "data/owid/manifest.json",
+    shutil.copytree(REPO_ROOT / "data", repo_root / "data")
+    for relative_path in (
         "refs/sources_manifest.csv",
         "scripts/generate_web_calculator_data.py",
-    ]
-    for relative_path in required_paths:
+    ):
         destination = repo_root / relative_path
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(REPO_ROOT / relative_path, destination)
@@ -378,20 +413,19 @@ def test_changing_only_owid_snapshot_bytes_preserves_acx_authorities(tmp_path: P
     assert before[DEFAULT_OUTPUT] == after[DEFAULT_OUTPUT]
     assert before[DEFAULT_CATALOG_OUTPUT] == after[DEFAULT_CATALOG_OUTPUT]
     assert before[SOURCES_OUTPUT] == after[SOURCES_OUTPUT]
+    assert before[STREAM_CATALOG_OUTPUT] == after[STREAM_CATALOG_OUTPUT]
     assert before[OWID_CONTEXT_OUTPUT] != after[OWID_CONTEXT_OUTPUT]
     assert before[RELEASE_OUTPUT] != after[RELEASE_OUTPUT]
 
 
 def test_unavailable_release_removes_stale_public_owid_files(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
+    shutil.copytree(
+        REPO_ROOT / "data",
+        repo_root / "data",
+        ignore=shutil.ignore_patterns("owid"),
+    )
     for relative_path in (
-        "data/activities.csv",
-        "data/ai_scenarios.csv",
-        "data/benchmarks.csv",
-        "data/emission_factors.csv",
-        "data/grid_intensity.csv",
-        "data/sources.csv",
-        "data/source_decisions.csv",
         "refs/sources_manifest.csv",
         "scripts/generate_web_calculator_data.py",
     ):
@@ -421,7 +455,12 @@ def test_atomic_authority_commit_rolls_back_on_replacement_failure(
 ) -> None:
     output_root = tmp_path / "output"
     before = {}
-    for relative_path in (DEFAULT_OUTPUT, DEFAULT_CATALOG_OUTPUT, SOURCES_OUTPUT):
+    for relative_path in (
+        DEFAULT_OUTPUT,
+        DEFAULT_CATALOG_OUTPUT,
+        SOURCES_OUTPUT,
+        STREAM_CATALOG_OUTPUT,
+    ):
         destination = output_root / relative_path
         destination.parent.mkdir(parents=True, exist_ok=True)
         content = f"before:{relative_path}".encode()
@@ -463,7 +502,7 @@ def _mutated_ai_scenarios(tmp_path: Path, scenario_id: str, **overrides: str) ->
         writer.writerows(rows)
     sources = {row["source_id"]: row for row in _load_csv(REPO_ROOT / "data" / "sources.csv")}
     sources = _load_source_provenance(REPO_ROOT, sources)
-    return _build_ai_scenarios(tmp_path, sources)
+    return _build_ai_scenarios(tmp_path, sources, "2026-08-25T00:00:00+00:00")
 
 
 def test_ai_scenario_rejects_unsupported_carbon_method(tmp_path: Path) -> None:

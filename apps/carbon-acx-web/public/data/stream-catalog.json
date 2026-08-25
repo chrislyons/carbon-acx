@@ -1,0 +1,1092 @@
+{
+  "schemaVersion": "acx.stream-catalog/1-0-0",
+  "streamId": "acx.stream-catalog",
+  "generatedAt": "2026-08-25T00:00:00+00:00",
+  "streams": [
+    {
+      "streamId": "acx.activities",
+      "schemaVersion": "acx.activities/1-0-0",
+      "sourceOfTruth": "data/activities.csv",
+      "recordKey": [
+        "activity_id"
+      ],
+      "fieldOrder": [
+        "activity_id",
+        "sector_id",
+        "layer_id",
+        "category",
+        "name",
+        "default_unit",
+        "description",
+        "unit_definition",
+        "notes"
+      ],
+      "provenance": {
+        "activity_id": "structural",
+        "sector_id": "structural",
+        "layer_id": "structural",
+        "category": "structural",
+        "name": "external",
+        "default_unit": "structural",
+        "description": "external",
+        "unit_definition": "external",
+        "notes": "external"
+      },
+      "sourceColumns": [],
+      "derivedFrom": [],
+      "transport": "repository-csv",
+      "cadence": "release-gated",
+      "retention": "git-history",
+      "timestampPolicy": "none",
+      "nullPolicy": "blank",
+      "publicationSurfaces": [
+        "web-calculator",
+        "web-catalog",
+        "derive",
+        "package"
+      ]
+    },
+    {
+      "streamId": "acx.activity-functional-units",
+      "schemaVersion": "acx.activity-functional-units/1-0-0",
+      "sourceOfTruth": "data/activity_fu_map.csv",
+      "recordKey": [
+        "activity_id",
+        "functional_unit_id"
+      ],
+      "fieldOrder": [
+        "activity_id",
+        "functional_unit_id",
+        "conversion_formula",
+        "assumption_notes"
+      ],
+      "provenance": {
+        "activity_id": "structural",
+        "functional_unit_id": "structural",
+        "conversion_formula": "structural",
+        "assumption_notes": "structural"
+      },
+      "sourceColumns": [],
+      "derivedFrom": [],
+      "transport": "repository-csv",
+      "cadence": "release-gated",
+      "retention": "git-history",
+      "timestampPolicy": "none",
+      "nullPolicy": "blank",
+      "publicationSurfaces": [
+        "derive",
+        "web-calculator",
+        "web-catalog",
+        "package"
+      ]
+    },
+    {
+      "streamId": "acx.activity-schedule",
+      "schemaVersion": "acx.activity-schedule/1-0-0",
+      "sourceOfTruth": "data/activity_schedule.csv",
+      "recordKey": [
+        "profile_id",
+        "activity_id",
+        "layer_id"
+      ],
+      "fieldOrder": [
+        "profile_id",
+        "sector_id",
+        "activity_id",
+        "layer_id",
+        "freq_per_day",
+        "freq_per_week",
+        "office_days_only",
+        "region_override",
+        "schedule_notes",
+        "distance_km",
+        "passengers",
+        "hours",
+        "viewers",
+        "servings"
+      ],
+      "provenance": {
+        "profile_id": "structural",
+        "sector_id": "structural",
+        "activity_id": "structural",
+        "layer_id": "structural",
+        "freq_per_day": "modelled",
+        "freq_per_week": "modelled",
+        "office_days_only": "modelled",
+        "region_override": "modelled",
+        "schedule_notes": "modelled",
+        "distance_km": "modelled",
+        "passengers": "modelled",
+        "hours": "modelled",
+        "viewers": "modelled",
+        "servings": "modelled"
+      },
+      "sourceColumns": [
+        "schedule_notes"
+      ],
+      "derivedFrom": [],
+      "transport": "repository-csv",
+      "cadence": "release-gated",
+      "retention": "git-history",
+      "timestampPolicy": "none",
+      "nullPolicy": "blank",
+      "publicationSurfaces": [
+        "derive",
+        "web-calculator",
+        "web-catalog",
+        "package"
+      ]
+    },
+    {
+      "streamId": "acx.ai-scenarios",
+      "schemaVersion": "acx.ai-scenarios/1-0-0",
+      "sourceOfTruth": "data/ai_scenarios.csv",
+      "recordKey": [
+        "scenario_id"
+      ],
+      "fieldOrder": [
+        "scenario_id",
+        "activity_id",
+        "provider_id",
+        "service_id",
+        "model_id",
+        "model_version",
+        "model_generation",
+        "generation_mode",
+        "modality",
+        "functional_unit",
+        "token_basis",
+        "workload_profile_id",
+        "input_tokens",
+        "output_tokens",
+        "reasoning_tokens",
+        "hidden_reasoning_disclosure",
+        "batch_size",
+        "serving_context",
+        "energy_wh",
+        "energy_wh_low",
+        "energy_wh_high",
+        "scope_boundary",
+        "pue_treatment",
+        "carbon_accounting_method",
+        "carbon_g_per_unit",
+        "carbon_low_g_per_unit",
+        "carbon_high_g_per_unit",
+        "energy_components",
+        "carbon_components",
+        "grid_intensity_g_per_kwh",
+        "grid_region",
+        "grid_vintage_year",
+        "service_region",
+        "width_px",
+        "height_px",
+        "frames",
+        "fps",
+        "denoising_steps",
+        "duration_seconds",
+        "audio_included",
+        "source_id",
+        "source_role",
+        "source_locator",
+        "vintage_year",
+        "retrieved_at",
+        "uncertainty",
+        "publication_status",
+        "notes"
+      ],
+      "provenance": {
+        "scenario_id": "structural",
+        "activity_id": "structural",
+        "provider_id": "structural",
+        "service_id": "structural",
+        "model_id": "external",
+        "model_version": "external",
+        "model_generation": "external",
+        "generation_mode": "structural",
+        "modality": "structural",
+        "functional_unit": "structural",
+        "token_basis": "structural",
+        "workload_profile_id": "structural",
+        "input_tokens": "external",
+        "output_tokens": "external",
+        "reasoning_tokens": "external",
+        "hidden_reasoning_disclosure": "external",
+        "batch_size": "external",
+        "serving_context": "external",
+        "energy_wh": "external",
+        "energy_wh_low": "external",
+        "energy_wh_high": "external",
+        "scope_boundary": "external",
+        "pue_treatment": "external",
+        "carbon_accounting_method": "external",
+        "carbon_g_per_unit": "external",
+        "carbon_low_g_per_unit": "external",
+        "carbon_high_g_per_unit": "external",
+        "energy_components": "external",
+        "carbon_components": "external",
+        "grid_intensity_g_per_kwh": "external",
+        "grid_region": "structural",
+        "grid_vintage_year": "external",
+        "service_region": "external",
+        "width_px": "external",
+        "height_px": "external",
+        "frames": "external",
+        "fps": "external",
+        "denoising_steps": "external",
+        "duration_seconds": "external",
+        "audio_included": "external",
+        "source_id": "structural",
+        "source_role": "external",
+        "source_locator": "external",
+        "vintage_year": "external",
+        "retrieved_at": "external",
+        "uncertainty": "external",
+        "publication_status": "structural",
+        "notes": "external"
+      },
+      "sourceColumns": [
+        "source_id"
+      ],
+      "derivedFrom": [],
+      "transport": "repository-csv",
+      "cadence": "release-gated",
+      "retention": "git-history",
+      "timestampPolicy": "iso-date",
+      "nullPolicy": "blank",
+      "publicationSurfaces": [
+        "web-catalog",
+        "web-sources",
+        "package"
+      ]
+    },
+    {
+      "streamId": "acx.assets",
+      "schemaVersion": "acx.assets/1-0-0",
+      "sourceOfTruth": "data/assets.csv",
+      "recordKey": [
+        "asset_id"
+      ],
+      "fieldOrder": [
+        "asset_id",
+        "site_id",
+        "asset_type",
+        "name",
+        "year",
+        "power_rating_kw",
+        "fuel_type",
+        "notes"
+      ],
+      "provenance": {
+        "asset_id": "structural",
+        "site_id": "structural",
+        "asset_type": "structural",
+        "name": "external",
+        "year": "external",
+        "power_rating_kw": "external",
+        "fuel_type": "external",
+        "notes": "external"
+      },
+      "sourceColumns": [],
+      "derivedFrom": [],
+      "transport": "repository-csv",
+      "cadence": "release-gated",
+      "retention": "git-history",
+      "timestampPolicy": "none",
+      "nullPolicy": "blank",
+      "publicationSurfaces": [
+        "derive",
+        "web-catalog",
+        "package"
+      ]
+    },
+    {
+      "streamId": "acx.benchmarks",
+      "schemaVersion": "acx.benchmarks/1-0-0",
+      "sourceOfTruth": "data/benchmarks.csv",
+      "recordKey": [
+        "key"
+      ],
+      "fieldOrder": [
+        "key",
+        "label",
+        "scope",
+        "region_code",
+        "total_mt",
+        "population_millions",
+        "per_capita_tonnes",
+        "year",
+        "source_id",
+        "population_source_id",
+        "notes",
+        "accounting_basis",
+        "land_use_change"
+      ],
+      "provenance": {
+        "key": "structural",
+        "label": "external",
+        "scope": "structural",
+        "region_code": "structural",
+        "total_mt": "external",
+        "population_millions": "external",
+        "per_capita_tonnes": "derived",
+        "year": "external",
+        "source_id": "structural",
+        "population_source_id": "structural",
+        "notes": "external",
+        "accounting_basis": "structural",
+        "land_use_change": "structural"
+      },
+      "sourceColumns": [
+        "source_id",
+        "population_source_id"
+      ],
+      "derivedFrom": [
+        "benchmarks.csv:total_mt",
+        "benchmarks.csv:population_millions"
+      ],
+      "transport": "repository-csv",
+      "cadence": "release-gated",
+      "retention": "git-history",
+      "timestampPolicy": "none",
+      "nullPolicy": "blank",
+      "publicationSurfaces": [
+        "web-calculator",
+        "web-catalog",
+        "web-sources",
+        "package"
+      ]
+    },
+    {
+      "streamId": "acx.carbon-pricing",
+      "schemaVersion": "acx.carbon-pricing/1-0-0",
+      "sourceOfTruth": "data/carbon_pricing.csv",
+      "recordKey": [
+        "jurisdiction",
+        "year",
+        "scheme_type"
+      ],
+      "fieldOrder": [
+        "jurisdiction",
+        "price_usd_per_tonne",
+        "currency",
+        "price_local",
+        "year",
+        "source_id",
+        "notes",
+        "scheme_type"
+      ],
+      "provenance": {
+        "jurisdiction": "structural",
+        "price_usd_per_tonne": "external",
+        "currency": "structural",
+        "price_local": "external",
+        "year": "external",
+        "source_id": "structural",
+        "notes": "external",
+        "scheme_type": "structural"
+      },
+      "sourceColumns": [
+        "source_id"
+      ],
+      "derivedFrom": [],
+      "transport": "repository-csv",
+      "cadence": "release-gated",
+      "retention": "git-history",
+      "timestampPolicy": "none",
+      "nullPolicy": "blank",
+      "publicationSurfaces": [
+        "web-catalog",
+        "web-sources",
+        "package"
+      ]
+    },
+    {
+      "streamId": "acx.dependencies",
+      "schemaVersion": "acx.dependencies/1-0-0",
+      "sourceOfTruth": "data/dependencies.csv",
+      "recordKey": [
+        "child_activity_id",
+        "parent_operation_id"
+      ],
+      "fieldOrder": [
+        "child_activity_id",
+        "parent_operation_id",
+        "share",
+        "notes"
+      ],
+      "provenance": {
+        "child_activity_id": "structural",
+        "parent_operation_id": "structural",
+        "share": "modelled",
+        "notes": "modelled"
+      },
+      "sourceColumns": [
+        "notes"
+      ],
+      "derivedFrom": [],
+      "transport": "repository-csv",
+      "cadence": "release-gated",
+      "retention": "git-history",
+      "timestampPolicy": "none",
+      "nullPolicy": "blank",
+      "publicationSurfaces": [
+        "derive",
+        "web-catalog",
+        "package"
+      ]
+    },
+    {
+      "streamId": "acx.emission-factors",
+      "schemaVersion": "acx.emission-factors/1-0-0",
+      "sourceOfTruth": "data/emission_factors.csv",
+      "recordKey": [
+        "ef_id"
+      ],
+      "fieldOrder": [
+        "ef_id",
+        "sector_id",
+        "activity_id",
+        "layer_id",
+        "unit",
+        "value_g_per_unit",
+        "is_grid_indexed",
+        "electricity_kwh_per_unit",
+        "electricity_kwh_per_unit_low",
+        "electricity_kwh_per_unit_high",
+        "region",
+        "scope_boundary",
+        "gwp_horizon",
+        "vintage_year",
+        "source_id",
+        "method_notes",
+        "uncert_low_g_per_unit",
+        "uncert_high_g_per_unit"
+      ],
+      "provenance": {
+        "ef_id": "structural",
+        "sector_id": "structural",
+        "activity_id": "structural",
+        "layer_id": "structural",
+        "unit": "structural",
+        "value_g_per_unit": "external",
+        "is_grid_indexed": "structural",
+        "electricity_kwh_per_unit": "external",
+        "electricity_kwh_per_unit_low": "external",
+        "electricity_kwh_per_unit_high": "external",
+        "region": "external",
+        "scope_boundary": "external",
+        "gwp_horizon": "external",
+        "vintage_year": "external",
+        "source_id": "structural",
+        "method_notes": "modelled",
+        "uncert_low_g_per_unit": "external",
+        "uncert_high_g_per_unit": "external"
+      },
+      "sourceColumns": [
+        "source_id",
+        "method_notes"
+      ],
+      "derivedFrom": [
+        "emission_factors.csv:electricity_kwh_per_unit",
+        "grid_intensity.csv:g_per_kwh"
+      ],
+      "transport": "repository-csv",
+      "cadence": "release-gated",
+      "retention": "git-history",
+      "timestampPolicy": "none",
+      "nullPolicy": "blank",
+      "publicationSurfaces": [
+        "derive",
+        "web-calculator",
+        "web-catalog",
+        "web-sources",
+        "package"
+      ]
+    },
+    {
+      "streamId": "acx.entities",
+      "schemaVersion": "acx.entities/1-0-0",
+      "sourceOfTruth": "data/entities.csv",
+      "recordKey": [
+        "entity_id"
+      ],
+      "fieldOrder": [
+        "entity_id",
+        "name",
+        "type",
+        "parent_entity_id",
+        "notes"
+      ],
+      "provenance": {
+        "entity_id": "structural",
+        "name": "external",
+        "type": "structural",
+        "parent_entity_id": "structural",
+        "notes": "external"
+      },
+      "sourceColumns": [],
+      "derivedFrom": [],
+      "transport": "repository-csv",
+      "cadence": "release-gated",
+      "retention": "git-history",
+      "timestampPolicy": "none",
+      "nullPolicy": "blank",
+      "publicationSurfaces": [
+        "derive",
+        "web-catalog",
+        "package"
+      ]
+    },
+    {
+      "streamId": "acx.equity-benchmarks",
+      "schemaVersion": "acx.equity-benchmarks/1-0-0",
+      "sourceOfTruth": "data/equity_benchmarks.csv",
+      "recordKey": [
+        "entity_id",
+        "year"
+      ],
+      "fieldOrder": [
+        "entity_id",
+        "entity_name",
+        "entity_type",
+        "iso_code",
+        "population_millions",
+        "co2_per_capita_tonnes",
+        "co2_total_mt",
+        "consumption_co2_per_capita",
+        "production_co2_per_capita",
+        "year",
+        "source_id",
+        "notes"
+      ],
+      "provenance": {
+        "entity_id": "structural",
+        "entity_name": "external",
+        "entity_type": "structural",
+        "iso_code": "structural",
+        "population_millions": "external",
+        "co2_per_capita_tonnes": "derived",
+        "co2_total_mt": "external",
+        "consumption_co2_per_capita": "derived",
+        "production_co2_per_capita": "derived",
+        "year": "external",
+        "source_id": "structural",
+        "notes": "external"
+      },
+      "sourceColumns": [
+        "source_id"
+      ],
+      "derivedFrom": [
+        "equity_benchmarks.csv:co2_total_mt",
+        "equity_benchmarks.csv:population_millions"
+      ],
+      "transport": "repository-csv",
+      "cadence": "release-gated",
+      "retention": "git-history",
+      "timestampPolicy": "none",
+      "nullPolicy": "blank",
+      "publicationSurfaces": [
+        "web-catalog",
+        "web-sources",
+        "package"
+      ]
+    },
+    {
+      "streamId": "acx.feedback-loops",
+      "schemaVersion": "acx.feedback-loops/1-0-0",
+      "sourceOfTruth": "data/feedback_loops.csv",
+      "recordKey": [
+        "loop_id"
+      ],
+      "fieldOrder": [
+        "loop_id",
+        "trigger_activity_id",
+        "response_activity_id",
+        "sign",
+        "lag_years",
+        "strength",
+        "source_id",
+        "notes"
+      ],
+      "provenance": {
+        "loop_id": "structural",
+        "trigger_activity_id": "structural",
+        "response_activity_id": "structural",
+        "sign": "structural",
+        "lag_years": "modelled",
+        "strength": "modelled",
+        "source_id": "structural",
+        "notes": "modelled"
+      },
+      "sourceColumns": [
+        "source_id"
+      ],
+      "derivedFrom": [],
+      "transport": "repository-csv",
+      "cadence": "release-gated",
+      "retention": "git-history",
+      "timestampPolicy": "none",
+      "nullPolicy": "blank",
+      "publicationSurfaces": [
+        "web-catalog",
+        "web-sources",
+        "package"
+      ]
+    },
+    {
+      "streamId": "acx.functional-units",
+      "schemaVersion": "acx.functional-units/1-0-0",
+      "sourceOfTruth": "data/functional_units.csv",
+      "recordKey": [
+        "functional_unit_id"
+      ],
+      "fieldOrder": [
+        "functional_unit_id",
+        "name",
+        "domain",
+        "si_equiv",
+        "notes"
+      ],
+      "provenance": {
+        "functional_unit_id": "structural",
+        "name": "external",
+        "domain": "structural",
+        "si_equiv": "structural",
+        "notes": "external"
+      },
+      "sourceColumns": [],
+      "derivedFrom": [],
+      "transport": "repository-csv",
+      "cadence": "release-gated",
+      "retention": "git-history",
+      "timestampPolicy": "none",
+      "nullPolicy": "blank",
+      "publicationSurfaces": [
+        "derive",
+        "web-calculator",
+        "web-catalog",
+        "package"
+      ]
+    },
+    {
+      "streamId": "acx.grid-intensity",
+      "schemaVersion": "acx.grid-intensity/1-0-0",
+      "sourceOfTruth": "data/grid_intensity.csv",
+      "recordKey": [
+        "region_code",
+        "vintage_year"
+      ],
+      "fieldOrder": [
+        "region_code",
+        "region",
+        "scope_boundary",
+        "gwp_horizon",
+        "vintage_year",
+        "g_per_kwh",
+        "g_per_kwh_low",
+        "g_per_kwh_high",
+        "source_id"
+      ],
+      "provenance": {
+        "region_code": "structural",
+        "region": "structural",
+        "scope_boundary": "external",
+        "gwp_horizon": "external",
+        "vintage_year": "external",
+        "g_per_kwh": "external",
+        "g_per_kwh_low": "external",
+        "g_per_kwh_high": "external",
+        "source_id": "structural"
+      },
+      "sourceColumns": [
+        "source_id"
+      ],
+      "derivedFrom": [],
+      "transport": "repository-csv",
+      "cadence": "release-gated",
+      "retention": "git-history",
+      "timestampPolicy": "none",
+      "nullPolicy": "blank",
+      "publicationSurfaces": [
+        "derive",
+        "web-calculator",
+        "web-catalog",
+        "web-sources",
+        "package"
+      ]
+    },
+    {
+      "streamId": "acx.icons",
+      "schemaVersion": "acx.icons/1-0-0",
+      "sourceOfTruth": "data/icons.csv",
+      "recordKey": [
+        "icon_id"
+      ],
+      "fieldOrder": [
+        "icon_id",
+        "slug",
+        "layer_id",
+        "activity_id",
+        "description"
+      ],
+      "provenance": {
+        "icon_id": "structural",
+        "slug": "structural",
+        "layer_id": "structural",
+        "activity_id": "structural",
+        "description": "external"
+      },
+      "sourceColumns": [],
+      "derivedFrom": [],
+      "transport": "repository-csv",
+      "cadence": "release-gated",
+      "retention": "git-history",
+      "timestampPolicy": "none",
+      "nullPolicy": "blank",
+      "publicationSurfaces": [
+        "web-catalog",
+        "package"
+      ]
+    },
+    {
+      "streamId": "acx.layers",
+      "schemaVersion": "acx.layers/1-0-0",
+      "sourceOfTruth": "data/layers.csv",
+      "recordKey": [
+        "layer_id"
+      ],
+      "fieldOrder": [
+        "layer_id",
+        "layer_name",
+        "layer_type",
+        "description",
+        "ui_optional",
+        "icon_slug",
+        "example_activities"
+      ],
+      "provenance": {
+        "layer_id": "structural",
+        "layer_name": "external",
+        "layer_type": "structural",
+        "description": "external",
+        "ui_optional": "structural",
+        "icon_slug": "structural",
+        "example_activities": "external"
+      },
+      "sourceColumns": [],
+      "derivedFrom": [],
+      "transport": "repository-csv",
+      "cadence": "release-gated",
+      "retention": "git-history",
+      "timestampPolicy": "none",
+      "nullPolicy": "blank",
+      "publicationSurfaces": [
+        "web-catalog",
+        "package"
+      ]
+    },
+    {
+      "streamId": "acx.operations",
+      "schemaVersion": "acx.operations/1-0-0",
+      "sourceOfTruth": "data/operations.csv",
+      "recordKey": [
+        "operation_id"
+      ],
+      "fieldOrder": [
+        "operation_id",
+        "asset_id",
+        "activity_id",
+        "layer_id",
+        "functional_unit_id",
+        "utilization_basis",
+        "period_start",
+        "period_end",
+        "throughput_value",
+        "throughput_unit",
+        "notes"
+      ],
+      "provenance": {
+        "operation_id": "structural",
+        "asset_id": "structural",
+        "activity_id": "structural",
+        "layer_id": "structural",
+        "functional_unit_id": "structural",
+        "utilization_basis": "modelled",
+        "period_start": "external",
+        "period_end": "external",
+        "throughput_value": "modelled",
+        "throughput_unit": "structural",
+        "notes": "modelled"
+      },
+      "sourceColumns": [
+        "notes"
+      ],
+      "derivedFrom": [],
+      "transport": "repository-csv",
+      "cadence": "release-gated",
+      "retention": "git-history",
+      "timestampPolicy": "iso-date",
+      "nullPolicy": "blank",
+      "publicationSurfaces": [
+        "derive",
+        "web-catalog",
+        "package"
+      ]
+    },
+    {
+      "streamId": "acx.owid-source",
+      "schemaVersion": "acx.owid-source/1-0-0",
+      "sourceOfTruth": "data/owid/manifest.json",
+      "recordKey": [
+        "chartId",
+        "entityCode"
+      ],
+      "fieldOrder": [
+        "chartId",
+        "entityCode",
+        "provider",
+        "metric",
+        "dataUrl",
+        "metadataUrl",
+        "resolvedDataUrl",
+        "resolvedMetadataUrl",
+        "retrievedAt",
+        "upstreamTimespan",
+        "upstreamLastUpdated",
+        "license",
+        "accountingBasis",
+        "landUseChange",
+        "unit",
+        "entity",
+        "dataSha256",
+        "metadataSha256",
+        "citation",
+        "sourceId"
+      ],
+      "provenance": {
+        "chartId": "structural",
+        "entityCode": "structural",
+        "provider": "external",
+        "metric": "external",
+        "dataUrl": "external",
+        "metadataUrl": "external",
+        "resolvedDataUrl": "external",
+        "resolvedMetadataUrl": "external",
+        "retrievedAt": "external",
+        "upstreamTimespan": "external",
+        "upstreamLastUpdated": "external",
+        "license": "external",
+        "accountingBasis": "structural",
+        "landUseChange": "structural",
+        "unit": "structural",
+        "entity": "structural",
+        "dataSha256": "structural",
+        "metadataSha256": "structural",
+        "citation": "external",
+        "sourceId": "structural"
+      },
+      "sourceColumns": [
+        "sourceId"
+      ],
+      "derivedFrom": [
+        "owid/annual-co2-emissions-per-country.csv",
+        "owid/annual-co2-emissions-per-country.metadata.json"
+      ],
+      "transport": "repository-json",
+      "cadence": "manual-snapshot",
+      "retention": "git-history",
+      "timestampPolicy": "rfc3339-utc",
+      "nullPolicy": "blank",
+      "publicationSurfaces": [
+        "owid-context",
+        "web-sources",
+        "package"
+      ]
+    },
+    {
+      "streamId": "acx.profiles",
+      "schemaVersion": "acx.profiles/1-0-0",
+      "sourceOfTruth": "data/profiles.csv",
+      "recordKey": [
+        "profile_id"
+      ],
+      "fieldOrder": [
+        "profile_id",
+        "sector_id",
+        "layer_id",
+        "name",
+        "region_code_default",
+        "grid_strategy",
+        "grid_mix_json",
+        "cohort_id",
+        "office_days_per_week",
+        "assumption_notes"
+      ],
+      "provenance": {
+        "profile_id": "structural",
+        "sector_id": "structural",
+        "layer_id": "structural",
+        "name": "external",
+        "region_code_default": "structural",
+        "grid_strategy": "modelled",
+        "grid_mix_json": "modelled",
+        "cohort_id": "structural",
+        "office_days_per_week": "modelled",
+        "assumption_notes": "modelled"
+      },
+      "sourceColumns": [
+        "assumption_notes"
+      ],
+      "derivedFrom": [],
+      "transport": "repository-csv",
+      "cadence": "release-gated",
+      "retention": "git-history",
+      "timestampPolicy": "none",
+      "nullPolicy": "blank",
+      "publicationSurfaces": [
+        "derive",
+        "web-calculator",
+        "web-catalog",
+        "package"
+      ]
+    },
+    {
+      "streamId": "acx.sectors",
+      "schemaVersion": "acx.sectors/1-0-0",
+      "sourceOfTruth": "data/sectors.csv",
+      "recordKey": [
+        "sector_id"
+      ],
+      "fieldOrder": [
+        "sector_id",
+        "name",
+        "description"
+      ],
+      "provenance": {
+        "sector_id": "structural",
+        "name": "external",
+        "description": "external"
+      },
+      "sourceColumns": [],
+      "derivedFrom": [],
+      "transport": "repository-csv",
+      "cadence": "release-gated",
+      "retention": "git-history",
+      "timestampPolicy": "none",
+      "nullPolicy": "blank",
+      "publicationSurfaces": [
+        "derive",
+        "web-catalog",
+        "package"
+      ]
+    },
+    {
+      "streamId": "acx.sites",
+      "schemaVersion": "acx.sites/1-0-0",
+      "sourceOfTruth": "data/sites.csv",
+      "recordKey": [
+        "site_id"
+      ],
+      "fieldOrder": [
+        "site_id",
+        "entity_id",
+        "name",
+        "region_code",
+        "lat",
+        "lon",
+        "notes"
+      ],
+      "provenance": {
+        "site_id": "structural",
+        "entity_id": "structural",
+        "name": "external",
+        "region_code": "structural",
+        "lat": "external",
+        "lon": "external",
+        "notes": "external"
+      },
+      "sourceColumns": [],
+      "derivedFrom": [],
+      "transport": "repository-csv",
+      "cadence": "release-gated",
+      "retention": "git-history",
+      "timestampPolicy": "none",
+      "nullPolicy": "blank",
+      "publicationSurfaces": [
+        "derive",
+        "web-catalog",
+        "package"
+      ]
+    },
+    {
+      "streamId": "acx.sources",
+      "schemaVersion": "acx.sources/1-0-0",
+      "sourceOfTruth": "data/sources.csv",
+      "recordKey": [
+        "source_id"
+      ],
+      "fieldOrder": [
+        "source_id",
+        "ieee_citation",
+        "url",
+        "year",
+        "license",
+        "review_due_at"
+      ],
+      "provenance": {
+        "source_id": "structural",
+        "ieee_citation": "external",
+        "url": "external",
+        "year": "external",
+        "license": "external",
+        "review_due_at": "external"
+      },
+      "sourceColumns": [],
+      "derivedFrom": [],
+      "transport": "repository-csv",
+      "cadence": "release-gated",
+      "retention": "git-history",
+      "timestampPolicy": "iso-date",
+      "nullPolicy": "blank",
+      "publicationSurfaces": [
+        "web-sources",
+        "web-calculator",
+        "web-catalog",
+        "package"
+      ]
+    },
+    {
+      "streamId": "acx.units",
+      "schemaVersion": "acx.units/1-0-0",
+      "sourceOfTruth": "data/units.csv",
+      "recordKey": [
+        "unit_code"
+      ],
+      "fieldOrder": [
+        "unit_code",
+        "unit_type",
+        "si_conversion_factor",
+        "notes"
+      ],
+      "provenance": {
+        "unit_code": "structural",
+        "unit_type": "structural",
+        "si_conversion_factor": "derived",
+        "notes": "external"
+      },
+      "sourceColumns": [],
+      "derivedFrom": [],
+      "transport": "repository-csv",
+      "cadence": "release-gated",
+      "retention": "git-history",
+      "timestampPolicy": "none",
+      "nullPolicy": "blank",
+      "publicationSurfaces": [
+        "derive",
+        "web-calculator",
+        "web-catalog",
+        "package"
+      ]
+    }
+  ]
+}

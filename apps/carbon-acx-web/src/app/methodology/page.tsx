@@ -111,6 +111,9 @@ export default function MethodologyPage() {
           <div><dt className="metric-label">Generated</dt><dd className="font-mono text-sm">{CALCULATOR_DATASET.generatedAt}</dd></div>
           <div><dt className="metric-label">Published calculator activities</dt><dd className="font-mono text-sm">{ACTIVITIES.length}</dd></div>
         </dl>
+        <div className="mt-4">
+          <a className="text-link" href="/data/stream-catalog.json">Open the data-stream catalog</a>
+        </div>
       </section>
 
       <section id="benchmarks" className="surface-card reference-panel">

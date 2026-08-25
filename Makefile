@@ -62,9 +62,10 @@ build: data-audit
 WEB_CALCULATOR_DATA := apps/carbon-acx-web/src/generated/calculator-data.json
 WEB_CATALOG_DATA := apps/carbon-acx-web/src/generated/catalog-data.json
 WEB_SOURCES_DATA := apps/carbon-acx-web/src/generated/sources.json
+WEB_STREAM_CATALOG_DATA := apps/carbon-acx-web/src/generated/stream-catalog.json
 WEB_OWID_CONTEXT_DATA := apps/carbon-acx-web/src/generated/owid-context.json
 WEB_RELEASE_DATA := apps/carbon-acx-web/src/generated/release-data.json
-WEB_DATA_OUTPUTS := $(WEB_CALCULATOR_DATA) $(WEB_CATALOG_DATA) $(WEB_SOURCES_DATA) $(WEB_OWID_CONTEXT_DATA) $(WEB_RELEASE_DATA)
+WEB_DATA_OUTPUTS := $(WEB_CALCULATOR_DATA) $(WEB_CATALOG_DATA) $(WEB_SOURCES_DATA) $(WEB_STREAM_CATALOG_DATA) $(WEB_OWID_CONTEXT_DATA) $(WEB_RELEASE_DATA)
 OWID_SNAPSHOT_INPUTS := $(wildcard data/owid/manifest.json data/owid/annual-co2-emissions-per-country.csv data/owid/annual-co2-emissions-per-country.metadata.json)
 DATAFLOW_INPUTS := $(wildcard data/*.csv) $(wildcard refs/sources_manifest.csv)
 
