@@ -28,6 +28,8 @@
 
 /* Carbon ACX public system: paper, ink, oxidized green, signal orange. */
 :root {
+  --header-h: 4.5rem;
+  --bar-h: 3.375rem;
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -256,17 +258,6 @@ a {
   text-transform: uppercase;
 }
 
-.section-title {
-  margin-top: 0.4rem;
-  color: var(--ink);
-  font: 650 clamp(1.75rem, 2vw + 1.1rem, 2.5rem)/1.05 var(--font-display);
-}
-
-.section-copy {
-  color: var(--ink-muted);
-  line-height: 1.7;
-}
-
 /* The masthead is opaque and ruled; no glass treatment. */
 .site-header {
   position: sticky;
@@ -282,6 +273,8 @@ a {
   justify-content: space-between;
   gap: 1rem;
   padding-block: 0.8rem;
+  min-height: var(--header-h);
+  box-sizing: border-box;
 }
 
 .site-header__brand {
@@ -342,15 +335,19 @@ a {
   position: sticky;
   bottom: 0;
   z-index: 20;
+  height: var(--bar-h);
+  margin-top: 0;
   border-top: 1px solid var(--rule);
   background: var(--paper);
 }
 
 .reference-strip {
+  height: 100%;
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding-block: 1rem;
+  padding-block: 0;
   color: var(--ink-muted);
   font-size: 0.8rem;
 }
@@ -766,20 +763,6 @@ button.text-link:hover {
 }
 
 /* Calculator: compact category rail, activity shelf, basket line items. */
-.worksheet__intro,
-.atlas > header {
-  padding-block: 2.5rem;
-  border-top: 0;
-}
-
-.worksheet h1,
-.atlas h1 {
-  max-width: 16ch;
-  margin-top: 0.7rem;
-  font: 700 clamp(2.5rem, 5vw, 5rem)/0.92 var(--font-display);
-  letter-spacing: -0.05em;
-}
-
 .worksheet__groups,
 .mode-switcher {
   display: flex;
@@ -2359,20 +2342,6 @@ textarea:focus {
     grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
   }
 
-  /* Intro collapses to one ruled row above the panels. */
-  .worksheet__intro {
-    padding-block: 0.65rem;
-  }
-
-  .worksheet h1 {
-    font-size: var(--hero-size);
-    margin-top: 0.25rem;
-  }
-
-  .worksheet__intro > p:not(.section-kicker) {
-    max-width: 60ch;
-  }
-
   /* Basket header becomes one compact ruled row inside the worksheet panel. */
   .basket-header {
     padding-block: 0.65rem;
@@ -2413,12 +2382,7 @@ textarea:focus {
     padding-block: var(--gap-section);
   }
 
-  .site-footer {
-    margin-top: 0.75rem;
-  }
-
   .reference-strip {
-    padding-block: 0.55rem;
     font-size: 0.72rem;
   }
 
@@ -2458,33 +2422,6 @@ textarea:focus {
   /* App routes use the tight section rhythm everywhere above 1024px. */
   .editorial-page.app-stage {
     padding-block: var(--gap-section);
-  }
-
-  /* Header collapses to one ruled row with the lab link as its action. */
-  .atlas__intro {
-    display: flex;
-    align-items: end;
-    justify-content: space-between;
-    gap: var(--gap-panel);
-    padding-block: 0.65rem;
-  }
-
-  .atlas h1 {
-    font-size: var(--hero-size);
-    max-width: none;
-    margin-top: 0.25rem;
-  }
-
-  .atlas__intro p:not(.section-kicker):not(.atlas__lab-link) {
-    max-width: 60ch;
-  }
-
-  .atlas__lab-link {
-    margin: 0;
-    border-top: 0;
-    padding-top: 0;
-    flex: 0 0 auto;
-    white-space: nowrap;
   }
 
   .atlas__layout {
@@ -2571,9 +2508,8 @@ textarea:focus {
    Landscape only; the <=1023px band keeps today's stacked reading flow.
    ========================================================================== */
 @media (min-width: 1024px) {
-  /* Reading shells widen; per-element max-w-* utilities keep line length. */
+  /* Reading shells keep tight vertical rhythm; width is governed by app-stage. */
   .page-shell--reading {
-    width: min(100% - 2rem, 80rem);
     padding-block: 0.5rem var(--gap-section);
   }
 
@@ -2583,14 +2519,9 @@ textarea:focus {
     gap: var(--gap-panel);
     align-items: start;
     grid-template-areas:
-      'intro intro'
       'primer rail'
       'policies rail'
       'registry owid';
-  }
-
-  .methodology__intro {
-    grid-area: intro;
   }
 
   .methodology-layout > #primer {
@@ -2677,10 +2608,6 @@ textarea:focus {
   }
 
   /* Display titles on reading routes use the landscape hero scale too. */
-  .page-shell--reading .section-title {
-    font-size: var(--hero-size);
-  }
-
   .page-shell--reading .surface-card {
     padding: var(--gap-panel);
   }
@@ -2689,7 +2616,7 @@ textarea:focus {
   /* Wide references stay on the page but never drive master scroll. */
   .reference-scroll {
     max-height: min(22rem, 38vh);
-    overflow-y: auto;
+    overflow: auto;
     overscroll-behavior: contain;
     scrollbar-gutter: stable;
   }
@@ -2723,13 +2650,6 @@ textarea:focus {
     outline-offset: -3px;
   }
 
-  /* Tailwind's max-w-5xl/max-w-6xl utilities (max-width only) lose to a
-     declared width; keep the reading measure at the wider editorial shell
-     without fighting per-element line-length utilities. */
-  .page-shell--reading.max-w-5xl,
-  .page-shell--reading.max-w-6xl {
-    width: min(100% - 2rem, 80rem);
-  }
 
   /* OWID context card inside its grid cell becomes a dense record. */
   .methodology-layout > .methodology__owid .owid-context {
@@ -2834,5 +2754,118 @@ textarea:focus {
 
   .manifest-list .surface-card > div {
     gap: 0.5rem;
+  }
+}
+
+/* ============================================================================
+   Phase 6: normalized tab headerbar (status bar) on every non-home tab.
+   54px (var(--bar-h)), sticky directly below the topbar (var(--header-h)).
+   The former hero proclamations are distilled into the bar title + meta.
+   ========================================================================== */
+.tab-headerbar {
+  position: sticky;
+  top: var(--header-h);
+  z-index: 19;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  height: var(--bar-h);
+  padding-inline: 1rem;
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper);
+}
+
+.tab-headerbar__title {
+  flex: 0 0 auto;
+  color: var(--ink);
+  font: 650 0.95rem/1 var(--font-display);
+  letter-spacing: 0.01em;
+}
+
+.tab-headerbar__meta {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  color: var(--ink-muted);
+  font: 500 0.74rem/1.2 var(--font-mono);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tab-headerbar__meta strong {
+  color: var(--ink);
+  font-weight: 650;
+}
+
+.tab-headerbar__meta .text-link {
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .tab-headerbar__meta {
+    gap: 0.6rem;
+    font-size: 0.68rem;
+  }
+}
+
+
+
+/* Landscape app-stage for the reading tabs: full app-shell width, viewport
+   bounded, inner regions scroll. */
+@media (min-width: 1024px) {
+  .page-shell.app-stage,
+  .page-shell--reading.app-stage {
+    width: min(100% - 2rem, var(--app-shell-max));
+    padding-block: var(--gap-section);
+  }
+
+  /* Reading tabs: content grids absorb the freed hero space. */
+  .learning-layout {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .learning-layout > .learning-grid {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .manifests-page {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/* ============================================================================
+   Phase 6b: freed-viewport layouts for reading tabs.
+   ========================================================================== */
+@media (min-width: 1024px) {
+  .methodology-layout {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .learning-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: var(--gap-section);
+  }
+
+  .manifests-page > .manifest-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    align-content: start;
   }
 }

@@ -1,6 +1,7 @@
 'use client'
 import Link from 'next/link'
 
+import { TabHeader } from '@/components/layout/TabHeader'
 import { useMemo, useState } from 'react'
 import { EvidenceBadge, FactorRecordDetails } from '@/components/content'
 import { AtlasCoverageMap, AtlasModeIcon } from '@/components/viz/AtlasCoverageMap'
@@ -40,14 +41,16 @@ export default function ExplorePage() {
   const totalUnavailable = CATALOG_ACTIVITIES.length - totalPublished
   return (
     <div className="editorial-page atlas app-stage">
-      <header className="ruled-section atlas__intro">
-        <div>
-          <p className="section-kicker">Evidence catalogue</p>
-          <h1>Read activity factors in their proper layer.</h1>
-          <p>{CATALOG_ACTIVITIES.length} records: {totalPublished} published and {totalUnavailable} unavailable. Factor magnitudes cannot be compared across incompatible units.</p>
-        </div>
-        <p className="atlas__lab-link"><Link className="text-link text-link--primary" href="/explore/3d">Open experimental 3D activity lab</Link></p>
-      </header>
+      <TabHeader
+        title="Explore"
+        meta={
+          <>
+            <span>{modes.find((item) => item.id === mode)?.label}</span>
+            <span><strong>{filtered.length}</strong> of {CATALOG_ACTIVITIES.length} records</span>
+            <Link className="text-link" href="/explore/3d">3D lab →</Link>
+          </>
+        }
+      />
       <div className="atlas__layout">
         <div className="atlas__rail panel">
           <div className="panel__scroll" data-panel-scroll tabIndex={0} role="region" aria-label="Catalogue modes and filters">

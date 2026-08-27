@@ -1,21 +1,19 @@
 import Link from 'next/link'
-import { DataState, Eyebrow } from '@/components/content'
+import { DataState } from '@/components/content'
+import { TabHeader } from '@/components/layout/TabHeader'
 import { getManifests } from '@/lib/manifests'
 
 export default async function ManifestsPage() {
   const manifests = await getManifests()
 
   return (
-    <div className="page-shell max-w-5xl py-10 sm:py-14">
-      <Eyebrow>Evidence library</Eyebrow>
-      <h1 className="section-title">Static figure manifests.</h1>
-      <p className="section-copy mt-4 max-w-3xl">
-        Each record links a figure to a hash, build-reported invariance metadata, and source IDs. Open a record to
-        inspect raw static files or verify the downloaded figure bytes in your browser.
-      </p>
-
+    <div className="page-shell manifests-page app-stage">
+      <TabHeader
+        title="Evidence library"
+        meta={<span><strong>{manifests.length}</strong> figure manifests · static bytes, browser-verified</span>}
+      />
       {manifests.length === 0 ? (
-        <div className="mt-8"><DataState title="No manifests are packaged">Run <code>make build</code> before creating the static bundle.</DataState></div>
+        <div><DataState title="No manifests are packaged">Run <code>make build</code> before creating the static bundle.</DataState></div>
       ) : (
         <div className="manifest-list">
           {manifests.map((manifest) => (
@@ -27,7 +25,7 @@ export default async function ManifestsPage() {
                 </div>
                 <span className="font-mono text-xs text-[color:var(--accent-primary)]">{manifest.hash_prefix}</span>
               </div>
-              <p className="mt-3 text-sm text-foreground-muted">Generated {manifest.generated_at}. Open static metadata and raw artifact links →</p>
+              <p className="mt-3 text-sm text-foreground-muted">Generated {manifest.generated_at}. Open static metadata and raw artifact links &rarr;</p>
             </Link>
           ))}
         </div>

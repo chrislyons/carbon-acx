@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { ActivityMark } from '@/components/calculator/ActivityMark'
 import { ActivityShelf } from '@/components/calculator/ActivityShelf'
 import { ScenarioPane } from '@/components/calculator/ScenarioPane'
+import { TabHeader } from '@/components/layout/TabHeader'
 import { BenchmarkContext, DataState, EvidenceBadge, FactorRecordDetails } from '@/components/content'
 
 const ImpactComposition = dynamic(
@@ -169,12 +170,16 @@ function CalculatorContent() {
 
   return (
     <div className="editorial-page worksheet app-stage">
+      <TabHeader
+        title="Calculator"
+        meta={
+          <>
+            <span>Basket <strong>{selected.length}</strong></span>
+            {selected.length ? <span><strong>{formatEmissions(summary.totalEmissions)}</strong>/yr</span> : <span>empty</span>}
+          </>
+        }
+      />
       {shared ? <DataState title="Shared worksheet">Shared worksheet. These annual quantities remain editable.</DataState> : null}
-      <header className="ruled-section worksheet__intro">
-        <p className="section-kicker">Annual activity worksheet</p>
-        <h1>Build one understandable estimate.</h1>
-        <p>This is not a verified personal inventory. It is a transparent estimate from published activity factors.</p>
-      </header>
       <div className="calculator__columns">
         <div className="calculator__shelf panel">
           <div className="panel__scroll" data-panel-scroll tabIndex={0} role="region" aria-label="Published activity shelf">

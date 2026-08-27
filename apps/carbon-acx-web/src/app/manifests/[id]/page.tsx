@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Eyebrow, VerifyArtifactButton } from '@/components/content'
+import { TabHeader } from '@/components/layout/TabHeader'
 import { getAllManifestIds, getManifest, getManifests } from '@/lib/manifests'
 
 interface ManifestDetailPageProps {
@@ -22,13 +23,19 @@ export default async function ManifestDetailPage({ params }: ManifestDetailPageP
   const rawReferences = `/artifacts/${manifest.references.path}`
 
   return (
-    <div className="page-shell max-w-5xl py-10 sm:py-14">
-      <Link href="/manifests" className="quiet-link text-sm font-semibold text-[color:var(--accent-primary)]">← Evidence library</Link>
-      <div className="mt-5">
-        <Eyebrow>Static artifact manifest</Eyebrow>
-        <h1 className="section-title">{manifest.figure_id}</h1>
-        <p className="mt-3 text-foreground-muted">{manifest.figure_method} · generated {manifest.generated_at} · schema {manifest.schema_version}</p>
-      </div>
+
+    <div className="page-shell page-shell--reading app-stage">
+      <TabHeader
+        title={manifest.figure_id}
+        meta={
+          <>
+            <span>{manifest.figure_method}</span>
+            <span>generated {manifest.generated_at}</span>
+            <span>schema {manifest.schema_version}</span>
+          </>
+        }
+      />
+      <Link href="/manifests" className="quiet-link text-sm font-semibold text-[color:var(--accent-primary)]">&larr; Evidence library</Link>
 
       <section className="mt-8 grid gap-5 lg:grid-cols-2">
         <article className="surface-card">

@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { SourceList } from '@/components/content'
+import { TabHeader } from '@/components/layout/TabHeader'
 import {
+  ACTIVITIES,
   CATALOG_ACTIVITIES,
   calculateEmissions,
   encodeCalculatorInputs,
@@ -131,20 +133,24 @@ function LearningCard({
 
 export default function LearnPage() {
   return (
-    <div className="page-shell page-shell--reading max-w-6xl py-10 sm:py-14">
-      <p className="section-kicker">Learn</p>
-      <h1 className="section-title max-w-3xl">Read a carbon estimate from the record outward.</h1>
-      <p className="section-copy mt-4 max-w-3xl">
-        These three examples use only published Activity Atlas records. Each result keeps its unit, boundary,
-        geography, vintage, and source attached so the arithmetic can be inspected instead of treated as a universal
-        conversion.
-      </p>
-      <section className="learning-grid mt-8" aria-label="Published learning examples">
-        {CASE_STUDIES.map((study) => <LearningCard key={study.id} study={study} />)}
-      </section>
-      <div className="mt-8 flex flex-wrap gap-3">
-        <Link className="action-link" href="/methodology#primer">Read the six-question primer</Link>
-        <Link className="action-link" href="/explore">Browse the full Activity Atlas</Link>
+    <div className="page-shell page-shell--reading app-stage">
+      <TabHeader
+        title="Learn"
+        meta={
+          <>
+            <span><strong>{CASE_STUDIES.length}</strong> published examples</span>
+            <span>{ACTIVITIES.length} calculator records · {CATALOG_ACTIVITIES.length} atlas records</span>
+          </>
+        }
+      />
+      <div className="learning-layout">
+        <section className="learning-grid" aria-label="Published learning examples">
+          {CASE_STUDIES.map((study) => <LearningCard key={study.id} study={study} />)}
+        </section>
+        <div className="learning-actions">
+          <Link className="action-link" href="/methodology#primer">Read the six-question primer</Link>
+          <Link className="action-link" href="/explore">Browse the full Activity Atlas</Link>
+        </div>
       </div>
     </div>
   )

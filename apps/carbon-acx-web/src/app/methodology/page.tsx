@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import releaseDataJson from '@/generated/release-data.json'
 import { Disclosure, Eyebrow, OwidContextCard, SourceList } from '@/components/content'
+import { TabHeader } from '@/components/layout/TabHeader'
 import { ACTIVITIES, CALCULATOR_DATASET, calculateEmissions, encodeCalculatorInputs, formatEmissions, getActivityById, getBenchmarkOptions } from '@/lib/calculator'
 
 const sourcePairs = ACTIVITIES.flatMap((activity) =>
@@ -23,15 +24,16 @@ export default function MethodologyPage() {
   const benchmarks = getBenchmarkOptions()
 
   return (
-    <div className="page-shell page-shell--reading max-w-5xl py-10 sm:py-14">
-      <div className="methodology__intro">
-        <Eyebrow>How we know</Eyebrow>
-        <h1 className="section-title max-w-3xl">The published-data contract.</h1>
-        <p className="section-copy mt-4 max-w-3xl">
-          Carbon ACX derives its public calculator and Activity Atlas from canonical CSV records. A visitor-facing
-          estimate is only shown when its factor has a registered source, boundary, region, GWP horizon, and vintage.
-        </p>
-      </div>
+    <div className="page-shell page-shell--reading app-stage">
+      <TabHeader
+        title="Methodology"
+        meta={
+          <>
+            <span>Dataset <strong>{CALCULATOR_DATASET.schemaVersion}</strong></span>
+            <span>{ACTIVITIES.length} published activities</span>
+          </>
+        }
+      />
       <div className="methodology-layout">
       <section id="primer" className="surface-card primer-card">
         <div className="primer-scroll" data-panel-scroll tabIndex={0} role="region" aria-label="Six-question primer">

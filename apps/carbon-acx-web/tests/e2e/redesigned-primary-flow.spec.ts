@@ -79,7 +79,7 @@ test('methodology shows the offline OWID context and release links', async ({ pa
 test('learn route renders offline published case studies when OWID is unreachable', async ({ page }) => {
   await page.route('**/*ourworldindata.org/**', (route) => route.abort())
   await page.goto('/learn')
-  await expect(page.getByRole('heading', { name: 'Read a carbon estimate from the record outward.' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Learn', exact: true })).toBeVisible()
   await expect(page.getByText('Household school travel')).toBeVisible()
   await expect(page.getByText('Small-organization office area')).toBeVisible()
   await expect(page.getByText('Canadian-system electricity')).toBeVisible()
