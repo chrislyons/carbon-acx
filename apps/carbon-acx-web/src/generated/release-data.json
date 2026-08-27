@@ -1,7 +1,7 @@
 {
   "schemaVersion": "acx.public-release/1-1-0",
   "streamId": "acx.public-release",
-  "generatedAt": "2026-08-25T00:00:00+00:00",
+  "generatedAt": "2026-08-27T04:10:14+00:00",
   "inputs": {
     "data/activities.csv": "4f67bfe5eed8cd36211002dad914b4ea2af499f7c9850786766cd366fefc3eae",
     "data/activity_fu_map.csv": "5b3c3c248d1b815232b97b327ea163e3526d678b343fbc3756c20e6cb125c0c0",
@@ -37,33 +37,33 @@
     "calculator": {
       "schemaVersion": "acx.web-calculator/1-6-0",
       "path": "/data/calculator-data.json",
-      "sha256": "89dfdbb42e88b80c25411096ed0f6b7c1690de0c61b8d23802bda740844fa4ec"
+      "sha256": "67a45f19d589f1d2043a93ceb7fc38c81bff9c8b2d7445b6de8e7469a0eae964"
     },
     "catalog": {
       "schemaVersion": "acx.web-catalog/1-0-0",
       "path": "/data/catalog-data.json",
-      "sha256": "a4a6123d2114c5c4c6f200a35fba5eec6438c4a6e6a3845e536b839dd7cd4474"
+      "sha256": "7e21c26334ead27e236e79bb5952e6efb969b6606e40f921df9549bf4b19e447"
     },
     "sources": {
       "schemaVersion": "acx.web-sources/1-1-0",
       "path": "/data/sources.json",
-      "sha256": "01881111814f3c8aed9dba790cc2a30d3ec32f836b2f9dd0190100df60f098d1"
+      "sha256": "1bf9fdc67a87779681de7ac2e2340663fb7f358098f26db84d9217037408f20e"
     },
     "owidContext": {
       "schemaVersion": "acx.owid-context/1-1-0",
       "path": "/data/owid-context.json",
-      "sha256": "c2aaafc8796025dbb045b93d11b476986aca9b6267e7fc4154ce5b3bc37fa58d"
+      "sha256": "dd2de5a16187d4939c93c5e0fd12ad5ae1ec6d6e7355816aa320ac074f69bd21"
     },
     "streamCatalog": {
       "schemaVersion": "acx.stream-catalog/1-0-0",
       "path": "/data/stream-catalog.json",
-      "sha256": "336a7ee8b8d02a8b40cdb4fc3b9e3f19db46b7d237327a22f6fb46e8925b69c3"
+      "sha256": "f6603fce0ae05fe59b8405887b1c5b10c957596731e09fdc99c1dd2f33c9f0db"
     }
   },
   "sourceRegistryPath": "/data/sources.json",
   "owid": {
     "status": "available",
-    "contextSha256": "c2aaafc8796025dbb045b93d11b476986aca9b6267e7fc4154ce5b3bc37fa58d",
+    "contextSha256": "dd2de5a16187d4939c93c5e0fd12ad5ae1ec6d6e7355816aa320ac074f69bd21",
     "sourceManifestPath": "/data/owid/manifest.json",
     "sourceDataPath": "/data/owid/annual-co2-emissions-per-country.csv",
     "sourceMetadataPath": "/data/owid/annual-co2-emissions-per-country.metadata.json",

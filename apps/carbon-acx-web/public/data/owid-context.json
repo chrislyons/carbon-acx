@@ -2,7 +2,7 @@
   "schemaVersion": "acx.owid-context/1-1-0",
   "streamId": "acx.owid-context",
   "status": "available",
-  "generatedAt": "2026-08-25T00:00:00+00:00",
+  "generatedAt": "2026-08-27T04:10:14+00:00",
   "source": {
     "provider": "Our World in Data",
     "chartId": "annual-co2-emissions-per-country",
