@@ -72,7 +72,9 @@ function LearningCard({
     <article className="surface-card learning-card">
       <p className="section-kicker">{study.label}</p>
       <h2>{record.name}</h2>
-      <p>{record.description}</p>
+      <div className="reference-scroll" data-panel-scroll tabIndex={0} role="region" aria-label={`${record.name} description`}>
+        <p>{record.description}</p>
+      </div>
       {isUnavailable ? (
         <div className="data-state data-state--warning">
           <strong>Not available</strong>
@@ -88,7 +90,8 @@ function LearningCard({
           </p>
         </div>
       )}
-      <dl className="compact-reference-list learning-card__metadata">
+      <div className="reference-scroll" data-panel-scroll tabIndex={0} role="region" aria-label={`${record.name} provenance`}>
+        <dl className="compact-reference-list learning-card__metadata">
         <div>
           <dt>Boundary</dt>
           <dd>{record.evidence.scopeBoundary || 'Not specified'}</dd>
@@ -105,16 +108,19 @@ function LearningCard({
           <dt>Unit</dt>
           <dd>{record.unitDefinition || record.unitLabel}</dd>
         </div>
-      </dl>
-      <p className="text-sm">
-        Screening estimate only; this is not a verified inventory. Use this record only within its published unit,
-        geography, boundary, GWP horizon, and vintage. Incompatible units must not be compared.
-      </p>
-      <SourceList
-        sourceIds={record.evidence.sourceIds}
-        citations={record.evidence.sourceCitations}
-        urls={record.evidence.sourceUrls}
-      />
+        </dl>
+      </div>
+      <div className="reference-scroll" data-panel-scroll tabIndex={0} role="region" aria-label={`${record.name} sources`}>
+        <p className="text-sm">
+          Screening estimate only; this is not a verified inventory. Use this record only within its published unit,
+          geography, boundary, GWP horizon, and vintage. Incompatible units must not be compared.
+        </p>
+        <SourceList
+          sourceIds={record.evidence.sourceIds}
+          citations={record.evidence.sourceCitations}
+          urls={record.evidence.sourceUrls}
+        />
+      </div>
       {record.evidence.methodNotes ? <p className="text-sm">Method note: {record.evidence.methodNotes}</p> : null}
       <Link className="text-link text-link--primary" href={recordLink}>
         {calculatorRecord ? 'Open this record in the calculator' : 'Inspect this record in the Atlas'}

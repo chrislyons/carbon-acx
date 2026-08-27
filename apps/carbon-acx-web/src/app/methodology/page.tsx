@@ -24,14 +24,17 @@ export default function MethodologyPage() {
 
   return (
     <div className="page-shell page-shell--reading max-w-5xl py-10 sm:py-14">
-      <Eyebrow>How we know</Eyebrow>
-      <h1 className="section-title max-w-3xl">The published-data contract.</h1>
-      <p className="section-copy mt-4 max-w-3xl">
-        Carbon ACX derives its public calculator and Activity Atlas from canonical CSV records. A visitor-facing
-        estimate is only shown when its factor has a registered source, boundary, region, GWP horizon, and vintage.
-      </p>
-
+      <div className="methodology__intro">
+        <Eyebrow>How we know</Eyebrow>
+        <h1 className="section-title max-w-3xl">The published-data contract.</h1>
+        <p className="section-copy mt-4 max-w-3xl">
+          Carbon ACX derives its public calculator and Activity Atlas from canonical CSV records. A visitor-facing
+          estimate is only shown when its factor has a registered source, boundary, region, GWP horizon, and vintage.
+        </p>
+      </div>
+      <div className="methodology-layout">
       <section id="primer" className="surface-card primer-card">
+        <div className="primer-scroll" data-panel-scroll tabIndex={0} role="region" aria-label="Six-question primer">
         <h2>Learn how to read a carbon estimate</h2>
         <Disclosure summary="Open the six-question primer" open>
           <div className="primer-card__questions">
@@ -71,6 +74,7 @@ export default function MethodologyPage() {
             </div>
           </div>
         </Disclosure>
+        </div>
       </section>
 
       <div className="methodology-grid">
@@ -104,6 +108,7 @@ export default function MethodologyPage() {
         </section>
       </div>
 
+      <aside className="methodology-rail" data-panel-scroll tabIndex={0} role="region" aria-label="Data provenance">
       <section className="surface-card reference-panel">
         <Eyebrow>Generated metadata</Eyebrow>
         <dl className="mt-4 grid gap-4 sm:grid-cols-3">
@@ -137,13 +142,30 @@ export default function MethodologyPage() {
         </div>
       </section>
 
-      <section className="surface-card reference-panel">
+        <section className="surface-card reference-panel">
+          <Eyebrow>Static evidence artifacts</Eyebrow>
+          <p className="mt-3 text-foreground-muted">
+            Figures and their manifests are packaged with the static site. A manifest reports build metadata; the
+            browser verifier compares downloaded bytes against the published SHA-256 value.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Link className="action-link" href="/manifests">Open the Evidence library</Link>
+            <a className="action-link" href="/artifacts/" target="_blank" rel="noreferrer">Browse raw artifacts</a>
+          </div>
+          <Disclosure summary="Curation rule">
+            A factor must have a finite resolved value, matching activity unit, source registry citation, region,
+            scope boundary, GWP horizon, and vintage. Demo sources are rejected during generation.
+          </Disclosure>
+        </section>
+      </aside>
+
+      <section className="surface-card reference-panel methodology__registry">
         <Eyebrow>Source registry</Eyebrow>
         <p className="mt-3 text-foreground-muted">
           This ordered list is generated from published calculator records; it is not maintained separately in page
           copy. Every result displays the applicable subset.
         </p>
-        <div className="mt-4">
+        <div className="reference-scroll" data-panel-scroll tabIndex={0} role="region" aria-label="Source registry entries">
           <SourceList
             sourceIds={sourcePairs.map(([sourceId]) => sourceId)}
             citations={sourcePairs.map(([, citation]) => citation)}
@@ -152,9 +174,15 @@ export default function MethodologyPage() {
         </div>
       </section>
 
-      <section className="reference-panel">
+      <section
+        className="reference-panel methodology__owid"
+        data-panel-scroll
+        tabIndex={0}
+        role="region"
+        aria-label="Global emissions context"
+      >
         <OwidContextCard />
-        <div className="surface-card mt-4">
+        <div className="surface-card">
           <Eyebrow>Offline release metadata</Eyebrow>
           <p className="mt-3 text-foreground-muted">
             This context is released as checked-in static bytes. The release manifest records the input and authority
@@ -167,22 +195,7 @@ export default function MethodologyPage() {
           </dl>
         </div>
       </section>
-
-      <section className="surface-card reference-panel">
-        <Eyebrow>Static evidence artifacts</Eyebrow>
-        <p className="mt-3 text-foreground-muted">
-          Figures and their manifests are packaged with the static site. A manifest reports build metadata; the
-          browser verifier compares downloaded bytes against the published SHA-256 value.
-        </p>
-        <div className="mt-5 flex flex-wrap gap-3">
-          <Link className="action-link" href="/manifests">Open the Evidence library</Link>
-          <a className="action-link" href="/artifacts/" target="_blank" rel="noreferrer">Browse raw artifacts</a>
-        </div>
-        <Disclosure summary="Curation rule">
-          A factor must have a finite resolved value, matching activity unit, source registry citation, region,
-          scope boundary, GWP horizon, and vintage. Demo sources are rejected during generation.
-        </Disclosure>
-      </section>
+      </div>
     </div>
   )
 }

@@ -2564,3 +2564,244 @@ textarea:focus {
     grid-template-areas: 'rail matrix detail';
   }
 }
+
+/* ============================================================================
+   Phase 4: methodology two-column editorial grid + learn density.
+   Landscape only; the <=1023px band keeps today's stacked reading flow.
+   ========================================================================== */
+@media (min-width: 1024px) {
+  /* Reading shells widen; per-element max-w-* utilities keep line length. */
+  .page-shell--reading {
+    width: min(100% - 2rem, 80rem);
+    padding-block: 0.5rem var(--gap-section);
+  }
+
+  .methodology-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    gap: var(--gap-panel);
+    align-items: start;
+    grid-template-areas:
+      'intro intro'
+      'primer rail'
+      'policies rail'
+      'registry owid';
+  }
+
+  .methodology__intro {
+    grid-area: intro;
+  }
+
+  .methodology-layout > #primer {
+    grid-area: primer;
+  }
+
+  .methodology-layout > .methodology-grid {
+    grid-area: policies;
+  }
+
+  .methodology-layout > .methodology__registry {
+    grid-area: registry;
+  }
+
+  .methodology-layout > .methodology__owid {
+    grid-area: owid;
+  }
+
+  /* Provenance rail scrolls on its own so it never pushes the narrative. */
+  .methodology-rail {
+    grid-area: rail;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-panel);
+    max-height: calc(100vh - 14rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    padding: 1rem;
+    border: 1px solid var(--rule);
+    background: var(--background-elevated);
+  }
+
+  .methodology-rail:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: -3px;
+  }
+
+  .methodology-rail > .reference-panel {
+    margin-top: 0;
+  }
+
+  .reference-panel {
+    margin-top: var(--gap-section);
+  }
+
+  /* Learn density. */
+  .learning-grid {
+    gap: var(--gap-panel);
+  }
+
+  .learning-card h2 {
+    font-size: clamp(1.3rem, 2vw, 2.15rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  /* Four metadata rows become two columns of two inside each card. */
+  .learning-card__metadata {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.35rem 1rem;
+  }
+
+  .learning-card__metadata div {
+    border-top: 0;
+    padding-block: 0;
+  }
+}
+
+@media (min-width: 1024px) and (max-height: 820px) {
+  .learning-card h2 {
+    font-size: clamp(1.15rem, 1.7vw, 1.6rem);
+  }
+}
+
+/* ============================================================================
+   Phase 4b: reading-route bounded scroll + width corrections.
+   ========================================================================== */
+@media (min-width: 1024px) {
+  .primer-card__questions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  /* Display titles on reading routes use the landscape hero scale too. */
+  .page-shell--reading .section-title {
+    font-size: var(--hero-size);
+  }
+
+  .page-shell--reading .surface-card {
+    padding: var(--gap-panel);
+  }
+}
+@media (min-width: 1024px) {
+  /* Wide references stay on the page but never drive master scroll. */
+  .reference-scroll {
+    max-height: min(22rem, 38vh);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+  }
+
+  .primer-scroll {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+  }
+
+  .primer-scroll {
+    max-height: min(26vh, 22rem);
+  }
+
+  .methodology__owid,
+  .methodology__registry {
+    max-height: min(31vh, 26rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+  }
+
+  .methodology__owid:focus-visible,
+  .methodology__registry:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: -3px;
+  }
+
+  .reference-scroll:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: -3px;
+  }
+
+  /* Tailwind's max-w-5xl/max-w-6xl utilities (max-width only) lose to a
+     declared width; keep the reading measure at the wider editorial shell
+     without fighting per-element line-length utilities. */
+  .page-shell--reading.max-w-5xl,
+  .page-shell--reading.max-w-6xl {
+    width: min(100% - 2rem, 80rem);
+  }
+
+  /* OWID context card inside its grid cell becomes a dense record. */
+  .methodology-layout > .methodology__owid .owid-context {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 var(--gap-panel);
+    align-items: start;
+  }
+
+  .methodology-layout > .methodology__owid .owid-context > * {
+    margin-top: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  /* Cards are uniform link cards; bound their long internals so all three
+     share one screen without hiding anything. */
+  .learning-card > .reference-scroll {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    max-height: min(9.5vh, 5.5rem);
+  }
+
+  .learning-card > .reference-scroll:has(> .learning-card__metadata) {
+    max-height: min(10.5vh, 6.5rem);
+  }
+
+  .learning-card__metadata {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.35rem 1rem;
+    align-content: start;
+  }
+
+  .learning-card__metadata div {
+    border-top: 0;
+    padding-block: 0;
+  }
+
+  .learning-card h2 {
+    margin-block: 0.35rem;
+  }
+
+  .learning-card {
+    gap: 0.65rem;
+  }
+
+  .learning-card__arithmetic p {
+    font-size: 0.85rem;
+    line-height: 1.45;
+  }
+
+  .learning-grid.mt-8,
+  .learning-card + * ,
+  main > .page-shell--reading > .mt-8 {
+    margin-top: var(--gap-section);
+  }
+
+  .page-shell--reading .surface-card p {
+    line-height: 1.5;
+  }
+
+  .learning-card h2 {
+    font-size: clamp(1.15rem, 1.6vw, 1.55rem);
+  }
+
+  .methodology-layout > .methodology__registry,
+  .methodology-layout > .methodology__owid {
+    margin-top: 0;
+  }
+
+  .methodology-grid {
+    gap: calc(var(--gap-panel) * 0.6);
+  }
+}
