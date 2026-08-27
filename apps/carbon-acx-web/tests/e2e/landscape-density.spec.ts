@@ -81,7 +81,7 @@ for (const viewport of LANDSCAPE_VIEWPORTS) {
     }
 
     test('panel scroll regions are keyboard-focusable and named', async ({ page }) => {
-      await page.goto('/')
+      await page.goto('/calculator')
       await waitForRenderStability(page)
       const panels = await page.locator('[data-panel-scroll]').evaluateAll((els) =>
         els.map((el) => ({
