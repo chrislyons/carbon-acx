@@ -335,7 +335,10 @@ a {
   position: sticky;
   bottom: 0;
   z-index: 20;
+  flex: 0 0 auto;
   height: var(--bar-h);
+  min-height: var(--bar-h);
+  overflow: hidden;
   margin-top: 0;
   border-top: 1px solid var(--rule);
   background: var(--paper);
@@ -2766,11 +2769,14 @@ textarea:focus {
   position: sticky;
   top: var(--header-h);
   z-index: 19;
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
   height: var(--bar-h);
+  min-height: var(--bar-h);
+  overflow: hidden;
   padding-inline: 1rem;
   border-bottom: 1px solid var(--rule);
   background: var(--paper);
@@ -2779,7 +2785,7 @@ textarea:focus {
 .tab-headerbar__title {
   flex: 0 0 auto;
   color: var(--ink);
-  font: 650 0.95rem/1 var(--font-display);
+  font: 650 1.15rem/1 var(--font-display);
   letter-spacing: 0.01em;
 }
 
