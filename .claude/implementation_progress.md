@@ -80,3 +80,27 @@ Branch `feat/landscape-viewport-density`. Plan and acceptance ratios: landscape-
 - `pnpm --filter carbon-acx-web lint`, `typecheck`, `test` — 37 Vitest passed.
 - Full Playwright suite — 108/108 passed, incl. Axe (6 routes × light/dark × 2 viewports, serious/critical 0), 44px touch targets, 320×800/390×844 menu disclosure, reduced-motion 3D fallback, artifact verification.
 - Screenshot review (56 captures, 8 routes × 7 viewports): landscape compositions match plan; portrait band and mobile unchanged.
+
+## 2026-08-27 (2) — normalized tab status bars + full-viewport reading tabs
+
+Follow-up on the landscape sprint, same branch. Every non-home tab now opens with a normalized 54px `TabHeader` status bar (new `src/components/layout/TabHeader.tsx`), sticky directly under the topbar (`--header-h: 4.5rem`; topbar min-height normalized to match). Heroes are gone; the bar carries the tab title (page h1) plus live meta:
+
+- Calculator: basket count + annual total (kg CO₂e/yr) — updates as the basket is built.
+- Explore: active mode + filtered/total records + 3D lab link.
+- Learn / Methodology / Evidence library / 3D lab / manifest detail: counts, dataset schema, generation date, result status.
+
+Reading tabs (learn, methodology, manifests, manifest detail, 3D) are now `app-stage` routes: `max-w-5xl`/`max-w-6xl`/80rem constraints removed, shells span `--app-shell-max`, content grids are viewport-bounded with inner scrollers (`learning-layout`, `methodology-layout`, manifest list). Result: every tab renders at ratio ≈1.0–1.7 at all landscape viewports (learn 1.24→1.00 @1280×720; methodology 1.68→1.47; manifests 1.00) — vertical dead space eliminated on 14″-class displays.
+
+Footer normalized to the same 54px `--bar-h` (height-fixed, content vertically centered, margins removed).
+
+Band viewports (≤1023px) also received the tab bar (intentional normalization; heroes removed there too — phone ratios shortened accordingly).
+
+### Verification
+
+- Harness: landscape rows all ≤ target (`/` 1.05/1.00, calculator & explore & manifests & 3d & learn 1.00, methodology 1.47/1.3/1.32/1.19).
+- Full Playwright suite 108/108 (one spec updated: learn now asserts the tabbar title). Lint, typecheck, 37 Vitest green.
+- Overflow regression found & fixed: full-bleed negative-margin bar overhung the viewport 2px/side — bar is now shell-aligned; methodology rail table got `overflow: auto` wrapper.
+
+### Preview
+
+`node scripts/serve-static.mjs 4180 dist/site` — http://localhost:4180 (all routes 200).
