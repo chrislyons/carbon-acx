@@ -40,7 +40,8 @@ describe('OWID context', () => {
 
   it('does not invent a point or change for unavailable context', () => {
     const unavailable: OwidContextDataset = {
-      schemaVersion: 'acx.owid-context/1-0-0',
+      schemaVersion: 'acx.owid-context/1-1-0',
+      streamId: 'acx.owid-context',
       status: 'unavailable',
       generatedAt: '2026-08-04T22:15:00+00:00',
       source: null,

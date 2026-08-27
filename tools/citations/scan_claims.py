@@ -47,14 +47,29 @@ OUTPUT_VALUES = {
     "worker",
 }
 MANIFEST_COLUMNS = [
+    "stream_id",
     "dataset_path",
+    "schema_version",
     "record_key",
+    "transport",
+    "cadence",
+    "retention",
+    "timestamp_policy",
+    "null_policy",
     "provenance_columns",
     "source_columns",
     "derived_from",
     "publication_surfaces",
 ]
 ALLOWED_STATUSES = {"external", "derived", "modelled", "structural"}
+STREAM_ID_RE = re.compile(r"^acx\.[a-z0-9-]+$")
+SCHEMA_VERSION_RE = re.compile(r"^acx\.[a-z0-9-]+/\d+-\d+-\d+$")
+TRANSPORT_VALUES = {"repository-csv", "repository-json"}
+CADENCE_VALUES = {"release-gated", "manual-snapshot"}
+RETENTION_VALUES = {"git-history"}
+TIMESTAMP_POLICY_VALUES = {"none", "iso-date", "rfc3339-utc"}
+NULL_POLICY_VALUES = {"blank"}
+NONCANONICAL_NULLS = {"NULL", "N/A", "NA"}
 SOURCE_ID_RE = re.compile(r"\bSRC(?:\.[A-Za-z0-9_-]+)+")
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 REQUIRED_FIELDS = ["source_id", "vintage_year", "scope_boundary", "gwp_horizon", "region"]
@@ -137,17 +152,23 @@ class ScanReport:
 
 @dataclass(frozen=True)
 class ManifestSpec:
+    stream_id: str
     dataset_path: str
+    schema_version: str
+    transport: str
+    cadence: str
+    retention: str
+    timestamp_policy: str
+    null_policy: str
     record_fields: tuple[str, ...]
     provenance: Mapping[str, str]
     source_columns: tuple[str, ...]
+    derived_from: tuple[str, ...]
+    publication_surfaces: tuple[str, ...]
 
 
 def is_missing(value: str | None) -> bool:
-    if value is None:
-        return True
-    stripped = value.strip()
-    return stripped == "" or stripped.upper() in {"NULL", "N/A", "NA"}
+    return value is None or not value.strip()
 
 
 def parse_float(value: str | None) -> float | None:
@@ -216,23 +237,54 @@ def _parse_provenance(value: str, fields: Sequence[str]) -> tuple[dict[str, str]
     return provenance, errors
 
 
-def _load_manifest() -> tuple[list[ManifestSpec], list[str]]:
+def load_manifest_specs(manifest_path: Path) -> tuple[list[ManifestSpec], list[str]]:
+    """Load and validate the canonical data-stream declarations at ``manifest_path``."""
+
     errors: list[str] = []
-    if not MANIFEST_PATH.exists():
-        return [], [f"Missing manifest: {MANIFEST_PATH.relative_to(REPO_ROOT)}"]
-    with MANIFEST_PATH.open(newline="", encoding="utf-8") as handle:
+    if not manifest_path.exists():
+        return [], [f"Missing manifest: {_display_path(manifest_path)}"]
+    with manifest_path.open(newline="", encoding="utf-8") as handle:
         reader = csv.DictReader(handle)
         if reader.fieldnames != MANIFEST_COLUMNS:
             return [], ["Manifest header must be exactly " + ",".join(MANIFEST_COLUMNS)]
         raw_rows = list(reader)
     specs: list[ManifestSpec] = []
     seen_paths: set[str] = set()
+    seen_stream_ids: set[str] = set()
     for row_number, row in enumerate(raw_rows, start=2):
+        stream_id = (row.get("stream_id") or "").strip()
         dataset_path = (row.get("dataset_path") or "").strip()
+        schema_version = (row.get("schema_version") or "").strip()
         record_key = (row.get("record_key") or "").strip()
-        if not dataset_path or not record_key:
-            errors.append(f"Manifest row {row_number} has an empty dataset_path or record_key")
+        transport = (row.get("transport") or "").strip()
+        cadence = (row.get("cadence") or "").strip()
+        retention = (row.get("retention") or "").strip()
+        timestamp_policy = (row.get("timestamp_policy") or "").strip()
+        null_policy = (row.get("null_policy") or "").strip()
+        if not stream_id or not dataset_path or not schema_version or not record_key:
+            errors.append(f"Manifest row {row_number} has an empty required stream field")
             continue
+        if not STREAM_ID_RE.fullmatch(stream_id):
+            errors.append(f"Manifest row {row_number} has an invalid stream_id: {stream_id}")
+        if stream_id in seen_stream_ids:
+            errors.append(f"Duplicate manifest stream_id: {stream_id}")
+        seen_stream_ids.add(stream_id)
+        if not SCHEMA_VERSION_RE.fullmatch(schema_version):
+            errors.append(
+                f"Manifest row {row_number} has an invalid schema_version: {schema_version}"
+            )
+        if transport not in TRANSPORT_VALUES:
+            errors.append(f"Manifest row {row_number} has an invalid transport: {transport}")
+        if cadence not in CADENCE_VALUES:
+            errors.append(f"Manifest row {row_number} has an invalid cadence: {cadence}")
+        if retention not in RETENTION_VALUES:
+            errors.append(f"Manifest row {row_number} has an invalid retention: {retention}")
+        if timestamp_policy not in TIMESTAMP_POLICY_VALUES:
+            errors.append(
+                f"Manifest row {row_number} has an invalid timestamp_policy: {timestamp_policy}"
+            )
+        if null_policy not in NULL_POLICY_VALUES:
+            errors.append(f"Manifest row {row_number} has an invalid null_policy: {null_policy}")
         if dataset_path in seen_paths:
             errors.append(f"Duplicate manifest dataset_path: {dataset_path}")
         seen_paths.add(dataset_path)
@@ -247,15 +299,40 @@ def _load_manifest() -> tuple[list[ManifestSpec], list[str]]:
         source_columns = tuple(
             part.strip() for part in (row.get("source_columns") or "").split("|") if part.strip()
         )
+        derived_from = tuple(
+            part.strip() for part in (row.get("derived_from") or "").split("|") if part.strip()
+        )
+        publication_surfaces = tuple(
+            part.strip()
+            for part in (row.get("publication_surfaces") or "").split("|")
+            if part.strip()
+        )
+        if not publication_surfaces or any(
+            value not in OUTPUT_VALUES for value in publication_surfaces
+        ):
+            errors.append(f"Manifest row {row_number} has invalid publication_surfaces")
         specs.append(
             ManifestSpec(
+                stream_id=stream_id,
                 dataset_path=dataset_path,
+                schema_version=schema_version,
+                transport=transport,
+                cadence=cadence,
+                retention=retention,
+                timestamp_policy=timestamp_policy,
+                null_policy=null_policy,
                 record_fields=record_fields,
                 provenance=provenance,
                 source_columns=source_columns,
+                derived_from=derived_from,
+                publication_surfaces=publication_surfaces,
             )
         )
     return specs, errors
+
+
+def _load_manifest() -> tuple[list[ManifestSpec], list[str]]:
+    return load_manifest_specs(MANIFEST_PATH)
 
 
 def _registry_source_ids(as_of: date | None = None) -> tuple[set[str], list[str]]:
@@ -332,6 +409,10 @@ def _validate_rows(
         errors.append(
             f"{spec.dataset_path}: source fields missing from header: {', '.join(missing_sources)}"
         )
+    if list(fields) != list(spec.provenance):
+        errors.append(
+            f"{spec.dataset_path}: header must exactly match provenance_columns field order"
+        )
 
     seen_keys: dict[str, int] = {}
     for row, row_number in zip(rows, row_numbers):
@@ -339,7 +420,9 @@ def _validate_rows(
         key = "|".join(key_values)
         row_issues: list[str] = []
         if any(not value for value in key_values):
-            row_issues.append("record key contains an empty value")
+            message = f"{spec.dataset_path}:{key}: record key contains an empty value"
+            errors.append(message)
+            row_issues.append(message)
         if key in seen_keys:
             message = (
                 f"{spec.dataset_path}: duplicate record key '{key}' at rows "
@@ -349,6 +432,14 @@ def _validate_rows(
             row_issues.append(message)
         else:
             seen_keys[key] = row_number
+
+        for column, value in row.items():
+            if value.strip().upper() in NONCANONICAL_NULLS:
+                message = (
+                    f"{spec.dataset_path}:{key}: noncanonical null literal in {column}; use blank"
+                )
+                errors.append(message)
+                row_issues.append(message)
 
         for source_id in sorted(_source_ids(row, spec.source_columns)):
             if source_id not in source_ids:
@@ -381,19 +472,32 @@ def _validate_rows(
 
         if spec.dataset_path == "emission_factors.csv":
             required = [field for field in REQUIRED_FIELDS if is_missing(row.get(field))]
-            row_issues.extend(f"Missing required field: {field}" for field in required)
+            for field in required:
+                message = f"{spec.dataset_path}:{key}: missing required field: {field}"
+                errors.append(message)
+                row_issues.append(message)
             if (row.get("is_grid_indexed") or "").strip().lower() == "true":
                 for field in GRID_INDEXED_REQUIREMENTS:
                     if is_missing(row.get(field)):
-                        row_issues.append(f"Grid-indexed row missing required field: {field}")
-                if spec.provenance.get("value_g_per_unit") != "external":
-                    row_issues.append("Grid-indexed factor value must be classified as derived")
+                        message = (
+                            f"{spec.dataset_path}:{key}: grid-indexed row missing required field: "
+                            f"{field}"
+                        )
+                        errors.append(message)
+                        row_issues.append(message)
+                if not is_missing(row.get("value_g_per_unit")):
+                    message = (
+                        f"{spec.dataset_path}:{key}: grid-indexed row must leave "
+                        "value_g_per_unit blank because the published value is derived"
+                    )
+                    errors.append(message)
+                    row_issues.append(message)
         elif spec.dataset_path == "grid_intensity.csv":
-            row_issues.extend(
-                f"Missing required field: {field}"
-                for field in REQUIRED_FIELDS
-                if is_missing(row.get(field))
-            )
+            for field in REQUIRED_FIELDS:
+                if is_missing(row.get(field)):
+                    message = f"{spec.dataset_path}:{key}: missing required field: {field}"
+                    errors.append(message)
+                    row_issues.append(message)
 
         report.findings.append(
             RowFinding(

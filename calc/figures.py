@@ -11,7 +11,6 @@ from pathlib import Path
 import pandas as pd
 import yaml
 
-from .dal.aliases import coalesce_alias_columns, remap_columns
 from .schema import Activity, FeedbackLoop, LayerId
 
 CONFIG_PATH = Path(__file__).parent / "config.yaml"
@@ -186,8 +185,6 @@ def slice_stacked(
             "layer_id",
         ],
     ).copy()
-    frame = coalesce_alias_columns(frame)
-    frame = frame.rename(columns=remap_columns(frame.columns))
     has_sector = "sector" in frame.columns
     frame["activity_category"] = frame["activity_category"].map(_normalise_category)
     frame["layer_id"] = frame["layer_id"].map(_normalise_layer)
@@ -267,8 +264,6 @@ def slice_bubble(
             "layer_id",
         ],
     ).copy()
-    frame = coalesce_alias_columns(frame)
-    frame = frame.rename(columns=remap_columns(frame.columns))
     has_sector = "sector" in frame.columns
     frame["activity_name"] = frame.apply(
         lambda row: row["activity_name"] if row["activity_name"] else row["activity_id"],
@@ -373,8 +368,6 @@ def slice_sankey(
             "layer_id",
         ],
     ).copy()
-    frame = coalesce_alias_columns(frame)
-    frame = frame.rename(columns=remap_columns(frame.columns))
     has_sector = "sector" in frame.columns
     frame["activity_name"] = frame.apply(
         lambda row: row["activity_name"] if row["activity_name"] else row["activity_id"],

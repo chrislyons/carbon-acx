@@ -66,6 +66,10 @@ test('methodology shows the offline OWID context and release links', async ({ pa
     'href',
     '/data/release.json',
   )
+  await expect(page.getByRole('link', { name: 'Open the data-stream catalog' })).toHaveAttribute(
+    'href',
+    '/data/stream-catalog.json',
+  )
   await expect(page.locator('.owid-context a[href="/data/owid/annual-co2-emissions-per-country.csv"]')).toHaveCount(1)
   await expect(page.locator('.owid-context a[href="/data/owid/annual-co2-emissions-per-country.metadata.json"]')).toHaveCount(1)
   await expect(page.locator('.owid-context a[href="/data/owid/manifest.json"]')).toHaveCount(1)

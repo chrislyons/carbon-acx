@@ -17,7 +17,6 @@ from typing import Dict, List, Optional, Literal, Sequence, Set, Tuple
 import pandas as pd
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from functools import lru_cache
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
@@ -38,14 +37,7 @@ UNIT_REGISTRY = set(_units_df[_unit_column].dropna().astype(str))
 _csv_cache: Dict[Path, Tuple[int, pd.DataFrame]] = {}
 
 
-@lru_cache(maxsize=1)
-def _remap_record_func():
-    from .dal.aliases import remap_record as _remap_record
-
-    return _remap_record
-
-
-BASE_MODEL_CONFIG = ConfigDict(populate_by_name=True, extra="ignore")
+BASE_MODEL_CONFIG = ConfigDict(populate_by_name=True, extra="forbid")
 
 
 def _load_csv(path: Path, model: type[BaseModel]) -> tuple[BaseModel, ...]:
@@ -58,8 +50,7 @@ def _load_csv(path: Path, model: type[BaseModel]) -> tuple[BaseModel, ...]:
         df = df.where(pd.notnull(df), None)
         _csv_cache[path] = (mtime_ns, df)
         df = df.copy(deep=True)
-    remap = _remap_record_func()
-    records = (remap(row) for row in df.to_dict(orient="records"))
+    records = df.to_dict(orient="records")
     return tuple(model(**row) for row in records)
 
 
@@ -136,6 +127,9 @@ class Layer(BaseModel):
     layer_name: str
     layer_type: LayerType
     description: Optional[str] = None
+    ui_optional: Optional[bool] = None
+    icon_slug: Optional[str] = None
+    example_activities: Optional[str] = None
 
     model_config = BASE_MODEL_CONFIG
 
@@ -171,6 +165,7 @@ ScopeBoundary = Literal[
 
 class Activity(BaseModel):
     activity_id: str
+    sector_id: Optional[str] = None
     layer_id: LayerId
     category: Optional[str] = None
     name: Optional[str] = None
@@ -178,9 +173,6 @@ class Activity(BaseModel):
     description: Optional[str] = None
     unit_definition: Optional[str] = None
     notes: Optional[str] = None
-    sector: Optional[str] = Field(default=None, alias="segment")
-    sector_name: Optional[str] = Field(default=None, alias="segment_name")
-    sector_id: Optional[str] = Field(default=None, alias="segment_id")
 
     model_config = BASE_MODEL_CONFIG
 
@@ -232,6 +224,7 @@ class ActivityFunctionalUnitMap(BaseModel):
 
 class EmissionFactor(BaseModel):
     ef_id: Optional[str] = None
+    sector_id: Optional[str] = None
     activity_id: str
     layer_id: Optional[LayerId] = None
     unit: Optional[str] = None
@@ -307,6 +300,7 @@ class EmissionFactor(BaseModel):
 
 
 class Profile(BaseModel):
+    sector_id: Optional[str] = None
     profile_id: str
     layer_id: LayerId
     name: Optional[str] = None
@@ -392,6 +386,7 @@ class ActivitySchedule(BaseModel):
     profile_id: str
     activity_id: str
     layer_id: LayerId
+    sector_id: Optional[str] = None
     quantity_per_week: Optional[float] = None
     office_only: Optional[bool] = None
     freq_per_day: Optional[float] = None

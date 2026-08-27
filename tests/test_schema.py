@@ -132,3 +132,36 @@ def test_online_emission_factors_are_grid_indexed():
             assert ef.vintage_year <= current_year
         else:
             pytest.fail(f"Online EF for {ef.activity_id} is missing a vintage year")
+
+
+def test_canonical_source_models_load_every_declared_csv() -> None:
+    loaders = (
+        schema.load_layers,
+        schema.load_entities,
+        schema.load_sites,
+        schema.load_assets,
+        schema.load_operations,
+        schema.load_activity_dependencies,
+        schema.load_feedback_loops,
+        schema.load_emission_factors,
+        schema.load_profiles,
+        schema.load_activities,
+        schema.load_functional_units,
+        schema.load_activity_fu_map,
+        schema.load_activity_schedule,
+        schema.load_grid_intensity,
+    )
+
+    assert all(loader() for loader in loaders)
+
+
+def test_legacy_segment_fields_are_rejected() -> None:
+    Activity(
+        activity_id="canonical",
+        sector_id="SECTOR.PROFESSIONAL_SERVICES",
+        layer_id=LayerId.PROFESSIONAL,
+    )
+    with pytest.raises(ValidationError, match="segment_id"):
+        Activity(
+            activity_id="legacy", segment_id="SECTOR.PROFESSIONAL_SERVICES", layer_id="professional"
+        )

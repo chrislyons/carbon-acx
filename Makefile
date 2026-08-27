@@ -62,13 +62,14 @@ build: data-audit
 WEB_CALCULATOR_DATA := apps/carbon-acx-web/src/generated/calculator-data.json
 WEB_CATALOG_DATA := apps/carbon-acx-web/src/generated/catalog-data.json
 WEB_SOURCES_DATA := apps/carbon-acx-web/src/generated/sources.json
+WEB_STREAM_CATALOG_DATA := apps/carbon-acx-web/src/generated/stream-catalog.json
 WEB_OWID_CONTEXT_DATA := apps/carbon-acx-web/src/generated/owid-context.json
 WEB_RELEASE_DATA := apps/carbon-acx-web/src/generated/release-data.json
-WEB_DATA_OUTPUTS := $(WEB_CALCULATOR_DATA) $(WEB_CATALOG_DATA) $(WEB_SOURCES_DATA) $(WEB_OWID_CONTEXT_DATA) $(WEB_RELEASE_DATA)
+WEB_DATA_OUTPUTS := $(WEB_CALCULATOR_DATA) $(WEB_CATALOG_DATA) $(WEB_SOURCES_DATA) $(WEB_STREAM_CATALOG_DATA) $(WEB_OWID_CONTEXT_DATA) $(WEB_RELEASE_DATA)
 OWID_SNAPSHOT_INPUTS := $(wildcard data/owid/manifest.json data/owid/annual-co2-emissions-per-country.csv data/owid/annual-co2-emissions-per-country.metadata.json)
 DATAFLOW_INPUTS := $(wildcard data/*.csv) $(wildcard refs/sources_manifest.csv)
 
-$(WEB_DATA_OUTPUTS): $(DATAFLOW_INPUTS) $(OWID_SNAPSHOT_INPUTS) scripts/generate_web_calculator_data.py scripts/fetch_owid_context.py
+$(WEB_DATA_OUTPUTS): $(DATAFLOW_INPUTS) $(OWID_SNAPSHOT_INPUTS) scripts/generate_web_calculator_data.py scripts/fetch_owid_context.py tools/citations/scan_claims.py
 	python3 scripts/generate_web_calculator_data.py --repo-root "$$PWD" --output-root "$$PWD"
 
 owid-context-update:

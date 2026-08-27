@@ -125,6 +125,8 @@ export interface AiScenario {
 
 export interface AiScenarioDataset {
   schemaVersion: string
+  streamId: 'acx.ai-scenarios'
+  generatedAt: string
   records: AiScenario[]
 }
 
@@ -160,6 +162,7 @@ export interface Benchmark {
 
 export interface CalculatorDataset {
   schemaVersion: string
+  streamId: 'acx.web-calculator'
   generatedAt: string
   categories: Record<ActivityCategory, CategoryInfo>
   activities: Activity[]
@@ -168,6 +171,7 @@ export interface CalculatorDataset {
 
 export interface CatalogDataset {
   schemaVersion: string
+  streamId: 'acx.web-catalog'
   generatedAt: string
   activities: CatalogActivity[]
   aiScenarios: AiScenarioDataset
@@ -204,6 +208,7 @@ export interface OwidContextBasis {
 
 export interface OwidContextDataset {
   schemaVersion: string
+  streamId: 'acx.owid-context'
   status: 'available' | 'unavailable'
   generatedAt: string
   source: OwidContextSource | null
