@@ -2805,3 +2805,33 @@ textarea:focus {
     gap: calc(var(--gap-panel) * 0.6);
   }
 }
+
+/* ============================================================================
+   Phase 5: Evidence library grid (manifests). Uniform link cards become a
+   two-column grid on landscape; the band keeps the single column.
+   ========================================================================== */
+@media (min-width: 1024px) {
+  .manifest-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--gap-panel);
+    margin-top: var(--gap-section);
+  }
+
+  .manifest-list .surface-card {
+    padding: 0.8rem 0.9rem;
+  }
+
+  .manifest-list h2 {
+    font-size: 1rem;
+  }
+
+  .manifest-list .surface-card p {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin-top: 0.4rem;
+  }
+
+  .manifest-list .surface-card > div {
+    gap: 0.5rem;
+  }
+}
