@@ -36,7 +36,7 @@ function dump(label, els) {
   console.log('-- accounted:', Math.round(acc))
 }
 
-for (const [route, w, h] of [['/', 1600, 900], ['/', 1440, 900]]) {
+for (const [route, w, h] of [['/learn', 1280, 720], ['/methodology', 1440, 900]]) {
   const page = await browser.newPage({ viewport: { width: w, height: h } })
   await page.goto(base + route, { waitUntil: 'load' })
   await page.waitForTimeout(1200)
