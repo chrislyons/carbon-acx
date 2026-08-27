@@ -59,3 +59,24 @@ Branch `audit/data-stream-layer`. Full inventory, lineage, standards, migration,
 - OWID freshness remains an intentional maintainer-run snapshot operation; release builds are offline.
 - The external retrieval ledger verifies metadata when raw evidence is unavailable locally.
 - Derived artifacts retain stable and hashed paths pending a separately reviewed Dash/artifact-consumer migration.
+
+## 2026-08-27 — landscape viewport optimization (16:9 density)
+
+Branch `feat/landscape-viewport-density`. Plan and acceptance ratios: landscape-viewport-optimization plan; full panel/scroll system summary in `docs/acx/ACX112 Landscape Viewport Optimization.md`.
+
+- Added a shared landscape system to `apps/carbon-acx-web/src/app/globals.css`: density tokens (`--hero-size`, `--app-shell-max`, `--gap-panel`, vh-aware `--gap-section`), `app-stage` opt-in flex host (`main:has(> .app-stage)` + shell-wrapper cap), panel primitives (`.panel`, `.panel__scroll`, `[data-panel-scroll]` = tabindex/role/aria-label contract), documented breakpoint contract (≤700px mobile / 701–1023px portrait band untouched / ≥1024px landscape / ≥1200px three-column Atlas / ≥1680px ultrawide).
+- Home (CSS-only): hero → `--hero-size`, ImpactTrace SVG height capped (`min-height: 0` + vh clamp) so the chart letterboxes instead of driving scroll; jobs row icons merged into kicker row via grid; short-landscape footer slims to one reference line. Ratio 2.23 → 1.04 @1280×720.
+- Calculator: region wrappers `.calculator__columns` (shelf panel | worksheet panel), compact vertical category rail, 2-up activity shelf, `[data-panel-scroll]` regions ("Published activity shelf", "Activity basket worksheet"), `result-composition` sticky re-anchored to panel scroll, sankey render gate 640→480px (ImpactComposition) so the flow diagram renders in the narrower panel column. Ratio 3.15 → 1.00.
+- Explore: `atlas__layout` grid regions (rail | matrix | detail; ≥1200px three-column), vertical mode-switcher + stacked filters in rail panel, record matrix + collapsible table inside one center scroll region, detail pane panelized, lab link absorbed into header row. Ratio 4.32 → 1.00 @1280×720.
+- Methodology: `methodology-layout` editorial grid (intro / primer+policies left, provenance rail right, registry + OWID bottom pair), rail + wide references bounded with vh-capped inner scroll (`data-panel-scroll` regions), 3-col primer questions, wider `page-shell--reading` at ≥1024px. Ratio 5.87 → 1.68 @1280×720.
+- Learn: metadata dl → 2-col grid inside bounded wrapper, description/source scrollers, display titles on hero scale. Ratio 1.96 → 1.24 @1280×720.
+- Manifests: 2-col link-card grid at ≥1024px. Ratio 2.07 → 1.00 @1280×720.
+- Harness `scripts/measure-viewport-fit.mjs` (Playwright vs static export, 7 routes × 7 viewports, stability-gated) + baseline `scripts/viewport-fit-baseline.json`; screenshot capture `scripts/capture-viewport-screens.mjs`.
+- New e2e `tests/e2e/landscape-density.spec.ts`: per-route ratio targets at 1280/1440/1600/1920, no horizontal overflow, `[data-panel-scroll]` keyboard/naming contract, 44px touch targets at 1280×720. `playwright.config.ts` defaults untouched.
+
+### Verification
+
+- Harness: all acceptance targets met (`/` 1.04, calculator/explore/manifests 1.00, learn 1.24, methodology 1.68, 3d 1.00 @1280×720; 1440/1600/1920 rows green); zero horizontal overflow at every measured viewport; band viewports (720×1280, 844×390, 768×1024) within ±2% of baseline (learn/methodology ≤1.1% drift).
+- `pnpm --filter carbon-acx-web lint`, `typecheck`, `test` — 37 Vitest passed.
+- Full Playwright suite — 108/108 passed, incl. Axe (6 routes × light/dark × 2 viewports, serious/critical 0), 44px touch targets, 320×800/390×844 menu disclosure, reduced-motion 3D fallback, artifact verification.
+- Screenshot review (56 captures, 8 routes × 7 viewports): landscape compositions match plan; portrait band and mobile unchanged.
