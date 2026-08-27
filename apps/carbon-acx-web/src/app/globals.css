@@ -2425,3 +2425,142 @@ textarea:focus {
     gap: 0.75rem;
   }
 }
+
+/* ============================================================================
+   Phase 3: Activity Atlas regions (explore).
+   Base rules recreate the former .atlas__scan pairing for <1024px so the
+   portrait band keeps today's visual flow with the new markup; the landscape
+   media blocks re-region everything >=1024px.
+   ========================================================================== */
+.atlas__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(1.5rem, 4vw, 3rem);
+}
+
+.atlas__rail {
+  grid-column: 1 / -1;
+}
+
+.atlas__layout > * {
+  min-width: 0;
+}
+
+@media (max-width: 700px) {
+  .atlas__layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  /* App routes use the tight section rhythm everywhere above 1024px. */
+  .editorial-page.app-stage {
+    padding-block: var(--gap-section);
+  }
+
+  /* Header collapses to one ruled row with the lab link as its action. */
+  .atlas__intro {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: var(--gap-panel);
+    padding-block: 0.65rem;
+  }
+
+  .atlas h1 {
+    font-size: var(--hero-size);
+    max-width: none;
+    margin-top: 0.25rem;
+  }
+
+  .atlas__intro p:not(.section-kicker):not(.atlas__lab-link) {
+    max-width: 60ch;
+  }
+
+  .atlas__lab-link {
+    margin: 0;
+    border-top: 0;
+    padding-top: 0;
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .atlas__layout {
+    flex: 1 1 auto;
+    min-height: 0;
+    align-items: stretch;
+    grid-template-columns: minmax(13rem, 16rem) minmax(0, 1fr);
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      'rail matrix'
+      'rail detail';
+    gap: var(--gap-panel);
+  }
+
+  .atlas__rail {
+    grid-area: rail;
+  }
+
+  .atlas__center {
+    grid-area: matrix;
+  }
+
+  .atlas__detail {
+    grid-area: detail;
+  }
+
+  .atlas__layout > .panel {
+    min-height: 0;
+  }
+
+  .atlas__layout .panel__scroll {
+    flex: 1 1 auto;
+  }
+
+  /* Compact vertical catalogue rail. */
+  .atlas__rail .mode-switcher {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    margin-block: 0;
+    border: 0;
+    background: transparent;
+    gap: 2px;
+  }
+
+  .atlas__rail .mode-switcher button {
+    flex: 0 0 auto;
+  }
+
+  .atlas__rail .mode-switcher button span {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .atlas__rail .atlas__filters {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+    border-top: 1px solid var(--rule);
+    padding-top: 0.75rem;
+  }
+
+  /* Table opens inside the center scroll region. */
+  .atlas__table {
+    margin-top: 1.25rem;
+  }
+
+  .table-wrap {
+    max-height: 40vh;
+    overflow-y: auto;
+  }
+}
+
+@media (min-width: 1200px) {
+  .atlas__layout {
+    grid-template-columns: minmax(14rem, 17rem) minmax(0, 1fr) minmax(18rem, 23rem);
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-areas: 'rail matrix detail';
+  }
+}

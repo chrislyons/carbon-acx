@@ -39,36 +39,50 @@ export default function ExplorePage() {
   const totalPublished = CATALOG_ACTIVITIES.filter((record) => record.evidence.publicationStatus === 'published').length
   const totalUnavailable = CATALOG_ACTIVITIES.length - totalPublished
   return (
-    <div className="editorial-page atlas">
-      <header className="ruled-section">
-        <p className="section-kicker">Evidence catalogue</p>
-        <h1>Read activity factors in their proper layer.</h1>
-        <p>{CATALOG_ACTIVITIES.length} records: {totalPublished} published and {totalUnavailable} unavailable. Factor magnitudes cannot be compared across incompatible units.</p>
+    <div className="editorial-page atlas app-stage">
+      <header className="ruled-section atlas__intro">
+        <div>
+          <p className="section-kicker">Evidence catalogue</p>
+          <h1>Read activity factors in their proper layer.</h1>
+          <p>{CATALOG_ACTIVITIES.length} records: {totalPublished} published and {totalUnavailable} unavailable. Factor magnitudes cannot be compared across incompatible units.</p>
+        </div>
+        <p className="atlas__lab-link"><Link className="text-link text-link--primary" href="/explore/3d">Open experimental 3D activity lab</Link></p>
       </header>
-      <div className="mode-switcher" aria-label="Catalogue mode">
-        {modes.map((item) => (
-          <button key={item.id} type="button" aria-pressed={mode === item.id} className={mode === item.id ? 'is-selected' : ''} onClick={() => switchMode(item.id)}><AtlasModeIcon mode={item.id} /><strong>{item.label}</strong><span>{item.description}</span></button>
-        ))}
+      <div className="atlas__layout">
+        <div className="atlas__rail panel">
+          <div className="panel__scroll" data-panel-scroll tabIndex={0} role="region" aria-label="Catalogue modes and filters">
+            <div className="mode-switcher" aria-label="Catalogue mode">
+              {modes.map((item) => (
+                <button key={item.id} type="button" aria-pressed={mode === item.id} className={mode === item.id ? 'is-selected' : ''} onClick={() => switchMode(item.id)}><AtlasModeIcon mode={item.id} /><strong>{item.label}</strong><span>{item.description}</span></button>
+              ))}
+            </div>
+            <AtlasFilters
+              records={records}
+              categories={categories}
+              category={category}
+              region={region}
+              status={status}
+              setCategory={setCategory}
+              setRegion={setRegion}
+              setStatus={setStatus}
+            />
+          </div>
+        </div>
+        <section className="atlas__center panel">
+          <div className="panel__scroll" data-panel-scroll tabIndex={0} role="region" aria-label="Activity Atlas records">
+            <AtlasCoverageMap records={filtered} selectedId={selected?.id ?? null} onSelect={setSelected} />
+            <section className="ruled-section atlas__table">
+              <button type="button" className="text-link" aria-expanded={table} onClick={() => setTable((value) => !value)}>Data table</button>
+              {table ? <AtlasTable filtered={filtered} onSelect={setSelected} /> : null}
+            </section>
+          </div>
+        </section>
+        <aside className="atlas__detail panel">
+          <div className="panel__scroll" data-panel-scroll tabIndex={0} role="region" aria-label="Record detail">
+            <DetailPane record={selected} outsideFilters={Boolean(selected && !filtered.some((record) => record.id === selected.id))} />
+          </div>
+        </aside>
       </div>
-      <AtlasFilters
-        records={records}
-        categories={categories}
-        category={category}
-        region={region}
-        status={status}
-        setCategory={setCategory}
-        setRegion={setRegion}
-        setStatus={setStatus}
-      />
-      <div className="atlas__scan">
-        <AtlasCoverageMap records={filtered} selectedId={selected?.id ?? null} onSelect={setSelected} />
-        <DetailPane record={selected} outsideFilters={Boolean(selected && !filtered.some((record) => record.id === selected.id))} />
-      </div>
-      <section className="ruled-section atlas__table">
-        <button type="button" className="text-link" aria-expanded={table} onClick={() => setTable((value) => !value)}>Data table</button>
-        {table ? <AtlasTable filtered={filtered} onSelect={setSelected} /> : null}
-      </section>
-      <p className="atlas__lab-link"><Link className="text-link text-link--primary" href="/explore/3d">Open experimental 3D activity lab</Link></p>
     </div>
   )
 }
