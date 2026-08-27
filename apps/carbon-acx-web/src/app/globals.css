@@ -272,6 +272,8 @@ a {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+  width: 100%;
+  padding-inline: 1rem;
   padding-block: 0.8rem;
   min-height: var(--header-h);
   box-sizing: border-box;
@@ -345,11 +347,13 @@ a {
 }
 
 .reference-strip {
+  width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+  padding-inline: 1rem;
   padding-block: 0;
   color: var(--ink-muted);
   font-size: 0.8rem;
@@ -2424,7 +2428,7 @@ textarea:focus {
 @media (min-width: 1024px) {
   /* App routes use the tight section rhythm everywhere above 1024px. */
   .editorial-page.app-stage {
-    padding-block: var(--gap-section);
+    padding-block: 0 var(--gap-section);
   }
 
   .atlas__layout {
@@ -2767,7 +2771,7 @@ textarea:focus {
    ========================================================================== */
 .tab-headerbar {
   position: sticky;
-  top: var(--header-h);
+  top: calc(var(--header-h) + 1px);
   z-index: 19;
   flex: 0 0 auto;
   display: flex;
@@ -2826,7 +2830,7 @@ textarea:focus {
   .page-shell.app-stage,
   .page-shell--reading.app-stage {
     width: min(100% - 2rem, var(--app-shell-max));
-    padding-block: var(--gap-section);
+    padding-block: 0 var(--gap-section);
   }
 
   /* Reading tabs: content grids absorb the freed hero space. */
@@ -2857,6 +2861,10 @@ textarea:focus {
   .methodology-layout {
     flex: 1 1 auto;
     min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    align-content: start;
   }
 
   .learning-actions {
@@ -2873,5 +2881,14 @@ textarea:focus {
     overscroll-behavior: contain;
     scrollbar-gutter: stable;
     align-content: start;
+  }
+}
+
+/* App-stage routes scroll within the capped shell wrapper (not the document),
+   so the sticky topbar, tab status bar and footer all stay pinned while
+   bounded panels scroll inside. */
+@media (min-width: 1024px) {
+  .min-h-screen.flex-col:has(> main > .app-stage) {
+    overflow-y: auto;
   }
 }
