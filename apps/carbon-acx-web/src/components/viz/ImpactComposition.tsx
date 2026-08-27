@@ -28,7 +28,11 @@ export function ImpactComposition({
   const { ref, width } = useContainerWidth<HTMLDivElement>()
   const gradientPrefix = useId().replaceAll(':', '')
   const positionedFlow = useMemo<PositionedFlow | null>(() => {
-    if (width < 640 || !flow.links.length) return null
+    // The basket/result pair now lives inside a bounded worksheet panel, so
+    // the flow diagram's column is narrower than the old page-wide layout.
+    // 480px keeps three sankey columns legible; below that the ranked list
+    // alone remains the contribution view.
+    if (width < 480 || !flow.links.length) return null
 
     const height = Math.max(320, flow.nodes.length * 42)
     const layout = sankey<ImpactFlowNode, ImpactFlowLink>()

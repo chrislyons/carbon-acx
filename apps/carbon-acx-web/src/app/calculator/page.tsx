@@ -168,13 +168,16 @@ function CalculatorContent() {
   }
 
   return (
-    <div className="editorial-page worksheet">
+    <div className="editorial-page worksheet app-stage">
       {shared ? <DataState title="Shared worksheet">Shared worksheet. These annual quantities remain editable.</DataState> : null}
       <header className="ruled-section worksheet__intro">
         <p className="section-kicker">Annual activity worksheet</p>
         <h1>Build one understandable estimate.</h1>
         <p>This is not a verified personal inventory. It is a transparent estimate from published activity factors.</p>
       </header>
+      <div className="calculator__columns">
+        <div className="calculator__shelf panel">
+          <div className="panel__scroll" data-panel-scroll tabIndex={0} role="region" aria-label="Published activity shelf">
       <nav className="worksheet__groups" aria-label="Activity categories">
         {CATEGORIES.map((category) => (
           <button
@@ -191,6 +194,10 @@ function CalculatorContent() {
         ))}
       </nav>
       <ActivityShelf category={activeCategory} activities={activities} selectedIds={selectedIds} onAdd={add} />
+          </div>
+        </div>
+        <div className="calculator__worksheet panel">
+          <div className="panel__scroll" data-panel-scroll tabIndex={0} role="region" aria-label="Activity basket worksheet">
       <div className="basket-header ruled-section">
         <div>
           <p className="section-kicker">Selected activities</p>
@@ -233,6 +240,9 @@ function CalculatorContent() {
           close={closeEvidence}
         />
       ) : null}
+      </div>
+        </div>
+      </div>
       {summary.skipped.length ? (
         <DataState title="Inputs not included">Unavailable, unknown, invalid, or non-positive quantities are not included in the annual total.</DataState>
       ) : null}
