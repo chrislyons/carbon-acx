@@ -2075,3 +2075,114 @@ textarea:focus {
   border-top: 1px solid var(--rule);
   padding-top: 1rem;
 }
+
+/* ============================================================================
+   Landscape viewport system (Phase 1 — shared layout & spacing).
+
+   Breakpoint contract (owner-approved, 2026-08):
+   - <=700px     Mobile portrait cascade. Untouched: menu contract pinned by
+                 redesigned-primary-flow.spec at 320x800 / 390x844.
+   - 701-1023px  Portrait band (phones portrait AND rotated, tablets portrait).
+                 The 9x16 gold-standard zone: today's stacked flow stays
+                 byte-identical in behavior — no panel system, no hero
+                 compression.
+   - >=1024px    Landscape density system. App-stage composition, panel
+                 primitives and density tokens apply only inside the media
+                 blocks below; nothing here affects viewports <1024px.
+   - >=1200px    Three-column Atlas grid and methodology rail.
+   - (>=1024px, <=820px height) Short-landscape typographic compression.
+   - >=1680px    Ultrawide app-shell widening.
+
+   Opt-in contract: routes join by adding `app-stage` to their root element.
+   Reading routes (`/`, `/learn`, `/methodology`, `/manifests`) stay on plain
+   block flow. `[data-panel-scroll]` is the JSX contract for inner scroll:
+   every element carrying it must also set tabindex="0", role="region" and an
+   aria-label.
+
+   Browsers without :has() (pre-15.4 Safari) degrade to today's master-scroll
+   behavior by design — no polyfill.
+   ========================================================================== */
+
+:root {
+  --hero-size: clamp(2rem, 4.2vw, 3.4rem);
+  --shell-max: 87.5rem;
+  --app-shell-max: 112.5rem;
+  --gap-panel: clamp(0.9rem, 1.4vw, 1.5rem);
+  /* vh-aware so short landscape compresses vertical rhythm without a second code path. */
+  --gap-section: clamp(1rem, 2.2vh, 2.5rem);
+}
+
+@media (min-width: 1024px) and (max-height: 820px) {
+  :root {
+    --hero-size: clamp(1.7rem, 2.6vw, 2.4rem);
+    --gap-section: clamp(0.6rem, 1.6vh, 1.25rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  /* App-stage: viewport-fit without dvh math. main is already flex-1 inside
+     the min-h-screen flex-col shell, so when content fits, panels receive
+     exactly viewport - header - footer; taller content is contained by panel
+     scroll instead of master scroll. */
+  main:has(> .app-stage) {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .app-stage {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .app-stage__grid {
+    flex: 1 1 auto;
+    display: grid;
+    min-height: 0;
+  }
+
+  /* App routes widen their shell; reading routes keep line-length discipline. */
+  .editorial-page.app-stage,
+  .page-shell.app-stage {
+    width: min(100% - 2rem, var(--app-shell-max));
+  }
+
+  /* Panel primitives (landscape composition only; below 1024px these classes
+     are inert because no route renders them there). */
+  .panel {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    border: 1px solid var(--rule);
+    background: var(--background-elevated);
+  }
+
+  .panel__header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.65rem 1rem;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .panel__body {
+    padding: 1rem;
+    min-height: 0;
+  }
+
+  .panel__scroll {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    min-height: 0;
+    scrollbar-gutter: stable;
+    padding: 1rem;
+  }
+}
+
+@media (min-width: 1680px) {
+  :root {
+    --app-shell-max: 118rem;
+  }
+}
