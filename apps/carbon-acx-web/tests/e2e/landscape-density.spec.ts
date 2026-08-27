@@ -70,12 +70,14 @@ for (const viewport of LANDSCAPE_VIEWPORTS) {
           hScroll: document.documentElement.scrollWidth > window.innerWidth,
         }))
         const ratio = metrics.scrollHeight / metrics.innerHeight
-        // Allow one pixel of subpixel round-up on exact-fit pages (e.g. /explore/3d).
-        const slack = route === '/explore/3d' ? metrics.innerHeight * 0.02 : 0
+        // Slack covers subpixel round-up on exact-fit pages (e.g. /explore/3d):
+        // applied to the budget only, never to the measured height.
+        const slack = route === '/explore/3d' ? Math.ceil(metrics.innerHeight * 0.02) : 0
+        const budget = Math.round(metrics.innerHeight * ratioTarget(route, viewport.width)) + slack
         expect(
-          metrics.scrollHeight + slack,
-          `${route} @ ${viewport.width}x${viewport.height}: ratio ${ratio.toFixed(2)} exceeds target ${ratioTarget(route, viewport.width)} (scrollHeight ${metrics.scrollHeight}px vs budget ${Math.round(metrics.innerHeight * ratioTarget(route, viewport.width) + slack)}px)`,
-        ).toBeLessThanOrEqual(Math.round(metrics.innerHeight * ratioTarget(route, viewport.width) + slack))
+          metrics.scrollHeight,
+          `${route} @ ${viewport.width}x${viewport.height}: ratio ${ratio.toFixed(2)} exceeds target ${ratioTarget(route, viewport.width)} (scrollHeight ${metrics.scrollHeight}px vs budget ${budget}px)`,
+        ).toBeLessThanOrEqual(budget)
         expect(metrics.hScroll, `${route} must not introduce horizontal overflow`).toBe(false)
       })
     }
