@@ -69,7 +69,7 @@ WEB_DATA_OUTPUTS := $(WEB_CALCULATOR_DATA) $(WEB_CATALOG_DATA) $(WEB_SOURCES_DAT
 OWID_SNAPSHOT_INPUTS := $(wildcard data/owid/manifest.json data/owid/annual-co2-emissions-per-country.csv data/owid/annual-co2-emissions-per-country.metadata.json)
 DATAFLOW_INPUTS := $(wildcard data/*.csv) $(wildcard refs/sources_manifest.csv)
 
-$(WEB_DATA_OUTPUTS): $(DATAFLOW_INPUTS) $(OWID_SNAPSHOT_INPUTS) scripts/generate_web_calculator_data.py scripts/fetch_owid_context.py
+$(WEB_DATA_OUTPUTS): $(DATAFLOW_INPUTS) $(OWID_SNAPSHOT_INPUTS) scripts/generate_web_calculator_data.py scripts/fetch_owid_context.py tools/citations/scan_claims.py
 	python3 scripts/generate_web_calculator_data.py --repo-root "$$PWD" --output-root "$$PWD"
 
 owid-context-update:
