@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { ComponentType } from 'react'
 import { DataState, EvidenceBadge, Eyebrow, FactorRecordDetails } from '@/components/content'
 import { TabHeader } from '@/components/layout/TabHeader'
+import { TabFooter } from '@/components/layout/TabFooter'
 import { calculateEmissions, CATEGORY_INFO, formatEmissions, getActivityById, type CalculatorInput } from '@/lib/calculator'
 import type { Activity as VisualizationActivity, DataUniverseProps } from '@/components/viz/DataUniverse'
 const STORAGE_KEY = 'carbon-acx-calculator-inputs'
@@ -128,6 +129,16 @@ export default function ThreeDVisualizationPage() {
           ) : null}
         </>
       )}
+      <TabFooter>
+        <div className="tab-footerbar__group">
+          <span className="tab-footerbar__meta">
+            {summary.results.length ? <><strong>{summary.results.length}</strong> spheres rendered from published records</> : 'Reduced motion and canvas failure fall back to the 2D representation'}
+          </span>
+        </div>
+        <div className="tab-footerbar__group">
+          <Link className="text-link" href="/explore">Atlas records</Link>
+        </div>
+      </TabFooter>
     </div>
   )
 }

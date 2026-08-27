@@ -2,6 +2,7 @@
 import Link from 'next/link'
 
 import { TabHeader } from '@/components/layout/TabHeader'
+import { TabFooter } from '@/components/layout/TabFooter'
 import { useMemo, useState } from 'react'
 import { EvidenceBadge, FactorRecordDetails } from '@/components/content'
 import { AtlasCoverageMap, AtlasModeIcon } from '@/components/viz/AtlasCoverageMap'
@@ -86,6 +87,14 @@ export default function ExplorePage() {
           </div>
         </aside>
       </div>
+      <TabFooter>
+        <div className="tab-footerbar__group">
+          <span className="tab-footerbar__meta"><strong>{totalPublished}</strong> published · <strong>{totalUnavailable}</strong> unavailable</span>
+        </div>
+        <div className="tab-footerbar__group">
+          <span className="tab-footerbar__meta">Factor magnitudes cannot be compared across incompatible units</span>
+        </div>
+      </TabFooter>
     </div>
   )
 }

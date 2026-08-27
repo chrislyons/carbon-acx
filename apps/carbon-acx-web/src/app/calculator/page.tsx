@@ -6,6 +6,7 @@ import { ActivityMark } from '@/components/calculator/ActivityMark'
 import { ActivityShelf } from '@/components/calculator/ActivityShelf'
 import { ScenarioPane } from '@/components/calculator/ScenarioPane'
 import { TabHeader } from '@/components/layout/TabHeader'
+import { TabFooter } from '@/components/layout/TabFooter'
 import { BenchmarkContext, DataState, EvidenceBadge, FactorRecordDetails } from '@/components/content'
 
 const ImpactComposition = dynamic(
@@ -252,10 +253,17 @@ function CalculatorContent() {
         <DataState title="Inputs not included">Unavailable, unknown, invalid, or non-positive quantities are not included in the annual total.</DataState>
       ) : null}
       <p className="sr-only" aria-live="polite">{announcement}</p>
-      <footer className="worksheet__actions">
-        <button type="button" onClick={reset}>Clear worksheet</button>
-        <button type="button" onClick={copy}>{copied ? 'Link copied' : 'Copy link'}</button>
-      </footer>
+      <TabFooter>
+        <div className="tab-footerbar__group">
+          <button type="button" className="text-link" onClick={reset}>Clear worksheet</button>
+          <button type="button" className="text-link" onClick={copy}>{copied ? 'Link copied' : 'Copy link'}</button>
+        </div>
+        <div className="tab-footerbar__group">
+          <span className="tab-footerbar__meta">
+            {summary.skipped.length ? <><strong>{summary.skipped.length}</strong> input{summary.skipped.length > 1 ? 's' : ''} not included</> : 'All inputs counted'}
+          </span>
+        </div>
+      </TabFooter>
     </div>
   )
 }

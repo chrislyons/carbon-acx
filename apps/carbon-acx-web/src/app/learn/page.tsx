@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { SourceList } from '@/components/content'
 import { TabHeader } from '@/components/layout/TabHeader'
+import { TabFooter } from '@/components/layout/TabFooter'
 import {
   ACTIVITIES,
   CATALOG_ACTIVITIES,
@@ -147,11 +148,16 @@ export default function LearnPage() {
         <section className="learning-grid" aria-label="Published learning examples">
           {CASE_STUDIES.map((study) => <LearningCard key={study.id} study={study} />)}
         </section>
-        <div className="learning-actions">
-          <Link className="action-link" href="/methodology#primer">Read the six-question primer</Link>
-          <Link className="action-link" href="/explore">Browse the full Activity Atlas</Link>
-        </div>
       </div>
+      <TabFooter>
+        <div className="tab-footerbar__group">
+          <Link className="text-link" href="/methodology#primer">Six-question primer</Link>
+          <Link className="text-link" href="/explore">Browse the Atlas</Link>
+        </div>
+        <div className="tab-footerbar__group">
+          <span className="tab-footerbar__meta">Screening estimates only — not verified inventories</span>
+        </div>
+      </TabFooter>
     </div>
   )
 }

@@ -1079,8 +1079,7 @@ textarea:focus {
 }
 
 .activity-editor__actions button,
-.detail-pane > button,
-.worksheet__actions button {
+.detail-pane > button {
   min-height: 44px;
   border: 1px solid var(--rule);
   border-radius: 0;
@@ -1096,18 +1095,9 @@ textarea:focus {
 }
 
 .activity-editor__actions button:hover,
-.detail-pane > button:hover,
-.worksheet__actions button:hover {
+.detail-pane > button:hover {
   border-color: var(--oxide);
   background: var(--background-hover);
-}
-
-.worksheet__actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 2rem;
 }
 
 .result-composition {
@@ -1833,7 +1823,6 @@ textarea:focus {
 .mode-switcher button,
 .activity-tile__add,
 .activity-editor__actions button,
-.worksheet__actions button,
 .data-matrix__group button,
 .atlas-record,
 .atlas__table > button,
@@ -1983,15 +1972,6 @@ textarea:focus {
   .owid-context__basis div {
     grid-template-columns: 1fr;
     gap: 0.2rem;
-  }
-
-  .worksheet__actions {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .worksheet__actions button {
-    width: 100%;
   }
 
   .data-matrix__group header {
@@ -2428,7 +2408,7 @@ textarea:focus {
 @media (min-width: 1024px) {
   /* App routes use the tight section rhythm everywhere above 1024px. */
   .editorial-page.app-stage {
-    padding-block: 0 var(--gap-section);
+    padding-block: 0;
   }
 
   .atlas__layout {
@@ -2830,7 +2810,7 @@ textarea:focus {
   .page-shell.app-stage,
   .page-shell--reading.app-stage {
     width: min(100% - 2rem, var(--app-shell-max));
-    padding-block: 0 var(--gap-section);
+    padding-block: 0;
   }
 
   /* Reading tabs: content grids absorb the freed hero space. */
@@ -2867,13 +2847,6 @@ textarea:focus {
     align-content: start;
   }
 
-  .learning-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    margin-top: var(--gap-section);
-  }
-
   .manifests-page > .manifest-list {
     flex: 1 1 auto;
     min-height: 0;
@@ -2890,5 +2863,80 @@ textarea:focus {
 @media (min-width: 1024px) {
   .min-h-screen.flex-col:has(> main > .app-stage) {
     overflow-y: auto;
+  }
+}
+
+/* ============================================================================
+   Phase 7: tab footerbar — per-tab utility area mirroring the tab headerbar.
+   54px, sticky above the site footer bottombar; replaces bottom CTA blocks.
+   ========================================================================== */
+.tab-footerbar {
+  position: sticky;
+  bottom: calc(var(--bar-h) + 1px);
+  z-index: 19;
+  flex: 0 0 auto;
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  height: var(--bar-h);
+  min-height: var(--bar-h);
+  overflow: hidden;
+  padding-inline: 1rem;
+  border-top: 1px solid var(--rule);
+  background: var(--paper);
+}
+
+.tab-footerbar__group {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 1rem;
+}
+
+.tab-footerbar__meta {
+  color: var(--ink-muted);
+  font: 500 0.74rem/1.2 var(--font-mono);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tab-footerbar__meta strong {
+  color: var(--ink);
+  font-weight: 650;
+}
+
+/* Actions keep the app-wide 44px touch-target contract inside the 54px bar,
+   rendered as clean underlined text (no boxed buttons). */
+.tab-footerbar button,
+.tab-footerbar .text-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0;
+}
+
+.tab-footerbar button.text-link {
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  border-radius: 0;
+  background: transparent;
+  font: 700 0.9rem/1.2 var(--font-sans);
+}
+
+.tab-footerbar button.text-link:hover {
+  border-bottom-color: var(--signal);
+  background: transparent;
+}
+
+@media (max-width: 700px) {
+  .tab-footerbar__group {
+    gap: 0.6rem;
+  }
+
+  .tab-footerbar__meta {
+    font-size: 0.68rem;
   }
 }

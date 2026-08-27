@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { DataState } from '@/components/content'
 import { TabHeader } from '@/components/layout/TabHeader'
+import { TabFooter } from '@/components/layout/TabFooter'
 import { getManifests } from '@/lib/manifests'
 
 export default async function ManifestsPage() {
@@ -30,6 +31,14 @@ export default async function ManifestsPage() {
           ))}
         </div>
       )}
+      <TabFooter>
+        <div className="tab-footerbar__group">
+          <span className="tab-footerbar__meta"><strong>{manifests.length}</strong> manifests · SHA-256 verified in your browser</span>
+        </div>
+        <div className="tab-footerbar__group">
+          <a className="text-link" href="/artifacts/" target="_blank" rel="noreferrer">Browse raw artifacts</a>
+        </div>
+      </TabFooter>
     </div>
   )
 }

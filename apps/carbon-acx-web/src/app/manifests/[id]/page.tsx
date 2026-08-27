@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Eyebrow, VerifyArtifactButton } from '@/components/content'
 import { TabHeader } from '@/components/layout/TabHeader'
+import { TabFooter } from '@/components/layout/TabFooter'
 import { getAllManifestIds, getManifest, getManifests } from '@/lib/manifests'
 
 interface ManifestDetailPageProps {
@@ -82,6 +83,11 @@ export default async function ManifestDetailPage({ params }: ManifestDetailPageP
           <div><dt className="metric-label">Reference lines</dt><dd>{manifest.references.line_count}</dd></div>
         </dl>
       </section>
+      <TabFooter>
+        <div className="tab-footerbar__group">
+          <span className="tab-footerbar__meta">SHA-256 <strong>{manifest.hash_prefix}</strong> · {manifest.figure_path}</span>
+        </div>
+      </TabFooter>
     </div>
   )
 }

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import releaseDataJson from '@/generated/release-data.json'
 import { Disclosure, Eyebrow, OwidContextCard, SourceList } from '@/components/content'
 import { TabHeader } from '@/components/layout/TabHeader'
+import { TabFooter } from '@/components/layout/TabFooter'
 import { ACTIVITIES, CALCULATOR_DATASET, calculateEmissions, encodeCalculatorInputs, formatEmissions, getActivityById, getBenchmarkOptions } from '@/lib/calculator'
 
 const sourcePairs = ACTIVITIES.flatMap((activity) =>
@@ -161,7 +162,7 @@ export default function MethodologyPage() {
         </section>
       </aside>
 
-      <section className="surface-card reference-panel methodology__registry">
+      <section id="registry" className="surface-card reference-panel methodology__registry">
         <Eyebrow>Source registry</Eyebrow>
         <p className="mt-3 text-foreground-muted">
           This ordered list is generated from published calculator records; it is not maintained separately in page
@@ -198,6 +199,16 @@ export default function MethodologyPage() {
         </div>
       </section>
       </div>
+      <TabFooter>
+        <div className="tab-footerbar__group">
+          <a className="text-link" href="#primer">Primer</a>
+          <a className="text-link" href="#benchmarks">Benchmarks</a>
+          <a className="text-link" href="#registry">Registry</a>
+        </div>
+        <div className="tab-footerbar__group">
+          <span className="tab-footerbar__meta">Generated <strong>{releaseDataJson.generatedAt}</strong></span>
+        </div>
+      </TabFooter>
     </div>
   )
 }
