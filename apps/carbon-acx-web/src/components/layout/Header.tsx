@@ -16,6 +16,27 @@ export function Header() {
     setMobileMenuOpen(false)
   }, [pathname])
 
+  // Number-key navigation: 1-5 jump to the primary nav destinations in DOM
+  // order. Ignored while typing in form fields or with modifier keys held, so
+  // calculator inputs keep their digits.
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.metaKey || event.ctrlKey || event.altKey) return
+      const target = event.target as HTMLElement | null
+      if (target?.closest('input, textarea, select, [contenteditable="true"]')) return
+      const index = Number(event.key) - 1
+      if (!Number.isInteger(index) || index < 0 || index >= links.length) return
+      const nav = document.querySelector<HTMLElement>('nav[aria-label="Primary"]')
+      const link = nav?.querySelectorAll<HTMLElement>('a')[index]
+      if (!link) return
+      event.preventDefault()
+      link.click()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [])
+
+
   return (
     <header className="site-header">
       <div className="page-shell site-header__inner">

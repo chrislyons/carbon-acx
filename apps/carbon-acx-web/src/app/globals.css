@@ -286,15 +286,14 @@ a {
 
 .site-header__brand {
   color: var(--ink);
-  font: 700 1.15rem/1 var(--font-display);
+  font: 700 1.2rem/1 var(--font-display);
 }
 
 .site-header__brand span {
   display: block;
   margin-top: 0.25rem;
   color: var(--ink-muted);
-  font: 500 0.64rem/1 var(--font-mono);
-  letter-spacing: 0.05em;
+  font: 300 0.63rem/1 var(--font-mono);
   text-transform: uppercase;
 }
 
@@ -340,7 +339,9 @@ a {
 }
 
 .site-footer {
-  margin-top: 3rem;
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
   border-top: 1px solid var(--rule);
   background: var(--paper);
 }
