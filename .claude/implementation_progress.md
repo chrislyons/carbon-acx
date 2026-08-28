@@ -130,3 +130,9 @@ http://localhost:4180 — `node scripts/serve-static.mjs 4180 dist/site`
 ### Preview
 
 http://localhost:4180 — `node scripts/serve-static.mjs 4180 dist/site`
+
+## 2026-08-27 (5) — unit abbreviation in callouts
+
+- New `src/lib/units.ts`: `abbreviateUnit()` — meaning-preserving unit map applied at render (passenger-kilometres→pkm, square metre-years→m²·yr, kilowatt-hours→kWh, kilometres→km, cubic/square metres→m³/m², hours→h, years→yr, "per year"→"/yr"; garments/servings/units unchanged).
+- Applied at every unit render site: methodology primer equation, Learn worked arithmetic (both branches), FactorRecordDetails uncertainty range + worked equation, Calculator "Annual quantity (…)" labels, ScenarioPane per-year quantities, Explore detail pane. Generated dataset JSON unchanged (display-layer only).
+- Spec equations updated to abbreviated forms. Full e2e 108/108.
