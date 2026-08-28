@@ -1,5 +1,5 @@
 import Link from 'next/link'
 
 export function Footer() {
-  return <footer className="site-footer"><div className="page-shell reference-strip"><span>Carbon ACX · published factors and static artifacts</span><nav aria-label="Reference"><Link href="/methodology">Methodology</Link><Link href="/manifests">Evidence library</Link><a href="/artifacts/">Raw artifacts</a><a href="https://github.com/chrislyons/carbon-acx" target="_blank" rel="noopener noreferrer">Repository</a></nav></div></footer>
+  return <footer className="site-footer"><div className="page-shell reference-strip"><span>Carbon ACX · published factors and static artifacts</span><nav aria-label="Reference"><Link href="/methodology">Methodology</Link><Link href="/evidence">Evidence</Link><a href="/artifacts/">Raw artifacts</a><a href="https://github.com/chrislyons/carbon-acx" target="_blank" rel="noopener noreferrer">Repository</a></nav></div></footer>
 }

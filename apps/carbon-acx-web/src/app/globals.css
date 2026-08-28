@@ -2512,58 +2512,6 @@ textarea:focus {
     padding-block: 0.5rem var(--gap-section);
   }
 
-  .methodology-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
-    gap: var(--gap-panel);
-    align-items: start;
-    grid-template-areas:
-      'primer rail'
-      'policies rail'
-      'registry owid';
-  }
-
-  .methodology-layout > #primer {
-    grid-area: primer;
-  }
-
-  .methodology-layout > .methodology-grid {
-    grid-area: policies;
-  }
-
-  .methodology-layout > .methodology__registry {
-    grid-area: registry;
-  }
-
-  .methodology-layout > .methodology__owid {
-    grid-area: owid;
-  }
-
-  /* Provenance rail scrolls on its own so it never pushes the narrative. */
-  .methodology-rail {
-    grid-area: rail;
-    align-self: stretch;
-    display: flex;
-    flex-direction: column;
-    gap: var(--gap-panel);
-    max-height: calc(100vh - 14rem);
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    scrollbar-gutter: stable;
-    padding: 1rem;
-    border: 1px solid var(--rule);
-    background: var(--background-elevated);
-  }
-
-  .methodology-rail:focus-visible {
-    outline: 3px solid var(--focus-ring);
-    outline-offset: -3px;
-  }
-
-  .methodology-rail > .reference-panel {
-    margin-top: 0;
-  }
-
   .reference-panel {
     margin-top: var(--gap-section);
   }
@@ -2726,11 +2674,6 @@ textarea:focus {
     font-size: clamp(1.15rem, 1.6vw, 1.55rem);
   }
 
-  .methodology-layout > .methodology__registry,
-  .methodology-layout > .methodology__owid {
-    margin-top: 0;
-  }
-
   .methodology-grid {
     gap: calc(var(--gap-panel) * 0.6);
   }
@@ -2878,14 +2821,8 @@ textarea:focus {
     align-content: start;
   }
 
-  /* Row rhythm comes from the grid gap alone; per-item margins off. */
   .methodology-layout > * {
     margin-top: 0;
-  }
-
-  /* Rail stretches to match the left column exactly; scrolls internally. */
-  .methodology-rail {
-    max-height: none;
   }
 
   .manifests-page > .manifest-list {
@@ -2979,5 +2916,76 @@ textarea:focus {
 
   .tab-footerbar__meta {
     font-size: 0.68rem;
+  }
+}
+
+/* ============================================================================
+   Phase 8: Evidence tab consolidation + slim Methodology reading tab.
+   ========================================================================== */
+@media (min-width: 1024px) {
+  .evidence-page {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .evidence-layout {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    display: grid;
+    gap: var(--gap-panel);
+    align-content: start;
+    align-items: stretch;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    grid-template-areas:
+      'manifests manifests'
+      'dataset dataset'
+      'sources benchmarks'
+      'global global';
+  }
+
+  .evidence-layout > #manifests { grid-area: manifests; }
+  .evidence-layout > #dataset { grid-area: dataset; }
+  .evidence-layout > #sources { grid-area: sources; }
+  .evidence-layout > #benchmarks { grid-area: benchmarks; }
+  .evidence-layout > #global { grid-area: global; }
+
+  .evidence-layout > * {
+    margin-top: 0;
+    min-width: 0;
+  }
+
+  .evidence-layout > .manifest-list {
+    margin-top: 0.5rem;
+  }
+
+  /* Global context + release: bounded so it never drives the section scroll. */
+  .evidence-global {
+    max-height: min(52vh, 44rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+  }
+
+  .evidence-global:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: -3px;
+  }
+
+  /* Slim methodology: one editorial column, policy cards fill the width. */
+  .methodology-grid {
+    grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr));
+  }
+
+  .methodology-layout > .primer-card {
+    margin-top: 0;
+  }
+
+  .page-shell--reading .primer-card {
+    padding: var(--gap-panel);
   }
 }

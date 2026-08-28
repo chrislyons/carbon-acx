@@ -32,7 +32,7 @@ const RATIO_TARGETS: Record<string, Record<number, number>> = {
   '/explore/3d': { 1280: 1.0, 1440: 1.0 },
   '/learn': { 1280: 1.3, 1440: 1.2 },
   '/methodology': { 1280: 2.0, 1440: 1.6 },
-  '/manifests': { 1280: 1.1, 1440: 1.0 },
+  '/evidence': { 1280: 1.1, 1440: 1.0 },
 }
 
 function ratioTarget(route: string, width: number): number {

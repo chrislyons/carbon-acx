@@ -48,9 +48,9 @@ test('methodology primer explains the derived school-run record', async ({ page 
   await expect(page.locator('#primer details[open]')).toHaveCount(1)
 })
 
-test('methodology shows the offline OWID context and release links', async ({ page }) => {
+test('evidence shows the offline OWID context and release links', async ({ page }) => {
   await page.route('**/*ourworldindata.org/**', (route) => route.abort())
-  await page.goto('/methodology')
+  await page.goto('/evidence')
   await expect(page.getByRole('heading', { name: 'Our World in Data context' })).toBeVisible()
   await expect(page.getByText('Latest Canada value', { exact: true })).toBeVisible()
   await expect(page.getByText('territorial', { exact: true })).toBeVisible()
@@ -101,7 +101,7 @@ for (const viewport of [
     await openButton.click()
     const mobileNavigation = page.locator('#mobile-primary-navigation')
     await expect(mobileNavigation).toBeVisible()
-    await expect(mobileNavigation.getByRole('link')).toHaveCount(5)
+    await expect(mobileNavigation.getByRole('link')).toHaveCount(6)
     await expect(page.getByRole('button', { name: 'Close navigation' })).toHaveAttribute('aria-expanded', 'true')
     await mobileNavigation.getByRole('link', { name: 'Learn', exact: true }).click()
     await expect(page).toHaveURL(/\/learn$/)
@@ -137,7 +137,7 @@ test('preserves the home, calculator, and Atlas flow at 390 × 844', async ({ pa
   await expect(page.getByRole('table')).toBeVisible()
 })
 
-for (const route of ['/', '/calculator', '/explore', '/explore/3d', '/learn', '/methodology', '/manifests']) {
+for (const route of ['/', '/calculator', '/explore', '/explore/3d', '/learn', '/methodology', '/evidence']) {
   test(`mobile route ${route} has a visible main and no document overflow`, async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto(route)

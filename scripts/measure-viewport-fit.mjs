@@ -19,7 +19,7 @@ import { extname, join, resolve } from 'node:path'
 import { createRequire } from 'node:module'
 import process from 'node:process'
 
-const ROUTES = ['/', '/calculator', '/explore', '/explore/3d', '/learn', '/methodology', '/manifests']
+const ROUTES = ['/', '/calculator', '/explore', '/explore/3d', '/learn', '/methodology', '/evidence']
 // @playwright/test resolves from apps/carbon-acx-web (pnpm workspace), not this
 // script's location — anchor a require there.
 const { chromium } = createRequire(resolve('apps/carbon-acx-web/package.json'))('@playwright/test')

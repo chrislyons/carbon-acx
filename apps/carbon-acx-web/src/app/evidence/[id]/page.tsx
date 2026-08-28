@@ -36,7 +36,7 @@ export default async function ManifestDetailPage({ params }: ManifestDetailPageP
           </>
         }
       />
-      <Link href="/manifests" className="quiet-link text-sm font-semibold text-[color:var(--accent-primary)]">&larr; Evidence library</Link>
+      <Link href="/evidence" className="quiet-link text-sm font-semibold text-[color:var(--accent-primary)]">&larr; Evidence library</Link>
 
       <section className="mt-8 grid gap-5 lg:grid-cols-2">
         <article className="surface-card">
