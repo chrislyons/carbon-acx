@@ -28,8 +28,9 @@ export default function MethodologyPage() {
         <section id="primer" className="surface-card primer-card">
           <div className="primer-scroll" data-panel-scroll tabIndex={0} role="region" aria-label="Six-question primer">
           <h2>Learn how to read a carbon estimate</h2>
-          <Disclosure summary="Open the six-question primer" open>
-            <div className="primer-card__questions">
+          <div className="disclosure disclosure--static">
+            <div className="disclosure__body">
+              <div className="primer-card__questions">
               <article>
                 <h3>What is the equation?</h3>
                 <p>An activity quantity is multiplied by its published emission factor to make a transparent estimate.</p>
@@ -64,11 +65,11 @@ export default function MethodologyPage() {
                 <Link className="text-link text-link--primary" href={`/calculator?data=${encodeCalculatorInputs({ [primerActivity.id]: primerQuantity })}`}>Open this example in the calculator</Link>
                 <Link className="text-link" href="/explore">Inspect the published record</Link>
               </div>
-            </div>
-          </Disclosure>
+          </div>
+          </div>
+          </div>
           </div>
         </section>
-
         <div className="methodology-grid">
           <section className="surface-card">
             <h2 className="text-xl font-semibold text-foreground">Annual convention</h2>

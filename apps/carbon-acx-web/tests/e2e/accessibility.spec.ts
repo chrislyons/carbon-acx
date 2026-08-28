@@ -84,6 +84,6 @@ for (const theme of themes) {
 test('methodology primer disclosure is open and navigable', async ({ page }) => {
   await page.goto('/methodology#primer')
   const primer = page.locator('#primer')
-  await expect(primer.locator('details[open]')).toHaveCount(1)
+  await expect(primer.locator('details')).toHaveCount(0)
   await expect(primer.getByRole('heading', { name: 'What is the equation?' })).toBeVisible()
 })

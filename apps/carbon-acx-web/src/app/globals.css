@@ -1122,12 +1122,13 @@ textarea:focus {
 
 .result-composition h2 {
   margin-top: 0.35rem;
-  font: 700 2.3rem/0.95 var(--font-display);
+  font: 500 1rem/1.2 var(--font-mono);
 }
 
 .result-composition__live {
-  margin-top: 0.8rem;
+  margin-top: 0.4rem;
   color: var(--ink-muted);
+  font-size: 0.74rem;
 }
 
 .composition-bar {
@@ -1680,7 +1681,7 @@ textarea:focus {
   border-left: 0.3rem solid var(--oxide);
   margin-top: 1rem;
   padding: 0.75rem 1rem;
-  font: 600 1rem/1.6 var(--font-mono);
+  font: 500 1rem/1.5 var(--font-mono);
   overflow-wrap: anywhere;
 }
 
@@ -1749,7 +1750,7 @@ textarea:focus {
 
 .learning-card__arithmetic p {
   margin-top: 0.35rem;
-  font: 600 0.95rem/1.6 var(--font-mono);
+  font: 500 1rem/1.5 var(--font-mono);
   overflow-wrap: anywhere;
 }
 
@@ -2575,7 +2576,7 @@ textarea:focus {
   }
 
   .primer-scroll {
-    max-height: min(26vh, 22rem);
+    /* No cap: all six primer questions render in flow; framed bars stay pinned. */
   }
 
   .methodology__owid,
@@ -2653,11 +2654,6 @@ textarea:focus {
 
   .learning-card {
     gap: 0.65rem;
-  }
-
-  .learning-card__arithmetic p {
-    font-size: 0.85rem;
-    line-height: 1.45;
   }
 
   .learning-grid.mt-8,
@@ -2909,6 +2905,10 @@ textarea:focus {
   background: transparent;
 }
 
+.disclosure--static {
+  padding-top: 0.75rem;
+}
+
 @media (max-width: 700px) {
   .tab-footerbar__group {
     gap: 0.6rem;
@@ -2942,10 +2942,9 @@ textarea:focus {
     align-items: stretch;
     grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
     grid-template-areas:
-      'manifests manifests'
-      'dataset dataset'
       'sources benchmarks'
-      'global global';
+      'dataset global'
+      'manifests manifests';
   }
 
   .evidence-layout > #manifests { grid-area: manifests; }
@@ -2976,9 +2975,9 @@ textarea:focus {
     outline-offset: -3px;
   }
 
-  /* Slim methodology: one editorial column, policy cards fill the width. */
+  /* Slim methodology: one editorial column, four policy cards in one row. */
   .methodology-grid {
-    grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .methodology-layout > .primer-card {

@@ -45,7 +45,7 @@ test('methodology primer explains the derived school-run record', async ({ page 
   }
   await expect(page.getByText('1,000 kilometres × 180 g CO₂e / kilometre = 180.0 kg CO₂e/year', { exact: true }).first()).toBeVisible()
   await expect(page.getByText('Unavailable evidence is excluded from totals rather than converted to zero.')).toBeVisible()
-  await expect(page.locator('#primer details[open]')).toHaveCount(1)
+  await expect(page.locator('#primer details')).toHaveCount(0)
 })
 
 test('evidence shows the offline OWID context and release links', async ({ page }) => {
