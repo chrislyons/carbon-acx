@@ -14,7 +14,7 @@ test('published Atlas and calculator records expose narrative detail and linked 
   await page.locator('#TRAN\\.SCHOOLRUN\\.CAR\\.KM-quantity').fill('1000')
   await page.getByRole('button', { name: 'Factor evidence' }).click()
   await expect(page.getByRole('heading', { name: 'What this measures' })).toBeVisible()
-  await expect(page.getByText(/1,000 kilometres × 180 g CO₂e/)).toBeVisible()
+  await expect(page.getByText(/1,000 km × 180 g CO₂e/)).toBeVisible()
   await expect(page.locator('.detail-pane').getByRole('link', { name: /Environment and Climate Change Canada/ })).toHaveAttribute('href', /canada\.ca\/en\/environment-climate-change/)
 })
 

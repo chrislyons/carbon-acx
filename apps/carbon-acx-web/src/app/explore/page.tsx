@@ -1,6 +1,9 @@
 'use client'
 import Link from 'next/link'
 
+import { TabHeader } from '@/components/layout/TabHeader'
+import { TabFooter } from '@/components/layout/TabFooter'
+import { abbreviateUnit } from '@/lib/units'
 import { useMemo, useState } from 'react'
 import { EvidenceBadge, FactorRecordDetails } from '@/components/content'
 import { AtlasCoverageMap, AtlasModeIcon } from '@/components/viz/AtlasCoverageMap'
@@ -39,36 +42,60 @@ export default function ExplorePage() {
   const totalPublished = CATALOG_ACTIVITIES.filter((record) => record.evidence.publicationStatus === 'published').length
   const totalUnavailable = CATALOG_ACTIVITIES.length - totalPublished
   return (
-    <div className="editorial-page atlas">
-      <header className="ruled-section">
-        <p className="section-kicker">Evidence catalogue</p>
-        <h1>Read activity factors in their proper layer.</h1>
-        <p>{CATALOG_ACTIVITIES.length} records: {totalPublished} published and {totalUnavailable} unavailable. Factor magnitudes cannot be compared across incompatible units.</p>
-      </header>
-      <div className="mode-switcher" aria-label="Catalogue mode">
-        {modes.map((item) => (
-          <button key={item.id} type="button" aria-pressed={mode === item.id} className={mode === item.id ? 'is-selected' : ''} onClick={() => switchMode(item.id)}><AtlasModeIcon mode={item.id} /><strong>{item.label}</strong><span>{item.description}</span></button>
-        ))}
-      </div>
-      <AtlasFilters
-        records={records}
-        categories={categories}
-        category={category}
-        region={region}
-        status={status}
-        setCategory={setCategory}
-        setRegion={setRegion}
-        setStatus={setStatus}
+    <div className="editorial-page atlas app-stage">
+      <TabHeader
+        title="Explore"
+        meta={
+          <>
+            <span>{modes.find((item) => item.id === mode)?.label}</span>
+            <span><strong>{filtered.length}</strong> of {CATALOG_ACTIVITIES.length} records</span>
+            <Link className="text-link" href="/explore/3d">3D lab →</Link>
+          </>
+        }
       />
-      <div className="atlas__scan">
-        <AtlasCoverageMap records={filtered} selectedId={selected?.id ?? null} onSelect={setSelected} />
-        <DetailPane record={selected} outsideFilters={Boolean(selected && !filtered.some((record) => record.id === selected.id))} />
+      <div className="atlas__layout">
+        <div className="atlas__rail panel">
+          <div className="panel__scroll" data-panel-scroll tabIndex={0} role="region" aria-label="Catalogue modes and filters">
+            <div className="mode-switcher" aria-label="Catalogue mode">
+              {modes.map((item) => (
+                <button key={item.id} type="button" aria-pressed={mode === item.id} className={mode === item.id ? 'is-selected' : ''} onClick={() => switchMode(item.id)}><AtlasModeIcon mode={item.id} /><strong>{item.label}</strong><span>{item.description}</span></button>
+              ))}
+            </div>
+            <AtlasFilters
+              records={records}
+              categories={categories}
+              category={category}
+              region={region}
+              status={status}
+              setCategory={setCategory}
+              setRegion={setRegion}
+              setStatus={setStatus}
+            />
+          </div>
+        </div>
+        <section className="atlas__center panel">
+          <div className="panel__scroll" data-panel-scroll tabIndex={0} role="region" aria-label="Activity Atlas records">
+            <AtlasCoverageMap records={filtered} selectedId={selected?.id ?? null} onSelect={setSelected} />
+            <section className="ruled-section atlas__table">
+              <button type="button" className="text-link" aria-expanded={table} onClick={() => setTable((value) => !value)}>Data table</button>
+              {table ? <AtlasTable filtered={filtered} onSelect={setSelected} /> : null}
+            </section>
+          </div>
+        </section>
+        <aside className="atlas__detail panel">
+          <div className="panel__scroll" data-panel-scroll tabIndex={0} role="region" aria-label="Record detail">
+            <DetailPane record={selected} outsideFilters={Boolean(selected && !filtered.some((record) => record.id === selected.id))} />
+          </div>
+        </aside>
       </div>
-      <section className="ruled-section atlas__table">
-        <button type="button" className="text-link" aria-expanded={table} onClick={() => setTable((value) => !value)}>Data table</button>
-        {table ? <AtlasTable filtered={filtered} onSelect={setSelected} /> : null}
-      </section>
-      <p className="atlas__lab-link"><Link className="text-link text-link--primary" href="/explore/3d">Open experimental 3D activity lab</Link></p>
+      <TabFooter>
+        <div className="tab-footerbar__group">
+          <span className="tab-footerbar__meta"><strong>{totalPublished}</strong> published · <strong>{totalUnavailable}</strong> unavailable</span>
+        </div>
+        <div className="tab-footerbar__group">
+          <span className="tab-footerbar__meta">Factor magnitudes cannot be compared across incompatible units</span>
+        </div>
+      </TabFooter>
     </div>
   )
 }
@@ -150,7 +177,7 @@ function DetailPane({
         description={record.description}
         unitDefinition={record.unitDefinition}
         notes={record.notes}
-        unitLabel={record.unitLabel}
+        unitLabel={abbreviateUnit(record.unitLabel)}
         emissionFactor={record.emissionFactor}
         evidence={record.evidence}
       />

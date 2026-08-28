@@ -5,6 +5,9 @@ import { useSearchParams } from 'next/navigation'
 import { ActivityMark } from '@/components/calculator/ActivityMark'
 import { ActivityShelf } from '@/components/calculator/ActivityShelf'
 import { ScenarioPane } from '@/components/calculator/ScenarioPane'
+import { TabHeader } from '@/components/layout/TabHeader'
+import { TabFooter } from '@/components/layout/TabFooter'
+import { abbreviateUnit } from '@/lib/units'
 import { BenchmarkContext, DataState, EvidenceBadge, FactorRecordDetails } from '@/components/content'
 
 const ImpactComposition = dynamic(
@@ -168,13 +171,20 @@ function CalculatorContent() {
   }
 
   return (
-    <div className="editorial-page worksheet">
+    <div className="editorial-page worksheet app-stage">
+      <TabHeader
+        title="Calculator"
+        meta={
+          <>
+            <span>Basket <strong>{selected.length}</strong></span>
+            {combinedTotal > 0 ? <span><strong>{formatEmissions(combinedTotal)}</strong>/yr</span> : <span>empty</span>}
+          </>
+        }
+      />
       {shared ? <DataState title="Shared worksheet">Shared worksheet. These annual quantities remain editable.</DataState> : null}
-      <header className="ruled-section worksheet__intro">
-        <p className="section-kicker">Annual activity worksheet</p>
-        <h1>Build one understandable estimate.</h1>
-        <p>This is not a verified personal inventory. It is a transparent estimate from published activity factors.</p>
-      </header>
+      <div className="calculator__columns">
+        <div className="calculator__shelf panel">
+          <div className="panel__scroll" data-panel-scroll tabIndex={0} role="region" aria-label="Published activity shelf">
       <nav className="worksheet__groups" aria-label="Activity categories">
         {CATEGORIES.map((category) => (
           <button
@@ -191,6 +201,10 @@ function CalculatorContent() {
         ))}
       </nav>
       <ActivityShelf category={activeCategory} activities={activities} selectedIds={selectedIds} onAdd={add} />
+          </div>
+        </div>
+        <div className="calculator__worksheet panel">
+          <div className="panel__scroll" data-panel-scroll tabIndex={0} role="region" aria-label="Activity basket worksheet">
       <div className="basket-header ruled-section">
         <div>
           <p className="section-kicker">Selected activities</p>
@@ -233,14 +247,24 @@ function CalculatorContent() {
           close={closeEvidence}
         />
       ) : null}
+      </div>
+        </div>
+      </div>
       {summary.skipped.length ? (
         <DataState title="Inputs not included">Unavailable, unknown, invalid, or non-positive quantities are not included in the annual total.</DataState>
       ) : null}
       <p className="sr-only" aria-live="polite">{announcement}</p>
-      <footer className="worksheet__actions">
-        <button type="button" onClick={reset}>Clear worksheet</button>
-        <button type="button" onClick={copy}>{copied ? 'Link copied' : 'Copy link'}</button>
-      </footer>
+      <TabFooter>
+        <div className="tab-footerbar__group">
+          <button type="button" className="text-link" onClick={reset}>Clear worksheet</button>
+          <button type="button" className="text-link" onClick={copy}>{copied ? 'Link copied' : 'Copy link'}</button>
+        </div>
+        <div className="tab-footerbar__group">
+          <span className="tab-footerbar__meta">
+            {summary.skipped.length ? <><strong>{summary.skipped.length}</strong> input{summary.skipped.length > 1 ? 's' : ''} not included</> : 'All inputs counted'}
+          </span>
+        </div>
+      </TabFooter>
     </div>
   )
 }
@@ -297,11 +321,11 @@ function ActivityEditor({
           <EvidenceBadge evidence={activity.evidence} />
           <h2>{activity.name}</h2>
           <p>{activity.description}</p>
-          <p className="mono">Factor: {activity.emissionFactor} g CO₂e / {activity.unitLabel}</p>
+          <p className="mono">Factor: {activity.emissionFactor} g CO₂e / {abbreviateUnit(activity.unitLabel)}</p>
         </div>
       </div>
       <div className="activity-editor__control">
-        <label htmlFor={`${activity.id}-quantity`}>Annual quantity ({activity.unitLabel})</label>
+        <label htmlFor={`${activity.id}-quantity`}>Annual quantity ({abbreviateUnit(activity.unitLabel)})</label>
         <input
           id={`${activity.id}-quantity`}
           type="number"
@@ -348,15 +372,15 @@ function ResultPanel({
   const percentage = comparisonToBenchmark(combinedTotal, benchmark)
   const hasTotal = summary.results.length > 0 || additionalGrams > 0
   const status = hasTotal
-    ? `${formatEmissions(combinedTotal)} per year.`
+    ? `${formatEmissions(combinedTotal)}/yr.`
     : 'Add a valid annual quantity to see a total.'
   return (
     <aside className="result-composition" aria-label="Worksheet result">
-      <h2>{hasTotal ? `${formatEmissions(combinedTotal)}/year` : 'Add a valid annual quantity'}</h2>
+      <h2>{hasTotal ? `${formatEmissions(combinedTotal)}/yr` : 'Add a valid annual quantity'}</h2>
       <p className="result-composition__live" role="status" aria-live="polite">{evidenceId ? `${status} Evidence detail open.` : status}</p>
       {additionalGrams > 0 ? (
         <p className="equation">
-          Includes a published AI scenario: {formatEmissions(additionalGrams)} per year.
+          Includes a published AI scenario: {formatEmissions(additionalGrams)}/yr.
         </p>
       ) : null}
       {categories.length ? (
@@ -377,7 +401,7 @@ function ResultPanel({
       </ul>
       {summary.results.map((result) => (
         <p className="equation" key={result.activityId}>
-          {result.quantity} {result.unitLabel} × {result.emissionFactor} g CO₂e / {result.unitLabel} = {formatEmissions(result.emissions)}
+          {result.quantity} {abbreviateUnit(result.unitLabel)} × {result.emissionFactor} g CO₂e / {abbreviateUnit(result.unitLabel)} = {formatEmissions(result.emissions)}
         </p>
       ))}
       <label>

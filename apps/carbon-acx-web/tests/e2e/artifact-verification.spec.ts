@@ -32,7 +32,7 @@ test('browser verifier distinguishes matching and mismatched artifact bytes', as
   await page.route(artifactUrl, async (route) => {
     await route.fulfill({ body: figure, contentType: 'application/json' })
   })
-  await page.goto(`/manifests/${manifest.hash_prefix}`)
+  await page.goto(`/evidence/${manifest.hash_prefix}`)
   await page.getByRole('button', { name: 'Verify downloaded bytes' }).click()
   await expect(page.getByText('Verified', { exact: true })).toBeVisible()
 

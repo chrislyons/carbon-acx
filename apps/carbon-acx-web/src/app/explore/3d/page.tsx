@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import type { ComponentType } from 'react'
 import { DataState, EvidenceBadge, Eyebrow, FactorRecordDetails } from '@/components/content'
+import { TabHeader } from '@/components/layout/TabHeader'
+import { TabFooter } from '@/components/layout/TabFooter'
 import { calculateEmissions, CATEGORY_INFO, formatEmissions, getActivityById, type CalculatorInput } from '@/lib/calculator'
 import type { Activity as VisualizationActivity, DataUniverseProps } from '@/components/viz/DataUniverse'
 const STORAGE_KEY = 'carbon-acx-calculator-inputs'
@@ -50,16 +52,18 @@ export default function ThreeDVisualizationPage() {
   const selectedActivity = selectedId ? getActivityById(selectedId) : null
 
   return (
-    <div className="page-shell py-10 sm:py-14">
-      <Eyebrow>Optional representation</Eyebrow>
-      <h1 className="section-title">A spatial view of the same calculated results.</h1>
-      <p className="section-copy mt-4 max-w-3xl">
-        This route never introduces a new metric. Each sphere represents one already-calculated published result;
-        select a sphere to open the same evidence shown in the table below.
-      </p>
+    <div className="page-shell page-shell--reading app-stage">
+      <TabHeader
+        title="3D activity lab"
+        meta={
+          summary.results.length
+            ? <span><strong>{summary.results.length}</strong> spheres · <strong>{formatEmissions(summary.totalEmissions)}</strong>/yr total</span>
+            : <span>No calculated result — complete an annual worksheet</span>
+        }
+      />
 
       {summary.results.length === 0 ? (
-        <div className="mt-8">
+        <div>
           <DataState title="No calculated result is stored">
             Complete an annual worksheet first, then return here to view that same published data.{' '}
             <Link className="underline" href="/calculator">Open Estimate</Link>
@@ -125,6 +129,16 @@ export default function ThreeDVisualizationPage() {
           ) : null}
         </>
       )}
+      <TabFooter>
+        <div className="tab-footerbar__group">
+          <span className="tab-footerbar__meta">
+            {summary.results.length ? <><strong>{summary.results.length}</strong> spheres rendered from published records</> : !canUseWebGl ? 'Canvas unavailable — table view shows the same records' : 'No calculated result stored — estimate an activity first'}
+          </span>
+        </div>
+        <div className="tab-footerbar__group">
+          <Link className="text-link" href="/explore">Atlas records</Link>
+        </div>
+      </TabFooter>
     </div>
   )
 }

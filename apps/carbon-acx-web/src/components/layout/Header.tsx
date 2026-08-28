@@ -5,26 +5,51 @@ import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { useTheme } from '@/components/providers/ThemeProvider'
 
-const links = [{ href: '/', label: 'Home' }, { href: '/calculator', label: 'Calculator' }, { href: '/explore', label: 'Explore' }, { href: '/learn', label: 'Learn' }, { href: '/methodology', label: 'Methodology' }] as const
+const links = [{ href: '/', label: 'Home' }, { href: '/calculator', label: 'Calculator' }, { href: '/explore', label: 'Explore' }, { href: '/learn', label: 'Learn' }, { href: '/methodology', label: 'Methodology' }, { href: '/evidence', label: 'Evidence' }] as const
 
 export function Header() {
   const pathname = usePathname()
   const { theme, toggleTheme } = useTheme()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
+  // Non-root links stay current on their nested routes (/evidence/[id] etc).
+  const isCurrent = (href: string) =>
+    href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`)
+
   useEffect(() => {
     setMobileMenuOpen(false)
   }, [pathname])
+
+  // Number-key navigation: 1-5 jump to the primary nav destinations in DOM
+  // order. Ignored while typing in form fields or with modifier keys held, so
+  // calculator inputs keep their digits.
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.metaKey || event.ctrlKey || event.altKey) return
+      const target = event.target as HTMLElement | null
+      if (target?.closest('input, textarea, select, [contenteditable="true"]')) return
+      const index = Number(event.key) - 1
+      if (!Number.isInteger(index) || index < 0 || index >= links.length) return
+      const nav = document.querySelector<HTMLElement>('nav[aria-label="Primary"]')
+      const link = nav?.querySelectorAll<HTMLElement>('a')[index]
+      if (!link) return
+      event.preventDefault()
+      link.click()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [])
+
 
   return (
     <header className="site-header">
       <div className="page-shell site-header__inner">
         <Link href="/" className="site-header__brand">
-          Carbon ACX <span>carbon literacy</span>
+          Carbon ACX <span>carbon literacy index</span>
         </Link>
         <nav aria-label="Primary" className="site-header__desktop-nav">
           {links.map((link) => (
-            <Link key={link.href} href={link.href} aria-current={pathname === link.href ? 'page' : undefined}>
+            <Link key={link.href} href={link.href} aria-current={isCurrent(link.href) ? 'page' : undefined}>
               {link.label}
             </Link>
           ))}
@@ -53,7 +78,7 @@ export function Header() {
               <Link
                 key={link.href}
                 href={link.href}
-                aria-current={pathname === link.href ? 'page' : undefined}
+                aria-current={isCurrent(link.href) ? 'page' : undefined}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {link.label}

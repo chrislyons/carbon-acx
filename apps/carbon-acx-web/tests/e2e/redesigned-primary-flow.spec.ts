@@ -3,9 +3,9 @@ import { expect, test } from '@playwright/test'
 test('front door presents three explicit jobs', async ({ page }) => {
   await page.goto('/')
   const jobs = [
-    ['Understand a carbon estimate', '/methodology#primer'],
-    ['Estimate an activity', '/calculator'],
-    ['Inspect the evidence', '/explore'],
+    ['Open the primer', '/methodology#primer'],
+    ['Open the calculator', '/calculator'],
+    ['Browse the Activity Atlas', '/explore'],
   ] as const
   for (const [name, href] of jobs) {
     await expect(page.getByRole('link', { name, exact: true })).toHaveAttribute('href', href)
@@ -13,20 +13,20 @@ test('front door presents three explicit jobs', async ({ page }) => {
 })
 
 test('backslash toggles theme outside text entry only', async ({ page }) => {
-  await page.addInitScript(() => localStorage.removeItem('carbon-acx-theme'))
-  await page.goto('/')
-  await expect(page.getByRole('button', { name: 'Switch to dark mode' })).toBeVisible()
+  await page.goto('/calculator')
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
+  await page.getByRole('button', { name: 'Add School run by car to your activity basket' }).click()
 
-  await expect(async () => {
-    await page.keyboard.press('\\')
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark', { timeout: 250 })
-  }).toPass({ timeout: 10_000 })
+  // Inside a text entry the guard swallows the key.
+  const quantity = page.locator('#TRAN\\.SCHOOLRUN\\.CAR\\.KM-quantity')
+  await quantity.focus()
+  await page.keyboard.press('\\')
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
 
-  await page.getByLabel('Annual distance').fill('1250')
+  // Outside text entry it toggles, and toggles back.
+  await page.getByRole('button', { name: /Transport/ }).click()
   await page.keyboard.press('\\')
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
-
-  await page.getByRole('button', { name: 'Switch to light mode' }).focus()
   await page.keyboard.press('\\')
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
 })
@@ -43,14 +43,14 @@ test('methodology primer explains the derived school-run record', async ({ page 
   ]) {
     await expect(page.getByRole('heading', { name: question })).toBeVisible()
   }
-  await expect(page.getByText('1,000 kilometres × 180 g CO₂e / kilometre = 180.0 kg CO₂e/year', { exact: true }).first()).toBeVisible()
+  await expect(page.getByText('1,000 km × 180 g CO₂e / km = 180.0 kg CO₂e/yr', { exact: true }).first()).toBeVisible()
   await expect(page.getByText('Unavailable evidence is excluded from totals rather than converted to zero.')).toBeVisible()
-  await expect(page.locator('#primer details[open]')).toHaveCount(1)
+  await expect(page.locator('#primer details')).toHaveCount(0)
 })
 
-test('methodology shows the offline OWID context and release links', async ({ page }) => {
+test('evidence shows the offline OWID context and release links', async ({ page }) => {
   await page.route('**/*ourworldindata.org/**', (route) => route.abort())
-  await page.goto('/methodology')
+  await page.goto('/evidence')
   await expect(page.getByRole('heading', { name: 'Our World in Data context' })).toBeVisible()
   await expect(page.getByText('Latest Canada value', { exact: true })).toBeVisible()
   await expect(page.getByText('territorial', { exact: true })).toBeVisible()
@@ -79,7 +79,7 @@ test('methodology shows the offline OWID context and release links', async ({ pa
 test('learn route renders offline published case studies when OWID is unreachable', async ({ page }) => {
   await page.route('**/*ourworldindata.org/**', (route) => route.abort())
   await page.goto('/learn')
-  await expect(page.getByRole('heading', { name: 'Read a carbon estimate from the record outward.' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Learn', exact: true })).toBeVisible()
   await expect(page.getByText('Household school travel')).toBeVisible()
   await expect(page.getByText('Small-organization office area')).toBeVisible()
   await expect(page.getByText('Canadian-system electricity')).toBeVisible()
@@ -101,7 +101,7 @@ for (const viewport of [
     await openButton.click()
     const mobileNavigation = page.locator('#mobile-primary-navigation')
     await expect(mobileNavigation).toBeVisible()
-    await expect(mobileNavigation.getByRole('link')).toHaveCount(5)
+    await expect(mobileNavigation.getByRole('link')).toHaveCount(6)
     await expect(page.getByRole('button', { name: 'Close navigation' })).toHaveAttribute('aria-expanded', 'true')
     await mobileNavigation.getByRole('link', { name: 'Learn', exact: true }).click()
     await expect(page).toHaveURL(/\/learn$/)
@@ -112,19 +112,25 @@ for (const viewport of [
 test('preserves the home, calculator, and Atlas flow at 390 × 844', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/')
-  await expect(page.locator('.impact-trace__marker-label')).toContainText('1,000 kilometres')
-  await expect(page.getByText('180.0 kg CO₂e/year', { exact: true })).toBeVisible()
-  await page.getByLabel('Annual distance').fill('1250')
-  await expect(page.getByText('225.0 kg CO₂e/year', { exact: true })).toBeVisible()
+  await expect(page.locator('.impact-trace__marker-label')).toContainText('1,000 km · 180.0 kg CO₂e/yr')
+  // Keyboard path is the page-level hotkeys (documented in-chart); nothing
+  // focusable lives inside the SVG. The first press double-checks via toPass
+  // so a press lost to pre-hydration hydration lag cannot strand the count.
+  await expect(async () => {
+    await page.keyboard.press('ArrowRight')
+    await expect(page.locator('.impact-trace__value')).toContainText('1,050 km')
+  }).toPass()
+  for (let index = 1; index < 5; index++) await page.keyboard.press('ArrowRight')
+  await expect(page.locator('.impact-trace__value')).toContainText('1,250 km · 225.0 kg CO₂e/yr')
   await page.getByRole('link', { name: 'Continue with this estimate' }).click()
   await expect(page).toHaveURL(/\/calculator\?data=/)
   await expect(page.locator('#TRAN\\.SCHOOLRUN\\.CAR\\.KM-quantity')).toHaveValue('1250')
 
   await page.getByRole('button', { name: /Transport/ }).click()
   await page.locator('#TRAN\\.SCHOOLRUN\\.CAR\\.KM-quantity').fill('1000')
-  await expect(page.getByText('180.0 kg CO₂e/year', { exact: true })).toBeVisible()
+  await expect(page.getByText('180.0 kg CO₂e/yr', { exact: true }).first()).toBeVisible()
   await expect(page.locator('.compact-reference-list').getByText('Transport')).toBeVisible()
-  await expect(page.getByText('1000 kilometres × 180 g CO₂e / kilometres = 180.0 kg CO₂e')).toBeVisible()
+  await expect(page.getByText('1000 km × 180 g CO₂e / km = 180.0 kg CO₂e')).toBeVisible()
 
   await page.goto('/explore')
   await expect(page.getByRole('button', { name: /Personal \/ household/ })).toHaveAttribute('aria-pressed', 'true')
@@ -137,7 +143,7 @@ test('preserves the home, calculator, and Atlas flow at 390 × 844', async ({ pa
   await expect(page.getByRole('table')).toBeVisible()
 })
 
-for (const route of ['/', '/calculator', '/explore', '/explore/3d', '/learn', '/methodology', '/manifests']) {
+for (const route of ['/', '/calculator', '/explore', '/explore/3d', '/learn', '/methodology', '/evidence']) {
   test(`mobile route ${route} has a visible main and no document overflow`, async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto(route)
@@ -148,10 +154,16 @@ for (const route of ['/', '/calculator', '/explore', '/explore/3d', '/learn', '/
 
 test('traces a home estimate into an editable worksheet', async ({ page }) => {
   await page.goto('/')
-  await expect(page.locator('.impact-trace__marker-label')).toContainText('1,000 kilometres')
-  await expect(page.getByText('180.0 kg CO₂e/year', { exact: true })).toBeVisible()
-  await page.getByLabel('Annual distance').fill('1250')
-  await expect(page.getByText('225.0 kg CO₂e/year', { exact: true })).toBeVisible()
+  await expect(page.locator('.impact-trace__marker-label')).toContainText('1,000 km · 180.0 kg CO₂e/yr')
+  // Keyboard path is the page-level hotkeys (documented in-chart); nothing
+  // focusable lives inside the SVG. The first press double-checks via toPass
+  // so a press lost to pre-hydration hydration lag cannot strand the count.
+  await expect(async () => {
+    await page.keyboard.press('ArrowRight')
+    await expect(page.locator('.impact-trace__value')).toContainText('1,050 km')
+  }).toPass()
+  for (let index = 1; index < 5; index++) await page.keyboard.press('ArrowRight')
+  await expect(page.locator('.impact-trace__value')).toContainText('1,250 km · 225.0 kg CO₂e/yr')
   await page.getByRole('link', { name: 'Continue with this estimate' }).click()
   await expect(page.locator('#TRAN\\.SCHOOLRUN\\.CAR\\.KM-quantity')).toHaveValue('1250')
 })
@@ -162,9 +174,9 @@ test('selects an activity and retains its result in the editing path', async ({ 
   await page.getByRole('button', { name: /Transport/ }).click()
   await page.getByRole('button', { name: 'Add School run by car to your activity basket' }).click()
   await page.locator('#TRAN\\.SCHOOLRUN\\.CAR\\.KM-quantity').fill('1000')
-  await expect(page.getByText('180.0 kg CO₂e/year', { exact: true })).toBeVisible()
+  await expect(page.getByText('180.0 kg CO₂e/yr', { exact: true }).first()).toBeVisible()
   await expect(page.locator('.compact-reference-list').getByText('Transport')).toBeVisible()
-  await expect(page.getByText('1000 kilometres × 180 g CO₂e / kilometres = 180.0 kg CO₂e')).toBeVisible()
+  await expect(page.getByText('1000 km × 180 g CO₂e / km = 180.0 kg CO₂e')).toBeVisible()
 })
 test('basket composes cross-category impacts and benchmark context', async ({ page }) => {
   await page.setViewportSize({ width: 1600, height: 900 })
@@ -177,7 +189,7 @@ test('basket composes cross-category impacts and benchmark context', async ({ pa
   await page.locator('[id="FOOD.MEAL.BEEF.SERVING-quantity"]').fill('10')
   await expect(page.getByText('Your activity basket (2)', { exact: true })).toBeVisible()
   await expect(page.getByRole('img', { name: 'Categories in basket: Transport, Food & drink' })).toBeVisible()
-  await expect(page.getByText('270.0 kg CO₂e/year', { exact: true })).toBeVisible()
+  await expect(page.getByText('270.0 kg CO₂e/yr', { exact: true }).first()).toBeVisible()
   await expect(page.getByText('Range: 54.0 kg CO₂e–123.0 kg CO₂e', { exact: true })).toBeVisible()
   await page.getByLabel('Comparison basis').selectOption('ontario_average')
   await expect(page.getByText(/2\.9% of this scale/)).toBeVisible()
@@ -209,15 +221,6 @@ test('calculator keeps visual and DOM source order at 320 × 800', async ({ page
   ])
 })
 
-test('invalid Home input preserves the last valid result', async ({ page }) => {
-  await page.goto('/')
-  await page.getByLabel('Annual distance').fill('1250')
-  await expect(page.getByText('225.0 kg CO₂e/year', { exact: true })).toBeVisible()
-  await page.getByLabel('Annual distance').fill('')
-  await expect(page.locator('#trace-distance-error')).toContainText('Showing the last valid amount.')
-  await expect(page.getByText('225.0 kg CO₂e/year', { exact: true })).toBeVisible()
-})
-
 test('basket prevents duplicate adds and restores evidence focus', async ({ page }) => {
   await page.goto('/calculator')
   const addButton = page.getByRole('button', { name: 'Add School run by car to your activity basket' })
@@ -239,7 +242,7 @@ test('published bicycle zero stays ranked without entering the flow', async ({ p
   await page.getByRole('button', { name: /Transport/ }).click()
   await page.getByRole('button', { name: 'Add School run by bike to your activity basket' }).click()
   await page.locator('[id="TRAN.SCHOOLRUN.BIKE.KM-quantity"]').fill('1000')
-  await expect(page.getByText('0 g CO₂e/year', { exact: true })).toBeVisible()
+  await expect(page.getByText('0 g CO₂e/yr', { exact: true }).first()).toBeVisible()
   await expect(page.locator('.impact-rank__zero')).toContainText('Published zero')
   await expect(page.locator('.impact-flow svg')).toHaveCount(0)
 })

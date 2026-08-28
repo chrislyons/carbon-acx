@@ -1,6 +1,10 @@
 import Link from 'next/link'
 import { SourceList } from '@/components/content'
+import { TabHeader } from '@/components/layout/TabHeader'
+import { TabFooter } from '@/components/layout/TabFooter'
+import { abbreviateUnit } from '@/lib/units'
 import {
+  ACTIVITIES,
   CATALOG_ACTIVITIES,
   calculateEmissions,
   encodeCalculatorInputs,
@@ -72,7 +76,9 @@ function LearningCard({
     <article className="surface-card learning-card">
       <p className="section-kicker">{study.label}</p>
       <h2>{record.name}</h2>
-      <p>{record.description}</p>
+      <div className="reference-scroll" data-panel-scroll tabIndex={0} role="region" aria-label={`${record.name} description`}>
+        <p>{record.description}</p>
+      </div>
       {isUnavailable ? (
         <div className="data-state data-state--warning">
           <strong>Not available</strong>
@@ -83,12 +89,13 @@ function LearningCard({
         <div className="learning-card__arithmetic">
           <span className="section-kicker">Worked arithmetic</span>
           <p>
-            {study.quantity.toLocaleString('en-CA')} {study.quantityLabel} × {record.emissionFactor} g CO₂e /{' '}
-            {record.unitLabel.replace(/s$/, '')} = {workedEmissions}
+            {study.quantity.toLocaleString('en-CA')} {abbreviateUnit(study.quantityLabel)} × {record.emissionFactor} g CO₂e /{' '}
+            {abbreviateUnit(record.unitLabel)} = {workedEmissions}
           </p>
         </div>
       )}
-      <dl className="compact-reference-list learning-card__metadata">
+      <div className="reference-scroll" data-panel-scroll tabIndex={0} role="region" aria-label={`${record.name} provenance`}>
+        <dl className="compact-reference-list learning-card__metadata">
         <div>
           <dt>Boundary</dt>
           <dd>{record.evidence.scopeBoundary || 'Not specified'}</dd>
@@ -103,18 +110,21 @@ function LearningCard({
         </div>
         <div>
           <dt>Unit</dt>
-          <dd>{record.unitDefinition || record.unitLabel}</dd>
+          <dd>{record.unitDefinition || abbreviateUnit(record.unitLabel)}</dd>
         </div>
-      </dl>
-      <p className="text-sm">
-        Screening estimate only; this is not a verified inventory. Use this record only within its published unit,
-        geography, boundary, GWP horizon, and vintage. Incompatible units must not be compared.
-      </p>
-      <SourceList
-        sourceIds={record.evidence.sourceIds}
-        citations={record.evidence.sourceCitations}
-        urls={record.evidence.sourceUrls}
-      />
+        </dl>
+      </div>
+      <div className="reference-scroll" data-panel-scroll tabIndex={0} role="region" aria-label={`${record.name} sources`}>
+        <p className="text-sm">
+          Screening estimate only; this is not a verified inventory. Use this record only within its published unit,
+          geography, boundary, GWP horizon, and vintage. Incompatible units must not be compared.
+        </p>
+        <SourceList
+          sourceIds={record.evidence.sourceIds}
+          citations={record.evidence.sourceCitations}
+          urls={record.evidence.sourceUrls}
+        />
+      </div>
       {record.evidence.methodNotes ? <p className="text-sm">Method note: {record.evidence.methodNotes}</p> : null}
       <Link className="text-link text-link--primary" href={recordLink}>
         {calculatorRecord ? 'Open this record in the calculator' : 'Inspect this record in the Atlas'}
@@ -125,21 +135,30 @@ function LearningCard({
 
 export default function LearnPage() {
   return (
-    <div className="page-shell page-shell--reading max-w-6xl py-10 sm:py-14">
-      <p className="section-kicker">Learn</p>
-      <h1 className="section-title max-w-3xl">Read a carbon estimate from the record outward.</h1>
-      <p className="section-copy mt-4 max-w-3xl">
-        These three examples use only published Activity Atlas records. Each result keeps its unit, boundary,
-        geography, vintage, and source attached so the arithmetic can be inspected instead of treated as a universal
-        conversion.
-      </p>
-      <section className="learning-grid mt-8" aria-label="Published learning examples">
-        {CASE_STUDIES.map((study) => <LearningCard key={study.id} study={study} />)}
-      </section>
-      <div className="mt-8 flex flex-wrap gap-3">
-        <Link className="action-link" href="/methodology#primer">Read the six-question primer</Link>
-        <Link className="action-link" href="/explore">Browse the full Activity Atlas</Link>
+    <div className="page-shell page-shell--reading app-stage">
+      <TabHeader
+        title="Learn"
+        meta={
+          <>
+            <span><strong>{CASE_STUDIES.length}</strong> published examples</span>
+            <span>{ACTIVITIES.length} calculator records · {CATALOG_ACTIVITIES.length} atlas records</span>
+          </>
+        }
+      />
+      <div className="learning-layout">
+        <section className="learning-grid" aria-label="Published learning examples">
+          {CASE_STUDIES.map((study) => <LearningCard key={study.id} study={study} />)}
+        </section>
       </div>
+      <TabFooter>
+        <div className="tab-footerbar__group">
+          <Link className="text-link" href="/methodology#primer">Six-question primer</Link>
+          <Link className="text-link" href="/explore">Browse the Atlas</Link>
+        </div>
+        <div className="tab-footerbar__group">
+          <span className="tab-footerbar__meta">Screening estimates only — not verified inventories</span>
+        </div>
+      </TabFooter>
     </div>
   )
 }

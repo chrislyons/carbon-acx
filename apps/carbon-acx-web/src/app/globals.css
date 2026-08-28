@@ -22,12 +22,25 @@
   font-display: swap;
 }
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Tailwind v4 (CSS-first): theme tokens + utilities only. No preflight —
+   the design system's own CSS owns all element defaults, and unlayered
+   custom rules keep precedence over generated utilities. */
+@import "tailwindcss/theme" layer(theme);
+@import "tailwindcss/utilities" layer(utilities);
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-foreground-muted: var(--ink-muted);
+  --font-display: 'Cabinet Grotesk', system-ui, sans-serif;
+  --font-sans: 'General Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+}
 
 /* Carbon ACX public system: paper, ink, oxidized green, signal orange. */
 :root {
+  --header-h: 4.5rem;
+  --bar-h: 3.375rem;
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -256,17 +269,6 @@ a {
   text-transform: uppercase;
 }
 
-.section-title {
-  margin-top: 0.4rem;
-  color: var(--ink);
-  font: 650 clamp(1.75rem, 2vw + 1.1rem, 2.5rem)/1.05 var(--font-display);
-}
-
-.section-copy {
-  color: var(--ink-muted);
-  line-height: 1.7;
-}
-
 /* The masthead is opaque and ruled; no glass treatment. */
 .site-header {
   position: sticky;
@@ -281,20 +283,23 @@ a {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+  width: 100%;
+  padding-inline: 1rem;
   padding-block: 0.8rem;
+  min-height: var(--header-h);
+  box-sizing: border-box;
 }
 
 .site-header__brand {
   color: var(--ink);
-  font: 700 1.15rem/1 var(--font-display);
+  font: 700 1.2rem/1 var(--font-display);
 }
 
 .site-header__brand span {
   display: block;
   margin-top: 0.25rem;
   color: var(--ink-muted);
-  font: 500 0.64rem/1 var(--font-mono);
-  letter-spacing: 0.05em;
+  font: 300 0.63rem/1 var(--font-mono);
   text-transform: uppercase;
 }
 
@@ -340,16 +345,27 @@ a {
 }
 
 .site-footer {
-  margin-top: 3rem;
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  flex: 0 0 auto;
+  height: var(--bar-h);
+  min-height: var(--bar-h);
+  overflow: hidden;
+  margin-top: 0;
   border-top: 1px solid var(--rule);
   background: var(--paper);
 }
 
 .reference-strip {
+  width: 100%;
+  height: 100%;
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding-block: 1rem;
+  padding-inline: 1rem;
+  padding-block: 0;
   color: var(--ink-muted);
   font-size: 0.8rem;
 }
@@ -588,14 +604,16 @@ a {
 
 .quantity-field {
   display: grid;
-  grid-template-columns: auto minmax(6rem, 10rem) auto;
+  grid-template-columns: auto minmax(10rem, 16rem) auto;
+  justify-content: start;
   align-items: end;
-  gap: 0.75rem;
+  gap: 0.9rem;
   margin-top: 2rem;
   font-weight: 600;
 }
 
-.quantity-field input {
+.quantity-field input,
+.quantity-field select {
   width: 100%;
   border: 0;
   border-bottom: 2px solid var(--ink);
@@ -604,6 +622,13 @@ a {
   background: transparent;
   color: inherit;
   font: 700 1.5rem var(--font-mono);
+}
+
+.quantity-field select {
+  appearance: none;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
 }
 
 .field-error {
@@ -645,17 +670,24 @@ button.text-link:hover {
 
 .impact-trace {
   width: 100%;
-  max-width: 54rem;
-  margin-top: 2rem;
+  margin-top: 0.4rem;
   border-top: 1px solid var(--rule);
-  padding-top: 1rem;
+  padding-top: 0.4rem;
 }
 
 .impact-trace__svg {
   display: block;
   width: 100%;
-  min-height: 15rem;
+  height: auto;
   overflow: visible;
+}
+
+.impact-trace__marker-label {
+  paint-order: stroke;
+  stroke: var(--background);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+  font-weight: 600;
 }
 
 .impact-trace__svg line,
@@ -675,7 +707,25 @@ button.text-link:hover {
 .impact-trace__marker-label,
 .impact-trace__axis-label {
   font-size: 0.72rem;
+  fill: var(--ink-muted);
 }
+
+.impact-trace__marker-label {
+  fill: var(--ink);
+}
+
+.impact-trace__tick text {
+  fill: var(--ink-muted);
+}
+
+.impact-trace__slider {
+  cursor: grab;
+}
+
+.impact-trace__slider.is-dragging {
+  cursor: grabbing;
+}
+
 
 .impact-trace__value {
   margin-top: 0.5rem;
@@ -765,20 +815,6 @@ button.text-link:hover {
 }
 
 /* Calculator: compact category rail, activity shelf, basket line items. */
-.worksheet__intro,
-.atlas > header {
-  padding-block: 2.5rem;
-  border-top: 0;
-}
-
-.worksheet h1,
-.atlas h1 {
-  max-width: 16ch;
-  margin-top: 0.7rem;
-  font: 700 clamp(2.5rem, 5vw, 5rem)/0.92 var(--font-display);
-  letter-spacing: -0.05em;
-}
-
 .worksheet__groups,
 .mode-switcher {
   display: flex;
@@ -930,6 +966,18 @@ button.text-link:hover {
 .basket-header {
   margin-top: 2rem;
   padding-block: 1.25rem;
+}
+
+/* No full-width dividers in the basket header: the rule under the header
+   text reuses the activity-editor half-div (left half only, never under
+   the tally card). */
+.basket-header.ruled-section {
+  border-block: 0;
+}
+
+.basket-header > div:first-child {
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.75rem;
 }
 
 .category-tally {
@@ -1088,8 +1136,7 @@ textarea:focus {
 }
 
 .activity-editor__actions button,
-.detail-pane > button,
-.worksheet__actions button {
+.detail-pane > button {
   min-height: 44px;
   border: 1px solid var(--rule);
   border-radius: 0;
@@ -1105,18 +1152,9 @@ textarea:focus {
 }
 
 .activity-editor__actions button:hover,
-.detail-pane > button:hover,
-.worksheet__actions button:hover {
+.detail-pane > button:hover {
   border-color: var(--oxide);
   background: var(--background-hover);
-}
-
-.worksheet__actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 2rem;
 }
 
 .result-composition {
@@ -1129,12 +1167,13 @@ textarea:focus {
 
 .result-composition h2 {
   margin-top: 0.35rem;
-  font: 700 2.3rem/0.95 var(--font-display);
+  font: 500 1rem/1.2 var(--font-mono);
 }
 
 .result-composition__live {
-  margin-top: 0.8rem;
+  margin-top: 0.4rem;
   color: var(--ink-muted);
+  font-size: 0.74rem;
 }
 
 .composition-bar {
@@ -1687,7 +1726,7 @@ textarea:focus {
   border-left: 0.3rem solid var(--oxide);
   margin-top: 1rem;
   padding: 0.75rem 1rem;
-  font: 600 1rem/1.6 var(--font-mono);
+  font: 500 1rem/1.5 var(--font-mono);
   overflow-wrap: anywhere;
 }
 
@@ -1756,7 +1795,7 @@ textarea:focus {
 
 .learning-card__arithmetic p {
   margin-top: 0.35rem;
-  font: 600 0.95rem/1.6 var(--font-mono);
+  font: 500 1rem/1.5 var(--font-mono);
   overflow-wrap: anywhere;
 }
 
@@ -1842,7 +1881,6 @@ textarea:focus {
 .mode-switcher button,
 .activity-tile__add,
 .activity-editor__actions button,
-.worksheet__actions button,
 .data-matrix__group button,
 .atlas-record,
 .atlas__table > button,
@@ -1994,15 +2032,6 @@ textarea:focus {
     gap: 0.2rem;
   }
 
-  .worksheet__actions {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .worksheet__actions button {
-    width: 100%;
-  }
-
   .data-matrix__group header {
     align-items: flex-start;
     flex-direction: column;
@@ -2035,10 +2064,6 @@ textarea:focus {
 
   .activity-shelf__grid {
     grid-template-columns: 1fr;
-  }
-
-  .impact-trace__svg {
-    min-height: 13rem;
   }
 
   .impact-trace__tick--minor {
@@ -2074,4 +2099,1003 @@ textarea:focus {
   margin-top: 1.5rem;
   border-top: 1px solid var(--rule);
   padding-top: 1rem;
+}
+
+/* ============================================================================
+   Landscape viewport system (Phase 1 — shared layout & spacing).
+
+   Breakpoint contract (owner-approved, 2026-08):
+   - <=700px     Mobile portrait cascade. Untouched: menu contract pinned by
+                 redesigned-primary-flow.spec at 320x800 / 390x844.
+   - 701-1023px  Portrait band (phones portrait AND rotated, tablets portrait).
+                 The 9x16 gold-standard zone: today's stacked flow stays
+                 byte-identical in behavior — no panel system, no hero
+                 compression.
+   - >=1024px    Landscape density system. App-stage composition, panel
+                 primitives and density tokens apply only inside the media
+                 blocks below; nothing here affects viewports <1024px.
+   - >=1200px    Three-column Atlas grid and methodology rail.
+   - (>=1024px, <=820px height) Short-landscape typographic compression.
+   - >=1680px    Ultrawide app-shell widening.
+
+   Opt-in contract: routes join by adding `app-stage` to their root element.
+   Reading routes (`/`, `/learn`, `/methodology`, `/evidence`) stay on plain
+   block flow. `[data-panel-scroll]` is the JSX contract for inner scroll:
+   every element carrying it must also set tabindex="0", role="region" and an
+   aria-label.
+
+   Browsers without :has() (pre-15.4 Safari) degrade to today's master-scroll
+   behavior by design — no polyfill.
+   ========================================================================== */
+
+:root {
+  --hero-size: clamp(2rem, 4.2vw, 3.4rem);
+  --shell-max: 87.5rem;
+  --app-shell-max: 112.5rem;
+  --gap-panel: clamp(0.9rem, 1.4vw, 1.5rem);
+  /* vh-aware so short landscape compresses vertical rhythm without a second code path. */
+  --gap-section: clamp(1rem, 2.2vh, 2.5rem);
+}
+
+@media (min-width: 1024px) and (max-height: 820px) {
+  :root {
+    --hero-size: clamp(1.55rem, 2.35vw, 2.1rem);
+    --gap-section: clamp(0.6rem, 1.6vh, 1.25rem);
+  }
+}
+
+/* Mid landscape (up to ~1000px tall): keep display type from overshooting
+   its row budget on tall-but-not-short desktops. */
+@media (min-width: 1024px) and (max-height: 1000px) {
+  :root {
+    --hero-size: clamp(2rem, min(4.2vw, 5vh), 3.4rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  /* App-stage: viewport-fit without dvh math. main is already flex-1 inside
+     the min-h-screen flex-col shell, so when content fits, panels receive
+     exactly viewport - header - footer; taller content is contained by panel
+     scroll instead of master scroll. */
+  main:has(> .app-stage) {
+    display: flex;
+    flex-direction: column;
+    /* Contain, don't grow: without an explicit minimum the flex item's
+       auto min-height lets inner panel heights push the master scroll. */
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .app-stage {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .app-stage__grid {
+    flex: 1 1 auto;
+    display: grid;
+    min-height: 0;
+  }
+
+  /* App routes widen their shell; reading routes keep line-length discipline. */
+  .editorial-page.app-stage,
+  .page-shell.app-stage {
+    width: min(100% - 2rem, var(--app-shell-max));
+  }
+
+  /* The shell wrapper is content-sized by default, which lets panel content
+     push the master scroll before panel bounds resolve. Cap it only on
+     app-stage routes so reading routes keep natural flow. */
+  .min-h-screen.flex-col:has(> main > .app-stage) {
+    height: 100vh;
+    min-height: 0;
+  }
+
+  /* Panel primitives (landscape composition only; below 1024px these classes
+     are inert because no route renders them there). */
+  .panel {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    border: 1px solid var(--rule);
+    background: var(--background-elevated);
+  }
+
+  .panel__header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.65rem 1rem;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .panel__body {
+    padding: 1rem;
+    min-height: 0;
+  }
+
+  .panel__scroll {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    min-height: 0;
+    scrollbar-gutter: stable;
+    padding: 1rem;
+  }
+}
+
+@media (min-width: 1680px) {
+  :root {
+    --app-shell-max: 118rem;
+  }
+}
+
+/* ============================================================================
+   Phase 2: home + calculator landscape density (>=1024px only).
+   ========================================================================== */
+
+@media (min-width: 1024px) {
+  /* --- Home: hero + trace + evidence + jobs row as one composition. --- */
+  .trace-estimate {
+    gap: clamp(1.5rem, 4vw, 4rem);
+    padding-block: clamp(0.4rem, 1.2vh, 2rem);
+  }
+
+  .trace-estimate h1 {
+    font-size: var(--hero-size);
+    max-width: none;
+    margin-top: 0.35rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .trace-estimate__lead > p:not(.section-kicker) {
+    font-size: 1rem;
+    line-height: 1.55;
+  }
+
+  .quantity-field {
+    margin-top: 0.35rem;
+  }
+
+  .impact-trace {
+    margin-top: 0.7rem;
+  }
+
+  /* Wide viewBox (960x190) sizes the chart by width — no letterboxing. */
+  .impact-trace__svg {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+  }
+
+  .impact-trace__value {
+    font-size: clamp(1.05rem, 2vw, 1.35rem);
+    margin-top: 0.15rem;
+  }
+
+  .impact-trace figcaption {
+    margin-top: 0.25rem;
+    line-height: 1.35;
+    font-size: 0.72rem;
+  }
+
+  .trace-estimate__lead > .text-link {
+    margin-top: 0.45rem;
+  }
+
+  .editorial-jobs {
+    padding-block: clamp(0.6rem, 1.5vh, 1.2rem);
+  }
+
+  /* Merge the icon into the kicker row without touching DOM: icon shares
+     row 1 with the kicker; heading/copy/link stay their own rows. */
+  .editorial-jobs article {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 0.5rem;
+    align-items: start;
+  }
+
+  .editorial-jobs article > .job-path__icon {
+    grid-row: 1;
+    grid-column: 1;
+    width: 1.25rem;
+    height: 1.25rem;
+    margin: 0.05rem 0 0;
+    transform: translateY(-0.05rem);
+  }
+
+  .editorial-jobs article > .section-kicker {
+    grid-row: 1;
+    grid-column: 2;
+    align-self: center;
+  }
+
+  .editorial-jobs h2 {
+    grid-column: 2;
+    font-size: clamp(1.15rem, 1.8vw, 1.9rem);
+    margin: 0.25rem 0 0.3rem;
+  }
+
+  .editorial-jobs article > p:not(.section-kicker),
+  .editorial-jobs article > .text-link,
+  .editorial-jobs article > small {
+    grid-column: 2;
+  }
+
+  .editorial-jobs article > p:not(.section-kicker) {
+    font-size: 0.88rem;
+    line-height: 1.38;
+  }
+
+  .editorial-jobs .text-link {
+    padding-top: 0.4rem;
+  }
+
+  .editorial-jobs small {
+    margin-top: 0.25rem;
+  }
+
+  /* --- Calculator app-stage: two panel columns, inner scroll. --- */
+  .calculator__columns {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(16rem, 21rem) minmax(0, 1fr);
+    gap: var(--gap-panel);
+    align-items: stretch;
+  }
+
+  .calculator__columns > .panel {
+    min-height: 0;
+  }
+
+  .calculator__columns .panel__scroll {
+    flex: 1 1 auto;
+  }
+
+  /* Compact vertical category rail inside the shelf panel. */
+  .calculator__shelf .worksheet__groups {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    margin-block: 0;
+    border: 0;
+    background: transparent;
+  }
+
+  .calculator__shelf .category-button {
+    flex: 0 0 auto;
+  }
+
+  .calculator__shelf .activity-shelf {
+    padding-block: 1rem;
+  }
+
+  .calculator__shelf .activity-shelf__heading {
+    margin-bottom: 0.7rem;
+  }
+
+  .calculator__shelf .activity-shelf__grid {
+    grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  }
+
+  /* Basket header becomes one compact ruled row inside the worksheet panel. */
+  .basket-header {
+    padding-block: 0.65rem;
+    margin-block: 0;
+  }
+
+  /* ResultPanel sticky now anchors to the worksheet panel scroll container
+     (page-relative `top` no longer applies). */
+  .result-composition {
+    top: 1rem;
+  }
+}
+
+@media (min-width: 1024px) and (max-height: 820px) {
+  .source-list {
+    gap: 0.45rem;
+    font-size: 0.72rem;
+  }
+
+  .evidence-rail__badges {
+    gap: 0.35rem;
+    margin-top: 0.6rem;
+  }
+
+  .evidence-chip {
+    min-height: 1.35rem;
+    font-size: 0.64rem;
+  }
+}
+
+/* ============================================================================
+   Phase 2b: short-landscape shell compression (>=1024px, <=820px height).
+   Footer slims to a single reference line (plan recommendation, owner-
+   approved open question #2); page padding defers to the section rhythm.
+   ========================================================================== */
+@media (min-width: 1024px) and (max-height: 820px) {
+  .editorial-page {
+    padding-block: var(--gap-section);
+  }
+
+  .reference-strip {
+    font-size: 0.72rem;
+  }
+
+  .reference-strip nav {
+    gap: 0.75rem;
+  }
+}
+
+/* ============================================================================
+   Phase 3: Activity Atlas regions (explore).
+   Base rules recreate the former .atlas__scan pairing for <1024px so the
+   portrait band keeps today's visual flow with the new markup; the landscape
+   media blocks re-region everything >=1024px.
+   ========================================================================== */
+.atlas__layout {
+  /* Stacked reading order below the landscape system; the >=1024px block
+     re-regions into rail/matrix/detail. Keeping the base single-column
+     protects the 701–1023px portrait band from a two-column auto-place. */
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(1.5rem, 4vw, 3rem);
+}
+
+.atlas__rail {
+  grid-column: 1 / -1;
+}
+
+.atlas__layout > * {
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  /* App routes use the tight section rhythm everywhere above 1024px. */
+
+  .atlas__layout {
+    flex: 1 1 auto;
+    min-height: 0;
+    align-items: stretch;
+    grid-template-columns: minmax(13rem, 16rem) minmax(0, 1fr);
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      'rail matrix'
+      'rail detail';
+    gap: var(--gap-panel);
+  }
+
+  .atlas__rail {
+    grid-area: rail;
+  }
+
+  .atlas__center {
+    grid-area: matrix;
+  }
+
+  .atlas__detail {
+    grid-area: detail;
+  }
+
+  .atlas__layout > .panel {
+    min-height: 0;
+  }
+
+  .atlas__layout .panel__scroll {
+    flex: 1 1 auto;
+  }
+
+  /* Compact vertical catalogue rail. */
+  .atlas__rail .mode-switcher {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    margin-block: 0;
+    border: 0;
+    background: transparent;
+    gap: 2px;
+  }
+
+  .atlas__rail .mode-switcher button {
+    flex: 0 0 auto;
+  }
+
+  .atlas__rail .mode-switcher button span {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .atlas__rail .atlas__filters {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+    border-top: 1px solid var(--rule);
+    padding-top: 0.75rem;
+  }
+
+  /* Table opens inside the center scroll region. */
+  .atlas__table {
+    margin-top: 1.25rem;
+  }
+
+  .table-wrap {
+    max-height: 40vh;
+    overflow-y: auto;
+  }
+}
+
+@media (min-width: 1200px) {
+  .atlas__layout {
+    grid-template-columns: minmax(14rem, 17rem) minmax(0, 1fr) minmax(18rem, 23rem);
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-areas: 'rail matrix detail';
+  }
+}
+
+/* ============================================================================
+   Phase 4: methodology two-column editorial grid + learn density.
+   Landscape only; the <=1023px band keeps today's stacked reading flow.
+   ========================================================================== */
+@media (min-width: 1024px) {
+  /* Reading shells keep tight vertical rhythm; width is governed by app-stage. */
+  .page-shell--reading {
+    padding-block: 0.5rem var(--gap-section);
+  }
+
+  .reference-panel {
+    margin-top: var(--gap-section);
+  }
+
+  /* Learn density. */
+  .learning-grid {
+    gap: var(--gap-panel);
+  }
+
+  .learning-card h2 {
+    font-size: clamp(1.3rem, 2vw, 2.15rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  /* Four metadata rows become two columns of two inside each card. */
+  .learning-card__metadata {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.35rem 1rem;
+  }
+
+  .learning-card__metadata div {
+    border-top: 0;
+    padding-block: 0;
+  }
+}
+
+@media (min-width: 1024px) and (max-height: 820px) {
+  .learning-card h2 {
+    font-size: clamp(1.15rem, 1.7vw, 1.6rem);
+  }
+}
+
+/* ============================================================================
+   Phase 4b: reading-route bounded scroll + width corrections.
+   ========================================================================== */
+@media (min-width: 1024px) {
+  .primer-card__questions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  /* Display titles on reading routes use the landscape hero scale too. */
+  .page-shell--reading .surface-card {
+    padding: var(--gap-panel);
+  }
+}
+@media (min-width: 1024px) {
+  /* Wide references stay on the page but never drive master scroll. */
+  .reference-scroll {
+    max-height: min(22rem, 38vh);
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+  }
+
+  .primer-scroll {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+  }
+
+  .primer-scroll {
+    /* No cap: all six primer questions render in flow; framed bars stay pinned. */
+  }
+
+  .methodology__owid,
+  .methodology__registry {
+    max-height: min(31vh, 26rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+  }
+
+  .methodology__owid:focus-visible,
+  .methodology__registry:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: -3px;
+  }
+
+  .reference-scroll:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: -3px;
+  }
+
+
+  /* OWID context card inside its grid cell becomes a dense record. */
+  .methodology-layout > .methodology__owid .owid-context {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 var(--gap-panel);
+    align-items: start;
+  }
+
+  .methodology-layout > .methodology__owid .owid-context > * {
+    margin-top: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  /* Cards are uniform link cards; bound their long internals so all three
+     share one screen without hiding anything. */
+  .learning-card > .reference-scroll {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    max-height: min(9.5vh, 5.5rem);
+  }
+
+  .learning-card > .reference-scroll:has(> .learning-card__metadata) {
+    max-height: min(10.5vh, 6.5rem);
+  }
+
+  .learning-card__metadata {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem 1rem;
+    align-content: start;
+  }
+
+  /* Half-width items stack label over value: no horizontal truncation. */
+  .learning-layout .learning-card__metadata div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.15rem;
+  }
+
+  .learning-layout .learning-card__metadata dd {
+    text-align: left;
+  }
+
+  .learning-card__metadata div {
+    border-top: 0;
+    padding-block: 0;
+  }
+
+  .learning-card h2 {
+    margin-block: 0.35rem;
+  }
+
+  .learning-card {
+    gap: 0.65rem;
+  }
+
+  .learning-grid.mt-8,
+  .learning-card + * ,
+  main > .page-shell--reading > .mt-8 {
+    margin-top: var(--gap-section);
+  }
+
+  .page-shell--reading .surface-card p {
+    line-height: 1.5;
+  }
+
+  .learning-card h2 {
+    font-size: clamp(1.15rem, 1.6vw, 1.55rem);
+  }
+
+  .methodology-grid {
+    gap: calc(var(--gap-panel) * 0.6);
+  }
+}
+
+/* ============================================================================
+   Phase 5: Evidence library grid (manifests). Uniform link cards become a
+   two-column grid on landscape; the band keeps the single column.
+   ========================================================================== */
+@media (min-width: 1024px) {
+  .manifest-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--gap-panel);
+    margin-top: 0;
+  }
+
+  .manifest-list .surface-card {
+    padding: 0.8rem 0.9rem;
+  }
+
+  .manifest-list h2 {
+    font-size: 1rem;
+  }
+
+  .manifest-list .surface-card p {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin-top: 0.4rem;
+  }
+
+  .manifest-list .surface-card > div {
+    gap: 0.5rem;
+  }
+}
+
+/* ============================================================================
+   Phase 6: normalized tab headerbar (status bar) on every non-home tab.
+   54px (var(--bar-h)), sticky directly below the topbar (var(--header-h)).
+   The former hero proclamations are distilled into the bar title + meta.
+   ========================================================================== */
+.tab-headerbar {
+  position: sticky;
+  top: calc(var(--header-h) + 1px);
+  z-index: 19;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  height: var(--bar-h);
+  min-height: var(--bar-h);
+  overflow: hidden;
+  padding-inline: 1rem;
+  background: var(--paper);
+}
+
+.tab-headerbar__title {
+  flex: 0 0 auto;
+  color: var(--ink);
+  font: 650 1.15rem/1 var(--font-display);
+  letter-spacing: 0.01em;
+}
+
+.tab-headerbar__meta {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  color: var(--ink-muted);
+  font: 500 0.74rem/1.2 var(--font-mono);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tab-headerbar__meta strong {
+  color: var(--ink);
+  font-weight: 650;
+}
+
+.tab-headerbar__meta .text-link {
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .tab-headerbar__meta {
+    gap: 0.6rem;
+    font-size: 0.68rem;
+  }
+}
+
+
+
+/* Landscape app-stage for the reading tabs: full app-shell width, viewport
+   bounded, inner regions scroll. */
+@media (min-width: 1024px) {
+  .page-shell.app-stage,
+  .page-shell--reading.app-stage {
+    width: min(100% - 2rem, var(--app-shell-max));
+    padding-block: 0;
+  }
+
+  /* Reading tabs: content grids absorb the freed hero space. */
+  .learning-layout {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .learning-layout > .learning-grid {
+    flex: 1 1 auto;
+    min-height: 0;
+    grid-template-rows: minmax(0, 1fr);
+    overflow: hidden;
+  }
+
+  .learning-layout > .learning-grid > .learning-card {
+    min-height: 0;
+    margin: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+  }
+
+  .manifests-page {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/* ============================================================================
+   Phase 6b: freed-viewport layouts for reading tabs.
+   ========================================================================== */
+@media (min-width: 1024px) {
+  .methodology-layout {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    align-content: start;
+  }
+
+  .methodology-layout > * {
+    margin-top: 0;
+  }
+
+  .manifests-page > .manifest-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    align-content: start;
+  }
+}
+
+/* App-stage routes scroll within the capped shell wrapper (not the document),
+   so the sticky topbar, tab status bar and footer all stay pinned while
+   bounded panels scroll inside. */
+@media (min-width: 1024px) {
+  .min-h-screen.flex-col:has(> main > .app-stage) {
+    overflow-y: auto;
+  }
+}
+
+/* ============================================================================
+   Phase 7: tab footerbar — per-tab utility area mirroring the tab headerbar.
+   54px, sticky above the site footer bottombar; replaces bottom CTA blocks.
+   ========================================================================== */
+.tab-footerbar {
+  position: sticky;
+  bottom: calc(var(--bar-h) + 1px);
+  z-index: 19;
+  flex: 0 0 auto;
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  height: var(--bar-h);
+  min-height: var(--bar-h);
+  overflow: hidden;
+  padding-inline: 1rem;
+  border-top: 1px solid var(--rule);
+  background: var(--paper);
+}
+
+.tab-footerbar__group {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 1rem;
+}
+
+.tab-footerbar__meta {
+  color: var(--ink-muted);
+  font: 500 0.74rem/1.2 var(--font-mono);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tab-footerbar__meta strong {
+  color: var(--ink);
+  font-weight: 650;
+}
+
+/* Actions keep the app-wide 44px touch-target contract inside the 54px bar,
+   rendered as clean underlined text (no boxed buttons). */
+.tab-footerbar button,
+.tab-footerbar .text-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0;
+}
+
+.tab-footerbar button.text-link {
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  border-radius: 0;
+  background: transparent;
+  font: 700 0.9rem/1.2 var(--font-sans);
+}
+
+.tab-footerbar button.text-link:hover {
+  border-bottom-color: var(--signal);
+  background: transparent;
+}
+
+.disclosure--static {
+  padding-top: 0.75rem;
+}
+
+@media (max-width: 700px) {
+  .tab-footerbar__group {
+    gap: 0.6rem;
+  }
+
+  .tab-footerbar__meta {
+    font-size: 0.68rem;
+  }
+  /* Bars adapt on the portrait band: content may wrap instead of clipping
+     inside the fixed 54px desktop geometry. */
+  .site-footer {
+    height: auto;
+  }
+
+  .tab-footerbar {
+    height: auto;
+    min-height: var(--bar-h);
+    flex-wrap: wrap;
+    padding-block: 0.5rem;
+  }
+
+  /* Definite svg height: with height:auto the svg's pixel size derives from
+     the measured viewBox, which feeds back into the figure box and grows the
+     chart forever. The landscape system sizes the svg at 100% instead. */
+  .impact-trace__svg {
+    height: clamp(120px, 34vw, 240px);
+  }
+}
+
+/* ============================================================================
+   Phase 8: Evidence tab consolidation + slim Methodology reading tab.
+   ========================================================================== */
+@media (min-width: 1024px) {
+  .evidence-page {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .evidence-layout {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    display: grid;
+    gap: var(--gap-panel);
+    align-content: start;
+    align-items: stretch;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    grid-template-areas:
+      'sources benchmarks'
+      'dataset global'
+      'manifests manifests';
+  }
+
+  .evidence-layout > #manifests { grid-area: manifests; }
+  .evidence-layout > #dataset { grid-area: dataset; }
+  .evidence-layout > #sources { grid-area: sources; }
+  .evidence-layout > #benchmarks { grid-area: benchmarks; }
+  .evidence-layout > #global { grid-area: global; }
+
+  .evidence-layout > * {
+    margin-top: 0;
+    min-width: 0;
+  }
+
+  .evidence-layout > .manifest-list {
+    margin-top: 0.5rem;
+  }
+
+  /* Global context + release: bounded so it never drives the section scroll. */
+  .evidence-global {
+    max-height: min(52vh, 44rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+  }
+
+  .evidence-global:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: -3px;
+  }
+
+  /* Slim methodology: one editorial column, four policy cards in one row. */
+  .methodology-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .methodology-layout > .primer-card {
+    margin-top: 0;
+  }
+
+  .page-shell--reading .primer-card {
+    padding: var(--gap-panel);
+  }
+}
+
+/* ============================================================================
+   Phase 9: home joins the app-stage frame — the chart absorbs viewport slack.
+   ========================================================================== */
+@media (min-width: 1024px) {
+  /* Every app-stage root fills the bounded main — without flex: 1 1 auto the
+     page shrinks to content and a dead band opens above the sticky footer.
+     HOME ONLY: opens with section rhythm (no tab headerbar above it).
+     min-height: 0 gives the flex chain an absolute bound — without it the
+     chart's measured viewBox feeds back into layout height and grows forever. */
+  .editorial-page.app-stage,
+  .page-shell.app-stage,
+  .page-shell--reading.app-stage {
+    flex: 1 1 auto;
+    min-height: 0;
+    /* The bars and sections own the rhythm; the fat editorial padding would
+       reintroduce a 5vw dead band above the sticky footer. */
+    padding-block: 0;
+  }
+
+  .editorial-page.home-page.app-stage {
+    padding-block: clamp(1.25rem, 3vh, 2.25rem) 0;
+  }
+
+  .editorial-page.app-stage .trace-estimate {
+    flex: 1 1 auto;
+    min-height: 0;
+    /* Definite row: without it the svg's 100% height resolves against an
+       auto row and the measured viewBox feeds back into layout — forever. */
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .editorial-page.app-stage .trace-estimate__lead {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* The chart is the flex-grow element: dead space becomes chart space. */
+  .editorial-page.app-stage .trace-estimate__lead > .impact-trace {
+    flex: 1 1 auto;
+    min-height: 9rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    margin-top: 0.6rem;
+  }
+
+  .editorial-page.app-stage .trace-estimate__lead > .impact-trace > .impact-trace__svg {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    width: 100%;
+  }
+
+  .editorial-page.app-stage .editorial-jobs {
+    flex: 0 0 auto;
+    margin-top: var(--gap-section);
+  }
 }

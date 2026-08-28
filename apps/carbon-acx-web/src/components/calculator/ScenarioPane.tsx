@@ -1,5 +1,6 @@
 'use client'
 
+import { abbreviateUnit } from '@/lib/units'
 import { useEffect, useMemo, useState } from 'react'
 
 import { DataState } from '@/components/content'
@@ -23,11 +24,11 @@ function scenarioLabel(scenario: AiScenario): string {
 }
 
 function unitLabel(scenario: AiScenario): string {
-  if (scenario.functionalUnit === 'prompt') return 'prompts per year'
-  if (scenario.functionalUnit === 'response') return 'responses per year'
-  if (scenario.functionalUnit === 'image') return 'images per year'
-  if (scenario.functionalUnit === 'video_clip') return 'video clips per year'
-  return 'inferences per year'
+  if (scenario.functionalUnit === 'prompt') return abbreviateUnit('prompts per year')
+  if (scenario.functionalUnit === 'response') return abbreviateUnit('responses per year')
+  if (scenario.functionalUnit === 'image') return abbreviateUnit('images per year')
+  if (scenario.functionalUnit === 'video_clip') return abbreviateUnit('video clips per year')
+  return abbreviateUnit('inferences per year')
 }
 
 function ScenarioEvidence({ scenario }: { scenario: AiScenario }) {
@@ -131,7 +132,7 @@ export function ScenarioPane({
             {resolution && resolution.status !== 'unavailable' ? (
               <>
                 <label htmlFor="scenario-quantity">
-                  Annual quantity ({unitLabel(resolution.scenario)})
+                  Annual quantity ({abbreviateUnit(unitLabel(resolution.scenario))})
                 </label>
                 <input
                   id="scenario-quantity"
@@ -164,12 +165,12 @@ export function ScenarioPane({
         </DataState>
       ) : (
         <DataState
-          title={`Included in your total: ${formatEmissions(publishedGrams ?? 0)} per year`}
+          title={`Included in your total: ${formatEmissions(publishedGrams ?? 0)}/yr`}
           badge={scenarioStaleVintage(resolution.scenario) ? 'stale-vintage' : undefined}
         >
           {quantity > 0 && typeof resolution.scenario.carbonGPerUnit === 'number' ? (
             <p className="equation">
-              {quantity} {unitLabel(resolution.scenario)} ×{' '}
+              {quantity} {abbreviateUnit(unitLabel(resolution.scenario))} ×{' '}
               {resolution.scenario.carbonGPerUnit} g CO₂e ={' '}
               {formatEmissions(publishedGrams ?? 0)}
             </p>

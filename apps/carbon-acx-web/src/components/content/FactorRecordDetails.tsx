@@ -1,3 +1,4 @@
+import { abbreviateUnit } from '@/lib/units'
 import { Disclosure } from '@/components/content/Disclosure'
 import { SourceList } from '@/components/content/SourceList'
 import { formatEmissions, type ActivityEvidence } from '@/lib/calculator'
@@ -27,7 +28,7 @@ export function FactorRecordDetails({
   const formattedFactor = emissionFactor?.toLocaleString('en-CA', { maximumFractionDigits: 4 })
   const uncertainty = evidence.uncertainty.lowGPerUnit == null
     ? 'Not quantified'
-    : `${evidence.uncertainty.lowGPerUnit}–${evidence.uncertainty.highGPerUnit} g CO₂e / ${unitLabel}`
+    : `${evidence.uncertainty.lowGPerUnit}–${evidence.uncertainty.highGPerUnit} g CO₂e / ${abbreviateUnit(unitLabel)}`
 
   return (
     <div className="factor-record-details">
@@ -56,7 +57,7 @@ export function FactorRecordDetails({
         <h3>Worked arithmetic</h3>
         {isAvailable ? (
           <p className="factor-record-details__equation">
-            {formattedQuantity} {unitLabel} × {formattedFactor} g CO₂e / {unitLabel} = {formatEmissions(workedQuantity * emissionFactor)}
+            {formattedQuantity} {abbreviateUnit(unitLabel)} × {formattedFactor} g CO₂e / {abbreviateUnit(unitLabel)} = {formatEmissions(workedQuantity * emissionFactor)}
           </p>
         ) : (
           <p>Not available. No numeric zero is substituted.</p>
