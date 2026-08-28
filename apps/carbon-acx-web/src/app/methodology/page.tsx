@@ -9,7 +9,7 @@ const primerActivity = getActivityById('TRAN.SCHOOLRUN.CAR.KM')!
 const primerQuantity = 1_000
 const primerResult = calculateEmissions([{ activityId: primerActivity.id, quantity: primerQuantity }]).results[0]!
 const primerUnit = abbreviateUnit(primerActivity.unitLabel).replace(/s$/, '')
-const primerEquation = `${primerQuantity.toLocaleString('en-CA')} ${abbreviateUnit(primerActivity.unitLabel)} × ${primerActivity.emissionFactor} g CO₂e / ${primerUnit} = ${formatEmissions(primerResult.emissions)}/year`
+const primerEquation = `${primerQuantity.toLocaleString('en-CA')} ${abbreviateUnit(primerActivity.unitLabel)} × ${primerActivity.emissionFactor} g CO₂e / ${primerUnit} = ${formatEmissions(primerResult.emissions)}/yr`
 
 export default function MethodologyPage() {
   return (

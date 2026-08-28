@@ -27,7 +27,7 @@ await new Promise((ok) => server.listen(0, '127.0.0.1', ok))
 const port = server.address().port
 const base = `http://127.0.0.1:${port}`
 const browser = await chromium.launch()
-const ROUTES = ['/', '/calculator', '/explore', '/explore/3d', '/learn', '/methodology', '/manifests']
+const ROUTES = ['/', '/calculator', '/explore', '/explore/3d', '/learn', '/methodology', '/evidence']
 const VIEWPORTS = [
   [1280, 720], [1440, 900], [1920, 1080], [720, 1280], [844, 390], [768, 1024], [320, 800], [390, 844],
 ]

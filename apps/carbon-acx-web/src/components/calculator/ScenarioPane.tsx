@@ -165,7 +165,7 @@ export function ScenarioPane({
         </DataState>
       ) : (
         <DataState
-          title={`Included in your total: ${formatEmissions(publishedGrams ?? 0)} per year`}
+          title={`Included in your total: ${formatEmissions(publishedGrams ?? 0)}/yr`}
           badge={scenarioStaleVintage(resolution.scenario) ? 'stale-vintage' : undefined}
         >
           {quantity > 0 && typeof resolution.scenario.carbonGPerUnit === 'number' ? (

@@ -40,14 +40,14 @@ export function ImpactTrace({
         <line x1={x(0)} y1={chartHeight - 38} x2={x(endpoint)} y2={chartHeight - 38} stroke="currentColor" strokeOpacity="0.35" />
         <circle cx={pointX} cy={pointY} r="7" fill="var(--paper)" stroke={color} strokeWidth="3" />
         <text className="impact-trace__marker-label" x={Math.min(pointX + 12, chartWidth - 170)} y={Math.max(pointY - 14, 20)} fill="currentColor">
-          {quantity.toLocaleString('en-CA')} {unitLabel} · {formatEmissions(emissions)}/year
+          {quantity.toLocaleString('en-CA')} {unitLabel} · {formatEmissions(emissions)}/yr
         </text>
         <text className="impact-trace__axis-label" x={chartWidth - 28} y={chartHeight - 48} textAnchor="end">quantity ({unitLabel})</text>
         <text className="impact-trace__axis-label" x="36" y="18">CO₂e</text>
       </svg>
-      <p className="impact-trace__value" aria-live="polite">{formatEmissions(emissions)}/year</p>
+      <p className="impact-trace__value" aria-live="polite">{formatEmissions(emissions)}/yr</p>
       <figcaption id="impact-trace-caption">
-        The line scales from 0 to {endpoint.toLocaleString('en-CA')} {unitLabel}; the live marker shows {quantity.toLocaleString('en-CA')} {unitLabel} × {factor} g CO₂e / {unitLabel} = {formatEmissions(emissions)}/year.
+        The line scales from 0 to {endpoint.toLocaleString('en-CA')} {unitLabel}; the live marker shows {quantity.toLocaleString('en-CA')} {unitLabel} × {factor} g CO₂e / {unitLabel} = {formatEmissions(emissions)}/yr.
       </figcaption>
     </figure>
   )

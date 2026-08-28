@@ -22,9 +22,20 @@
   font-display: swap;
 }
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Tailwind v4 (CSS-first): theme tokens + utilities only. No preflight —
+   the design system's own CSS owns all element defaults, and unlayered
+   custom rules keep precedence over generated utilities. */
+@import "tailwindcss/theme" layer(theme);
+@import "tailwindcss/utilities" layer(utilities);
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-foreground-muted: var(--ink-muted);
+  --font-display: 'Cabinet Grotesk', system-ui, sans-serif;
+  --font-sans: 'General Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+}
 
 /* Carbon ACX public system: paper, ink, oxidized green, signal orange. */
 :root {

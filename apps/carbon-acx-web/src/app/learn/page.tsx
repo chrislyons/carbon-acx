@@ -110,7 +110,7 @@ function LearningCard({
         </div>
         <div>
           <dt>Unit</dt>
-          <dd>{record.unitDefinition || record.unitLabel}</dd>
+          <dd>{record.unitDefinition || abbreviateUnit(record.unitLabel)}</dd>
         </div>
         </dl>
       </div>

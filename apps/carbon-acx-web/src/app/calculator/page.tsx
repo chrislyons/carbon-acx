@@ -321,7 +321,7 @@ function ActivityEditor({
           <EvidenceBadge evidence={activity.evidence} />
           <h2>{activity.name}</h2>
           <p>{activity.description}</p>
-          <p className="mono">Factor: {activity.emissionFactor} g CO₂e / {activity.unitLabel}</p>
+          <p className="mono">Factor: {activity.emissionFactor} g CO₂e / {abbreviateUnit(activity.unitLabel)}</p>
         </div>
       </div>
       <div className="activity-editor__control">
@@ -372,15 +372,15 @@ function ResultPanel({
   const percentage = comparisonToBenchmark(combinedTotal, benchmark)
   const hasTotal = summary.results.length > 0 || additionalGrams > 0
   const status = hasTotal
-    ? `${formatEmissions(combinedTotal)} per year.`
+    ? `${formatEmissions(combinedTotal)}/yr.`
     : 'Add a valid annual quantity to see a total.'
   return (
     <aside className="result-composition" aria-label="Worksheet result">
-      <h2>{hasTotal ? `${formatEmissions(combinedTotal)}/year` : 'Add a valid annual quantity'}</h2>
+      <h2>{hasTotal ? `${formatEmissions(combinedTotal)}/yr` : 'Add a valid annual quantity'}</h2>
       <p className="result-composition__live" role="status" aria-live="polite">{evidenceId ? `${status} Evidence detail open.` : status}</p>
       {additionalGrams > 0 ? (
         <p className="equation">
-          Includes a published AI scenario: {formatEmissions(additionalGrams)} per year.
+          Includes a published AI scenario: {formatEmissions(additionalGrams)}/yr.
         </p>
       ) : null}
       {categories.length ? (
@@ -401,7 +401,7 @@ function ResultPanel({
       </ul>
       {summary.results.map((result) => (
         <p className="equation" key={result.activityId}>
-          {result.quantity} {result.unitLabel} × {result.emissionFactor} g CO₂e / {result.unitLabel} = {formatEmissions(result.emissions)}
+          {result.quantity} {abbreviateUnit(result.unitLabel)} × {result.emissionFactor} g CO₂e / {abbreviateUnit(result.unitLabel)} = {formatEmissions(result.emissions)}
         </p>
       ))}
       <label>
