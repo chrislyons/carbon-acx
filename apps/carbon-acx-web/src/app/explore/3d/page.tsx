@@ -63,7 +63,7 @@ export default function ThreeDVisualizationPage() {
       />
 
       {summary.results.length === 0 ? (
-        <div className="mt-8">
+        <div>
           <DataState title="No calculated result is stored">
             Complete an annual worksheet first, then return here to view that same published data.{' '}
             <Link className="underline" href="/calculator">Open Estimate</Link>

@@ -923,6 +923,18 @@ button.text-link:hover {
   padding-block: 1.25rem;
 }
 
+/* No full-width dividers in the basket header: the rule under the header
+   text reuses the activity-editor half-div (left half only, never under
+   the tally card). */
+.basket-header.ruled-section {
+  border-block: 0;
+}
+
+.basket-header > div:first-child {
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.75rem;
+}
+
 .category-tally {
   display: flex;
   flex-wrap: wrap;
@@ -2668,8 +2680,18 @@ textarea:focus {
   .learning-card__metadata {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.35rem 1rem;
+    gap: 0.5rem 1rem;
     align-content: start;
+  }
+
+  /* Half-width items stack label over value: no horizontal truncation. */
+  .learning-layout .learning-card__metadata div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.15rem;
+  }
+
+  .learning-layout .learning-card__metadata dd {
+    text-align: left;
   }
 
   .learning-card__metadata div {
@@ -2722,7 +2744,7 @@ textarea:focus {
   .manifest-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--gap-panel);
-    margin-top: var(--gap-section);
+    margin-top: 0;
   }
 
   .manifest-list .surface-card {
@@ -2762,7 +2784,6 @@ textarea:focus {
   min-height: var(--bar-h);
   overflow: hidden;
   padding-inline: 1rem;
-  border-bottom: 1px solid var(--rule);
   background: var(--paper);
 }
 
@@ -2824,6 +2845,16 @@ textarea:focus {
   .learning-layout > .learning-grid {
     flex: 1 1 auto;
     min-height: 0;
+    grid-template-rows: minmax(0, 1fr);
+    overflow: hidden;
+  }
+
+  .learning-layout > .learning-grid > .learning-card {
+    min-height: 0;
+    margin: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
   }
 
   .manifests-page {
@@ -2845,6 +2876,16 @@ textarea:focus {
     overscroll-behavior: contain;
     scrollbar-gutter: stable;
     align-content: start;
+  }
+
+  /* Row rhythm comes from the grid gap alone; per-item margins off. */
+  .methodology-layout > * {
+    margin-top: 0;
+  }
+
+  /* Rail stretches to match the left column exactly; scrolls internally. */
+  .methodology-rail {
+    max-height: none;
   }
 
   .manifests-page > .manifest-list {
