@@ -149,3 +149,7 @@ http://localhost:4180 — `node scripts/serve-static.mjs 4180 dist/site`
 ### Preview
 
 http://localhost:4180 — `node scripts/serve-static.mjs 4180 dist/site`
+
+## 2026-08-28 — home overhaul, framing, units, Evidence split (see docs/acx/ACX113)
+
+Full session log in `docs/acx/ACX113 Interactive Home Tab and Framed Tab System.md`. Highlights: framed 54px tab bars site-wide; Methodology/Evidence split; interactive home (vehicle-class dropdown, draggable marker, all-classes chart, responsive viewBox); callout standard 1rem/500; unit abbreviation layer; Tailwind v4 utilities activation (were silently dead); app-stage viewport-bounded tabs with zero dead band at tall viewports; footer/header unbound; yr suffix site-wide. e2e 107/107.
