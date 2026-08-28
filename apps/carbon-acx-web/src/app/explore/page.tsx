@@ -3,6 +3,7 @@ import Link from 'next/link'
 
 import { TabHeader } from '@/components/layout/TabHeader'
 import { TabFooter } from '@/components/layout/TabFooter'
+import { abbreviateUnit } from '@/lib/units'
 import { useMemo, useState } from 'react'
 import { EvidenceBadge, FactorRecordDetails } from '@/components/content'
 import { AtlasCoverageMap, AtlasModeIcon } from '@/components/viz/AtlasCoverageMap'
@@ -176,7 +177,7 @@ function DetailPane({
         description={record.description}
         unitDefinition={record.unitDefinition}
         notes={record.notes}
-        unitLabel={record.unitLabel}
+        unitLabel={abbreviateUnit(record.unitLabel)}
         emissionFactor={record.emissionFactor}
         evidence={record.evidence}
       />

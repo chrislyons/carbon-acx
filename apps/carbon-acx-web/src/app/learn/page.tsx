@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { SourceList } from '@/components/content'
 import { TabHeader } from '@/components/layout/TabHeader'
 import { TabFooter } from '@/components/layout/TabFooter'
+import { abbreviateUnit } from '@/lib/units'
 import {
   ACTIVITIES,
   CATALOG_ACTIVITIES,
@@ -88,8 +89,8 @@ function LearningCard({
         <div className="learning-card__arithmetic">
           <span className="section-kicker">Worked arithmetic</span>
           <p>
-            {study.quantity.toLocaleString('en-CA')} {study.quantityLabel} × {record.emissionFactor} g CO₂e /{' '}
-            {record.unitLabel.replace(/s$/, '')} = {workedEmissions}
+            {study.quantity.toLocaleString('en-CA')} {abbreviateUnit(study.quantityLabel)} × {record.emissionFactor} g CO₂e /{' '}
+            {abbreviateUnit(record.unitLabel)} = {workedEmissions}
           </p>
         </div>
       )}

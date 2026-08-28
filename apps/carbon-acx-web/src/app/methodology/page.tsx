@@ -2,15 +2,14 @@ import Link from 'next/link'
 import { Disclosure } from '@/components/content'
 import { TabHeader } from '@/components/layout/TabHeader'
 import { TabFooter } from '@/components/layout/TabFooter'
+import { abbreviateUnit } from '@/lib/units'
 import { ACTIVITIES, CALCULATOR_DATASET, calculateEmissions, encodeCalculatorInputs, formatEmissions, getActivityById } from '@/lib/calculator'
 
 const primerActivity = getActivityById('TRAN.SCHOOLRUN.CAR.KM')!
 const primerQuantity = 1_000
 const primerResult = calculateEmissions([{ activityId: primerActivity.id, quantity: primerQuantity }]).results[0]!
-const primerUnit = primerActivity.unitLabel.endsWith('s')
-  ? primerActivity.unitLabel.slice(0, -1)
-  : primerActivity.unitLabel
-const primerEquation = `${primerQuantity.toLocaleString('en-CA')} ${primerActivity.unitLabel} × ${primerActivity.emissionFactor} g CO₂e / ${primerUnit} = ${formatEmissions(primerResult.emissions)}/year`
+const primerUnit = abbreviateUnit(primerActivity.unitLabel).replace(/s$/, '')
+const primerEquation = `${primerQuantity.toLocaleString('en-CA')} ${abbreviateUnit(primerActivity.unitLabel)} × ${primerActivity.emissionFactor} g CO₂e / ${primerUnit} = ${formatEmissions(primerResult.emissions)}/year`
 
 export default function MethodologyPage() {
   return (

@@ -7,6 +7,7 @@ import { ActivityShelf } from '@/components/calculator/ActivityShelf'
 import { ScenarioPane } from '@/components/calculator/ScenarioPane'
 import { TabHeader } from '@/components/layout/TabHeader'
 import { TabFooter } from '@/components/layout/TabFooter'
+import { abbreviateUnit } from '@/lib/units'
 import { BenchmarkContext, DataState, EvidenceBadge, FactorRecordDetails } from '@/components/content'
 
 const ImpactComposition = dynamic(
@@ -324,7 +325,7 @@ function ActivityEditor({
         </div>
       </div>
       <div className="activity-editor__control">
-        <label htmlFor={`${activity.id}-quantity`}>Annual quantity ({activity.unitLabel})</label>
+        <label htmlFor={`${activity.id}-quantity`}>Annual quantity ({abbreviateUnit(activity.unitLabel)})</label>
         <input
           id={`${activity.id}-quantity`}
           type="number"
