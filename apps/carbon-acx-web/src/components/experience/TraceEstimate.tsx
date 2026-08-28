@@ -1,45 +1,85 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { EvidenceBadge, SourceList } from '@/components/content'
 import { ImpactTrace } from '@/components/viz/ImpactTrace'
-import { ACTIVITIES, CATEGORY_INFO, calculateEmissions, encodeCalculatorInputs, getActivityById } from '@/lib/calculator'
+import { abbreviateUnit } from '@/lib/units'
+import { ACTIVITIES, CATEGORY_INFO, calculateEmissions, encodeCalculatorInputs, formatEmissions, getActivityById } from '@/lib/calculator'
 
-const activity = getActivityById('TRAN.SCHOOLRUN.CAR.KM')!
-const initialQuantity = 1_000
+const commuterVehicleIds = ['TRAN.SCHOOLRUN.CAR.KM', 'TRAN.TTC.BUS.KM', 'TRAN.TTC.SUBWAY.KM'] as const
+const commuterVehicles = commuterVehicleIds.map((id) => getActivityById(id)!)
+const defaultVehicle = commuterVehicles[0]
 const publishedActivityCount = ACTIVITIES.filter((item) => item.evidence.publicationStatus === 'published').length
 
+const vehicleLabels: Record<string, string> = {
+  'TRAN.SCHOOLRUN.CAR.KM': 'Car',
+  'TRAN.TTC.BUS.KM': 'Toronto bus',
+  'TRAN.TTC.SUBWAY.KM': 'Toronto subway',
+}
+
 export function TraceEstimate() {
-  const [quantity, setQuantity] = useState(initialQuantity)
-  const [value, setValue] = useState(String(initialQuantity))
-  const [invalid, setInvalid] = useState(false)
+  const [activityId, setActivityId] = useState<string>(defaultVehicle.id)
+  const [quantity, setQuantity] = useState(1_000)
+  const activity = getActivityById(activityId) ?? defaultVehicle
   const result = calculateEmissions([{ activityId: activity.id, quantity }]).results[0]!
 
-  function update(next: string) {
-    setValue(next)
-    const parsed = Number(next)
-    if (!Number.isFinite(parsed) || parsed <= 0) {
-      setInvalid(true)
-      return
+  // Home-tab hotkeys: ↑/↓ switches vehicle class, ←/→ slides the marker.
+  // Left/right are left to the slider's own handler while it holds focus.
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      if (event.metaKey || event.ctrlKey || event.altKey) return
+      const target = event.target as HTMLElement | null
+      if (target?.closest('input, textarea, select, [contenteditable="true"]')) return
+      const index = commuterVehicles.findIndex((vehicle) => vehicle.id === activityId)
+      if (event.key === 'ArrowDown') {
+        event.preventDefault()
+        setActivityId(commuterVehicles[(index + 1) % commuterVehicles.length].id)
+      } else if (event.key === 'ArrowUp') {
+        event.preventDefault()
+        setActivityId(commuterVehicles[(index - 1 + commuterVehicles.length) % commuterVehicles.length].id)
+      } else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+        if (target?.closest('.impact-trace__slider')) return
+        event.preventDefault()
+        const step = event.shiftKey ? 200 : 50
+        setQuantity((current) =>
+          event.key === 'ArrowLeft'
+            ? Math.max(10, current - step)
+            : Math.min(200_000, current + step),
+        )
+      }
     }
-    setInvalid(false)
-    setQuantity(parsed)
-  }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [activityId])
+
+  const lines = commuterVehicles.map((vehicle) => ({
+    id: vehicle.id,
+    factor: vehicle.emissionFactor,
+    unitLabel: abbreviateUnit(vehicle.unitLabel),
+  }))
 
   return (
-    <section className="trace-estimate" aria-labelledby="trace-title">
+    <section className="trace-estimate" aria-label="Commute estimator">
       <div className="trace-estimate__lead">
-        <p className="section-kicker">Trace one number</p>
-        <h1 id="trace-title">What does one year of driving look like in carbon terms?</h1>
-        <p>Start with a distance. Carbon ACX keeps the quantity, factor, boundary, and sources together.</p>
-        <label className="quantity-field" htmlFor="trace-distance">
-          <span>Annual distance</span>
-          <input id="trace-distance" type="number" min="0" step="any" inputMode="decimal" value={value} onChange={(event) => update(event.target.value)} aria-invalid={invalid} aria-describedby={invalid ? 'trace-distance-error' : undefined} />
-          <span>kilometres</span>
+        <label className="quantity-field" htmlFor="commute-mode">
+          <span>Vehicle class</span>
+          <select id="commute-mode" value={activity.id} onChange={(event) => setActivityId(event.target.value)}>
+            {commuterVehicles.map((vehicle) => (
+              <option key={vehicle.id} value={vehicle.id}>{vehicleLabels[vehicle.id] ?? vehicle.name}</option>
+            ))}
+          </select>
+          <span>{abbreviateUnit(activity.unitLabel)}</span>
         </label>
-        {invalid ? <p id="trace-distance-error" role="alert" className="field-error">Enter a positive annual distance. <span>Showing the last valid amount.</span></p> : null}
-        <ImpactTrace quantity={quantity} factor={activity.emissionFactor} unitLabel={activity.unitLabel} emissions={result.emissions} color={CATEGORY_INFO[activity.category].color} />
+        <ImpactTrace
+          lines={lines}
+          activeId={activity.id}
+          quantity={quantity}
+          unitLabel={abbreviateUnit(activity.unitLabel)}
+          emissions={result.emissions}
+          color={CATEGORY_INFO[activity.category].color}
+          onQuantityChange={setQuantity}
+        />
         <Link className="text-link text-link--primary" href={`/calculator?data=${encodeCalculatorInputs({ [activity.id]: quantity })}`}>Continue with this estimate</Link>
       </div>
       <aside className="evidence-rail" aria-label="Factor evidence">
@@ -49,7 +89,7 @@ export function TraceEstimate() {
           <span className="evidence-chip">Region · {activity.evidence.region}</span>
           <span className="evidence-chip">Scope · {activity.evidence.scopeBoundary}</span>
           <span className="evidence-chip">Vintage · {activity.evidence.vintageYear}</span>
-          <span className="evidence-chip">Uncertainty · {activity.evidence.uncertainty.lowGPerUnit == null || activity.evidence.uncertainty.highGPerUnit == null ? 'Not quantified' : `${activity.evidence.uncertainty.lowGPerUnit}–${activity.evidence.uncertainty.highGPerUnit} g / ${activity.unitLabel}`}</span>
+          <span className="evidence-chip">Uncertainty · {activity.evidence.uncertainty.lowGPerUnit == null || activity.evidence.uncertainty.highGPerUnit == null ? 'Not quantified' : `${activity.evidence.uncertainty.lowGPerUnit}–${activity.evidence.uncertainty.highGPerUnit} g / ${abbreviateUnit(activity.unitLabel)}`}</span>
         </div>
         <p className="evidence-rail__example">Example: 1 of {publishedActivityCount} published activities</p>
         <SourceList sourceIds={activity.evidence.sourceIds} citations={activity.evidence.sourceCitations} urls={activity.evidence.sourceUrls} />

@@ -3,9 +3,9 @@ import { expect, test } from '@playwright/test'
 test('front door presents three explicit jobs', async ({ page }) => {
   await page.goto('/')
   const jobs = [
-    ['Understand a carbon estimate', '/methodology#primer'],
-    ['Estimate an activity', '/calculator'],
-    ['Inspect the evidence', '/explore'],
+    ['Open the primer', '/methodology#primer'],
+    ['Open the calculator', '/calculator'],
+    ['Browse the Activity Atlas', '/explore'],
   ] as const
   for (const [name, href] of jobs) {
     await expect(page.getByRole('link', { name, exact: true })).toHaveAttribute('href', href)
@@ -13,20 +13,20 @@ test('front door presents three explicit jobs', async ({ page }) => {
 })
 
 test('backslash toggles theme outside text entry only', async ({ page }) => {
-  await page.addInitScript(() => localStorage.removeItem('carbon-acx-theme'))
-  await page.goto('/')
-  await expect(page.getByRole('button', { name: 'Switch to dark mode' })).toBeVisible()
+  await page.goto('/calculator')
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
+  await page.getByRole('button', { name: 'Add School run by car to your activity basket' }).click()
 
-  await expect(async () => {
-    await page.keyboard.press('\\')
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark', { timeout: 250 })
-  }).toPass({ timeout: 10_000 })
+  // Inside a text entry the guard swallows the key.
+  const quantity = page.locator('#TRAN\\.SCHOOLRUN\\.CAR\\.KM-quantity')
+  await quantity.focus()
+  await page.keyboard.press('\\')
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
 
-  await page.getByLabel('Annual distance').fill('1250')
+  // Outside text entry it toggles, and toggles back.
+  await page.getByRole('button', { name: /Transport/ }).click()
   await page.keyboard.press('\\')
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
-
-  await page.getByRole('button', { name: 'Switch to light mode' }).focus()
   await page.keyboard.press('\\')
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
 })
@@ -112,10 +112,10 @@ for (const viewport of [
 test('preserves the home, calculator, and Atlas flow at 390 × 844', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/')
-  await expect(page.locator('.impact-trace__marker-label')).toContainText('1,000 kilometres')
-  await expect(page.getByText('180.0 kg CO₂e/yr', { exact: true }).first()).toBeVisible()
-  await page.getByLabel('Annual distance').fill('1250')
-  await expect(page.getByText('225.0 kg CO₂e/yr', { exact: true }).first()).toBeVisible()
+  await expect(page.locator('.impact-trace__marker-label')).toContainText('1,000 km · 180.0 kg CO₂e/yr')
+  await page.locator('.impact-trace__slider').focus()
+  for (let index = 0; index < 5; index++) await page.keyboard.press('ArrowRight')
+  await expect(page.locator('.impact-trace__value')).toContainText('1,250 km · 225.0 kg CO₂e/yr')
   await page.getByRole('link', { name: 'Continue with this estimate' }).click()
   await expect(page).toHaveURL(/\/calculator\?data=/)
   await expect(page.locator('#TRAN\\.SCHOOLRUN\\.CAR\\.KM-quantity')).toHaveValue('1250')
@@ -148,10 +148,10 @@ for (const route of ['/', '/calculator', '/explore', '/explore/3d', '/learn', '/
 
 test('traces a home estimate into an editable worksheet', async ({ page }) => {
   await page.goto('/')
-  await expect(page.locator('.impact-trace__marker-label')).toContainText('1,000 kilometres')
-  await expect(page.getByText('180.0 kg CO₂e/yr', { exact: true }).first()).toBeVisible()
-  await page.getByLabel('Annual distance').fill('1250')
-  await expect(page.getByText('225.0 kg CO₂e/yr', { exact: true }).first()).toBeVisible()
+  await expect(page.locator('.impact-trace__marker-label')).toContainText('1,000 km · 180.0 kg CO₂e/yr')
+  await page.locator('.impact-trace__slider').focus()
+  for (let index = 0; index < 5; index++) await page.keyboard.press('ArrowRight')
+  await expect(page.locator('.impact-trace__value')).toContainText('1,250 km · 225.0 kg CO₂e/yr')
   await page.getByRole('link', { name: 'Continue with this estimate' }).click()
   await expect(page.locator('#TRAN\\.SCHOOLRUN\\.CAR\\.KM-quantity')).toHaveValue('1250')
 })
@@ -207,15 +207,6 @@ test('calculator keeps visual and DOM source order at 320 × 800', async ({ page
     'worksheet__editors',
     'result-composition',
   ])
-})
-
-test('invalid Home input preserves the last valid result', async ({ page }) => {
-  await page.goto('/')
-  await page.getByLabel('Annual distance').fill('1250')
-  await expect(page.getByText('225.0 kg CO₂e/yr', { exact: true }).first()).toBeVisible()
-  await page.getByLabel('Annual distance').fill('')
-  await expect(page.locator('#trace-distance-error')).toContainText('Showing the last valid amount.')
-  await expect(page.getByText('225.0 kg CO₂e/yr', { exact: true }).first()).toBeVisible()
 })
 
 test('basket prevents duplicate adds and restores evidence focus', async ({ page }) => {
