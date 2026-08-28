@@ -117,3 +117,16 @@ Band viewports (≤1023px) also received the tab bar (intentional normalization;
 ### Preview
 
 http://localhost:4180 — `node scripts/serve-static.mjs 4180 dist/site`
+
+## 2026-08-27 (4) — footer nav trim, open primer, evidence narrative, callout standard
+
+- Site footerbar keeps only external links (Raw artifacts, Repository) — Methodology/Evidence live in the header now.
+- Methodology primer is no longer a disclosure: all six questions render open in flow (`.disclosure--static`); specs updated (`details` count 0).
+- Policy cards: deterministic 4-across at ≥1024px, stacked column ≤700px.
+- Evidence tab narrative reorder: Sources → Benchmarks → Dataset metadata → Global context → Manifests (verification last, flowing into the footerbar's raw-artifacts link).
+- Callout standard site-wide: 1.0rem / weight 500 mono for equation callouts (`.working-example__equation`, `.factor-record-details__equation`), learn arithmetic, and the calculator tally total (`.result-composition h2` — display font dropped, status line stepped down to 0.74rem to preserve hierarchy). Home hero value and ranked-list strongs exempted; contradicting 0.85rem landscape override removed.
+- Full e2e 108/108 after each pass.
+
+### Preview
+
+http://localhost:4180 — `node scripts/serve-static.mjs 4180 dist/site`
