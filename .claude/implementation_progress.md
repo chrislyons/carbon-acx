@@ -104,3 +104,16 @@ Band viewports (≤1023px) also received the tab bar (intentional normalization;
 ### Preview
 
 `node scripts/serve-static.mjs 4180 dist/site` — http://localhost:4180 (all routes 200).
+
+## 2026-08-27 (3) — Methodology/Evidence tab split + framing polish
+
+- Split the overloaded Methodology tab: `/methodology` is now a pure reading tab (six-question primer + policy cards, no internal scroll regions); new `/evidence` tab (renamed from `/manifests`, promoted into header nav as the 6th tab — hotkeys auto-extend to 1–6) consolidates figure manifests, source registry, benchmarks table, OWID context, generated dataset metadata, and offline release info in a bounded two-column grid with footerbar jump links.
+- Tab footerbar added to every non-home tab (54px, mirrors the headerbar, sticky above the site footer): Calculator (Clear/Copy CTAs as underlined text + skipped-input status), Learn (primer/Atlas links + screening-estimate disclaimer), Methodology (Primer anchor + Evidence link), Evidence (section anchors + raw artifacts + generated date), Explore (published/unavailable counts + units caveat), 3D (render status + Atlas link). Old boxed `worksheet__actions` and `learning-actions` blocks removed; footerbar buttons unboxed to underlined text at the 44px contract.
+- Header/footer unbound from page-shell width (full-width bars, 1rem edge padding); brand byline → "carbon literacy index", weight 300, sizes 1.2rem/0.63rem.
+- Sticky geometry hardened: tabbar/footer `flex: 0 0 auto` + min-height (flex-shrink was squashing them on content-heavy tabs); app-stage wrapper is now its own scroll container so topbar/tabbar/footerbar stay pinned while panels scroll; methodology/evidence layouts scroll internally.
+- Panel alignment pass: all non-home tabs' panels flush 127–612 @1280×720 (learn cards equalized at 485px with card-level scroll, metadata stacked label-over-value, no mid-glyph clipping; methodology rail removed — content moved).
+- Ratios after split: methodology and evidence both 1.00 at every landscape viewport; band viewports within tolerance. Full e2e 108/108; lint/typecheck/vitest green.
+
+### Preview
+
+http://localhost:4180 — `node scripts/serve-static.mjs 4180 dist/site`
