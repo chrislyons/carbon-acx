@@ -12,6 +12,10 @@ export function Header() {
   const { theme, toggleTheme } = useTheme()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
+  // Non-root links stay current on their nested routes (/evidence/[id] etc).
+  const isCurrent = (href: string) =>
+    href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`)
+
   useEffect(() => {
     setMobileMenuOpen(false)
   }, [pathname])
@@ -45,7 +49,7 @@ export function Header() {
         </Link>
         <nav aria-label="Primary" className="site-header__desktop-nav">
           {links.map((link) => (
-            <Link key={link.href} href={link.href} aria-current={pathname === link.href ? 'page' : undefined}>
+            <Link key={link.href} href={link.href} aria-current={isCurrent(link.href) ? 'page' : undefined}>
               {link.label}
             </Link>
           ))}
@@ -74,7 +78,7 @@ export function Header() {
               <Link
                 key={link.href}
                 href={link.href}
-                aria-current={pathname === link.href ? 'page' : undefined}
+                aria-current={isCurrent(link.href) ? 'page' : undefined}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {link.label}

@@ -132,7 +132,7 @@ export default function ThreeDVisualizationPage() {
       <TabFooter>
         <div className="tab-footerbar__group">
           <span className="tab-footerbar__meta">
-            {summary.results.length ? <><strong>{summary.results.length}</strong> spheres rendered from published records</> : 'Reduced motion and canvas failure fall back to the 2D representation'}
+            {summary.results.length ? <><strong>{summary.results.length}</strong> spheres rendered from published records</> : !canUseWebGl ? 'Canvas unavailable — table view shows the same records' : 'No calculated result stored — estimate an activity first'}
           </span>
         </div>
         <div className="tab-footerbar__group">

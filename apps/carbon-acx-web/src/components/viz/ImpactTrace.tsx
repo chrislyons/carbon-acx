@@ -27,6 +27,7 @@ export function ImpactTrace({
   color: string
   onQuantityChange: (quantity: number) => void
 }) {
+  const MAX_QUANTITY = 200_000
   const endpoint = Math.max(2_000, (Math.floor(quantity / 1_000) + 1) * 1_000)
   const figureRef = useRef<HTMLElement>(null)
   const svgRef = useRef<SVGSVGElement>(null)
@@ -64,7 +65,7 @@ export function ImpactTrace({
     if (!rect) return
     const svgX = ((clientX - rect.left) / rect.width) * chartWidth
     const next = Math.round(x.invert(svgX) / 10) * 10
-    onQuantityChange(Math.min(endpoint, Math.max(10, next)))
+    onQuantityChange(Math.min(MAX_QUANTITY, Math.max(10, next)))
   }
 
   function onPointerDown(event: React.PointerEvent<SVGCircleElement>) {
@@ -118,6 +119,7 @@ export function ImpactTrace({
           cy={pointY}
           r="24"
           fill="transparent"
+          className={dragging ? 'impact-trace__slider is-dragging' : 'impact-trace__slider'}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={() => setDragging(false)}
@@ -131,7 +133,6 @@ export function ImpactTrace({
           stroke={color}
           strokeWidth="3"
           pointerEvents="none"
-          className={dragging ? 'impact-trace__slider is-dragging' : 'impact-trace__slider'}
         />
         <text className="impact-trace__marker-label" x={Math.min(pointX + 14, chartWidth - 320)} y={Math.max(pointY - 16, 18)} fill="currentColor" pointerEvents="none">
           {`${Math.round(quantity).toLocaleString('en-CA')} ${unitLabel} · ${formatEmissions(emissions)}/yr`}

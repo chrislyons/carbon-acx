@@ -9,13 +9,18 @@
  * the production baseline was captured.
  *
  * Usage:
- *   node scripts/measure-viewport-fit.mjs [--site <dir>] [--out <file>] [--json]
+ *   node scripts/measure-viewport-fit.mjs [--site <dir>] [--out <file>] [--json] [--update]
  *
  * Defaults: --site dist/site (repo root), --out scripts/viewport-fit-baseline.json
+ *
+ * Baseline contract: when the baseline file exists, the run is a CHECK —
+ * every route/viewport ratio must be <= baseline + 0.05 and no route may
+ * gain horizontal overflow; violations exit 1 and nothing is written.
+ * Pass --update to overwrite the baseline (route/behavior changes only).
  */
 import { createServer } from 'node:http'
 import { readFile, stat, writeFile } from 'node:fs/promises'
-import { extname, join, resolve } from 'node:path'
+import { extname, join, resolve, sep } from 'node:path'
 import { createRequire } from 'node:module'
 import process from 'node:process'
 
@@ -43,11 +48,12 @@ const MIME = {
 }
 
 function parseArgs(argv) {
-  const args = { site: resolve('dist/site'), out: resolve('scripts/viewport-fit-baseline.json'), json: false }
+  const args = { site: resolve('dist/site'), out: resolve('scripts/viewport-fit-baseline.json'), json: false, update: false }
   for (let i = 2; i < argv.length; i++) {
     if (argv[i] === '--site') args.site = resolve(argv[++i])
     else if (argv[i] === '--out') args.out = resolve(argv[++i])
     else if (argv[i] === '--json') args.json = true
+    else if (argv[i] === '--update') args.update = true
     else if (argv[i] === '--help' || argv[i] === '-h') args.help = true
   }
   return args
@@ -61,6 +67,11 @@ async function serveStatic(root) {
     console.error(`No static export at ${root}. Build first: pnpm --filter carbon-acx-web build`)
     process.exit(1)
   }
+  const ROOT_ABS = resolve(root)
+  const contained = (file) => {
+    const abs = resolve(file)
+    return abs === ROOT_ABS || abs.startsWith(ROOT_ABS + sep) ? abs : null
+  }
   const server = createServer(async (req, res) => {
     const url = new URL(req.url ?? '/', 'http://localhost')
     let path = decodeURIComponent(url.pathname)
@@ -71,7 +82,9 @@ async function serveStatic(root) {
       candidates.push(join(root, `${path.replace(/\/$/, '')}.html`))
       if (path.endsWith('/')) candidates.push(join(root, path.replace(/\/$/, ''), 'index.html'))
     }
-    for (const file of candidates) {
+    for (const candidate of candidates) {
+      const file = contained(candidate)
+      if (!file) continue
       try {
         const data = await readFile(file)
         res.writeHead(200, { 'content-type': MIME[extname(file)] ?? 'application/octet-stream' })
@@ -126,17 +139,46 @@ async function main() {
   const browser = await chromium.launch()
   const results = {}
   try {
-    for (const vp of VIEWPORTS) {
-      results[vp.name] = results[vp.name] ?? {}
-      for (const route of ROUTES) {
-        const m = await measureRoute(browser, base, route, vp)
-        results[vp.name][route] = { ratio: +(m.scrollHeight / m.innerHeight).toFixed(2), ...m }
-        process.stdout.write(`${vp.name} ${route} ratio=${results[vp.name][route].ratio} hScroll=${m.hScroll}\n`)
+    try {
+      for (const vp of VIEWPORTS) {
+        results[vp.name] = results[vp.name] ?? {}
+        for (const route of ROUTES) {
+          const m = await measureRoute(browser, base, route, vp)
+          results[vp.name][route] = { ratio: +(m.scrollHeight / m.innerHeight).toFixed(2), ...m }
+          process.stdout.write(`${vp.name} ${route} ratio=${results[vp.name][route].ratio} hScroll=${m.hScroll}\n`)
+        }
       }
+    } finally {
+      await browser.close().catch(() => {})
     }
   } finally {
-    await browser.close()
     await close()
+  }
+  // Baseline check-or-update.
+  let baseline = null
+  try { baseline = JSON.parse(await readFile(args.out, 'utf8')) } catch { /* bootstrap */ }
+  if (baseline && !args.update) {
+    const RATIO_TOLERANCE = 0.05
+    const violations = []
+    for (const vp of VIEWPORTS) {
+      for (const route of ROUTES) {
+        const base0 = baseline[vp.name]?.[route]
+        const now = results[vp.name][route]
+        if (!base0) violations.push(`${vp.name} ${route}: missing from baseline`)
+        else {
+          if (now.ratio > base0.ratio + RATIO_TOLERANCE) violations.push(`${vp.name} ${route}: ratio ${now.ratio} > baseline ${base0.ratio} + ${RATIO_TOLERANCE}`)
+          if (now.hScroll && !base0.hScroll) violations.push(`${vp.name} ${route}: new horizontal overflow`)
+        }
+      }
+    }
+    if (violations.length) {
+      console.error(`Viewport-fit regressions (${violations.length}):`)
+      for (const v of violations) console.error(`  - ${v}`)
+      console.error('Baseline untouched. Fix the regression or re-run with --update after review.')
+      process.exit(1)
+    }
+    console.log(`Baseline check passed (${VIEWPORTS.length * ROUTES.length} route/viewport pairs).`)
+    return
   }
   if (!args.json) {
     // Console table per viewport: route | ratio | hScroll

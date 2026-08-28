@@ -71,3 +71,20 @@ site footerbar    666–720  (sticky bottom)
 - Home has no tab bars (it is the invitation); its frame is the site topbar/footer only.
 - Evidence/Methodology bounded panels scroll internally by design; long lists never drive master scroll.
 - Keyboard marker control on home uses the global arrow hotkeys (documented in-chart) rather than an in-SVG slider widget, keeping the SVG free of focusable descendants (Axe-clean).
+
+## 9. Pre-merge review pass (8 parallel reviewers)
+
+Findings adopted and fixed before merge:
+
+- ImpactTrace: band-viewport ResizeObserver feedback loop killed (svg gets a definite CSS height ≤1023px; desktop already 100%); drag now clamps to a fixed 200,000 km ceiling (endpoint can no longer be dragged out from under itself); slider affordance moved to the pointer-capture hit target, decorative dot unclassed.
+- Hotkey tests: first ArrowRight press is toPass-guarded so a press lost to hydration lag cannot strand the count; tests use the page-level hotkeys (documented in-chart) rather than focusing non-focusable SVG.
+- units.ts: ` per year` runs before standalone `years`; every pattern token-bounded (`megakilowatt`, `kilometresque` pass through).
+- Header: `aria-current` follows nested routes (`/evidence/[id]` keeps Evidence current).
+- Calculator TabHeader total now includes the published scenario (`combinedTotal`), matching the result panel; empty state derived from the same condition.
+- 3D TabFooter: honest empty-workbook status instead of claiming a 2D fallback that isn't mounted.
+- Atlas: base layout single-column; the two/three-column region grid is ≥1024px only (protects the 701–1023px band).
+- Band (≤700px): site footer and tab footerbar drop the fixed 54px clip in favor of auto-height + wrap — no clipped links at 320/390px.
+- Scripts: path-traversal containment on all three static servers; try/finally resource cleanup; harness baseline is now check-or-update (`--update` to write, regressions exit 1); baseline regenerated for the `/evidence` route set (49 pairs).
+- Home padding duplicate removed; stale `/manifests` comment fixed; dead slider focus CSS removed; unused `Disclosure` import dropped.
+
+Declined (with rationale): DataState wrappers for benchmarks/sources empty states (generated contract is non-empty; SourceList already renders a data-state line); slider ARIA role on the SVG circle (re-triggers Axe nested-interactive; global hotkeys are the documented keyboard path).

@@ -4,10 +4,16 @@
 //   node scripts/serve-static.mjs [port] [rootDir]
 import { createServer } from 'node:http'
 import { readFile } from 'node:fs/promises'
-import { extname, join } from 'node:path'
+import { extname, join, resolve, sep } from 'node:path'
 
 const port = Number(process.argv[2] ?? 4173)
 const root = process.argv[3] ?? 'dist/site'
+const ROOT_ABS = resolve(root)
+// Reject normalized paths that escape the served root (encoded or plain ../).
+const contained = (file) => {
+  const abs = resolve(file)
+  return abs === ROOT_ABS || abs.startsWith(ROOT_ABS + sep) ? abs : null
+}
 const MIME = {
   '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css',
   '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png',
@@ -20,7 +26,9 @@ createServer(async (req, res) => {
   const candidates = [join(root, path)]
   if (!extname(path)) candidates.push(join(root, `${path.replace(/\/$/, '')}.html`))
   if (path.endsWith('/')) candidates.push(join(root, path, 'index.html'))
-  for (const file of candidates) {
+  for (const candidate of candidates) {
+    const file = contained(candidate)
+    if (!file) continue
     try {
       const data = await readFile(file)
       res.writeHead(200, { 'content-type': MIME[extname(file)] ?? 'application/octet-stream' })

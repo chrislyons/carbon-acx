@@ -113,8 +113,14 @@ test('preserves the home, calculator, and Atlas flow at 390 × 844', async ({ pa
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/')
   await expect(page.locator('.impact-trace__marker-label')).toContainText('1,000 km · 180.0 kg CO₂e/yr')
-  await page.locator('.impact-trace__slider').focus()
-  for (let index = 0; index < 5; index++) await page.keyboard.press('ArrowRight')
+  // Keyboard path is the page-level hotkeys (documented in-chart); nothing
+  // focusable lives inside the SVG. The first press double-checks via toPass
+  // so a press lost to pre-hydration hydration lag cannot strand the count.
+  await expect(async () => {
+    await page.keyboard.press('ArrowRight')
+    await expect(page.locator('.impact-trace__value')).toContainText('1,050 km')
+  }).toPass()
+  for (let index = 1; index < 5; index++) await page.keyboard.press('ArrowRight')
   await expect(page.locator('.impact-trace__value')).toContainText('1,250 km · 225.0 kg CO₂e/yr')
   await page.getByRole('link', { name: 'Continue with this estimate' }).click()
   await expect(page).toHaveURL(/\/calculator\?data=/)
@@ -149,8 +155,14 @@ for (const route of ['/', '/calculator', '/explore', '/explore/3d', '/learn', '/
 test('traces a home estimate into an editable worksheet', async ({ page }) => {
   await page.goto('/')
   await expect(page.locator('.impact-trace__marker-label')).toContainText('1,000 km · 180.0 kg CO₂e/yr')
-  await page.locator('.impact-trace__slider').focus()
-  for (let index = 0; index < 5; index++) await page.keyboard.press('ArrowRight')
+  // Keyboard path is the page-level hotkeys (documented in-chart); nothing
+  // focusable lives inside the SVG. The first press double-checks via toPass
+  // so a press lost to pre-hydration hydration lag cannot strand the count.
+  await expect(async () => {
+    await page.keyboard.press('ArrowRight')
+    await expect(page.locator('.impact-trace__value')).toContainText('1,050 km')
+  }).toPass()
+  for (let index = 1; index < 5; index++) await page.keyboard.press('ArrowRight')
   await expect(page.locator('.impact-trace__value')).toContainText('1,250 km · 225.0 kg CO₂e/yr')
   await page.getByRole('link', { name: 'Continue with this estimate' }).click()
   await expect(page.locator('#TRAN\\.SCHOOLRUN\\.CAR\\.KM-quantity')).toHaveValue('1250')

@@ -177,7 +177,7 @@ function CalculatorContent() {
         meta={
           <>
             <span>Basket <strong>{selected.length}</strong></span>
-            {selected.length ? <span><strong>{formatEmissions(summary.totalEmissions)}</strong>/yr</span> : <span>empty</span>}
+            {combinedTotal > 0 ? <span><strong>{formatEmissions(combinedTotal)}</strong>/yr</span> : <span>empty</span>}
           </>
         }
       />

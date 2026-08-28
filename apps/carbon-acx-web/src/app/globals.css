@@ -726,13 +726,6 @@ button.text-link:hover {
   cursor: grabbing;
 }
 
-.impact-trace__slider:focus-visible {
-  outline: none;
-}
-
-.impact-trace__slider:focus-visible circle:last-child {
-  stroke: var(--signal);
-}
 
 .impact-trace__value {
   margin-top: 0.5rem;
@@ -2126,7 +2119,7 @@ textarea:focus {
    - >=1680px    Ultrawide app-shell widening.
 
    Opt-in contract: routes join by adding `app-stage` to their root element.
-   Reading routes (`/`, `/learn`, `/methodology`, `/manifests`) stay on plain
+   Reading routes (`/`, `/learn`, `/methodology`, `/evidence`) stay on plain
    block flow. `[data-panel-scroll]` is the JSX contract for inner scroll:
    every element carrying it must also set tabindex="0", role="region" and an
    aria-label.
@@ -2444,8 +2437,11 @@ textarea:focus {
    media blocks re-region everything >=1024px.
    ========================================================================== */
 .atlas__layout {
+  /* Stacked reading order below the landscape system; the >=1024px block
+     re-regions into rail/matrix/detail. Keeping the base single-column
+     protects the 701–1023px portrait band from a two-column auto-place. */
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   align-items: start;
   gap: clamp(1.5rem, 4vw, 3rem);
 }
@@ -2458,19 +2454,8 @@ textarea:focus {
   min-width: 0;
 }
 
-@media (max-width: 700px) {
-  .atlas__layout {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
 @media (min-width: 1024px) {
   /* App routes use the tight section rhythm everywhere above 1024px. */
-  
-
-  .editorial-page.home-page.app-stage {
-    padding-block: clamp(1.25rem, 3vh, 2.25rem) 0;
-  }
 
   .atlas__layout {
     flex: 1 1 auto;
@@ -2964,6 +2949,25 @@ textarea:focus {
 
   .tab-footerbar__meta {
     font-size: 0.68rem;
+  }
+  /* Bars adapt on the portrait band: content may wrap instead of clipping
+     inside the fixed 54px desktop geometry. */
+  .site-footer {
+    height: auto;
+  }
+
+  .tab-footerbar {
+    height: auto;
+    min-height: var(--bar-h);
+    flex-wrap: wrap;
+    padding-block: 0.5rem;
+  }
+
+  /* Definite svg height: with height:auto the svg's pixel size derives from
+     the measured viewBox, which feeds back into the figure box and grows the
+     chart forever. The landscape system sizes the svg at 100% instead. */
+  .impact-trace__svg {
+    height: clamp(120px, 34vw, 240px);
   }
 }
 

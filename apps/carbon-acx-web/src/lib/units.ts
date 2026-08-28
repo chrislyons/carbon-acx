@@ -1,30 +1,32 @@
 /**
  * Unit abbreviation for callouts, equations, and quantity labels.
  * Meaning-preserving; longest patterns first so compound units resolve
- * before their components ("passenger-kilometres" → pkm, not "pkm"-of-km).
+ * before their components ("passenger-kilometres" -> pkm, and " per year"
+ * before the standalone "years" rule). Every pattern is token-bounded so
+ * unknown words containing a unit fragment pass through unchanged.
  */
 const UNIT_ABBREVIATIONS: Array<[RegExp, string]> = [
-  [/passenger-kilometres?/gi, 'pkm'],
-  [/passenger kilometres?/gi, 'pkm'],
-  [/square metre-years?/gi, 'm²·yr'],
-  [/square metres?/gi, 'm²'],
-  [/square meters?/gi, 'm²'],
-  [/cubic metres?/gi, 'm³'],
-  [/cubic meters?/gi, 'm³'],
-  [/kilowatt-hours?/gi, 'kWh'],
-  [/kilowatt hours?/gi, 'kWh'],
-  [/kilometres?/gi, 'km'],
-  [/kilometers?/gi, 'km'],
-  [/kilograms?/gi, 'kg'],
+  [/passenger-kilometres?\b/gi, 'pkm'],
+  [/passenger kilometres?\b/gi, 'pkm'],
+  [/square metre-years?\b/gi, 'm\u00b2\u00b7yr'],
+  [/square metres?\b/gi, 'm\u00b2'],
+  [/square meters?\b/gi, 'm\u00b2'],
+  [/cubic metres?\b/gi, 'm\u00b3'],
+  [/cubic meters?\b/gi, 'm\u00b3'],
+  [/kilowatt-hours?\b/gi, 'kWh'],
+  [/kilowatt hours?\b/gi, 'kWh'],
+  [/ per year\b/gi, '/yr'],
+  [/kilometres?\b/gi, 'km'],
+  [/kilometers?\b/gi, 'km'],
+  [/kilograms?\b/gi, 'kg'],
   [/kilowatts?\b/gi, 'kW'],
   [/\btonnes?\b/gi, 't'],
   [/\blitres?\b/gi, 'L'],
   [/\bliters?\b/gi, 'L'],
-  [/metres?/gi, 'm'],
-  [/meters?/gi, 'm'],
+  [/\bmetres?\b/gi, 'm'],
+  [/\bmeters?\b/gi, 'm'],
   [/\bhours?\b/gi, 'h'],
   [/\byears?\b/gi, 'yr'],
-  [/ per year/gi, '/yr'],
 ]
 
 export function abbreviateUnit(label: string): string {
