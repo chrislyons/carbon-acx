@@ -136,3 +136,16 @@ http://localhost:4180 — `node scripts/serve-static.mjs 4180 dist/site`
 - New `src/lib/units.ts`: `abbreviateUnit()` — meaning-preserving unit map applied at render (passenger-kilometres→pkm, square metre-years→m²·yr, kilowatt-hours→kWh, kilometres→km, cubic/square metres→m³/m², hours→h, years→yr, "per year"→"/yr"; garments/servings/units unchanged).
 - Applied at every unit render site: methodology primer equation, Learn worked arithmetic (both branches), FactorRecordDetails uncertainty range + worked equation, Calculator "Annual quantity (…)" labels, ScenarioPane per-year quantities, Explore detail pane. Generated dataset JSON unchanged (display-layer only).
 - Spec equations updated to abbreviated forms. Full e2e 108/108.
+
+## 2026-08-27 (6) — yr suffix, tally card units, Tailwind v4 activation
+
+- "/year" → "/yr" at every render site (tally total, AI-scenario line, status line, primer equation, ScenarioPane tooltip, home ImpactTrace).
+- Tally card ranked equations + editor "Factor: … g CO₂e / km" lines + learn unit fallback abbreviated (were missed in the first abbreviation pass — caught by user screencap).
+- ROOT CAUSE found for jammed/inert spacing: the project runs Tailwind v4 (`@tailwindcss/postcss` 4.1) but globals.css still declared v3 `@tailwind` directives — v4 ignores them, so NO utility classes (flex, gap-3, mt-*, grid-cols, text sizes) were ever generated in any build. Fixed with CSS-first activation: `@import "tailwindcss/theme|utilities"` + `@theme` tokens (background/foreground/foreground-muted colors, display/sans/mono fonts). Preflight deliberately not enabled (custom CSS owns element defaults; avoids a sitewide reset). Utilities live in `layer(utilities)` so unlayered custom CSS keeps precedence.
+- Legacy inert classes (`max-w-5xl py-10 sm:py-14` on page roots) were already stripped in earlier passes, so activation introduces no width-cap regressions.
+- Specs: unit strings updated (kg CO₂e/yr, km equations); strict-mode collisions from values now appearing in multiple live regions resolved with `.first()`.
+- Full e2e 108/108.
+
+### Preview
+
+http://localhost:4180 — `node scripts/serve-static.mjs 4180 dist/site`
