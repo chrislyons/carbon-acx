@@ -71,3 +71,12 @@ test('methodology reading path is open and navigable', async ({ page }) => {
   await expect(primer.getByRole('heading', { name: 'Quantity × factor' })).toBeVisible()
   await expect(page.locator('#benchmarks')).toBeVisible()
 })
+
+test('forced colours and reduced motion keep the primary path available', async ({ page, browserName }) => {
+  test.skip(browserName !== 'chromium', 'Forced-colour emulation is Chromium-only in this harness')
+  await page.emulateMedia({ forcedColors: 'active', reducedMotion: 'reduce', contrast: 'more' })
+  await page.goto('/')
+  await expect(page.getByRole('heading', { name: 'Compare a year of travel' })).toBeVisible()
+  await expect(page.getByLabel('Annual distance (km)')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Car' })).toBeVisible()
+})

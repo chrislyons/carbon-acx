@@ -117,6 +117,38 @@ test('Home invalid distance suppresses the chart and continuation until recovery
   await expect(page.getByRole('link', { name: 'Open this estimate in the calculator' })).toHaveAttribute('href', /\/calculator\?data=/)
 })
 
+test('Home numeric fallback remains functional without optional pointer APIs', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(window, 'ResizeObserver', { configurable: true, value: undefined })
+    Object.defineProperty(Element.prototype, 'setPointerCapture', { configurable: true, value: undefined })
+    Object.defineProperty(Element.prototype, 'releasePointerCapture', { configurable: true, value: undefined })
+    Object.defineProperty(Element.prototype, 'hasPointerCapture', { configurable: true, value: undefined })
+  })
+  await page.goto('/')
+  await page.waitForTimeout(250)
+  const distance = page.getByLabel('Annual distance (km)')
+  await distance.fill('1250')
+  await expect(page.locator('.impact-trace__value')).toContainText('1,250 km · 225.0 kg CO₂e/yr')
+  await expect(page.getByRole('link', { name: 'Open this estimate in the calculator' })).toBeVisible()
+})
+
+test('Home marker drag uses bounded ten-kilometre steps', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/')
+  const marker = page.locator('.impact-trace__slider')
+  await marker.scrollIntoViewIfNeeded()
+  const box = await marker.boundingBox()
+  if (!box) throw new Error('Home marker is not measurable')
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(Math.min(box.x + box.width / 2 + 40, box.x + box.width - 2), box.y + box.height / 2)
+  await page.mouse.up()
+  const distance = Number(await page.getByLabel('Annual distance (km)').inputValue())
+  expect(distance).toBeGreaterThanOrEqual(10)
+  expect(distance).toBeLessThanOrEqual(200_000)
+  expect(distance % 10).toBe(0)
+})
+
 test('Home mode controls retain attached evidence and visible chart labels', async ({ page }) => {
   await page.goto('/')
   await page.waitForTimeout(250)

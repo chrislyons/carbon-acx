@@ -84,6 +84,35 @@ test('workspace panel scroll regions remain named and keyboard focusable', async
   }
 })
 
+test('manifest detail preserves surface, utility, and theme token styles', async ({ page }) => {
+  await page.goto('/evidence')
+  const href = await page.locator('#manifests a').first().getAttribute('href')
+  await page.goto(href!)
+  const styles = await page.evaluate(() => {
+    const card = document.querySelector('.surface-card')
+    const utility = document.querySelector('.mt-4')
+    const muted = document.querySelector('.manifest-detail__grid p.text-foreground-muted')
+    if (!card || !utility || !muted) throw new Error('Manifest detail style probe selectors are missing')
+    const tokenProbe = document.createElement('span')
+    document.body.append(tokenProbe)
+    const tokenColor = getComputedStyle(tokenProbe).color
+    tokenProbe.remove()
+    return {
+      border: getComputedStyle(card).borderTopWidth,
+      background: getComputedStyle(card).backgroundColor,
+      padding: getComputedStyle(card).paddingTop,
+      marginTop: getComputedStyle(utility).marginTop,
+      mutedColor: getComputedStyle(muted).color,
+      tokenColor,
+    }
+  })
+  expect(styles.border).not.toBe('0px')
+  expect(styles.background).not.toBe('rgba(0, 0, 0, 0)')
+  expect(styles.padding).not.toBe('0px')
+  expect(styles.marginTop).toBe('16px')
+  expect(styles.mutedColor).toBe(styles.tokenColor)
+})
+
 test('Evidence discovers a manifest detail link from the generated page', async ({ page }) => {
   await page.goto('/evidence')
   const href = await page.locator('#manifests a').first().getAttribute('href')

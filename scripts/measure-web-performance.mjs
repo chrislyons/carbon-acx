@@ -22,7 +22,14 @@ const OBSERVER_SCRIPT = () => {
   const supported = PerformanceObserver.supportedEntryTypes ?? []
   if (supported.includes('largest-contentful-paint')) {
     new PerformanceObserver((list) => {
-      for (const entry of list.getEntries()) window.__acxPerformance.lcp.push(entry.startTime)
+      for (const entry of list.getEntries()) {
+        const element = entry.element
+        window.__acxPerformance.lcp.push({
+          startTime: entry.startTime,
+          element: element?.tagName ?? null,
+          text: element?.textContent?.trim().slice(0, 120) ?? null,
+        })
+      }
     }).observe({ type: 'largest-contentful-paint', buffered: true })
   }
   if (supported.includes('layout-shift')) {
@@ -91,7 +98,7 @@ async function startStaticServer() {
 
 async function measureSample(browser, base, definition, iteration) {
 
-  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+  const context = await browser.newContext({ viewport: { width: 1600, height: 900 } })
   await context.addInitScript({ content: `(${OBSERVER_SCRIPT.toString()})()` })
   const page = await context.newPage()
   const cdp = await context.newCDPSession(page)
@@ -119,8 +126,11 @@ async function measureSample(browser, base, definition, iteration) {
   await page.waitForTimeout(250)
   const performance = await page.evaluate(() => {
     const state = window.__acxPerformance ?? { lcp: [], cls: [], events: [] }
+    const lcpEntry = state.lcp.reduce((latest, entry) => entry.startTime > (latest?.startTime ?? -1) ? entry : latest, null)
     return {
-      lcp: state.lcp.length ? Math.max(...state.lcp) : null,
+      lcp: lcpEntry?.startTime ?? null,
+      lcpElement: lcpEntry?.element ?? null,
+      lcpText: lcpEntry?.text ?? null,
       cls: state.cls.reduce((sum, value) => sum + value, 0),
       events: state.events,
     }
@@ -131,6 +141,8 @@ async function measureSample(browser, base, definition, iteration) {
     iteration,
     path: definition.path,
     lcp: performance.lcp,
+    lcpElement: performance.lcpElement,
+    lcpText: performance.lcpText,
     cls: performance.cls,
     eventTimingEntries: performance.events.length,
     maxInteractionDuration: eventDurations.length ? Math.max(...eventDurations) : null,
@@ -155,7 +167,7 @@ const definitions = [
   },
   {
     name: 'calculator-edit',
-    path: '/calculator?data=VFJBTi5TQ0hPT0xSVU4uQ0FSLktNOjEwMDAsRk9PRC5NRUFMLkJFRVYuU0VSVklORzoxMA==',
+    path: '/calculator?data=VFJBTi5TQ0hPT0xSVU4uQ0FSLktNOjEwMDAsRk9PRC5NRUFMLkJFRUYuU0VSVklORzoxMA==',
     async exercise(page) {
       await page.getByRole('button', { name: 'Edit' }).first().click()
       await page.locator('input[id$="-quantity"]').fill('1250')
@@ -201,6 +213,7 @@ async function main() {
         samples.push(await measureSample(browser, base, definition, iteration))
       }
     }
+  for (const sample of samples) console.log(`${sample.name} #${sample.iteration} LCP ${sample.lcp}ms (${sample.lcpElement}: ${sample.lcpText}) CLS ${sample.cls} events ${sample.eventTimingEntries} flow ${sample.flow?.opened ?? false}`)
   } finally {
     await browser.close()
     server.kill('SIGTERM')
