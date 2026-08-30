@@ -86,14 +86,17 @@ test('workspace panel scroll regions remain named and keyboard focusable', async
 
 test('manifest detail preserves surface, utility, and theme token styles', async ({ page }) => {
   await page.goto('/evidence')
-  const href = await page.locator('#manifests a').first().getAttribute('href')
-  await page.goto(href!)
+  const manifestLink = page.locator('#manifests a').first()
+  await expect(manifestLink).toBeVisible()
+  await manifestLink.click()
+  await page.waitForURL(/\/evidence\/.+/)
   const styles = await page.evaluate(() => {
     const card = document.querySelector('.surface-card')
     const utility = document.querySelector('.mt-4')
     const muted = document.querySelector('.manifest-detail__grid p.text-foreground-muted')
     if (!card || !utility || !muted) throw new Error('Manifest detail style probe selectors are missing')
     const tokenProbe = document.createElement('span')
+    tokenProbe.style.color = 'var(--ink-muted)'
     document.body.append(tokenProbe)
     const tokenColor = getComputedStyle(tokenProbe).color
     tokenProbe.remove()

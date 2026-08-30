@@ -10,11 +10,13 @@ export function ActivityShelf({
   activities,
   selectedIds,
   onAdd,
+  disabled = false,
 }: {
   category: ActivityCategory
   activities: Activity[]
   selectedIds: string[]
   onAdd: (activity: Activity) => void
+  disabled?: boolean
 }) {
   return (
     <section className="activity-shelf ruled-section" aria-labelledby="activity-shelf-title">
@@ -42,7 +44,8 @@ export function ActivityShelf({
                 className="activity-tile__add"
                 aria-label={`Add ${activity.name} to the worksheet`}
                 aria-pressed={selected}
-                aria-disabled={selected}
+                aria-disabled={selected || disabled}
+                disabled={disabled}
                 onClick={() => onAdd(activity)}
               >
                 {selected ? <Check aria-hidden="true" size={18} strokeWidth={2.5} /> : <Plus aria-hidden="true" size={18} strokeWidth={2.5} />}

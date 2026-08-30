@@ -8,14 +8,16 @@ test('published Atlas and calculator records expose narrative detail and linked 
   }
   await expect(page.locator('.detail-pane').getByRole('link', { name: /Environment and Climate Change Canada/ })).toHaveAttribute('href', /canada\.ca\/en\/environment-climate-change/)
 
-  await page.goto('/calculator')
-  await page.getByRole('button', { name: /Transport/ }).click()
-  await page.getByRole('button', { name: 'Add School run by car to the worksheet' }).click()
-  await page.locator('[id="TRAN.SCHOOLRUN.CAR.KM-quantity"]').fill('1000')
-  await page.getByRole('button', { name: 'Factor evidence' }).click()
-  await expect(page.getByRole('heading', { name: 'What this measures' })).toBeVisible()
-  await expect(page.getByText(/1,000 km × 180 g CO₂e/)).toBeVisible()
-  await expect(page.locator('.worksheet-evidence-pane').getByRole('link', { name: /Environment and Climate Change Canada/ })).toHaveAttribute('href', /canada\.ca\/en\/environment-climate-change/)
+  const calculatorPage = await page.context().newPage()
+  await calculatorPage.goto('/calculator')
+  await calculatorPage.getByRole('button', { name: /Transport/ }).click()
+  await calculatorPage.getByRole('button', { name: 'Add School run by car to the worksheet' }).click()
+  await calculatorPage.locator('[id="TRAN.SCHOOLRUN.CAR.KM-quantity"]').fill('1000')
+  await calculatorPage.getByRole('button', { name: 'Factor evidence' }).click()
+  await expect(calculatorPage.getByRole('heading', { name: 'What this measures' })).toBeVisible()
+  await expect(calculatorPage.getByText(/1,000 km × 180 g CO₂e/)).toBeVisible()
+  await expect(calculatorPage.locator('.worksheet-evidence-pane').getByRole('link', { name: /Environment and Climate Change Canada/ })).toHaveAttribute('href', /canada\.ca\/en\/environment-climate-change/)
+  await calculatorPage.close()
 })
 
 test('Activity Atlas labels Not available data instead of zero', async ({ page }) => {

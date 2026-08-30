@@ -1,19 +1,15 @@
 'use client'
 
-import { Copy, Pencil, Plus, Trash2 } from 'lucide-react'
+import dynamic from 'next/dynamic'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ActivityMark } from '@/components/calculator/ActivityMark'
 import { ActivityShelf } from '@/components/calculator/ActivityShelf'
-import { ScenarioPane } from '@/components/calculator/ScenarioPane'
-import { ImpactComposition } from '@/components/viz/ImpactComposition'
 import { TabHeader } from '@/components/layout/TabHeader'
 import { abbreviateUnit } from '@/lib/units'
 import {
-  BenchmarkContext,
   DataState,
   EvidenceBadge,
   EvidenceFacts,
-  FactorRecordDetails,
 } from '@/components/content'
 import {
   CATEGORY_INFO,
@@ -39,6 +35,34 @@ import type {
 const STORAGE_KEY = 'carbon-acx-calculator-inputs'
 const CATEGORIES = Object.keys(CATEGORY_INFO) as ActivityCategory[]
 
+const ImpactComposition = dynamic(
+  () => import('@/components/viz/ImpactComposition').then((mod) => mod.ImpactComposition),
+  {
+    loading: () => <div className="empty-ruled-field" aria-live="polite">Loading ranked activity impacts…</div>,
+  },
+)
+
+const ScenarioPane = dynamic(
+  () => import('@/components/calculator/ScenarioPane').then((mod) => mod.ScenarioPane),
+  {
+    ssr: false,
+    loading: () => <div className="empty-ruled-field" aria-live="polite">Loading documented scenarios…</div>,
+  },
+)
+
+const EvidencePane = dynamic(
+  () => import('@/components/calculator/EvidencePane').then((mod) => mod.EvidencePane),
+  {
+    ssr: false,
+    loading: () => <div className="empty-ruled-field" aria-live="polite">Loading factor evidence…</div>,
+  },
+)
+
+const BenchmarkContext = dynamic(
+  () => import('@/components/content/BenchmarkContext').then((mod) => mod.BenchmarkContext),
+  { ssr: false },
+)
+
 function getPublishedInputs(rawInputs: Record<string, unknown>): Record<string, number> {
   return Object.fromEntries(
     Object.entries(rawInputs).filter(
@@ -54,6 +78,7 @@ export default function CalculatorPage() {
 function CalculatorContent() {
   const [activeCategory, setActiveCategory] = useState<ActivityCategory>('transport')
   const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [collapsedIds, setCollapsedIds] = useState<string[]>([])
   const [inputs, setInputs] = useState<Record<string, number>>({})
   const [drafts, setDrafts] = useState<Record<string, string>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -68,6 +93,9 @@ function CalculatorContent() {
   const [shared, setShared] = useState(false)
   const [view, setView] = useState<'browse' | 'worksheet'>('browse')
   const [loaded, setLoaded] = useState(false)
+  const initializationInteraction = useRef(false)
+  const [scenarioOpen, setScenarioOpen] = useState(false)
+  const scenarioDetailsRef = useRef<HTMLDetailsElement>(null)
   const [copied, setCopied] = useState(false)
   const [announcement, setAnnouncement] = useState('')
 
@@ -91,6 +119,10 @@ function CalculatorContent() {
     })
   }, [completedEditorId])
   useEffect(() => {
+    if (initializationInteraction.current) {
+      setLoaded(true)
+      return
+    }
     const encoded = new URLSearchParams(window.location.search).get('data')
     const rawInputs: Record<string, unknown> = encoded
       ? decodeCalculatorInputs(encoded)
@@ -105,11 +137,15 @@ function CalculatorContent() {
     setInputs(published)
     setDrafts(Object.fromEntries(Object.entries(published).map(([id, value]) => [id, String(value)])))
     setSelectedIds(Object.keys(published))
-    setActiveEditorId(null)
+    setCollapsedIds(Object.keys(published))
     setShared(Boolean(encoded))
     setView(encoded ? 'worksheet' : 'browse')
     setLoaded(true)
   }, [])
+
+  useEffect(() => {
+    if (loaded && scenarioDetailsRef.current?.open) setScenarioOpen(true)
+  }, [loaded])
 
   useEffect(() => {
     if (!loaded) return
@@ -137,14 +173,17 @@ function CalculatorContent() {
   }
 
   const add = (activity: Activity) => {
+    initializationInteraction.current = true
     if (selectedIds.includes(activity.id)) {
       setAnnouncement(`${activity.name} is already in the worksheet.`)
+      setCollapsedIds((ids) => ids.filter((value) => value !== activity.id))
       setView('worksheet')
       setActiveEditorId(activity.id)
       focusInput(activity.id)
       return
     }
     setSelectedIds((ids) => [...ids, activity.id])
+    setCollapsedIds((ids) => ids.filter((value) => value !== activity.id))
     setDrafts((current) => ({ ...current, [activity.id]: current[activity.id] ?? '' }))
     setErrors(({ [activity.id]: _, ...rest }) => rest)
     setView('worksheet')
@@ -155,6 +194,7 @@ function CalculatorContent() {
   const remove = (id: string) => {
     const activity = getActivityById(id)
     setSelectedIds((ids) => ids.filter((value) => value !== id))
+    setCollapsedIds((ids) => ids.filter((value) => value !== id))
     setInputs(({ [id]: _, ...rest }) => rest)
     setDrafts(({ [id]: _, ...rest }) => rest)
     setErrors(({ [id]: _, ...rest }) => rest)
@@ -189,12 +229,13 @@ function CalculatorContent() {
   const finishEditing = (id: string) => {
     if (errors[id] || inputs[id] === undefined) return
     setActiveEditorId(null)
+    setCollapsedIds((ids) => ids.includes(id) ? ids : [...ids, id])
     setCompletedEditorId(id)
   }
 
   const reset = () => {
     setSelectedIds([])
-    setInputs({})
+    setCollapsedIds([])
     setDrafts({})
     setErrors({})
     setActiveEditorId(null)
@@ -229,14 +270,14 @@ function CalculatorContent() {
         }
         actions={
           <>
-            <button type="button" onClick={copy}><Copy aria-hidden="true" size={15} />{copied ? 'Link copied' : 'Copy link'}</button>
-            <button type="button" className="action-destructive" onClick={reset}><Trash2 aria-hidden="true" size={15} />Clear worksheet</button>
+            <button type="button" disabled={!loaded} onClick={copy}>{copied ? 'Link copied' : 'Copy link'}</button>
+            <button type="button" disabled={!loaded} className="action-destructive" onClick={reset}>Clear worksheet</button>
           </>
         }
       />
       <div className="calculator-view-toggle" role="group" aria-label="Calculator view">
-        <button type="button" aria-pressed={view === 'browse'} onClick={() => setView('browse')}><Plus aria-hidden="true" size={16} />Browse activities</button>
-        <button type="button" aria-pressed={view === 'worksheet'} onClick={() => setView('worksheet')}><Pencil aria-hidden="true" size={16} />Worksheet</button>
+        <button type="button" disabled={!loaded} aria-pressed={view === 'browse'} onClick={() => setView('browse')}>Browse activities</button>
+        <button type="button" disabled={!loaded} aria-pressed={view === 'worksheet'} onClick={() => setView('worksheet')}>Worksheet</button>
       </div>
       {shared ? <DataState title="Shared worksheet">Shared worksheet. These annual quantities remain editable.</DataState> : null}
       <div className="calculator__columns">
@@ -247,9 +288,13 @@ function CalculatorContent() {
                 <button
                   key={category}
                   type="button"
+                  disabled={!loaded}
                   className={activeCategory === category ? 'category-button is-selected' : 'category-button'}
                   aria-pressed={activeCategory === category}
-                  onClick={() => setActiveCategory(category)}
+                  onClick={() => {
+                    initializationInteraction.current = true
+                    setActiveCategory(category)
+                  }}
                 >
                   <ActivityMark category={category} size={22} />
                   <span>{CATEGORY_INFO[category].name}</span>
@@ -257,7 +302,7 @@ function CalculatorContent() {
                 </button>
               ))}
             </nav>
-            <ActivityShelf category={activeCategory} activities={activities} selectedIds={selectedIds} onAdd={add} />
+            <ActivityShelf category={activeCategory} activities={activities} selectedIds={selectedIds} onAdd={add} disabled={!loaded} />
           </div>
         </section>
         <section className="calculator__worksheet panel" data-compact-view={view === 'worksheet' ? 'visible' : 'hidden'} aria-label="Worksheet">
@@ -267,7 +312,7 @@ function CalculatorContent() {
                 <p className="section-kicker">Selected activities</p>
                 <h2>Worksheet <span>({selected.length})</span></h2>
               </div>
-              <button type="button" className="text-link" onClick={() => setView('browse')}><Plus aria-hidden="true" size={16} />Add another activity</button>
+              <button type="button" className="text-link" onClick={() => setView('browse')}>Add another activity</button>
             </div>
             <div className="worksheet__body">
               <section className="worksheet__editors" aria-label="Selected activities">
@@ -275,8 +320,22 @@ function CalculatorContent() {
                   ? <div className="empty-ruled-field">Your worksheet is empty. Browse activities to start comparing.</div>
                   : selected.map((activity) => {
                       const result = summary.results.find((item) => item.activityId === activity.id)
-                      const expanded = activeEditorId === activity.id || !result
-                      return expanded ? (
+                      const collapsed = result && collapsedIds.includes(activity.id)
+                      return collapsed ? (
+                        <ActivitySummary
+                          key={activity.id}
+                          activity={activity}
+                          result={result}
+                          summaryRef={(element) => { summaryRefs.current[activity.id] = element }}
+                          onEdit={() => {
+                            setCollapsedIds((ids) => ids.filter((value) => value !== activity.id))
+                            setActiveEditorId(activity.id)
+                            focusInput(activity.id)
+                          }}
+                          onRemove={remove}
+                          onEvidence={setEvidenceId}
+                        />
+                      ) : (
                         <ActivityEditor
                           key={activity.id}
                           activity={activity}
@@ -289,19 +348,6 @@ function CalculatorContent() {
                           onFocus={() => setActiveEditorId(activity.id)}
                           onChange={update}
                           onDone={finishEditing}
-                          onRemove={remove}
-                          onEvidence={setEvidenceId}
-                        />
-                      ) : (
-                        <ActivitySummary
-                          key={activity.id}
-                          activity={activity}
-                          result={result}
-                          summaryRef={(element) => { summaryRefs.current[activity.id] = element }}
-                          onEdit={() => {
-                            setActiveEditorId(activity.id)
-                            focusInput(activity.id)
-                          }}
                           onRemove={remove}
                           onEvidence={setEvidenceId}
                         />
@@ -320,9 +366,9 @@ function CalculatorContent() {
                 />
               )}
             </div>
-            <details className="scenario-disclosure">
+            <details ref={scenarioDetailsRef} className="scenario-disclosure" onToggle={(event) => setScenarioOpen(event.currentTarget.open)}>
               <summary>Add a documented AI scenario</summary>
-              <ScenarioPane onPublishedGrams={setScenarioGrams} />
+              {scenarioOpen ? <ScenarioPane onPublishedGrams={setScenarioGrams} /> : null}
             </details>
             {summary.skipped.length ? (
               <DataState title="Inputs not included">Not available, unknown, invalid, or non-positive quantities are not included in the annual total.</DataState>
@@ -508,38 +554,6 @@ function ResultPanel({
           <BenchmarkContext benchmark={benchmark} percentage={percentage} totalEmissions={combinedTotal} />
         </>
       ) : null}
-    </aside>
-  )
-}
-
-function EvidencePane({
-  activity,
-  quantity,
-  close,
-}: {
-  activity: Activity
-  quantity?: number
-  close: () => void
-}) {
-  const headingRef = useRef<HTMLHeadingElement>(null)
-  useEffect(() => {
-    headingRef.current?.focus()
-  }, [])
-  return (
-    <aside className="detail-pane worksheet-evidence-pane" aria-label={`${activity.name} factor evidence`}>
-      <button type="button" onClick={close}>Close evidence</button>
-      <p className="section-kicker">Factor evidence</p>
-      <EvidenceBadge evidence={activity.evidence} />
-      <h2 ref={headingRef} id={`evidence-heading-${activity.id}`} tabIndex={-1}>{activity.name}</h2>
-      <FactorRecordDetails
-        description={activity.description}
-        unitDefinition={activity.unitDefinition}
-        notes={activity.notes}
-        unitLabel={activity.unitLabel}
-        emissionFactor={activity.emissionFactor}
-        evidence={activity.evidence}
-        quantity={quantity}
-      />
     </aside>
   )
 }

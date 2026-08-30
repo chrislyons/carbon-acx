@@ -5,10 +5,19 @@ import Link from 'next/link'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { TabHeader } from '@/components/layout/TabHeader'
 import { abbreviateUnit } from '@/lib/units'
-import { DataState, EvidenceBadge, EvidenceFacts, FactorRecordDetails } from '@/components/content'
-import { AtlasCoverageMap, AtlasModeIcon } from '@/components/viz/AtlasCoverageMap'
+import { EvidenceBadge, EvidenceFacts, FactorRecordDetails } from '@/components/content'
 import { CATALOG_ACTIVITIES, getAtlasMode, type AtlasMode, type CatalogActivity } from '@/lib/calculator'
 import { buildAtlasCoverageGroups, matchesAtlasRecord, type AtlasCoverageGroup } from '@/lib/visualization'
+import { AtlasCoverageMap } from '@/components/viz/AtlasCoverageMap'
+
+function ModeIcon({ mode }: { mode: AtlasMode }) {
+  const path = mode === 'personal'
+    ? 'M3 10.5 12 3l9 7.5V21H3zM9 21v-6h6v6'
+    : mode === 'systems'
+      ? 'M12 3v6M5 21v-6M19 21v-6M5 15h14M12 9v6'
+      : 'M3 21V9l6 4V9l6 4V5h6v16M3 21h18'
+  return <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d={path} /></svg>
+}
 
 const modes: ReadonlyArray<{ id: AtlasMode; label: string; description: string }> = [
   { id: 'personal', label: 'Household activities', description: 'Published activities that can be carried into an annual worksheet.' },
@@ -124,7 +133,7 @@ export default function ExplorePage() {
             <div className="mode-switcher" aria-label="Atlas mode">
               {modeSummaries.map((item) => (
                 <button key={item.id} type="button" aria-pressed={mode === item.id} className={mode === item.id ? 'is-selected' : ''} onClick={() => switchMode(item.id)}>
-                  <AtlasModeIcon mode={item.id} />
+                  <ModeIcon mode={item.id} />
                   <strong>{item.label}</strong>
                   <span>{item.description} {item.count} records · {item.published} published · {item.unavailable} Not available</span>
                 </button>

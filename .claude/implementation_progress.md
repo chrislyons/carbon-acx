@@ -153,3 +153,16 @@ http://localhost:4180 — `node scripts/serve-static.mjs 4180 dist/site`
 ## 2026-08-28 — home overhaul, framing, units, Evidence split (see docs/acx/ACX113)
 
 Full session log in `docs/acx/ACX113 Interactive Home Tab and Framed Tab System.md`. Highlights: framed 54px tab bars site-wide; Methodology/Evidence split; interactive home (vehicle-class dropdown, draggable marker, all-classes chart, responsive viewBox); callout standard 1rem/500; unit abbreviation layer; Tailwind v4 utilities activation (were silently dead); app-stage viewport-bounded tabs with zero dead band at tall viewports; footer/header unbound; yr suffix site-wide. e2e 107/107.
+
+## 2026-08-30 — responsive information architecture and evidence-flow implementation
+
+Decision record: `docs/acx/ACX114 Responsive Information Architecture Superseding Decisions.md`. Implementation branch: `feat/frontend-information-density`.
+
+- Replaced the mobile menu and global Home arrow controls with a six-link icon/label route rail governed by `routeMeta`; normalized the shell around 48/60/72rem breakpoints, natural reading scroll, wide workspace panel scrollers, explicit theme precedence, forced-colors/reduced-motion paths, and a compact normal-flow footer.
+- Added immutable generated-source adapters, shared `EvidenceFacts` and `SourceRegistry` renderers, normalized Published/Not available status language, and exact Atlas grouping/matching contracts.
+- Rebuilt Home, Calculator, Explore, Learn, Methodology, Evidence, manifest detail, and 3D surfaces around task narratives. Calculator now has Browse/Worksheet views, focused editors with explicit Done, evidence inspector focus restoration, scenario disclosure, ranked HTML impact composition, and lazy Sankey flow. Explore has three authority modes, filters, responsive Browse/Record views, selection reconciliation, a server-rendered map/detail path, and the 3D fallback remains accessible.
+- Added contract tests, responsive density/accessibility coverage, theme precedence, fallback API coverage, exact manifest discovery, lazy chunk checks, and browser-engine-specific Playwright configuration. Updated root/web READMEs and the ACX catalog.
+- Reproducible `make build-static` passed: 23 datasets / 1,285 claims, 108 manifest rows, 47 packaged artifacts, 14 exported pages. Vitest: 47 passed across 9 files. Root `make validate`: 157 passed, 4 skipped; asset and documentation gates passed.
+- Final Playwright matrix: 458 passed, 4 intentional skips across Chromium 141.0.7390.37, Firefox 142.0.1, and WebKit 26.0. Static viewport harness: 120 route/viewport pairs, all with `hScroll=false`. Performance medians: Home 1,480 ms LCP / 0.00043 CLS; Calculator 1,428 ms / 0.03396 / 32 ms max interaction; Explore 1,532 ms / 0 CLS / 32 ms max interaction.
+- Visual capture harness produced 144 screens across nine viewports and both light/dark themes, including the discovered manifest detail route.
+- Apple verification boundary is explicit: Safari 26.5 tooling and iOS 18.2/18.4/26.4 runtimes are available but actual Safari/iOS interaction was not run; physical Edge, physical iOS Safari, and prior browser majors remain unverified.

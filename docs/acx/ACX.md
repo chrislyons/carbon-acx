@@ -135,4 +135,4 @@ Active catalog for Carbon ACX project documents.
 
 ---
 
-**Last Updated:** 2026-08-21
+**Last Updated:** 2026-08-30

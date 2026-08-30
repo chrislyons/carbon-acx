@@ -47,3 +47,18 @@ A single governed route registry eliminates label and current-state drift. A nor
 [4] Mozilla Developer Network, “CSS container queries.” [Online]. Available: https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_containment/Container_queries
 
 [5] Mozilla Developer Network, “`<dialog>`: The Dialog element.” [Online]. Available: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dialog
+
+## Implementation evidence (2026-08-30)
+
+The decision is implemented on `feat/frontend-information-density`. The implementation is split across four working checkpoints: `ee2e1e0`, `48aa595`, `899fa3d`, and `4ff3b0d`; the final integration commit follows this evidence update.
+
+- **Data and static release:** the reproducible static build passed with `ACX_GENERATED_AT=2026-08-28T04:46:56+00:00` and `ACX_AUDIT_DATE=2026-08-28`. The dataflow audit reported 23 datasets and 1,285 claims; the manifest audit reported 108 rows; the package contained 47 artifacts; and the Next export rendered 14 pages.
+- **Web code gates:** TypeScript typecheck and ESLint passed. Vitest passed 47 tests across 9 files. Repository validation passed 157 Python tests, 4 optional skips, asset validation, documentation lint, dataflow audit, and manifest audit.
+- **Browser matrix:** the final Playwright run passed 458 tests with 4 intentional skips across Chromium, Firefox, and Playwright WebKit. The observed engines were Chromium 141.0.7390.37, Firefox 142.0.1, and WebKit 26.0. WebKit is recorded as WebKit, not Safari.
+- **Responsive harness:** the static viewport check passed 120 route/viewport pairs spanning nine base viewports and six breakpoint boundaries. Every pair reported `hScroll=false`. Wide workspace ratios were 1.05–1.08 at 1280×720 through 1920×1080; reading routes retain natural document flow.
+- **Performance harness:** under the scripted Chromium network/CPU profile, three-sample medians were Home LCP 1,480 ms / CLS 0.00043, Calculator LCP 1,428 ms / CLS 0.03396 / max interaction 32 ms, and Explore LCP 1,532 ms / CLS 0 / max interaction 32 ms. The optional flow loaded only after disclosure and no initial d3-sankey request was observed.
+- **Bundle report:** shared first-load JavaScript remained 102 kB; route first-load values were Calculator 161 kB, Explore 158 kB, and 3D 154 kB. The Explore route is 1 kB above the ACX109 157 kB value, Calculator is 1 kB above its 160 kB value, and 3D is 3 kB above its 151 kB value because the worksheet/evidence and accessible 3D fallback/detail contracts are now route-owned. The small exceptions are recorded rather than hidden; Sankey and WebGL remain deferred, while the primary Atlas map and selected-record detail stay server-rendered to protect first interaction and LCP.
+- **Apple surface boundary:** `safaridriver` is available as Safari 26.5 (21624.2.5.11.4), and iOS simulator runtimes 18.2, 18.4, and 26.4 are installed. Actual Safari and iOS simulator interaction were not run in this pass; physical Edge, physical iOS Safari, and prior browser majors remain unverified.
+- **Visual capture:** the final capture harness produced 144 screens across nine viewports and light/dark themes, covering the public routes and discovered manifest detail.
+
+The implementation evidence intentionally distinguishes automated browser engines from product-browser verification. That distinction is part of the support contract, not a claim that Playwright WebKit is Safari.
