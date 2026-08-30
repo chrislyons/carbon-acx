@@ -1,25 +1,21 @@
 'use client'
+
 import dynamic from 'next/dynamic'
+import { Copy, Pencil, Plus, Trash2 } from 'lucide-react'
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { ActivityMark } from '@/components/calculator/ActivityMark'
 import { ActivityShelf } from '@/components/calculator/ActivityShelf'
 import { ScenarioPane } from '@/components/calculator/ScenarioPane'
 import { TabHeader } from '@/components/layout/TabHeader'
-import { TabFooter } from '@/components/layout/TabFooter'
 import { abbreviateUnit } from '@/lib/units'
-import { BenchmarkContext, DataState, EvidenceBadge, FactorRecordDetails } from '@/components/content'
-
-const ImpactComposition = dynamic(
-  () => import('@/components/viz/ImpactComposition').then((mod) => mod.ImpactComposition),
-  {
-    loading: () => (
-      <div className="empty-ruled-field" aria-live="polite">
-        Loading impact composition…
-      </div>
-    ),
-  },
-)
+import {
+  BenchmarkContext,
+  DataState,
+  EvidenceBadge,
+  EvidenceFacts,
+  FactorRecordDetails,
+} from '@/components/content'
 import {
   CATEGORY_INFO,
   DEFAULT_BENCHMARK_KEY,
@@ -32,11 +28,24 @@ import {
   getActivityById,
   getBenchmark,
   getBenchmarkOptions,
-  type Activity,
-  type ActivityCategory,
-  type Benchmark,
-  type CalculatorSummary,
 } from '@/lib/calculator'
+import type {
+  Activity,
+  ActivityCategory,
+  Benchmark,
+  CalculatorSummary,
+} from '@/lib/calculator'
+
+const ImpactComposition = dynamic(
+  () => import('@/components/viz/ImpactComposition').then((mod) => mod.ImpactComposition),
+  {
+    loading: () => (
+      <div className="empty-ruled-field" aria-live="polite">
+        Loading impact composition…
+      </div>
+    ),
+  },
+)
 
 const STORAGE_KEY = 'carbon-acx-calculator-inputs'
 const CATEGORIES = Object.keys(CATEGORY_INFO) as ActivityCategory[]
@@ -56,11 +65,17 @@ function CalculatorContent() {
   const [inputs, setInputs] = useState<Record<string, number>>({})
   const [drafts, setDrafts] = useState<Record<string, string>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [activeEditorId, setActiveEditorId] = useState<string | null>(null)
+  const [completedEditorId, setCompletedEditorId] = useState<string | null>(null)
   const [evidenceId, setEvidenceId] = useState<string | null>(null)
   const evidenceRestoreId = useRef<string | null>(null)
+  const inputRefs = useRef<Record<string, HTMLInputElement | null>>({})
+  const summaryRefs = useRef<Record<string, HTMLButtonElement | null>>({})
   const [benchmarkKey, setBenchmarkKey] = useState(DEFAULT_BENCHMARK_KEY)
   const [scenarioGrams, setScenarioGrams] = useState(0)
   const [shared, setShared] = useState(false)
+  const [view, setView] = useState<'browse' | 'worksheet'>('browse')
+  const [loaded, setLoaded] = useState(false)
   const [copied, setCopied] = useState(false)
   const [announcement, setAnnouncement] = useState('')
 
@@ -71,6 +86,18 @@ function CalculatorContent() {
     document.getElementById(`evidence-trigger-${triggerId}`)?.focus()
   }, [evidenceId])
 
+  useEffect(() => {
+    if (!activeEditorId) return
+    window.requestAnimationFrame(() => inputRefs.current[activeEditorId]?.focus())
+  }, [activeEditorId])
+  useEffect(() => {
+    if (!completedEditorId) return
+    const completedId = completedEditorId
+    window.requestAnimationFrame(() => {
+      summaryRefs.current[completedId]?.focus()
+      setCompletedEditorId(null)
+    })
+  }, [completedEditorId])
   useEffect(() => {
     const encoded = searchParams.get('data')
     const rawInputs: Record<string, unknown> = encoded
@@ -90,10 +117,14 @@ function CalculatorContent() {
     setInputs(published)
     setDrafts(Object.fromEntries(Object.entries(published).map(([id, value]) => [id, String(value)])))
     setSelectedIds(Object.keys(published))
+    setActiveEditorId(null)
     setShared(Boolean(encoded))
+    setView(encoded ? 'worksheet' : 'browse')
+    setLoaded(true)
   }, [searchParams])
 
   useEffect(() => {
+    if (!loaded) return
     const safe = Object.fromEntries(
       Object.entries(inputs).filter(
         ([id, value]) => getActivityById(id) && Number.isFinite(value) && value > 0,
@@ -101,7 +132,8 @@ function CalculatorContent() {
     )
     if (Object.keys(safe).length) localStorage.setItem(STORAGE_KEY, JSON.stringify(safe))
     else localStorage.removeItem(STORAGE_KEY)
-  }, [inputs])
+  }, [inputs, loaded])
+
   const summary = useMemo(
     () => calculateEmissions(Object.entries(inputs).map(([activityId, quantity]) => ({ activityId, quantity }))),
     [inputs],
@@ -110,25 +142,39 @@ function CalculatorContent() {
   const benchmark = getBenchmark(benchmarkKey) ?? getBenchmark(DEFAULT_BENCHMARK_KEY)!
   const selected = selectedIds.map(getActivityById).filter((activity): activity is Activity => Boolean(activity))
   const activities = getActivitiesByCategory(activeCategory)
+  const evidenceActivity = evidenceId ? getActivityById(evidenceId) : null
+
+  const focusInput = (id: string) => {
+    window.requestAnimationFrame(() => inputRefs.current[id]?.focus())
+  }
 
   const add = (activity: Activity) => {
     if (selectedIds.includes(activity.id)) {
-      setAnnouncement(`${activity.name} is already in your activity basket.`)
+      setAnnouncement(`${activity.name} is already in the worksheet.`)
+      setView('worksheet')
+      setActiveEditorId(activity.id)
+      focusInput(activity.id)
       return
     }
     setSelectedIds((ids) => [...ids, activity.id])
     setDrafts((current) => ({ ...current, [activity.id]: current[activity.id] ?? '' }))
-    setAnnouncement(`${activity.name} added to your activity basket.`)
+    setErrors(({ [activity.id]: _, ...rest }) => rest)
+    setView('worksheet')
+    setActiveEditorId(activity.id)
+    setAnnouncement(`${activity.name} added to the worksheet.`)
   }
+
   const remove = (id: string) => {
     const activity = getActivityById(id)
     setSelectedIds((ids) => ids.filter((value) => value !== id))
     setInputs(({ [id]: _, ...rest }) => rest)
     setDrafts(({ [id]: _, ...rest }) => rest)
     setErrors(({ [id]: _, ...rest }) => rest)
+    if (activeEditorId === id) setActiveEditorId(null)
     if (evidenceId === id) setEvidenceId(null)
-    if (activity) setAnnouncement(`${activity.name} removed from your activity basket.`)
+    if (activity) setAnnouncement(`${activity.name} removed from the worksheet.`)
   }
+
   const update = (id: string, raw: string) => {
     setDrafts((current) => ({ ...current, [id]: raw }))
     if (raw.trim() === '') {
@@ -150,143 +196,151 @@ function CalculatorContent() {
       setInputs((current) => ({ ...current, [id]: value }))
     }
   }
+
+  const finishEditing = (id: string) => {
+    if (errors[id] || inputs[id] === undefined) return
+    setActiveEditorId(null)
+    setCompletedEditorId(id)
+  }
+
   const reset = () => {
     setSelectedIds([])
     setInputs({})
     setDrafts({})
     setErrors({})
+    setActiveEditorId(null)
     setEvidenceId(null)
-    setAnnouncement('Activity basket cleared.')
+    setView('browse')
+    setAnnouncement('Worksheet cleared.')
     localStorage.removeItem(STORAGE_KEY)
   }
+
   const copy = async () => {
     await navigator.clipboard.writeText(`${window.location.origin}/calculator?data=${encodeCalculatorInputs(inputs)}`)
     setCopied(true)
     setAnnouncement('Worksheet link copied.')
     window.setTimeout(() => setCopied(false), 1800)
   }
+
   const closeEvidence = () => {
     if (evidenceId) evidenceRestoreId.current = evidenceId
     setEvidenceId(null)
   }
 
   return (
-    <div className="editorial-page worksheet app-stage">
+    <div className="editorial-page worksheet workspace">
       <TabHeader
-        title="Calculator"
+        route="calculator"
         meta={
           <>
-            <span>Basket <strong>{selected.length}</strong></span>
-            {combinedTotal > 0 ? <span><strong>{formatEmissions(combinedTotal)}</strong>/yr</span> : <span>empty</span>}
+            <span>Selected <strong>{selected.length}</strong></span>
+            {combinedTotal > 0 ? <span><strong>{formatEmissions(combinedTotal)}</strong>/yr</span> : <span>Empty worksheet</span>}
+            <span>{summary.skipped.length ? <><strong>{summary.skipped.length}</strong> not included</> : 'All inputs counted'}</span>
+          </>
+        }
+        actions={
+          <>
+            <button type="button" onClick={copy}><Copy aria-hidden="true" size={15} />{copied ? 'Link copied' : 'Copy link'}</button>
+            <button type="button" className="action-destructive" onClick={reset}><Trash2 aria-hidden="true" size={15} />Clear worksheet</button>
           </>
         }
       />
+      <div className="calculator-view-toggle" role="group" aria-label="Calculator view">
+        <button type="button" aria-pressed={view === 'browse'} onClick={() => setView('browse')}><Plus aria-hidden="true" size={16} />Browse activities</button>
+        <button type="button" aria-pressed={view === 'worksheet'} onClick={() => setView('worksheet')}><Pencil aria-hidden="true" size={16} />Worksheet</button>
+      </div>
       {shared ? <DataState title="Shared worksheet">Shared worksheet. These annual quantities remain editable.</DataState> : null}
       <div className="calculator__columns">
-        <div className="calculator__shelf panel">
-          <div className="panel__scroll" data-panel-scroll tabIndex={0} role="region" aria-label="Published activity shelf">
-      <nav className="worksheet__groups" aria-label="Activity categories">
-        {CATEGORIES.map((category) => (
-          <button
-            key={category}
-            type="button"
-            className={activeCategory === category ? 'category-button is-selected' : 'category-button'}
-            aria-pressed={activeCategory === category}
-            onClick={() => setActiveCategory(category)}
-          >
-            <ActivityMark category={category} size={22} />
-            <span>{CATEGORY_INFO[category].name}</span>
-            <small>{getActivitiesByCategory(category).length} activities</small>
-          </button>
-        ))}
-      </nav>
-      <ActivityShelf category={activeCategory} activities={activities} selectedIds={selectedIds} onAdd={add} />
-          </div>
-        </div>
-        <div className="calculator__worksheet panel">
-          <div className="panel__scroll" data-panel-scroll tabIndex={0} role="region" aria-label="Activity basket worksheet">
-      <div className="basket-header ruled-section">
-        <div>
-          <p className="section-kicker">Selected activities</p>
-          <h2>Your activity basket <span>({selected.length})</span></h2>
-        </div>
-        <CategoryTally selectedIds={selectedIds} />
-      </div>
-      <div className="worksheet__body">
-        <section className="worksheet__editors" aria-label="Selected activities">
-          {selected.length === 0
-            ? <div className="empty-ruled-field">Your activity basket is empty. Choose an activity above to start comparing.</div>
-            : selected.map((activity) => (
-                <ActivityEditor
-                  key={activity.id}
-                  activity={activity}
-                  value={drafts[activity.id] ?? ''}
-                  error={errors[activity.id]}
-                  result={summary.results.find((result) => result.activityId === activity.id)}
-                  totalEmissions={summary.totalEmissions}
-                  onChange={update}
-                  onRemove={remove}
-                  onEvidence={setEvidenceId}
-                />
+        <section className="calculator__shelf panel" data-compact-view={view === 'browse' ? 'visible' : 'hidden'} aria-label="Browse activities">
+          <div className="panel__scroll" data-panel-scroll tabIndex={0} role="region" aria-label="Browse activities">
+            <nav className="worksheet__groups" aria-label="Activity categories">
+              {CATEGORIES.map((category) => (
+                <button
+                  key={category}
+                  type="button"
+                  className={activeCategory === category ? 'category-button is-selected' : 'category-button'}
+                  aria-pressed={activeCategory === category}
+                  onClick={() => setActiveCategory(category)}
+                >
+                  <ActivityMark category={category} size={22} />
+                  <span>{CATEGORY_INFO[category].name}</span>
+                  <small>{getActivitiesByCategory(category).length} activities</small>
+                </button>
               ))}
+            </nav>
+            <ActivityShelf category={activeCategory} activities={activities} selectedIds={selectedIds} onAdd={add} />
+          </div>
         </section>
-        <ResultPanel
-          summary={summary}
-          additionalGrams={scenarioGrams}
-          benchmarkKey={benchmarkKey}
-          setBenchmarkKey={setBenchmarkKey}
-          benchmark={benchmark}
-          evidenceId={evidenceId}
-        />
+        <section className="calculator__worksheet panel" data-compact-view={view === 'worksheet' ? 'visible' : 'hidden'} aria-label="Worksheet">
+          <div className="panel__scroll" data-panel-scroll tabIndex={0} role="region" aria-label="Worksheet">
+            <div className="worksheet-header ruled-section">
+              <div>
+                <p className="section-kicker">Selected activities</p>
+                <h2>Worksheet <span>({selected.length})</span></h2>
+              </div>
+              <button type="button" className="text-link" onClick={() => setView('browse')}><Plus aria-hidden="true" size={16} />Add another activity</button>
+            </div>
+            <div className="worksheet__body">
+              <section className="worksheet__editors" aria-label="Selected activities">
+                {selected.length === 0
+                  ? <div className="empty-ruled-field">Your worksheet is empty. Browse activities to start comparing.</div>
+                  : selected.map((activity) => {
+                      const result = summary.results.find((item) => item.activityId === activity.id)
+                      const expanded = activeEditorId === activity.id || !result
+                      return expanded ? (
+                        <ActivityEditor
+                          key={activity.id}
+                          activity={activity}
+                          value={drafts[activity.id] ?? ''}
+                          error={errors[activity.id]}
+                          result={result}
+                          totalEmissions={summary.totalEmissions}
+                          active={activeEditorId === activity.id}
+                          inputRef={(element) => { inputRefs.current[activity.id] = element }}
+                          onChange={update}
+                          onDone={finishEditing}
+                          onRemove={remove}
+                          onEvidence={setEvidenceId}
+                        />
+                      ) : (
+                        <ActivitySummary
+                          key={activity.id}
+                          activity={activity}
+                          result={result}
+                          summaryRef={(element) => { summaryRefs.current[activity.id] = element }}
+                          onEdit={() => {
+                            setActiveEditorId(activity.id)
+                            focusInput(activity.id)
+                          }}
+                          onRemove={remove}
+                          onEvidence={setEvidenceId}
+                        />
+                      )
+                    })}
+              </section>
+              {evidenceActivity ? (
+                <EvidencePane activity={evidenceActivity} quantity={inputs[evidenceActivity.id]} close={closeEvidence} />
+              ) : (
+                <ResultPanel
+                  summary={summary}
+                  additionalGrams={scenarioGrams}
+                  benchmarkKey={benchmarkKey}
+                  setBenchmarkKey={setBenchmarkKey}
+                  benchmark={benchmark}
+                />
+              )}
+            </div>
+            <details className="scenario-disclosure">
+              <summary>Add a documented AI scenario</summary>
+              <ScenarioPane onPublishedGrams={setScenarioGrams} />
+            </details>
+            {summary.skipped.length ? (
+              <DataState title="Inputs not included">Not available, unknown, invalid, or non-positive quantities are not included in the annual total.</DataState>
+            ) : null}
+          </div>
+        </section>
       </div>
-      <ScenarioPane onPublishedGrams={setScenarioGrams} />
-      {evidenceId ? (
-        <EvidencePane
-          activity={getActivityById(evidenceId)!}
-          quantity={inputs[evidenceId]}
-          close={closeEvidence}
-        />
-      ) : null}
-      </div>
-        </div>
-      </div>
-      {summary.skipped.length ? (
-        <DataState title="Inputs not included">Unavailable, unknown, invalid, or non-positive quantities are not included in the annual total.</DataState>
-      ) : null}
       <p className="sr-only" aria-live="polite">{announcement}</p>
-      <TabFooter>
-        <div className="tab-footerbar__group">
-          <button type="button" className="text-link" onClick={reset}>Clear worksheet</button>
-          <button type="button" className="text-link" onClick={copy}>{copied ? 'Link copied' : 'Copy link'}</button>
-        </div>
-        <div className="tab-footerbar__group">
-          <span className="tab-footerbar__meta">
-            {summary.skipped.length ? <><strong>{summary.skipped.length}</strong> input{summary.skipped.length > 1 ? 's' : ''} not included</> : 'All inputs counted'}
-          </span>
-        </div>
-      </TabFooter>
-    </div>
-  )
-}
-
-function CategoryTally({ selectedIds }: { selectedIds: string[] }) {
-  const represented = CATEGORIES.filter((category) => selectedIds.some((id) => getActivityById(id)?.category === category))
-  const label = represented.length ? represented.map((category) => CATEGORY_INFO[category].name).join(', ') : 'none'
-  return (
-    <div className="category-tally" role="img" aria-label={`Categories in basket: ${label}`}>
-      {CATEGORIES.map((category) => {
-        const isRepresented = represented.includes(category)
-        return (
-          <span
-            key={category}
-            className={isRepresented ? 'category-tally__item is-selected' : 'category-tally__item'}
-            style={isRepresented ? { color: CATEGORY_INFO[category].color } : undefined}
-            title={CATEGORY_INFO[category].name}
-          >
-            <ActivityMark category={category} size={26} />
-          </span>
-        )
-      })}
     </div>
   )
 }
@@ -297,7 +351,10 @@ function ActivityEditor({
   error,
   result,
   totalEmissions,
+  active,
+  inputRef,
   onChange,
+  onDone,
   onRemove,
   onEvidence,
 }: {
@@ -306,14 +363,17 @@ function ActivityEditor({
   error?: string
   result?: CalculatorSummary['results'][number]
   totalEmissions: number
+  active: boolean
+  inputRef: (element: HTMLInputElement | null) => void
   onChange: (id: string, value: string) => void
+  onDone: (id: string) => void
   onRemove: (id: string) => void
   onEvidence: (id: string) => void
 }) {
   const alertId = `${activity.id}-quantity-error`
   const contribution = result && totalEmissions > 0 ? (result.emissions / totalEmissions) * 100 : 0
   return (
-    <article className="activity-editor">
+    <article className={active ? 'activity-editor is-active' : 'activity-editor'}>
       <div className="activity-editor__identity">
         <ActivityMark category={activity.category} activityId={activity.id} size={34} />
         <div>
@@ -327,6 +387,7 @@ function ActivityEditor({
       <div className="activity-editor__control">
         <label htmlFor={`${activity.id}-quantity`}>Annual quantity ({abbreviateUnit(activity.unitLabel)})</label>
         <input
+          ref={inputRef}
           id={`${activity.id}-quantity`}
           type="number"
           min="0"
@@ -344,9 +405,49 @@ function ActivityEditor({
           </div>
         ) : null}
         <div className="activity-editor__actions">
+          {active && result && !error ? <button type="button" className="action-complete" onClick={() => onDone(activity.id)}>Done</button> : null}
           <button id={`evidence-trigger-${activity.id}`} type="button" onClick={() => onEvidence(activity.id)}>Factor evidence</button>
           <button type="button" onClick={() => onRemove(activity.id)}>Remove</button>
         </div>
+        <details className="disclosure activity-editor__evidence">
+          <summary>Evidence facts</summary>
+          <EvidenceFacts evidence={activity.evidence} unitLabel={activity.unitLabel} />
+        </details>
+      </div>
+    </article>
+  )
+}
+
+function ActivitySummary({
+  activity,
+  result,
+  summaryRef,
+  onEdit,
+  onRemove,
+  onEvidence,
+}: {
+  activity: Activity
+  result: CalculatorSummary['results'][number]
+  summaryRef: (element: HTMLButtonElement | null) => void
+  onEdit: () => void
+  onRemove: (id: string) => void
+  onEvidence: (id: string) => void
+}) {
+  return (
+    <article className="activity-line">
+      <button ref={summaryRef} type="button" className="activity-line__summary" onClick={onEdit} aria-label={`${activity.name} summary`}>
+        <ActivityMark category={activity.category} activityId={activity.id} size={24} />
+        <span>
+          <strong>{activity.name}</strong>
+          <small>{CATEGORY_INFO[activity.category].name} · {result.quantity.toLocaleString('en-CA')} {abbreviateUnit(result.unitLabel)} × {result.emissionFactor} g / unit</small>
+        </span>
+        <b>{formatEmissions(result.emissions)}</b>
+      </button>
+      <EvidenceBadge evidence={activity.evidence} />
+      <div className="activity-line__actions">
+        <button type="button" onClick={onEdit}>Edit</button>
+        <button id={`evidence-trigger-${activity.id}`} type="button" onClick={() => onEvidence(activity.id)}>Factor evidence</button>
+        <button type="button" onClick={() => onRemove(activity.id)}>Remove</button>
       </div>
     </article>
   )
@@ -358,14 +459,12 @@ function ResultPanel({
   benchmarkKey,
   setBenchmarkKey,
   benchmark,
-  evidenceId,
 }: {
   summary: CalculatorSummary
   additionalGrams: number
   benchmarkKey: string
   setBenchmarkKey: (key: string) => void
   benchmark: Benchmark
-  evidenceId: string | null
 }) {
   const categories = Object.entries(summary.byCategory).filter(([, grams]) => grams > 0) as [ActivityCategory, number][]
   const combinedTotal = summary.totalEmissions + additionalGrams
@@ -376,42 +475,38 @@ function ResultPanel({
     : 'Add a valid annual quantity to see a total.'
   return (
     <aside className="result-composition" aria-label="Worksheet result">
+      <p className="section-kicker">Estimate composition</p>
       <h2>{hasTotal ? `${formatEmissions(combinedTotal)}/yr` : 'Add a valid annual quantity'}</h2>
-      <p className="result-composition__live" role="status" aria-live="polite">{evidenceId ? `${status} Evidence detail open.` : status}</p>
+      <p className="result-composition__live" role="status" aria-live="polite">{status}</p>
       {additionalGrams > 0 ? (
-        <p className="equation">
-          Includes a published AI scenario: {formatEmissions(additionalGrams)}/yr.
-        </p>
+        <p className="equation">Includes a published AI scenario: {formatEmissions(additionalGrams)}/yr.</p>
       ) : null}
       {categories.length ? (
-        <div className="composition-bar" aria-label="Category contribution">
-          {categories.map(([category, grams]) => (
-            <span
-              key={category}
-              style={{ width: `${(grams / summary.totalEmissions) * 100}%`, background: CATEGORY_INFO[category].color }}
-              title={`${CATEGORY_INFO[category].name}: ${formatEmissions(grams)}`}
-            />
-          ))}
-        </div>
+        <>
+          <div className="composition-bar" aria-label="Category contribution">
+            {categories.map(([category, grams]) => (
+              <span
+                key={category}
+                style={{ width: `${(grams / summary.totalEmissions) * 100}%`, background: CATEGORY_INFO[category].color }}
+                title={`${CATEGORY_INFO[category].name}: ${formatEmissions(grams)}`}
+              />
+            ))}
+          </div>
+          <ul className="category-composition" aria-label="Emissions by category">
+            {categories.map(([category, grams]) => (
+              <li key={category}><span>{CATEGORY_INFO[category].name}</span><strong>{formatEmissions(grams)}</strong></li>
+            ))}
+          </ul>
+        </>
       ) : <div className="empty-ruled-field">No published quantity is included yet.</div>}
-      <ul className="compact-reference-list">
-        {categories.map(([category, grams]) => (
-          <li key={category}>{CATEGORY_INFO[category].name}<strong>{formatEmissions(grams)}</strong></li>
-        ))}
-      </ul>
-      {summary.results.map((result) => (
-        <p className="equation" key={result.activityId}>
-          {result.quantity} {abbreviateUnit(result.unitLabel)} × {result.emissionFactor} g CO₂e / {abbreviateUnit(result.unitLabel)} = {formatEmissions(result.emissions)}
-        </p>
-      ))}
-      <label>
+      <label className="benchmark-selector">
         Comparison basis
         <select value={benchmarkKey} onChange={(event) => setBenchmarkKey(event.target.value)}>
           {getBenchmarkOptions().map((option) => <option key={option.key} value={option.key}>{option.label}</option>)}
         </select>
       </label>
       <ImpactComposition summary={summary} categoryInfo={CATEGORY_INFO} />
-      {summary.results.length > 0 ? (
+      {hasTotal ? (
         <>
           <p>
             <strong>Selected activities</strong> versus <strong>{benchmark.label} ({benchmark.year ?? 'Not specified'})</strong>:{' '}
@@ -438,7 +533,7 @@ function EvidencePane({
     headingRef.current?.focus()
   }, [])
   return (
-    <aside className="detail-pane" aria-label={`${activity.name} factor evidence`}>
+    <aside className="detail-pane worksheet-evidence-pane" aria-label={`${activity.name} factor evidence`}>
       <button type="button" onClick={close}>Close evidence</button>
       <p className="section-kicker">Factor evidence</p>
       <EvidenceBadge evidence={activity.evidence} />

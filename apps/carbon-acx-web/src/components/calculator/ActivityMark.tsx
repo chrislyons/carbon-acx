@@ -20,8 +20,8 @@ import {
   TrainFront,
   type LucideIcon,
 } from 'lucide-react'
-import type { ReactNode } from 'react'
-import type { ActivityCategory } from '@/lib/calculator'
+import type { CSSProperties, ReactNode } from 'react'
+import { CATEGORY_INFO, type ActivityCategory } from '@/lib/calculator'
 
 const paths: Record<ActivityCategory, ReactNode> = {
   transport: <path d="M3 15h18M5 15l2-8h10l2 8M7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm10 0a2 2 0 1 0 0-4 2 2 0 0 0 4Z" />,
@@ -66,8 +66,9 @@ export function ActivityMark({
   size?: number
 }) {
   const Icon = activityId ? activityIcons[activityId] : undefined
+  const style = { '--category-color': CATEGORY_INFO[category].color } as CSSProperties
   if (Icon) {
-    return <Icon aria-hidden="true" className="activity-mark" size={size} strokeWidth={1.7} />
+    return <Icon aria-hidden="true" className="activity-mark" style={style} size={size} strokeWidth={1.7} />
   }
-  return <svg aria-hidden="true" className="activity-mark" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">{paths[category]}</svg>
+  return <svg aria-hidden="true" className="activity-mark" style={style} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">{paths[category]}</svg>
 }

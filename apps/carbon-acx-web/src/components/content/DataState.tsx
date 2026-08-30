@@ -1,11 +1,10 @@
+import React from 'react'
 import type { ReactNode } from 'react'
 
-export type DataStateBadge = 'estimate' | 'modeled' | 'metered' | 'stale-vintage'
+export type DataStateBadge = 'estimate' | 'stale-vintage'
 
 const BADGE_LABELS: Record<DataStateBadge, string> = {
   estimate: 'Estimate',
-  modeled: 'Modeled',
-  metered: 'Metered',
   'stale-vintage': 'Stale vintage',
 }
 

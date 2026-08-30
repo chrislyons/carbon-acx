@@ -17,31 +17,31 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" data-theme="light" suppressHydrationWarning>
-      <head>
-        <link rel="preload" href="/fonts/GeneralSans-Variable.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
-        <link rel="preload" href="/fonts/CabinetGrotesk-Variable.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
-        <link rel="preload" href="/fonts/JetBrainsMono-Variable.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `try{var t=localStorage.getItem('carbon-acx-theme');if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t)}}catch(e){}`,
-          }}
-        />
-      </head>
-      <body className="min-h-screen bg-background text-foreground antialiased">
-        <a href="#main-content" className="skip-link">
-          Skip to main content
-        </a>
-        <ThemeProvider>
-          <div className="flex min-h-screen flex-col">
-            <Header />
-            <main id="main-content" className="flex-1" role="main">
-              {children}
-            </main>
-            <Footer />
-          </div>
-        </ThemeProvider>
-      </body>
-    </html>
+        <html lang="en" data-theme="light" suppressHydrationWarning>
+          <head>
+            <link rel="preload" href="/fonts/GeneralSans-Variable.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+            <link rel="preload" href="/fonts/CabinetGrotesk-Variable.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+            <link rel="preload" href="/fonts/JetBrainsMono-Variable.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `try{var s=localStorage.getItem('carbon-acx-theme');var t=s==='dark'||s==='light'?s:(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t)}catch(e){}`,
+              }}
+            />
+          </head>
+          <body className="site-shell-body bg-background text-foreground antialiased">
+            <a href="#main-content" className="skip-link">
+              Skip to main content
+            </a>
+            <ThemeProvider>
+              <div className="site-shell">
+                <Header />
+                <main id="main-content" className="site-main" role="main">
+                  {children}
+                </main>
+                <Footer />
+              </div>
+            </ThemeProvider>
+          </body>
+        </html>
   )
 }

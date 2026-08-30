@@ -1,6 +1,8 @@
 import {
   CATEGORY_INFO,
+  getActivityById,
   type ActivityCategory,
+  type AtlasMode,
   type CatalogActivity,
   type CalculatorSummary,
 } from '@/lib/calculator'
@@ -39,15 +41,43 @@ export interface ImpactFlowData {
 }
 
 export interface AtlasCoverageGroup {
-  category: string
-  label: string
+  groupKey: string
+  groupLabel: string
+  groupKind: 'calculator-category' | 'sector'
   records: CatalogActivity[]
   publishedCount: number
   unavailableCount: number
 }
 
+const CALCULATOR_CATEGORY_ORDER = Object.keys(CATEGORY_INFO) as ActivityCategory[]
+
+const SECTOR_LABELS: Record<string, string> = {
+  'SECTOR.PROFESSIONAL_SERVICES': 'Professional services',
+  'SECTOR.DIGITAL_INFRASTRUCTURE': 'Digital infrastructure',
+  'SECTOR.INDUSTRIAL_LIGHT': 'Light infrastructure',
+  'SECTOR.INDUSTRIAL_HEAVY': 'Heavy industry',
+  'SECTOR.MATERIALS_AND_CHEMICALS': 'Materials & chemicals',
+  'SECTOR.DEFENSE_OPERATIONS': 'Defense operations',
+  'SECTOR.PRIVATE_SECURITY': 'Private security',
+  'SECTOR.MODELED_EVENTS': 'Modeled events',
+  'SECTOR.INDUSTRIAL_EXTERNALITIES': 'Industrial externalities',
+  'SECTOR.BIOSPHERE': 'Biosphere',
+}
+
+const SECTOR_ORDER = [
+  'SECTOR.PROFESSIONAL_SERVICES',
+  'SECTOR.DIGITAL_INFRASTRUCTURE',
+  'SECTOR.INDUSTRIAL_LIGHT',
+  'SECTOR.INDUSTRIAL_HEAVY',
+  'SECTOR.MATERIALS_AND_CHEMICALS',
+  'SECTOR.DEFENSE_OPERATIONS',
+  'SECTOR.PRIVATE_SECURITY',
+  'SECTOR.MODELED_EVENTS',
+  'SECTOR.INDUSTRIAL_EXTERNALITIES',
+  'SECTOR.BIOSPHERE',
+] as const
 export function humanizeCategory(value: string): string {
-  return value.replaceAll('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase())
+  return value.replace(/^SECTOR\./, '').replaceAll('_', ' ').toLocaleLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase())
 }
 
 function compareByActivity(a: ActivityImpactDatum, b: ActivityImpactDatum): number {
@@ -153,27 +183,96 @@ export function buildImpactFlowData(summary: CalculatorSummary): ImpactFlowData 
   }
 }
 
-export function buildAtlasCoverageGroups(records: CatalogActivity[]): AtlasCoverageGroup[] {
-  const groups = new Map<string, CatalogActivity[]>()
-  for (const record of records) {
-    const label = humanizeCategory(record.category)
-    const current = groups.get(label) ?? []
-    current.push(record)
-    groups.set(label, current)
+function getPersonalGroupKey(record: CatalogActivity): string {
+  const calculatorActivity = getActivityById(record.id)
+  if (calculatorActivity) return calculatorActivity.category
+  return CALCULATOR_CATEGORY_ORDER.includes(record.category as ActivityCategory)
+    ? record.category
+    : `calculator:${record.category || 'unknown'}`
+}
+
+function getSectorGroupKey(record: CatalogActivity): string {
+  const sectorId = record.evidence.sectorId.trim()
+  return sectorId ? `sector:${sectorId}` : 'sector:unknown'
+}
+
+function getGroupIdentity(record: CatalogActivity, mode: AtlasMode): { key: string; label: string } {
+  if (mode === 'personal') {
+    const key = getPersonalGroupKey(record)
+    return {
+      key,
+      label: CATEGORY_INFO[key as ActivityCategory]?.name ?? humanizeCategory(record.category || 'Unknown category'),
+    }
   }
 
+  const key = getSectorGroupKey(record)
+  const sectorId = key.slice('sector:'.length)
+  return {
+    key,
+    label: sectorId === 'unknown' ? 'Unclassified sector' : SECTOR_LABELS[sectorId] ?? humanizeCategory(sectorId),
+  }
+}
+
+function groupOrder(mode: AtlasMode): string[] {
+  if (mode === 'personal') return CALCULATOR_CATEGORY_ORDER
+  if (mode === 'systems') return SECTOR_ORDER.slice(0, 3).map((sectorId) => `sector:${sectorId}`)
+  return SECTOR_ORDER.slice(3).map((sectorId) => `sector:${sectorId}`)
+}
+
+export function buildAtlasCoverageGroups(
+  records: CatalogActivity[],
+  mode: AtlasMode,
+): AtlasCoverageGroup[] {
+  const groups = new Map<string, { label: string; records: CatalogActivity[] }>()
+  for (const record of records) {
+    const identity = getGroupIdentity(record, mode)
+    const current = groups.get(identity.key) ?? { label: identity.label, records: [] }
+    current.records.push(record)
+    groups.set(identity.key, current)
+  }
+
+  const preferredOrder = groupOrder(mode)
   return [...groups.entries()]
-    .map(([label, groupRecords]) => {
-      const sortedRecords = [...groupRecords].sort(
+    .map(([groupKey, group]) => {
+      const sortedRecords = [...group.records].sort(
         (a, b) => a.name.localeCompare(b.name) || a.id.localeCompare(b.id),
       )
       return {
-        category: sortedRecords[0]?.category ?? label,
-        label,
+        groupKey,
+        groupLabel: group.label,
+        groupKind: mode === 'personal' ? ('calculator-category' as const) : ('sector' as const),
         records: sortedRecords,
         publishedCount: sortedRecords.filter((record) => record.evidence.publicationStatus === 'published').length,
         unavailableCount: sortedRecords.filter((record) => record.evidence.publicationStatus === 'unavailable').length,
       }
     })
-    .sort((a, b) => a.label.localeCompare(b.label))
+    .sort((a, b) => {
+      const aIndex = preferredOrder.indexOf(a.groupKey)
+      const bIndex = preferredOrder.indexOf(b.groupKey)
+      const aKnown = aIndex === -1 ? 1 : 0
+      const bKnown = bIndex === -1 ? 1 : 0
+      return aKnown - bKnown
+        || (aKnown === 0 ? aIndex - bIndex : a.groupLabel.localeCompare(b.groupLabel))
+        || a.groupKey.localeCompare(b.groupKey)
+    })
+}
+
+export function matchesAtlasRecord(
+  record: CatalogActivity,
+  query: string,
+  mode: AtlasMode,
+): boolean {
+  const normalizedQuery = query.trim().toLocaleLowerCase()
+  if (!normalizedQuery) return true
+  const groupLabel = getGroupIdentity(record, mode).label
+  const searchable = [
+    record.name,
+    record.description,
+    record.id,
+    record.evidence.activityId,
+    record.evidence.emissionFactorId,
+    groupLabel,
+    record.evidence.region ?? '',
+  ].join(' ').toLocaleLowerCase()
+  return searchable.includes(normalizedQuery)
 }

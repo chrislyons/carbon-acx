@@ -290,7 +290,7 @@ class ErrorBoundary extends React.Component<
     if (this.state.hasError) {
       return (
         <div className="w-full h-full min-h-[600px] flex flex-col items-center justify-center gap-4 p-8 bg-[#0a0e27] text-white">
-          <div className="text-lg font-semibold">3D Visualization Unavailable</div>
+          <div className="text-lg font-semibold">3D visualization not available</div>
           <div className="text-sm opacity-70 max-w-md text-center">
             WebGL context was lost or your browser does not support 3D graphics.
             Try refreshing the page or use a different visualization mode.

@@ -1,16 +1,19 @@
 'use client'
 
+import { Box } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import type { ComponentType } from 'react'
 import { DataState, EvidenceBadge, Eyebrow, FactorRecordDetails } from '@/components/content'
 import { TabHeader } from '@/components/layout/TabHeader'
-import { TabFooter } from '@/components/layout/TabFooter'
-import { calculateEmissions, CATEGORY_INFO, formatEmissions, getActivityById, type CalculatorInput } from '@/lib/calculator'
+import { calculateEmissions, CATEGORY_INFO, formatEmissions, getActivityById } from '@/lib/calculator'
 import type { Activity as VisualizationActivity, DataUniverseProps } from '@/components/viz/DataUniverse'
+import type { CalculatorInput } from '@/lib/calculator'
+
 const STORAGE_KEY = 'carbon-acx-calculator-inputs'
 
 type DataUniverseComponent = ComponentType<DataUniverseProps>
+
 export default function ThreeDVisualizationPage() {
   const [inputs, setInputs] = useState<Record<string, number>>({})
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -50,28 +53,27 @@ export default function ThreeDVisualizationPage() {
   )
   const selected = selectedId ? summary.results.find((result) => result.activityId === selectedId) : null
   const selectedActivity = selectedId ? getActivityById(selectedId) : null
+  const status = summary.results.length === 0
+    ? 'Empty worksheet'
+    : canUseWebGl && DataUniverse ? '3D rendered' : '2D fallback'
 
   return (
-    <div className="page-shell page-shell--reading app-stage">
+    <div className="page-shell workspace three-d-page">
       <TabHeader
+        route="explore"
         title="3D activity lab"
-        meta={
-          summary.results.length
-            ? <span><strong>{summary.results.length}</strong> spheres · <strong>{formatEmissions(summary.totalEmissions)}</strong>/yr total</span>
-            : <span>No calculated result — complete an annual worksheet</span>
-        }
+        meta={<span><strong>{status}</strong>{summary.results.length ? ` · ${summary.results.length} records · ${formatEmissions(summary.totalEmissions)}/yr` : ' · complete an annual worksheet'}</span>}
+        actions={<Link className="action-link" href="/explore"><Box aria-hidden="true" size={15} />Back to Explore</Link>}
       />
 
       {summary.results.length === 0 ? (
-        <div>
-          <DataState title="No calculated result is stored">
-            Complete an annual worksheet first, then return here to view that same published data.{' '}
-            <Link className="underline" href="/calculator">Open Estimate</Link>
-          </DataState>
-        </div>
+        <DataState title="No calculated result is stored">
+          Complete an annual worksheet first, then return here to view that same published data.{' '}
+          <Link className="text-link" href="/calculator">Open worksheet</Link>
+        </DataState>
       ) : (
         <>
-          <section className="mt-8 surface-card">
+          <section className="surface-card three-d-page__canvas">
             {canUseWebGl && DataUniverse ? (
               <DataUniverse
                 totalEmissions={summary.totalEmissionsKg}
@@ -88,7 +90,7 @@ export default function ThreeDVisualizationPage() {
             )}
           </section>
 
-          <section className="mt-6 surface-card">
+          <section className="surface-card three-d-page__table">
             <Eyebrow>2D contribution table</Eyebrow>
             <p className="mt-2 text-sm text-foreground-muted">This accessible table is always available, including when the 3D canvas loads.</p>
             <div className="mt-4 overflow-x-auto" tabIndex={0} aria-label="2D contribution table">
@@ -102,7 +104,7 @@ export default function ThreeDVisualizationPage() {
                       <td className="py-3 font-semibold text-foreground">{result.activityName}</td>
                       <td className="py-3 font-mono">{formatEmissions(result.emissions)}</td>
                       <td className="py-3"><EvidenceBadge evidence={result.evidence} /></td>
-                      <td className="py-3"><button type="button" onClick={() => setSelectedId(result.activityId)} className="font-semibold text-[color:var(--accent-primary)] underline-offset-2 hover:underline">Inspect evidence</button></td>
+                      <td className="py-3"><button type="button" onClick={() => setSelectedId(result.activityId)} className="text-link">Inspect evidence</button></td>
                     </tr>
                   ))}
                 </tbody>
@@ -111,7 +113,7 @@ export default function ThreeDVisualizationPage() {
           </section>
 
           {selected ? (
-            <section className="mt-6 surface-card" aria-live="polite">
+            <section className="surface-card three-d-page__detail" aria-live="polite">
               <div className="flex flex-wrap items-center gap-2">
                 <h2 className="text-xl font-semibold text-foreground">{selected.activityName}</h2>
                 <EvidenceBadge evidence={selected.evidence} />
@@ -129,16 +131,6 @@ export default function ThreeDVisualizationPage() {
           ) : null}
         </>
       )}
-      <TabFooter>
-        <div className="tab-footerbar__group">
-          <span className="tab-footerbar__meta">
-            {summary.results.length ? <><strong>{summary.results.length}</strong> spheres rendered from published records</> : !canUseWebGl ? 'Canvas unavailable — table view shows the same records' : 'No calculated result stored — estimate an activity first'}
-          </span>
-        </div>
-        <div className="tab-footerbar__group">
-          <Link className="text-link" href="/explore">Atlas records</Link>
-        </div>
-      </TabFooter>
     </div>
   )
 }

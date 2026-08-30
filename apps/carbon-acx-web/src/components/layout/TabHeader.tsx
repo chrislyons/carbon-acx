@@ -1,16 +1,31 @@
 import type { ReactNode } from 'react'
+import { getRouteMeta, type RouteId } from '@/components/layout/routeMeta'
 
-/**
- * TabHeader — the per-tab status bar, normalized across every non-home tab.
- * 54px (3.375rem), sticky directly below the site topbar. Carries the tab
- * title (page h1, distilled from the former hero) plus live tab-relevant
- * status meta (running tally, filtered counts, dataset identity, ...).
- */
-export function TabHeader({ title, meta }: { title: string; meta?: ReactNode }) {
+export interface TabHeaderProps {
+  route: RouteId
+  title?: string
+  description?: string
+  meta?: ReactNode
+  actions?: ReactNode
+}
+
+export function TabHeader({ route, title, description, meta, actions }: TabHeaderProps) {
+  const routeMeta = getRouteMeta(route)
+  const Icon = routeMeta.icon
+
   return (
-    <div className="tab-headerbar">
-      <h1 className="tab-headerbar__title">{title}</h1>
-      {meta ? <div className="tab-headerbar__meta">{meta}</div> : null}
-    </div>
+    <header className="tab-headerbar">
+      <div className="tab-headerbar__identity">
+        <Icon aria-hidden="true" size={22} strokeWidth={2} />
+        <div>
+          <p className="section-kicker">{description ?? routeMeta.cue}</p>
+          <h1 className="tab-headerbar__title">{title ?? routeMeta.label}</h1>
+        </div>
+      </div>
+      <div className="tab-headerbar__right">
+        {meta ? <div className="tab-headerbar__meta" aria-live="polite">{meta}</div> : null}
+        {actions ? <div className="tab-headerbar__actions">{actions}</div> : null}
+      </div>
+    </header>
   )
 }

@@ -1,8 +1,8 @@
+import { ArrowLeft, ExternalLink } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Eyebrow, VerifyArtifactButton } from '@/components/content'
 import { TabHeader } from '@/components/layout/TabHeader'
-import { TabFooter } from '@/components/layout/TabFooter'
 import { getAllManifestIds, getManifest, getManifests } from '@/lib/manifests'
 
 interface ManifestDetailPageProps {
@@ -24,70 +24,62 @@ export default async function ManifestDetailPage({ params }: ManifestDetailPageP
   const rawReferences = `/artifacts/${manifest.references.path}`
 
   return (
-
-    <div className="page-shell page-shell--reading app-stage">
+    <div className="page-shell reading-page manifest-detail-page">
       <TabHeader
+        route="evidence"
         title={manifest.figure_id}
         meta={
           <>
-            <span>{manifest.figure_method}</span>
-            <span>generated {manifest.generated_at}</span>
-            <span>schema {manifest.schema_version}</span>
+            <span>SHA-256 <strong>{manifest.hash_prefix}</strong></span>
+            <span className="mono">{manifest.figure_path}</span>
           </>
         }
+        actions={<Link className="action-link" href="/evidence"><ArrowLeft aria-hidden="true" size={15} />Back to Evidence</Link>}
       />
-      <Link href="/evidence" className="quiet-link text-sm font-semibold text-[color:var(--accent-primary)]">&larr; Evidence library</Link>
 
-      <section className="mt-8 grid gap-5 lg:grid-cols-2">
+      <p className="manifest-detail__method">{manifest.figure_method} · schema {manifest.schema_version} · generated {manifest.generated_at}</p>
+      <div className="manifest-detail__grid">
         <article className="surface-card">
           <Eyebrow>Byte hash</Eyebrow>
-          <h2 className="mt-2 text-xl font-semibold text-foreground">SHA-256 of the published figure</h2>
-          <code className="mt-4 block break-all rounded-md bg-[color:var(--surface-panel)] p-3 text-xs text-foreground">{manifest.figure_sha256}</code>
-          <div className="mt-5"><VerifyArtifactButton artifactPath={manifest.figure_path} expectedHash={manifest.figure_sha256} /></div>
-          <p className="mt-4 text-sm text-foreground-muted">The browser downloads the raw static figure, hashes its bytes, and compares that digest with the manifest value.</p>
+          <h2>SHA-256 of the published figure</h2>
+          <code className="manifest-detail__hash">{manifest.figure_sha256}</code>
+          <div className="manifest-detail__verify"><VerifyArtifactButton artifactPath={manifest.figure_path} expectedHash={manifest.figure_sha256} /></div>
+          <p className="text-sm">The browser downloads the raw static figure, hashes its bytes, and compares that digest with the manifest value.</p>
         </article>
         <article className="surface-card">
           <Eyebrow>Reported build metadata</Eyebrow>
-          <h2 className="mt-2 text-xl font-semibold text-foreground">Numeric invariance</h2>
-          <dl className="mt-5 grid gap-4 text-sm">
-            <div><dt className="metric-label">Build-reported status</dt><dd>{manifest.numeric_invariance.passed ? 'Passed' : 'Failed'}</dd></div>
-            <div><dt className="metric-label">Tolerance</dt><dd>{manifest.numeric_invariance.tolerance_percent}%</dd></div>
-            <div><dt className="metric-label">Hash prefix</dt><dd className="font-mono">{manifest.hash_prefix}</dd></div>
+          <h2>Numeric invariance</h2>
+          <dl className="manifest-detail__facts">
+            <div><dt>Build-reported status</dt><dd>{manifest.numeric_invariance.passed ? 'Passed' : 'Failed'}</dd></div>
+            <div><dt>Tolerance</dt><dd>{manifest.numeric_invariance.tolerance_percent}%</dd></div>
+            <div><dt>Hash prefix</dt><dd className="mono">{manifest.hash_prefix}</dd></div>
           </dl>
-          <p className="mt-5 text-sm text-foreground-muted">This is manifest-supplied build metadata, not a separate browser calculation.</p>
+          <p className="text-sm">This is manifest-supplied build metadata, not a separate browser calculation.</p>
         </article>
-      </section>
+      </div>
 
-      <section className="mt-6 surface-card">
+      <section className="surface-card manifest-detail__raw">
         <Eyebrow>Raw static files</Eyebrow>
-        <div className="mt-4 flex flex-wrap gap-3">
-          <a className="action-link" href={rawManifest} target="_blank" rel="noreferrer">Raw manifest JSON</a>
-          <a className="action-link" href={rawFigure} target="_blank" rel="noreferrer">Raw figure</a>
-          <a className="action-link" href={rawReferences} target="_blank" rel="noreferrer">Raw references</a>
+        <div className="manifest-detail__links">
+          <a className="action-link" href={rawManifest} target="_blank" rel="noreferrer"><ExternalLink aria-hidden="true" size={15} />Raw manifest JSON</a>
+          <a className="action-link" href={rawFigure} target="_blank" rel="noreferrer"><ExternalLink aria-hidden="true" size={15} />Raw figure</a>
+          <a className="action-link" href={rawReferences} target="_blank" rel="noreferrer"><ExternalLink aria-hidden="true" size={15} />Raw references</a>
         </div>
       </section>
 
-      <section className="mt-6 surface-card">
+      <section className="surface-card manifest-detail__references">
         <Eyebrow>Reference order</Eyebrow>
-        <p className="mt-3 text-sm text-foreground-muted">Exact source IDs appear in the order supplied by this manifest.</p>
-        <ol className="mt-5 grid gap-3">
+        <p className="text-sm">Exact source IDs appear in the order supplied by this manifest.</p>
+        <ol>
           {manifest.references.order.map((reference) => (
-            <li key={`${reference.index}-${reference.source_id}`} className="grid grid-cols-[2rem_1fr] gap-3 border-b border-[color:var(--surface-border)] pb-3 last:border-0">
-              <span className="font-mono text-sm text-[color:var(--accent-primary)]">{reference.index}</span>
-              <code className="break-all text-sm text-foreground">{reference.source_id}</code>
-            </li>
+            <li key={`${reference.index}-${reference.source_id}`}><span className="mono">{reference.index}</span><code>{reference.source_id}</code></li>
           ))}
         </ol>
-        <dl className="mt-5 grid gap-3 text-sm sm:grid-cols-2">
-          <div><dt className="metric-label">References file hash</dt><dd className="break-all font-mono text-xs">{manifest.references.sha256}</dd></div>
-          <div><dt className="metric-label">Reference lines</dt><dd>{manifest.references.line_count}</dd></div>
+        <dl className="manifest-detail__facts">
+          <div><dt>References file hash</dt><dd className="mono">{manifest.references.sha256}</dd></div>
+          <div><dt>Reference lines</dt><dd>{manifest.references.line_count}</dd></div>
         </dl>
       </section>
-      <TabFooter>
-        <div className="tab-footerbar__group">
-          <span className="tab-footerbar__meta">SHA-256 <strong>{manifest.hash_prefix}</strong> · {manifest.figure_path}</span>
-        </div>
-      </TabFooter>
     </div>
   )
 }

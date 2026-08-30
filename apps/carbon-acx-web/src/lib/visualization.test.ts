@@ -12,6 +12,7 @@ import {
   buildAtlasCoverageGroups,
   buildImpactFlowData,
   humanizeCategory,
+  matchesAtlasRecord,
 } from '@/lib/visualization'
 
 function summaryFor(...inputs: { activityId: string; quantity: number }[]): CalculatorSummary {
@@ -150,22 +151,51 @@ describe('visualization adapters', () => {
     expect(tied.map((item) => item.activityName)).toEqual(['Meal with chicken', 'School run by car'])
   })
 
-  it('humanizes categories and counts Atlas publication states', () => {
+  it('uses generated category and sector order for all atlas modes', () => {
     expect(humanizeCategory('industrial_light')).toBe('Industrial Light')
-
-    const systems = CATALOG_ACTIVITIES.filter((record) => getAtlasMode(record) === 'systems')
-    const groups = buildAtlasCoverageGroups(systems)
-    const publishedCount = groups.reduce((sum, group) => sum + group.publishedCount, 0)
-    const unavailableCount = groups.reduce((sum, group) => sum + group.unavailableCount, 0)
-
-    expect(systems).toHaveLength(47)
-    expect(publishedCount).toBe(30)
-    expect(unavailableCount).toBe(17)
-    expect(groups).toEqual([...groups].sort((a, b) => a.label.localeCompare(b.label)))
-    for (const group of groups) {
-      expect(group.records).toEqual(
-        [...group.records].sort((a, b) => a.name.localeCompare(b.name) || a.id.localeCompare(b.id)),
-      )
+    const modes = ['personal', 'systems', 'industrial'] as const
+    const expectedLengths = { personal: 21, systems: 47, industrial: 40 }
+    const expectedLabels = {
+      personal: ['Transport', 'Food & drink', 'Digital', 'Home & utilities', 'Goods'],
+      systems: ['Professional services', 'Digital infrastructure', 'Light infrastructure'],
+      industrial: ['Heavy industry', 'Materials & chemicals', 'Defense operations', 'Private security', 'Modeled events', 'Industrial externalities', 'Biosphere'],
     }
+
+    for (const mode of modes) {
+      const records = CATALOG_ACTIVITIES.filter((record) => getAtlasMode(record) === mode)
+      const groups = buildAtlasCoverageGroups(records, mode)
+      expect(records).toHaveLength(expectedLengths[mode])
+      expect(groups.map((group) => group.groupLabel)).toEqual(expectedLabels[mode])
+      expect(groups.every((group) => group.groupKind === (mode === 'personal' ? 'calculator-category' : 'sector'))).toBe(true)
+      for (const group of groups) {
+        expect(group.records).toEqual(
+          [...group.records].sort((a, b) => a.name.localeCompare(b.name) || a.id.localeCompare(b.id)),
+        )
+      }
+    }
+  })
+
+  it('matches query text across authority fields and unknown sectors', () => {
+    const source = CATALOG_ACTIVITIES.find((record) => getAtlasMode(record) === 'systems')!
+    const unknown = {
+      ...source,
+      id: 'TEST.UNKNOWN',
+      name: 'Unlisted cooling service',
+      evidence: {
+        ...source.evidence,
+        activityId: 'TEST.UNKNOWN',
+        sectorId: 'SECTOR.UNLISTED',
+        region: null,
+      },
+    }
+    const groups = buildAtlasCoverageGroups([unknown], 'systems')
+    expect(groups[0]).toMatchObject({
+      groupKey: 'sector:SECTOR.UNLISTED',
+      groupLabel: 'Unlisted',
+      groupKind: 'sector',
+    })
+    expect(matchesAtlasRecord(unknown, 'cooling', 'systems')).toBe(true)
+    expect(matchesAtlasRecord(unknown, 'unlisted', 'systems')).toBe(true)
+    expect(matchesAtlasRecord(unknown, 'does-not-match', 'systems')).toBe(false)
   })
 })

@@ -1,74 +1,54 @@
+import { BadgeCheck, BookOpenText, ExternalLink, FileJson, Globe2 } from 'lucide-react'
 import Link from 'next/link'
 import releaseDataJson from '@/generated/release-data.json'
-import { DataState, Disclosure, Eyebrow, OwidContextCard, SourceList } from '@/components/content'
+import { DataState, Disclosure, Eyebrow, OwidContextCard, SourceRegistry } from '@/components/content'
 import { TabHeader } from '@/components/layout/TabHeader'
-import { TabFooter } from '@/components/layout/TabFooter'
 import { getManifests } from '@/lib/manifests'
-import { ACTIVITIES, CALCULATOR_DATASET, getBenchmarkOptions } from '@/lib/calculator'
-
-const sourcePairs = ACTIVITIES.flatMap((activity) =>
-  activity.evidence.sourceIds.map((sourceId, index) => [
-    sourceId,
-    activity.evidence.sourceCitations[index],
-    activity.evidence.sourceUrls[index] ?? null,
-  ] as const),
-).filter(([sourceId], index, all) => all.findIndex(([candidate]) => candidate === sourceId) === index)
+import { ACTIVITIES, CALCULATOR_DATASET, CATALOG_ACTIVITIES, getBenchmarkOptions } from '@/lib/calculator'
+import { buildSourceRegistry } from '@/lib/sources'
 
 export default async function EvidencePage() {
   const manifests = await getManifests()
   const benchmarks = getBenchmarkOptions()
+  const sourceRegistry = buildSourceRegistry()
+  const publishedRecordCount = CATALOG_ACTIVITIES.filter((record) => record.evidence.publicationStatus === 'published').length
 
   return (
-    <div className="page-shell evidence-page app-stage">
+    <div className="page-shell evidence-page reading-page">
       <TabHeader
-        title="Evidence"
+        route="evidence"
         meta={
           <>
-            <span><strong>{manifests.length}</strong> manifests</span>
-            <span><strong>{sourcePairs.length}</strong> sources</span>
-            <span><strong>{benchmarks.length}</strong> benchmarks</span>
+            <span>Generated <strong>{releaseDataJson.generatedAt}</strong></span>
+            <span><strong>{manifests.length}</strong> versioned artifacts</span>
           </>
         }
+        actions={
+          <a className="action-link" href="/artifacts/" target="_blank" rel="noreferrer"><ExternalLink aria-hidden="true" size={15} />Raw artifacts</a>
+        }
       />
+      <nav className="in-content-subnav in-content-subnav--expanded" aria-label="Evidence sections">
+        <a href="#sources"><BadgeCheck aria-hidden="true" size={15} />Sources</a>
+        <a href="#benchmarks"><BookOpenText aria-hidden="true" size={15} />Benchmarks</a>
+        <a href="#global"><Globe2 aria-hidden="true" size={15} />Global context</a>
+        <a href="#release"><FileJson aria-hidden="true" size={15} />Release</a>
+        <a href="#manifests"><FileJson aria-hidden="true" size={15} />Manifests</a>
+      </nav>
+      <ol className="trust-path" aria-label="Evidence trust path">
+        <li><span>01</span><strong>Published records</strong><small>{publishedRecordCount} available catalog records</small></li>
+        <li><span>02</span><strong>Registered sources</strong><small>{sourceRegistry.summary.registeredCount} source entries · {sourceRegistry.summary.calculatorReferencedSourceCount} Calculator-referenced · {sourceRegistry.summary.atlasReferencedSourceCount} Atlas-referenced · {sourceRegistry.summary.scenarioReferencedSourceCount} scenario-referenced</small></li>
+        <li><span>03</span><strong>Context/benchmarks</strong><small>{benchmarks.length} compatible comparison records plus labelled macro context</small></li>
+        <li><span>04</span><strong>Versioned artifacts</strong><small>{manifests.length} browser-verifiable figure manifests</small></li>
+      </ol>
       <div className="evidence-layout">
-        <section id="manifests" className="evidence-panel">
-          <Eyebrow>Figure manifests</Eyebrow>
-          <p className="mt-3 text-foreground-muted">
-            Figures and their manifests are packaged with the static site. A manifest reports build metadata; the
-            browser verifier compares downloaded bytes against the published SHA-256 value.
-          </p>
-          {manifests.length === 0 ? (
-            <div className="mt-4"><DataState title="No manifests are packaged">Run <code>make build</code> before creating the static bundle.</DataState></div>
-          ) : (
-            <div className="manifest-list">
-              {manifests.map((manifest) => (
-                <Link key={manifest.id} href={`/evidence/${manifest.id}`} className="surface-card block hover:border-[color:var(--surface-border-strong)]">
-                  <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div>
-                      <h2 className="text-lg font-semibold text-foreground">{manifest.figure_id}</h2>
-                      <p className="mt-1 font-mono text-xs text-foreground-muted">{manifest.figure_path}</p>
-                    </div>
-                    <span className="font-mono text-xs text-[color:var(--accent-primary)]">{manifest.hash_prefix}</span>
-                  </div>
-                  <p className="mt-3 text-sm text-foreground-muted">Generated {manifest.generated_at}. Open static metadata and raw artifact links &rarr;</p>
-                </Link>
-              ))}
-            </div>
-          )}
-        </section>
-
         <section id="sources" className="surface-card reference-panel">
-          <Eyebrow>Source registry</Eyebrow>
+          <Eyebrow>Registered sources</Eyebrow>
           <p className="mt-3 text-foreground-muted">
-            This ordered list is generated from published calculator records; it is not maintained separately in page
-            copy. Every result displays the applicable subset.
+            Source metadata and usage counts are derived from the generated source envelope and every calculator,
+            Atlas, and documented scenario reference.
           </p>
-          <div className="reference-scroll" data-panel-scroll tabIndex={0} role="region" aria-label="Source registry entries">
-            <SourceList
-              sourceIds={sourcePairs.map(([sourceId]) => sourceId)}
-              citations={sourcePairs.map(([, citation]) => citation)}
-              urls={sourcePairs.map(([, , url]) => url)}
-            />
+          <div className="mt-4">
+            <SourceRegistry entries={sourceRegistry.entries} />
           </div>
         </section>
 
@@ -92,62 +72,65 @@ export default async function EvidencePage() {
             </table>
           </div>
           <Disclosure summary="Benchmark basis">
-            Current Canadian and provincial comparisons are 2023 territorial / production-based emissions excluding
-            LULUCF. Consumption and equity measures are not mixed into this selector.
+            Current Canadian and provincial comparisons are territorial, production-based emissions excluding LULUCF.
+            Consumption and equity measures are not mixed into this selector.
           </Disclosure>
         </section>
 
-        <section id="dataset" className="surface-card reference-panel">
-          <Eyebrow>Generated metadata</Eyebrow>
-          <dl className="mt-4 grid gap-4 sm:grid-cols-3">
-            <div><dt className="metric-label">Dataset version</dt><dd className="font-mono text-sm">{CALCULATOR_DATASET.schemaVersion}</dd></div>
-            <div><dt className="metric-label">Generated</dt><dd className="font-mono text-sm">{CALCULATOR_DATASET.generatedAt}</dd></div>
-            <div><dt className="metric-label">Published calculator activities</dt><dd className="font-mono text-sm">{ACTIVITIES.length}</dd></div>
-          </dl>
-          <div className="mt-4">
-            <a className="text-link" href="/data/stream-catalog.json">Open the data-stream catalog</a>
-          </div>
-          <Disclosure summary="Curation rule">
-            A factor must have a finite resolved value, matching activity unit, source registry citation, region,
-            scope boundary, GWP horizon, and vintage. Demo sources are rejected during generation.
-          </Disclosure>
-        </section>
-
-        <section
-          id="global"
-          className="reference-panel evidence-global"
-          data-panel-scroll
-          tabIndex={0}
-          role="region"
-          aria-label="Global emissions context and release"
-        >
+        <section id="global" className="reference-panel">
           <OwidContextCard />
-          <div className="surface-card">
+          <section id="release" className="surface-card">
             <Eyebrow>Offline release metadata</Eyebrow>
             <p className="mt-3 text-foreground-muted">
-              This context is released as checked-in static bytes. The release manifest records the input and authority
-              digests used by the public site; it does not turn OWID data into a calculator factor.
+              This context is released as checked-in static bytes. The release manifest records input and authority
+              digests used by the public site; it does not turn OWID data into a calculator factor or direct benchmark.
             </p>
             <dl className="mt-4 grid gap-4 sm:grid-cols-3">
               <div><dt className="metric-label">Release schema</dt><dd className="font-mono text-sm">{releaseDataJson.schemaVersion}</dd></div>
               <div><dt className="metric-label">Release generated</dt><dd className="font-mono text-sm">{releaseDataJson.generatedAt}</dd></div>
               <div><dt className="metric-label">OWID status</dt><dd className="font-mono text-sm">{releaseDataJson.owid.status}</dd></div>
             </dl>
+          </section>
+        </section>
+
+        <section id="dataset" className="surface-card reference-panel">
+          <Eyebrow>Generated dataset</Eyebrow>
+          <dl className="mt-4 grid gap-4 sm:grid-cols-3">
+            <div><dt className="metric-label">Calculator schema</dt><dd className="font-mono text-sm">{CALCULATOR_DATASET.schemaVersion}</dd></div>
+            <div><dt className="metric-label">Calculator generated</dt><dd className="font-mono text-sm">{CALCULATOR_DATASET.generatedAt}</dd></div>
+            <div><dt className="metric-label">Calculator activities</dt><dd className="font-mono text-sm">{ACTIVITIES.length}</dd></div>
+          </dl>
+          <div className="mt-4">
+            <a className="text-link" href="/data/stream-catalog.json"><FileJson aria-hidden="true" size={15} />Open the data-stream catalog</a>
           </div>
         </section>
+
+        <section id="manifests" className="evidence-panel">
+          <Eyebrow>Versioned figure manifests</Eyebrow>
+          <p className="mt-3 text-foreground-muted">
+            Each manifest reports build metadata; its detail page verifies downloaded figure bytes against the
+            published SHA-256 value in the browser.
+          </p>
+          {manifests.length === 0 ? (
+            <div className="mt-4"><DataState title="No manifests are packaged">Run <code>make build</code> before creating the static bundle.</DataState></div>
+          ) : (
+            <div className="manifest-list">
+              {manifests.map((manifest) => (
+                <Link key={manifest.id} href={`/evidence/${manifest.id}`} className="surface-card manifest-card">
+                  <div className="manifest-card__header">
+                    <div>
+                      <h2>{manifest.figure_id}</h2>
+                      <p className="mono">{manifest.figure_path}</p>
+                    </div>
+                    <span className="mono">{manifest.hash_prefix}</span>
+                  </div>
+                  <p>Generated {manifest.generated_at}. Open metadata and raw artifact links.</p>
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
       </div>
-      <TabFooter>
-        <div className="tab-footerbar__group">
-          <a className="text-link" href="#manifests">Manifests</a>
-          <a className="text-link" href="#sources">Sources</a>
-          <a className="text-link" href="#benchmarks">Benchmarks</a>
-          <a className="text-link" href="#global">Global</a>
-        </div>
-        <div className="tab-footerbar__group">
-          <a className="text-link" href="/artifacts/" target="_blank" rel="noreferrer">Browse raw artifacts</a>
-          <span className="tab-footerbar__meta">Generated <strong>{releaseDataJson.generatedAt}</strong></span>
-        </div>
-      </TabFooter>
     </div>
   )
 }

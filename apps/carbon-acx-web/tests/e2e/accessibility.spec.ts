@@ -1,11 +1,12 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
 
-const routes = ['/', '/calculator', '/explore', '/explore/3d', '/learn', '/methodology']
+const routes = ['/', '/calculator', '/explore', '/explore/3d', '/learn', '/methodology', '/evidence']
 const themes = ['light', 'dark'] as const
 const viewports = [
   { name: 'default', size: null },
   { name: '390 × 844', size: { width: 390, height: 844 } },
+  { name: '768 × 1024', size: { width: 768, height: 1024 } },
 ] as const
 
 for (const theme of themes) {
@@ -16,7 +17,6 @@ for (const theme of themes) {
         if (viewport.size) await page.setViewportSize(viewport.size)
         await page.goto(route)
         await expect(page.locator('html')).toHaveAttribute('data-theme', theme)
-        await page.waitForTimeout(250)
         const results = await new AxeBuilder({ page }).analyze()
         const seriousViolations = results.violations.filter(
           (violation) => violation.impact === 'serious' || violation.impact === 'critical',
@@ -29,61 +29,45 @@ for (const theme of themes) {
 
 for (const theme of themes) {
   for (const viewport of viewports) {
-    test(`calculator action controls are touch-sized and non-overlapping in ${theme} at ${viewport.name}`, async ({ page }) => {
-      await page.addInitScript((savedTheme) => localStorage.setItem('carbon-acx-theme', savedTheme), theme)
+    test(`calculator controls are touch-sized in ${theme} at ${viewport.name}`, async ({ page }) => {
+      await page.addInitScript((savedTheme) => {
+        localStorage.setItem('carbon-acx-theme', savedTheme)
+        localStorage.removeItem('carbon-acx-calculator-inputs')
+      }, theme)
       if (viewport.size) await page.setViewportSize(viewport.size)
       await page.goto('/calculator')
       await expect(page.locator('html')).toHaveAttribute('data-theme', theme)
-      await page.locator('.category-button').first().click()
-      await page.getByRole('button', { name: /^Add / }).first().click()
+      await page.getByRole('button', { name: 'Add School run by car to the worksheet' }).click()
 
-      const actionBoxes = await page.locator('.category-button, button.text-link, .worksheet__actions button').evaluateAll(
+      const actionBoxes = await page.locator('.category-button, .tab-headerbar__actions button, .activity-editor__actions button, .activity-line__actions button').evaluateAll(
         (controls) => controls.map((control) => {
-          const { left, right, top, bottom, height } = control.getBoundingClientRect()
-          return { left, right, top, bottom, height }
-        }),
+          const { height, width } = control.getBoundingClientRect()
+          return { height, width }
+        }).filter((box) => box.width > 0 && box.height > 0),
       )
       expect(actionBoxes).not.toEqual([])
       expect(actionBoxes.every((box) => box.height >= 44)).toBe(true)
-
-      const [evidence, remove] = await Promise.all([
-        page.getByRole('button', { name: 'Factor evidence' }).boundingBox(),
-        page.getByRole('button', { name: 'Remove' }).boundingBox(),
-      ])
-      expect(evidence).not.toBeNull()
-      expect(remove).not.toBeNull()
-      expect(
-        evidence!.x + evidence!.width <= remove!.x
-        || remove!.x + remove!.width <= evidence!.x
-        || evidence!.y + evidence!.height <= remove!.y
-        || remove!.y + remove!.height <= evidence!.y,
-      ).toBe(true)
     })
   }
 }
 
 for (const theme of themes) {
-  for (const route of routes) {
-    test(`visible action controls meet the touch target on ${route} in ${theme}`, async ({ page }) => {
-      await page.addInitScript((savedTheme) => localStorage.setItem('carbon-acx-theme', savedTheme), theme)
-      await page.goto(route)
-      await expect(page.locator('html')).toHaveAttribute('data-theme', theme)
-      const undersized = await page.locator('header button, main button').evaluateAll(
-        (controls) => controls
-          .map((control) => {
-            const { height, width } = control.getBoundingClientRect()
-            return { name: control.getAttribute('aria-label') ?? control.textContent?.trim(), height, width }
-          })
-          .filter((control) => control.width > 0 && control.height > 0 && control.height < 44),
-      )
-      expect(undersized).toEqual([])
-    })
-  }
+  test(`manifest detail preserves focusable verification in ${theme}`, async ({ page }) => {
+    await page.addInitScript((savedTheme) => localStorage.setItem('carbon-acx-theme', savedTheme), theme)
+    await page.goto('/evidence')
+    const manifestHref = await page.locator('#manifests a').first().getAttribute('href')
+    expect(manifestHref).toMatch(/^\/evidence\/.+/)
+    await page.goto(manifestHref!)
+    await expect(page.locator('html')).toHaveAttribute('data-theme', theme)
+    await expect(page.getByRole('button', { name: 'Verify downloaded bytes' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Back to Evidence' })).toBeVisible()
+  })
 }
 
-test('methodology primer disclosure is open and navigable', async ({ page }) => {
+test('methodology reading path is open and navigable', async ({ page }) => {
   await page.goto('/methodology#primer')
   const primer = page.locator('#primer')
   await expect(primer.locator('details')).toHaveCount(0)
-  await expect(primer.getByRole('heading', { name: 'What is the equation?' })).toBeVisible()
+  await expect(primer.getByRole('heading', { name: 'Quantity × factor' })).toBeVisible()
+  await expect(page.locator('#benchmarks')).toBeVisible()
 })

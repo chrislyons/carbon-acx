@@ -12,16 +12,17 @@ Carbon ACX is a public carbon-literacy web app and open reference stack. It turn
 
 ## Public product
 
-The primary public app is `apps/carbon-acx-web/` with eight routes:
+The primary public app is `apps/carbon-acx-web/` with six top-level routes and a manifest detail route:
 
-- **Start here** (`/`) introduces factor → annual estimate → source and states the product boundary.
-- **Estimate** (`/calculator`) accepts annual activity quantities, exposes the arithmetic and evidence for every result, resolves source-backed AI usage scenarios by exact key (published scenarios join the total; estimates and unavailable records stay out), and compares only against labelled Canadian territorial benchmarks.
-- **Explore** (`/explore`) is an Activity Atlas with opt-in filters for category, sector, layer, region, scope, and publication status. It never merges incompatible layers into a total.
-- **Spatial view** (`/explore/3d`) is an optional WebGL representation of already-calculated results; it preserves a complete 2D table when WebGL is unavailable or reduced motion is requested.
-- **Learn** (`/learn`) teaches the record contract through three source-backed, offline case studies without turning OWID context into a factor.
-- **How we know** (`/methodology`) documents the generated-data contract, annual convention, regional preference, missing-data policy, benchmark basis, source registry, and pinned OWID context.
+- **Start here** (`/`) introduces one published travel estimate with its quantity, factor, boundary, and sources attached.
+- **Estimate** (`/calculator`) accepts annual activity quantities, exposes the arithmetic and evidence for every result, resolves source-backed AI usage scenarios by exact key (published scenarios join the total; estimates stay evidence-only; Not available records stay out), and compares only against labelled Canadian territorial benchmarks.
+- **Explore** (`/explore`) is an Activity Atlas with adaptive mode, group, region, search, and publication controls. It never merges incompatible layers into a total.
+- **Spatial view** (`/explore/3d`) is an optional WebGL representation of already-calculated results; it preserves a complete 2D table when WebGL is not available or reduced motion is requested.
+- **Learn** (`/learn`) teaches the record contract through three source-backed, offline examples across scales without turning OWID context into a factor.
+- **How we know** (`/methodology`) documents the six-step generated-data contract, annual convention, regional preference, missing-data policy, and benchmark basis.
+- **Evidence** (`/evidence`) presents derived source usage, benchmarks, macro context, release metadata, and versioned manifests. Detail pages live at `/evidence/[id]`.
 
-At widths of 700px or less, the shared header replaces its desktop links with a labelled five-link menu disclosure. The secondary **Evidence library** (`/manifests`) ships static manifests and raw artifacts. Its browser verifier downloads a raw figure, computes SHA-256 with Web Crypto, and reports Verified, Hash mismatch, or Could not fetch artifact. The manifest schema is enforced by the derivation pipeline at [`tools/validator/schemas/figure-manifest.schema.json`](tools/validator/schemas/figure-manifest.schema.json).
+Primary navigation is six ordinary icon-and-label links. Below `60rem`, the links form a horizontally scrollable rail; intermediate widths use deliberate intrinsic layouts rather than a frozen compatibility band. The Evidence library's browser verifier downloads a raw figure, computes SHA-256 with Web Crypto, and reports Verified, Hash mismatch, or Could not fetch artifact. The manifest schema is enforced by the derivation pipeline at [`tools/validator/schemas/figure-manifest.schema.json`](tools/validator/schemas/figure-manifest.schema.json).
 
 ---
 
@@ -106,7 +107,7 @@ make build
 
 ### Explore the experiences
 
-- **Public routes:** `/`, `/calculator`, `/explore`, `/explore/3d`, `/learn`, `/methodology`, and the secondary `/manifests` Evidence library.
+- **Public routes:** `/`, `/calculator`, `/explore`, `/explore/3d`, `/learn`, `/methodology`, `/evidence`, and `/evidence/[id]`.
 - **Dash app:** `make app` launches the local Dash server reading derived artifacts for analyst exploration.
 - **Static preview:** after `make package`, run `wrangler pages dev dist/site` to inspect the production-style static bundle and `/artifacts/`.
 
@@ -133,7 +134,7 @@ make build
 - `make doctor` validates the pinned Node, pnpm, Python, and Poetry versions used by the recovery baseline.
 - `make validate` runs Ruff, Black, documentation lint, pytest, asset validation, and the data/ledger audit in one pass.
 - `make package` builds the static public app, copies it to `dist/site`, packages raw artifacts, and writes immutable caching headers for Cloudflare Pages.
-- `pnpm --filter carbon-acx-web test:e2e` covers evidence arithmetic, benchmarks, unavailable data, the 2D fallback, mobile navigation disclosure, route overflow at 390 × 844, removed Worlds navigation, artifact verification, and serious/critical Axe violations.
+- `pnpm --filter carbon-acx-web test:e2e` covers six-route adaptive navigation, evidence arithmetic, benchmarks, Not available data, the 2D fallback, route overflow at compact widths, artifact verification, and serious/critical Axe violations.
 - Additional helpers include `make sbom`, `make catalog`, and the source-ledger commands in `calc/` and `tools/citations/`.
 
 ---
@@ -142,7 +143,7 @@ make build
 
 1. Run `make package` to produce `dist/site` with the static Next.js export, raw `/artifacts/`, `_headers`, `_redirects`, and a byte inventory.
 2. Serve or deploy `dist/site` directly to Cloudflare Pages. The public product has no required runtime API routes, server actions, or factor-inference path.
-3. Verify an artifact from `/manifests` after deployment; the check must compare downloaded bytes to the published SHA-256 hash before reporting success.
+3. Verify an artifact from `/evidence/[id]` after deployment; the check must compare downloaded bytes to the published SHA-256 hash before reporting success.
 
 ---
 

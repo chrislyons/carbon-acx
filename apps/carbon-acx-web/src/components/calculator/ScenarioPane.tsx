@@ -154,7 +154,7 @@ export function ScenarioPane({
           Select a documented scenario to see its publication status and evidence.
         </p>
       ) : resolution.status === 'unavailable' ? (
-        <DataState title="Unavailable" tone="warning">
+        <DataState title="Not available" tone="warning">
           {resolution.reason} Nothing was added to your annual total.
         </DataState>
       ) : resolution.status === 'estimate' ? (

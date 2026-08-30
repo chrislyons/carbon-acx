@@ -1,7 +1,12 @@
 import { expect, test } from '@playwright/test'
+import type { Page } from '@playwright/test'
+async function openScenarioPane(page: Page) {
+  await page.getByText('Add a documented AI scenario', { exact: true }).click()
+}
 
 test('published scenario joins the annual total with full evidence', async ({ page }) => {
   await page.goto('/calculator')
+  await openScenarioPane(page)
   await page.getByLabel('AI activity').selectOption({ label: 'LLM inference scenario' })
   const totalBefore = await page.locator('.result-composition h2').innerText()
 
@@ -17,6 +22,7 @@ test('published scenario joins the annual total with full evidence', async ({ pa
 
 test('estimate scenarios stay evidence-only and leave the total unchanged', async ({ page }) => {
   await page.goto('/calculator')
+  await openScenarioPane(page)
   await page.getByLabel('AI activity').selectOption({ label: 'LLM inference scenario' })
   await page.getByLabel('Scenario', { exact: true }).selectOption('SCN.JEGHAM.GPT41.100+300')
 
@@ -25,8 +31,9 @@ test('estimate scenarios stay evidence-only and leave the total unchanged', asyn
   await expect(page.locator('.result-composition h2')).toHaveText('Add a valid annual quantity')
 })
 
-test('unavailable scenarios explain themselves instead of zeroing', async ({ page }) => {
+test('Not available scenarios explain themselves instead of zeroing', async ({ page }) => {
   await page.goto('/calculator')
+  await openScenarioPane(page)
   await page.getByLabel('AI activity').selectOption({ label: 'LLM inference scenario' })
   await page.getByLabel('Scenario', { exact: true }).selectOption('SCN.ANTHROPIC.CLAUDE3.UNAVAILABLE.2024')
 
@@ -35,6 +42,7 @@ test('unavailable scenarios explain themselves instead of zeroing', async ({ pag
 
 test('scenario selector is keyboard operable', async ({ page }) => {
   await page.goto('/calculator')
+  await openScenarioPane(page)
   const activity = page.getByLabel('AI activity')
   await activity.focus()
   await page.keyboard.type('LLM inference scenario')

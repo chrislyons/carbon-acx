@@ -7,57 +7,42 @@ const publishedCalculatorCount = ACTIVITIES.filter((activity) => activity.eviden
 const publishedCatalogueCount = CATALOG_ACTIVITIES.filter((activity) => activity.evidence.publicationStatus === 'published').length
 const unavailableCatalogueCount = CATALOG_ACTIVITIES.length - publishedCatalogueCount
 
-/**
- * Modular home panels. The headline is the active panel's title; adding a
- * future interactive panel means appending an entry here (and later turning
- * the headline itself into the selector).
- */
-const HOME_PANELS = [
-  {
-    id: 'commute',
-    title: 'Your annual commute.',
-    lede: 'Drag the marker or switch vehicle class — the factor, boundary, and sources stay attached.',
-    Component: TraceEstimate,
-  },
-] as const
-
-const activePanel = HOME_PANELS[0]
-
 export default function HomePage() {
-  const Panel = activePanel.Component
   return (
-    <div className="editorial-page home-page app-stage">
+    <div className="editorial-page home-page workspace">
       <header className="trace-intro">
-        <p className="section-kicker">Trace one number</p>
-        <h1 id="trace-title">{activePanel.title}</h1>
-        <p>{activePanel.lede}</p>
+        <p className="section-kicker">Trace one published estimate</p>
+        <h1 id="trace-title">Compare a year of travel</h1>
+        <p>Change the travel mode or annual distance; the quantity, factor, boundary, and sources stay attached.</p>
       </header>
-      <Panel />
-      <section className="editorial-jobs ruled-section" aria-label="Go further with Carbon ACX">
-        <article>
-          <BookOpenText aria-hidden="true" className="job-path__icon" size={30} />
-          <p className="section-kicker">Learn</p>
-          <h2>How the number is built</h2>
-          <p>The six-question primer turns any result into a readable story — boundary, region, vintage, and sources.</p>
-          <Link className="text-link text-link--primary" href="/methodology#primer">Open the primer</Link>
-          <small>7 compatible benchmarks</small>
-        </article>
-        <article>
-          <ShoppingBasket aria-hidden="true" className="job-path__icon" size={30} />
-          <p className="section-kicker">Build</p>
-          <h2>Estimate a full year</h2>
-          <p>Take this estimate into the calculator and stack activities into an annual worksheet — every line keeps its factor and source trail.</p>
-          <Link className="text-link" href="/calculator">Open the calculator</Link>
-          <small>{publishedCalculatorCount} published calculator activities</small>
-        </article>
-        <article>
-          <ScanSearch aria-hidden="true" className="job-path__icon" size={30} />
-          <p className="section-kicker">Inspect</p>
-          <h2>Verify the evidence</h2>
-          <p>Every Atlas record carries its boundary, geography, vintage, uncertainty, and citations — no invisible assumptions.</p>
-          <Link className="text-link" href="/explore">Browse the Activity Atlas</Link>
-          <small>{CATALOG_ACTIVITIES.length} catalogue records · {publishedCatalogueCount} published · {unavailableCatalogueCount} unavailable</small>
-        </article>
+      <TraceEstimate />
+      <section className="editorial-jobs ruled-section" aria-label="Continue with Carbon ACX">
+        <ol>
+          <li>
+            <BookOpenText aria-hidden="true" className="job-path__icon" size={26} />
+            <p className="section-kicker">Read the method</p>
+            <h2>Understand the estimate</h2>
+            <p>Follow quantity × factor through boundary, region, vintage, uncertainty, and missing evidence.</p>
+            <Link className="text-link text-link--primary" href="/methodology#primer">Read the six-step method</Link>
+            <small>{ACTIVITIES.length} calculator records</small>
+          </li>
+          <li>
+            <ShoppingBasket aria-hidden="true" className="job-path__icon" size={26} />
+            <p className="section-kicker">Build a worksheet</p>
+            <h2>Carry the estimate forward</h2>
+            <p>Open an editable annual worksheet and keep each activity’s factor and source trail attached.</p>
+            <Link className="text-link" href="/calculator">Build the worksheet</Link>
+            <small>{publishedCalculatorCount} published calculator activities</small>
+          </li>
+          <li>
+            <ScanSearch aria-hidden="true" className="job-path__icon" size={26} />
+            <p className="section-kicker">Inspect the record</p>
+            <h2>Browse coverage and evidence</h2>
+            <p>Review normalized coverage and publication status before comparing a compatible unit.</p>
+            <Link className="text-link" href="/explore">Inspect the Activity Atlas</Link>
+            <small>{CATALOG_ACTIVITIES.length} records · {publishedCatalogueCount} published · {unavailableCatalogueCount} not available</small>
+          </li>
+        </ol>
       </section>
     </div>
   )

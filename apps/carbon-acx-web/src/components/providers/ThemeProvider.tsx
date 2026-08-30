@@ -22,14 +22,22 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const setTheme = useCallback((newTheme: Theme) => {
     setThemeState(newTheme)
-    localStorage.setItem('carbon-acx-theme', newTheme)
+    try {
+      localStorage.setItem('carbon-acx-theme', newTheme)
+    } catch {
+      // The document still follows the explicit choice when storage is unavailable.
+    }
     document.documentElement.setAttribute('data-theme', newTheme)
   }, [])
 
   const toggleTheme = useCallback(() => {
     setThemeState((currentTheme) => {
       const newTheme = currentTheme === 'dark' ? 'light' : 'dark'
-      localStorage.setItem('carbon-acx-theme', newTheme)
+      try {
+        localStorage.setItem('carbon-acx-theme', newTheme)
+      } catch {
+        // The document still follows the explicit choice when storage is unavailable.
+      }
       document.documentElement.setAttribute('data-theme', newTheme)
       return newTheme
     })
@@ -55,8 +63,15 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [toggleTheme])
 
   useEffect(() => {
-    const saved = localStorage.getItem('carbon-acx-theme') as Theme | null
-    const initialTheme = saved === 'dark' ? 'dark' : 'light'
+    let saved: string | null = null
+    try {
+      saved = localStorage.getItem('carbon-acx-theme')
+    } catch {
+      // Use the system preference when persistent storage is unavailable.
+    }
+    const initialTheme: Theme = saved === 'dark' || saved === 'light'
+      ? saved
+      : window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
     setThemeState(initialTheme)
     document.documentElement.setAttribute('data-theme', initialTheme)
   }, [])
