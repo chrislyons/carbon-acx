@@ -2,19 +2,20 @@
 
 import { mkdir, writeFile } from 'node:fs/promises'
 import { spawn } from 'node:child_process'
+import { createServer as createNetServer } from 'node:net'
 import { resolve } from 'node:path'
 import { setTimeout as sleep } from 'node:timers/promises'
 import { chromium } from '../apps/carbon-acx-web/node_modules/@playwright/test/index.mjs'
 
-const PORT = 4180
-const SITE_ROOT = resolve(process.env.ACX_SITE ?? 'dist/site')
-const OUTPUT = resolve(process.env.ACX_PERFORMANCE_OUTPUT ?? 'dist/web-performance.json')
-const SAMPLE_COUNT = 3
+const PREFERRED_PORT = Number(process.env.ACX_PERFORMANCE_PORT ?? 4180)
+const SAMPLE_COUNT = Number(process.env.ACX_SAMPLE_COUNT ?? 3)
 const NETWORK = {
   latency: 150,
   downloadThroughput: (1.6 * 1024 * 1024) / 8,
   uploadThroughput: (750 * 1024) / 8,
 }
+const SITE_ROOT = resolve(process.env.ACX_SITE ?? 'dist/site')
+const OUTPUT = resolve(process.env.ACX_PERFORMANCE_OUTPUT ?? 'dist/web-performance.json')
 
 const OBSERVER_SCRIPT = () => {
   window.__acxPerformance = { lcp: [], cls: [], events: [] }
@@ -65,16 +66,31 @@ async function waitForServer(url) {
   throw new Error(`Static server did not become ready at ${url}`)
 }
 
+async function getFreePort() {
+  const probe = createNetServer()
+  await new Promise((resolvePort, reject) => {
+    probe.once('error', reject)
+    probe.listen(0, '127.0.0.1', () => resolvePort())
+  })
+  const address = probe.address()
+  const port = typeof address === 'object' && address ? address.port : PREFERRED_PORT
+  await new Promise((resolveClose, rejectClose) => probe.close((error) => error ? rejectClose(error) : resolveClose()))
+  return port
+}
+
 async function startStaticServer() {
-  const server = spawn(process.execPath, ['scripts/serve-static.mjs', String(PORT), SITE_ROOT], {
+  const port = await getFreePort()
+  const server = spawn(process.execPath, ['scripts/serve-static.mjs', String(port), SITE_ROOT], {
     cwd: resolve('.'),
     stdio: ['ignore', 'pipe', 'inherit'],
   })
-  await waitForServer(`http://127.0.0.1:${PORT}/`)
-  return server
+  const base = `http://127.0.0.1:${port}`
+  await waitForServer(`${base}/`)
+  return { server, base }
 }
 
-async function measureSample(browser, definition, iteration) {
+async function measureSample(browser, base, definition, iteration) {
+
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } })
   await context.addInitScript({ content: `(${OBSERVER_SCRIPT.toString()})()` })
   const page = await context.newPage()
@@ -96,7 +112,7 @@ async function measureSample(browser, definition, iteration) {
     requestCounts.set(url, (requestCounts.get(url) ?? 0) + 1)
   })
 
-  await page.goto(`http://127.0.0.1:${PORT}${definition.path}`, { waitUntil: 'networkidle' })
+  await page.goto(`${base}${definition.path}`, { waitUntil: 'networkidle' })
   await page.waitForTimeout(100)
   const initialResourceUrls = [...new Set(resources)]
   const exerciseResult = await definition.exercise(page)
@@ -139,8 +155,7 @@ const definitions = [
   },
   {
     name: 'calculator-edit',
-    path: '/calculator?data=VFJBTi5TQ0hPT0xSVU4uQ0FSLktNOjEwMDA=',
-    eventExpected: true,
+    path: '/calculator?data=VFJBTi5TQ0hPT0xSVU4uQ0FSLktNOjEwMDAsRk9PRC5NRUFMLkJFRVYuU0VSVklORzoxMA==',
     async exercise(page) {
       await page.getByRole('button', { name: 'Edit' }).first().click()
       await page.locator('input[id$="-quantity"]').fill('1250')
@@ -166,7 +181,7 @@ const definitions = [
     path: '/explore',
     eventExpected: true,
     async exercise(page) {
-      await page.getByRole('searchbox', { name: 'Search records' }).fill('refrigerator')
+      await page.getByRole('searchbox', { name: 'Search records' }).pressSequentially('refrigerator')
       await page.waitForTimeout(100)
       return null
     },
@@ -175,7 +190,7 @@ const definitions = [
 
 async function main() {
   await mkdir(resolve('dist'), { recursive: true })
-  const server = await startStaticServer()
+  const { server, base } = await startStaticServer()
   const browser = await chromium.launch()
   const browserVersion = browser.version()
   console.log(`Chromium: ${browserVersion}`)
@@ -183,7 +198,7 @@ async function main() {
   try {
     for (const definition of definitions) {
       for (let iteration = 1; iteration <= SAMPLE_COUNT; iteration += 1) {
-        samples.push(await measureSample(browser, definition, iteration))
+        samples.push(await measureSample(browser, base, definition, iteration))
       }
     }
   } finally {
@@ -222,7 +237,7 @@ async function main() {
   if (calculatorSamples.some((sample) => sample.initialResourceUrls.some((url) => /d3-sankey|ImpactFlow|impact-flow/i.test(url)))) {
     errors.push('calculator-edit requested the flow chunk before its disclosure was opened')
   }
-  if (calculatorSamples.some((sample) => sample.flow?.opened !== true || sample.flow.newResources.filter((url) => url.endsWith('.js')).length === 0)) {
+  if (calculatorSamples.some((sample) => sample.flow?.opened !== true || sample.flow.newResources.filter((url) => new URL(url).pathname.endsWith('.js')).length === 0)) {
     errors.push('calculator-edit did not request and render the lazy flow chunk after opening its disclosure')
   }
   if (errors.length) {

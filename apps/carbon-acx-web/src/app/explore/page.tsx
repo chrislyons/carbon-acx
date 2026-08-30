@@ -20,7 +20,7 @@ type PublicationFilter = 'all' | 'published' | 'unavailable'
 
 export default function ExplorePage() {
   const [mode, setMode] = useState<AtlasMode>('personal')
-  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [selectedId, setSelectedId] = useState<string | null>(() => CATALOG_ACTIVITIES.find((record) => getAtlasMode(record) === 'personal')?.id ?? null)
   const [table, setTable] = useState(false)
   const [query, setQuery] = useState('')
   const [group, setGroup] = useState('all')

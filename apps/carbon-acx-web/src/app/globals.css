@@ -236,6 +236,10 @@ a {
 }
 
 @supports not (overflow: clip) {
+  html {
+    overflow-x: hidden;
+  }
+
   .site-shell-body {
     overflow-x: hidden;
   }
@@ -797,12 +801,6 @@ a {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus-ring) 20%, transparent);
 }
 
-.quantity-field select {
-  appearance: none;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 600;
-}
 
 .field-error {
   color: var(--signal);
@@ -1105,6 +1103,11 @@ button.text-link:hover {
   color: var(--category-color, currentColor);
 }
 
+.category-button.is-selected .activity-mark,
+.mode-switcher button.is-selected .activity-mark {
+  color: currentColor;
+}
+
 @supports (color: color-mix(in srgb, black, white)) {
   [data-theme='dark'] .activity-mark {
     color: color-mix(in srgb, var(--category-color, currentColor) 72%, white);
@@ -1219,23 +1222,14 @@ button.text-link:hover {
 }
 
 
-.worksheet__body,
-.atlas__scan {
+.worksheet__body {
   display: grid;
   align-items: start;
   gap: clamp(1.5rem, 4vw, 3rem);
-}
-
-.worksheet__body {
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
 }
 
-.atlas__scan {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-}
-
-.worksheet__body > *,
-.atlas__scan > * {
+.worksheet__body > * {
   min-width: 0;
 }
 
@@ -2142,57 +2136,15 @@ textarea:focus {
   font-weight: 700;
 }
 
-/* Methodology and learning routes. */
-.editorial-fork {
-  display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap: clamp(2rem, 8vw, 8rem);
-  padding-block: 2rem;
-}
 
-.editorial-fork article + article {
-  border-left: 1px solid var(--rule);
-  padding-left: clamp(1.5rem, 5vw, 5rem);
-}
-
-.editorial-fork h2 {
-  margin: 0.7rem 0 1.5rem;
-  font: 650 clamp(2rem, 4vw, 3.6rem)/0.95 var(--font-display);
-}
-
-.primer-card {
-  margin-top: 2.5rem;
-}
-
-.primer-card > h2 {
-  font: 650 clamp(1.8rem, 3vw, 3rem)/1 var(--font-display);
-  letter-spacing: -0.04em;
-}
-
-.primer-card .disclosure {
-  margin-top: 1.5rem;
-}
-
-.primer-card__questions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem 2rem;
-}
-
-.primer-card__questions article,
 .working-example {
+  margin-top: 1.5rem;
   border-top: 1px solid var(--rule);
-  padding-top: 1rem;
+  padding-top: 1.5rem;
 }
 
-.primer-card__questions h3,
 .factor-record-details h3 {
   font: 650 1.15rem/1.1 var(--font-display);
-}
-
-.working-example {
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
 }
 
 .working-example__equation,
@@ -2224,7 +2176,6 @@ textarea:focus {
 }
 
 .factor-record-details__technical div,
-.learning-card__metadata div,
 .owid-context__basis div {
   display: grid;
   grid-template-columns: 8rem minmax(0, 1fr);
@@ -2234,13 +2185,11 @@ textarea:focus {
 }
 
 .factor-record-details__technical dt,
-.learning-card__metadata dt,
 .owid-context__basis dt {
   color: var(--ink-muted);
 }
 
 .factor-record-details__technical dd,
-.learning-card__metadata dd,
 .owid-context__basis dd {
   margin: 0;
   overflow-wrap: anywhere;
@@ -2273,16 +2222,6 @@ textarea:focus {
   overflow-wrap: anywhere;
 }
 
-.learning-card__metadata {
-  margin-top: 0.25rem;
-}
-
-.methodology-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-  margin-top: 2.5rem;
-}
 
 .reference-panel,
 .manifest-list {
@@ -2783,11 +2722,6 @@ textarea:focus {
   font: 0.75rem var(--font-mono);
 }
 
-.atlas__lab-link {
-  margin-top: 1.5rem;
-  border-top: 1px solid var(--rule);
-  padding-top: 1rem;
-}
 
 .reading-page [data-panel-scroll] {
   overflow: visible;
@@ -2796,10 +2730,6 @@ textarea:focus {
   scrollbar-gutter: auto;
 }
 
-.reading-page .reference-scroll {
-  overflow: visible;
-  max-height: none;
-}
 
 @media (max-width: 47.999rem) {
   .site-header__inner {
@@ -2843,11 +2773,9 @@ textarea:focus {
 
   .trace-estimate,
   .editorial-jobs,
-  .editorial-fork,
-  .methodology-grid,
   .learning-grid,
+  .methodology-steps,
   .worksheet__body,
-  .atlas__scan,
   .atlas__layout {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -2860,21 +2788,12 @@ textarea:focus {
     max-width: 15ch;
   }
 
-  .evidence-rail,
-  .editorial-jobs article + article,
-  .editorial-fork article + article {
+  .evidence-rail {
     border-left: 0;
     border-top: 1px solid var(--rule);
     padding: 1.5rem 0 0;
   }
 
-  .quantity-field {
-    grid-template-columns: minmax(0, 1fr) auto;
-  }
-
-  .quantity-field > span:first-child {
-    grid-column: 1 / -1;
-  }
 
   .activity-shelf__heading,
   .worksheet-header {
@@ -2907,7 +2826,6 @@ textarea:focus {
   .factor-record-details__technical div,
   .benchmark-context dl div,
   .benchmark-context__sources li,
-  .learning-card__metadata div,
   .owid-context__basis div {
     grid-template-columns: minmax(0, 1fr);
     gap: 0.2rem;
@@ -2919,7 +2837,6 @@ textarea:focus {
     gap: 0.35rem;
   }
 
-  .primer-card__questions,
   .owid-context__latest {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -3009,9 +2926,7 @@ textarea:focus {
     grid-template-columns: minmax(0, 1.2fr) minmax(15rem, 0.8fr);
   }
 
-  .learning-grid,
-  .methodology-grid,
-  .primer-card__questions {
+  .learning-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -3268,10 +3183,6 @@ textarea:focus {
     gap: var(--gap-panel);
   }
 
-  .methodology-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--gap-panel);
-  }
 
   .learning-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));

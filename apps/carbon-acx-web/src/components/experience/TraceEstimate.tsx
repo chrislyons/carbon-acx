@@ -73,7 +73,7 @@ export function TraceEstimate() {
               value={distanceDraft}
               onChange={(event) => setDistanceDraft(event.target.value)}
               aria-invalid={distance === null}
-              aria-describedby="annual-distance-error"
+              aria-describedby={distance === null ? 'annual-distance-error' : undefined}
             />
           </label>
           {distance === null ? <p id="annual-distance-error" role="alert" className="field-error">{distanceError}</p> : null}

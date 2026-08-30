@@ -50,6 +50,14 @@ const ImpactComposition = dynamic(
 const STORAGE_KEY = 'carbon-acx-calculator-inputs'
 const CATEGORIES = Object.keys(CATEGORY_INFO) as ActivityCategory[]
 
+function getPublishedInputs(rawInputs: Record<string, unknown>): Record<string, number> {
+  return Object.fromEntries(
+    Object.entries(rawInputs).filter(
+      ([id, value]) => getActivityById(id) && typeof value === 'number' && Number.isFinite(value) && value > 0,
+    ),
+  ) as Record<string, number>
+}
+
 export default function CalculatorPage() {
   return (
     <Suspense fallback={<div className="page-shell py-12">Loading annual worksheet…</div>}>
@@ -60,10 +68,17 @@ export default function CalculatorPage() {
 
 function CalculatorContent() {
   const searchParams = useSearchParams()
+  const encoded = searchParams.get('data')
+  const initialInputs = useMemo(
+    () => encoded ? getPublishedInputs(decodeCalculatorInputs(encoded)) : {},
+    [encoded],
+  )
   const [activeCategory, setActiveCategory] = useState<ActivityCategory>('transport')
-  const [selectedIds, setSelectedIds] = useState<string[]>([])
-  const [inputs, setInputs] = useState<Record<string, number>>({})
-  const [drafts, setDrafts] = useState<Record<string, string>>({})
+  const [selectedIds, setSelectedIds] = useState<string[]>(() => Object.keys(initialInputs))
+  const [inputs, setInputs] = useState<Record<string, number>>(initialInputs)
+  const [drafts, setDrafts] = useState<Record<string, string>>(
+    () => Object.fromEntries(Object.entries(initialInputs).map(([id, value]) => [id, String(value)])),
+  )
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [activeEditorId, setActiveEditorId] = useState<string | null>(null)
   const [completedEditorId, setCompletedEditorId] = useState<string | null>(null)
@@ -73,9 +88,9 @@ function CalculatorContent() {
   const summaryRefs = useRef<Record<string, HTMLButtonElement | null>>({})
   const [benchmarkKey, setBenchmarkKey] = useState(DEFAULT_BENCHMARK_KEY)
   const [scenarioGrams, setScenarioGrams] = useState(0)
-  const [shared, setShared] = useState(false)
-  const [view, setView] = useState<'browse' | 'worksheet'>('browse')
-  const [loaded, setLoaded] = useState(false)
+  const [shared, setShared] = useState(Boolean(encoded))
+  const [view, setView] = useState<'browse' | 'worksheet'>(encoded ? 'worksheet' : 'browse')
+  const [loaded, setLoaded] = useState(Boolean(encoded))
   const [copied, setCopied] = useState(false)
   const [announcement, setAnnouncement] = useState('')
 
@@ -99,7 +114,6 @@ function CalculatorContent() {
     })
   }, [completedEditorId])
   useEffect(() => {
-    const encoded = searchParams.get('data')
     const rawInputs: Record<string, unknown> = encoded
       ? decodeCalculatorInputs(encoded)
       : (() => {
@@ -109,11 +123,7 @@ function CalculatorContent() {
             return {}
           }
         })()
-    const published = Object.fromEntries(
-      Object.entries(rawInputs).filter(
-        ([id, value]) => getActivityById(id) && typeof value === 'number' && Number.isFinite(value) && value > 0,
-      ),
-    ) as Record<string, number>
+    const published = getPublishedInputs(rawInputs)
     setInputs(published)
     setDrafts(Object.fromEntries(Object.entries(published).map(([id, value]) => [id, String(value)])))
     setSelectedIds(Object.keys(published))
@@ -121,7 +131,7 @@ function CalculatorContent() {
     setShared(Boolean(encoded))
     setView(encoded ? 'worksheet' : 'browse')
     setLoaded(true)
-  }, [searchParams])
+  }, [encoded])
 
   useEffect(() => {
     if (!loaded) return
@@ -297,6 +307,7 @@ function CalculatorContent() {
                           totalEmissions={summary.totalEmissions}
                           active={activeEditorId === activity.id}
                           inputRef={(element) => { inputRefs.current[activity.id] = element }}
+                          onFocus={() => setActiveEditorId(activity.id)}
                           onChange={update}
                           onDone={finishEditing}
                           onRemove={remove}
@@ -353,8 +364,9 @@ function ActivityEditor({
   totalEmissions,
   active,
   inputRef,
-  onChange,
+  onFocus,
   onDone,
+  onChange,
   onRemove,
   onEvidence,
 }: {
@@ -365,8 +377,9 @@ function ActivityEditor({
   totalEmissions: number
   active: boolean
   inputRef: (element: HTMLInputElement | null) => void
-  onChange: (id: string, value: string) => void
+  onFocus: () => void
   onDone: (id: string) => void
+  onChange: (id: string, value: string) => void
   onRemove: (id: string) => void
   onEvidence: (id: string) => void
 }) {
@@ -394,6 +407,7 @@ function ActivityEditor({
           step="any"
           inputMode="decimal"
           value={value}
+          onFocus={onFocus}
           onChange={(event) => onChange(activity.id, event.target.value)}
           aria-invalid={Boolean(error)}
           aria-describedby={error ? alertId : undefined}

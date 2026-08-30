@@ -30,6 +30,29 @@ test('backslash toggles theme outside text entry only', async ({ page }) => {
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
 })
 
+test('theme precedence follows saved override, then system preference', async ({ browser }) => {
+  const savedDarkContext = await browser.newContext({ colorScheme: 'light' })
+  const savedDarkPage = await savedDarkContext.newPage()
+  await savedDarkPage.addInitScript(() => localStorage.setItem('carbon-acx-theme', 'dark'))
+  await savedDarkPage.goto('/')
+  await expect(savedDarkPage.locator('html')).toHaveAttribute('data-theme', 'dark')
+  await savedDarkContext.close()
+
+  const savedLightContext = await browser.newContext({ colorScheme: 'dark' })
+  const savedLightPage = await savedLightContext.newPage()
+  await savedLightPage.addInitScript(() => localStorage.setItem('carbon-acx-theme', 'light'))
+  await savedLightPage.goto('/')
+  await expect(savedLightPage.locator('html')).toHaveAttribute('data-theme', 'light')
+  await savedLightContext.close()
+
+  const systemContext = await browser.newContext({ colorScheme: 'dark' })
+  const systemPage = await systemContext.newPage()
+  await systemPage.addInitScript(() => localStorage.removeItem('carbon-acx-theme'))
+  await systemPage.goto('/')
+  await expect(systemPage.locator('html')).toHaveAttribute('data-theme', 'dark')
+  await systemContext.close()
+})
+
 test('methodology presents the six-step generated worked example', async ({ page }) => {
   await page.goto('/methodology#primer')
   await expect(page.getByRole('heading', { name: 'Six rules keep an estimate legible' })).toBeVisible()
@@ -81,6 +104,7 @@ for (const viewport of [
 
 test('Home invalid distance suppresses the chart and continuation until recovery', async ({ page }) => {
   await page.goto('/')
+  await page.waitForTimeout(250)
   const distance = page.getByLabel('Annual distance (km)')
   await distance.fill('9')
   await expect(page.locator('#annual-distance-error')).toContainText('Enter a distance from 10 to 200,000 km.')
@@ -95,6 +119,7 @@ test('Home invalid distance suppresses the chart and continuation until recovery
 
 test('Home mode controls retain attached evidence and visible chart labels', async ({ page }) => {
   await page.goto('/')
+  await page.waitForTimeout(250)
   await page.getByRole('button', { name: 'Toronto bus' }).click()
   await expect(page.locator('.trace-mode[aria-pressed="true"]')).toContainText('Toronto bus')
   await expect(page.locator('.impact-trace__line-label')).toHaveText(['Car', 'Toronto bus', 'Toronto subway'])
@@ -105,6 +130,7 @@ test('compact Calculator Browse switches to focused Worksheet and explicit Done'
   await page.setViewportSize({ width: 390, height: 844 })
   await page.addInitScript(() => localStorage.removeItem('carbon-acx-calculator-inputs'))
   await page.goto('/calculator')
+  await page.waitForTimeout(250)
   await page.getByRole('button', { name: 'Add School run by car to the worksheet' }).click()
   await expect(page.getByRole('button', { name: 'Worksheet', exact: true })).toHaveAttribute('aria-pressed', 'true')
   const quantity = page.locator('[id="TRAN.SCHOOLRUN.CAR.KM-quantity"]')
@@ -125,6 +151,32 @@ test('shared Calculator inputs open a collapsed Worksheet directly', async ({ pa
   await expect(page.locator('[id="TRAN.SCHOOLRUN.CAR.KM-quantity"]')).toHaveCount(0)
 })
 
+test('Calculator loads the optional flow chunk only after disclosure opens', async ({ page, browserName }) => {
+  test.skip(browserName !== 'chromium', 'CDP/resource assertions are Chromium-only')
+  await page.setViewportSize({ width: 1600, height: 900 })
+  await page.addInitScript(() => localStorage.removeItem('carbon-acx-calculator-inputs'))
+  const requests: string[] = []
+  const counts = new Map<string, number>()
+  page.on('request', (request) => {
+    const url = request.url()
+    requests.push(url)
+    counts.set(url, (counts.get(url) ?? 0) + 1)
+  })
+  await page.goto('/calculator')
+  await page.getByRole('button', { name: 'Add School run by car to the worksheet' }).click()
+  await page.getByRole('button', { name: /Food & drink/ }).click()
+  await page.getByRole('button', { name: 'Add Meal with beef to the worksheet' }).click()
+  await page.locator('[id="TRAN.SCHOOLRUN.CAR.KM-quantity"]').fill('1000')
+  await page.locator('[id="FOOD.MEAL.BEEF.SERVING-quantity"]').fill('10')
+  const initialRequests = new Set(requests)
+  expect([...initialRequests].some((url) => /d3-sankey|ImpactFlow|impact-flow/i.test(url))).toBe(false)
+  await page.getByText('Show activity → category flow', { exact: true }).click()
+  await expect(page.locator('.impact-flow__svg')).toBeVisible()
+  const newScripts = [...new Set(requests)].filter((url) => !initialRequests.has(url) && new URL(url).pathname.endsWith('.js'))
+  expect(newScripts.length).toBeGreaterThan(0)
+  expect(newScripts.every((url) => counts.get(url) === 1)).toBe(true)
+})
+
 test('Calculator composes categories, ranked impacts, and lazy flow context', async ({ page }) => {
   await page.setViewportSize({ width: 1600, height: 900 })
   await page.addInitScript(() => localStorage.removeItem('carbon-acx-calculator-inputs'))
@@ -132,8 +184,11 @@ test('Calculator composes categories, ranked impacts, and lazy flow context', as
   await page.getByRole('button', { name: 'Add School run by car to the worksheet' }).click()
   await page.getByRole('button', { name: /Food & drink/ }).click()
   await page.getByRole('button', { name: 'Add Meal with beef to the worksheet' }).click()
+  await expect(page.locator('[id="TRAN.SCHOOLRUN.CAR.KM-quantity"]')).toBeVisible()
   await page.locator('[id="TRAN.SCHOOLRUN.CAR.KM-quantity"]').fill('1000')
+  await expect(page.locator('[id="TRAN.SCHOOLRUN.CAR.KM-quantity"]')).toHaveValue('1000')
   await page.locator('[id="FOOD.MEAL.BEEF.SERVING-quantity"]').fill('10')
+  await expect(page.locator('[id="FOOD.MEAL.BEEF.SERVING-quantity"]')).toHaveValue('10')
   await expect(page.getByRole('heading', { name: 'Worksheet (2)' })).toBeVisible()
   await expect(page.getByText('270.0 kg CO₂e/yr', { exact: true }).first()).toBeVisible()
   await expect(page.getByText('Range: 54.0 kg CO₂e–123.0 kg CO₂e', { exact: true })).toBeVisible()

@@ -84,7 +84,11 @@ export function ImpactTrace({
   }
 
   function endPointer(event: ReactPointerEvent<SVGCircleElement>) {
-    if (typeof event.currentTarget.releasePointerCapture === 'function' && event.currentTarget.hasPointerCapture(event.pointerId)) {
+    if (
+      typeof event.currentTarget.releasePointerCapture === 'function'
+      && typeof event.currentTarget.hasPointerCapture === 'function'
+      && event.currentTarget.hasPointerCapture(event.pointerId)
+    ) {
       event.currentTarget.releasePointerCapture(event.pointerId)
     }
     setDragging(false)

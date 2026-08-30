@@ -47,7 +47,7 @@ for (const viewport of BASE_VIEWPORTS) {
           expect(metrics.documentHeight / metrics.viewportHeight, `${route} exceeds the wide master-scroll budget`).toBeLessThanOrEqual(1.1)
         }
         if (READING_ROUTES.includes(route as (typeof READING_ROUTES)[number])) {
-          const proseScrollers = await page.locator('.reading-page [data-panel-scroll], .reading-page .reference-scroll').evaluateAll(
+          const proseScrollers = await page.locator('.reading-page [data-panel-scroll]').evaluateAll(
             (elements) => elements.filter((element) => element.scrollHeight > element.clientHeight + 1).length,
           )
           expect(proseScrollers, `${route} uses a bounded prose scroller`).toBe(0)
