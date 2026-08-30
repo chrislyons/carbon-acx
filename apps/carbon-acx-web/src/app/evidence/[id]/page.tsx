@@ -42,9 +42,9 @@ export default async function ManifestDetailPage({ params }: ManifestDetailPageP
         <article className="surface-card">
           <Eyebrow>Byte hash</Eyebrow>
           <h2>SHA-256 of the published figure</h2>
-          <code className="manifest-detail__hash">{manifest.figure_sha256}</code>
+          <code className="manifest-detail__hash mt-4">{manifest.figure_sha256}</code>
           <div className="manifest-detail__verify"><VerifyArtifactButton artifactPath={manifest.figure_path} expectedHash={manifest.figure_sha256} /></div>
-          <p className="text-sm">The browser downloads the raw static figure, hashes its bytes, and compares that digest with the manifest value.</p>
+          <p className="text-sm text-foreground-muted">The browser downloads the raw static figure, hashes its bytes, and compares that digest with the manifest value.</p>
         </article>
         <article className="surface-card">
           <Eyebrow>Reported build metadata</Eyebrow>

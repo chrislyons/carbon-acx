@@ -1,12 +1,11 @@
 'use client'
 
-import dynamic from 'next/dynamic'
 import { Copy, Pencil, Plus, Trash2 } from 'lucide-react'
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ActivityMark } from '@/components/calculator/ActivityMark'
 import { ActivityShelf } from '@/components/calculator/ActivityShelf'
 import { ScenarioPane } from '@/components/calculator/ScenarioPane'
+import { ImpactComposition } from '@/components/viz/ImpactComposition'
 import { TabHeader } from '@/components/layout/TabHeader'
 import { abbreviateUnit } from '@/lib/units'
 import {
@@ -36,16 +35,6 @@ import type {
   CalculatorSummary,
 } from '@/lib/calculator'
 
-const ImpactComposition = dynamic(
-  () => import('@/components/viz/ImpactComposition').then((mod) => mod.ImpactComposition),
-  {
-    loading: () => (
-      <div className="empty-ruled-field" aria-live="polite">
-        Loading impact composition…
-      </div>
-    ),
-  },
-)
 
 const STORAGE_KEY = 'carbon-acx-calculator-inputs'
 const CATEGORIES = Object.keys(CATEGORY_INFO) as ActivityCategory[]
@@ -59,26 +48,14 @@ function getPublishedInputs(rawInputs: Record<string, unknown>): Record<string, 
 }
 
 export default function CalculatorPage() {
-  return (
-    <Suspense fallback={<div className="page-shell py-12">Loading annual worksheet…</div>}>
-      <CalculatorContent />
-    </Suspense>
-  )
+  return <CalculatorContent />
 }
 
 function CalculatorContent() {
-  const searchParams = useSearchParams()
-  const encoded = searchParams.get('data')
-  const initialInputs = useMemo(
-    () => encoded ? getPublishedInputs(decodeCalculatorInputs(encoded)) : {},
-    [encoded],
-  )
   const [activeCategory, setActiveCategory] = useState<ActivityCategory>('transport')
-  const [selectedIds, setSelectedIds] = useState<string[]>(() => Object.keys(initialInputs))
-  const [inputs, setInputs] = useState<Record<string, number>>(initialInputs)
-  const [drafts, setDrafts] = useState<Record<string, string>>(
-    () => Object.fromEntries(Object.entries(initialInputs).map(([id, value]) => [id, String(value)])),
-  )
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [inputs, setInputs] = useState<Record<string, number>>({})
+  const [drafts, setDrafts] = useState<Record<string, string>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [activeEditorId, setActiveEditorId] = useState<string | null>(null)
   const [completedEditorId, setCompletedEditorId] = useState<string | null>(null)
@@ -88,9 +65,9 @@ function CalculatorContent() {
   const summaryRefs = useRef<Record<string, HTMLButtonElement | null>>({})
   const [benchmarkKey, setBenchmarkKey] = useState(DEFAULT_BENCHMARK_KEY)
   const [scenarioGrams, setScenarioGrams] = useState(0)
-  const [shared, setShared] = useState(Boolean(encoded))
-  const [view, setView] = useState<'browse' | 'worksheet'>(encoded ? 'worksheet' : 'browse')
-  const [loaded, setLoaded] = useState(Boolean(encoded))
+  const [shared, setShared] = useState(false)
+  const [view, setView] = useState<'browse' | 'worksheet'>('browse')
+  const [loaded, setLoaded] = useState(false)
   const [copied, setCopied] = useState(false)
   const [announcement, setAnnouncement] = useState('')
 
@@ -114,6 +91,7 @@ function CalculatorContent() {
     })
   }, [completedEditorId])
   useEffect(() => {
+    const encoded = new URLSearchParams(window.location.search).get('data')
     const rawInputs: Record<string, unknown> = encoded
       ? decodeCalculatorInputs(encoded)
       : (() => {
@@ -131,7 +109,7 @@ function CalculatorContent() {
     setShared(Boolean(encoded))
     setView(encoded ? 'worksheet' : 'browse')
     setLoaded(true)
-  }, [encoded])
+  }, [])
 
   useEffect(() => {
     if (!loaded) return
@@ -186,10 +164,11 @@ function CalculatorContent() {
   }
 
   const update = (id: string, raw: string) => {
+    setActiveEditorId(id)
     setDrafts((current) => ({ ...current, [id]: raw }))
     if (raw.trim() === '') {
+      setErrors((current) => ({ ...current, [id]: 'Enter a positive annual quantity.' }))
       setInputs(({ [id]: _, ...rest }) => rest)
-      setErrors(({ [id]: _, ...rest }) => rest)
       return
     }
     const value = Number(raw)
