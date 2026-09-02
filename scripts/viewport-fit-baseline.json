@@ -1,56 +1,394 @@
 {
+  "320x800": {
+    "/": {
+      "ratio": 3.33,
+      "scrollHeight": 2665,
+      "innerHeight": 800,
+      "headerHeight": 114,
+      "hScroll": false,
+      "scrollWidth": 320
+    },
+    "/calculator": {
+      "ratio": 2.33,
+      "scrollHeight": 1863,
+      "innerHeight": 800,
+      "headerHeight": 114,
+      "hScroll": false,
+      "scrollWidth": 320
+    },
+    "/explore": {
+      "ratio": 4.65,
+      "scrollHeight": 3718,
+      "innerHeight": 800,
+      "headerHeight": 114,
+      "hScroll": false,
+      "scrollWidth": 320
+    },
+    "/explore/3d": {
+      "ratio": 1,
+      "scrollHeight": 800,
+      "innerHeight": 800,
+      "headerHeight": 114,
+      "hScroll": false,
+      "scrollWidth": 320
+    },
+    "/learn": {
+      "ratio": 3.92,
+      "scrollHeight": 3133,
+      "innerHeight": 800,
+      "headerHeight": 114,
+      "hScroll": false,
+      "scrollWidth": 320
+    },
+    "/methodology": {
+      "ratio": 3.3,
+      "scrollHeight": 2640,
+      "innerHeight": 800,
+      "headerHeight": 114,
+      "hScroll": false,
+      "scrollWidth": 320
+    },
+    "/evidence": {
+      "ratio": 9.75,
+      "scrollHeight": 7802,
+      "innerHeight": 800,
+      "headerHeight": 114,
+      "hScroll": false,
+      "scrollWidth": 320
+    },
+    "/evidence/[manifest]": {
+      "ratio": 4.75,
+      "scrollHeight": 3796,
+      "innerHeight": 800,
+      "headerHeight": 114,
+      "hScroll": false,
+      "scrollWidth": 320
+    }
+  },
+  "390x844": {
+    "/": {
+      "ratio": 3.01,
+      "scrollHeight": 2542,
+      "innerHeight": 844,
+      "headerHeight": 114,
+      "hScroll": false,
+      "scrollWidth": 390
+    },
+    "/calculator": {
+      "ratio": 2.07,
+      "scrollHeight": 1747,
+      "innerHeight": 844,
+      "headerHeight": 114,
+      "hScroll": false,
+      "scrollWidth": 390
+    },
+    "/explore": {
+      "ratio": 4.24,
+      "scrollHeight": 3582,
+      "innerHeight": 844,
+      "headerHeight": 114,
+      "hScroll": false,
+      "scrollWidth": 390
+    },
+    "/explore/3d": {
+      "ratio": 1,
+      "scrollHeight": 844,
+      "innerHeight": 844,
+      "headerHeight": 114,
+      "hScroll": false,
+      "scrollWidth": 390
+    },
+    "/learn": {
+      "ratio": 3.5,
+      "scrollHeight": 2957,
+      "innerHeight": 844,
+      "headerHeight": 114,
+      "hScroll": false,
+      "scrollWidth": 390
+    },
+    "/methodology": {
+      "ratio": 2.86,
+      "scrollHeight": 2418,
+      "innerHeight": 844,
+      "headerHeight": 114,
+      "hScroll": false,
+      "scrollWidth": 390
+    },
+    "/evidence": {
+      "ratio": 8.88,
+      "scrollHeight": 7492,
+      "innerHeight": 844,
+      "headerHeight": 114,
+      "hScroll": false,
+      "scrollWidth": 390
+    },
+    "/evidence/[manifest]": {
+      "ratio": 4.25,
+      "scrollHeight": 3589,
+      "innerHeight": 844,
+      "headerHeight": 114,
+      "hScroll": false,
+      "scrollWidth": 390
+    }
+  },
+  "720x1280": {
+    "/": {
+      "ratio": 1.86,
+      "scrollHeight": 2380,
+      "innerHeight": 1280,
+      "headerHeight": 114,
+      "hScroll": false,
+      "scrollWidth": 720
+    },
+    "/calculator": {
+      "ratio": 1.24,
+      "scrollHeight": 1587,
+      "innerHeight": 1280,
+      "headerHeight": 114,
+      "hScroll": false,
+      "scrollWidth": 720
+    },
+    "/explore": {
+      "ratio": 2.13,
+      "scrollHeight": 2731,
+      "innerHeight": 1280,
+      "headerHeight": 114,
+      "hScroll": false,
+      "scrollWidth": 720
+    },
+    "/explore/3d": {
+      "ratio": 1,
+      "scrollHeight": 1280,
+      "innerHeight": 1280,
+      "headerHeight": 114,
+      "hScroll": false,
+      "scrollWidth": 720
+    },
+    "/learn": {
+      "ratio": 2.12,
+      "scrollHeight": 2717,
+      "innerHeight": 1280,
+      "headerHeight": 114,
+      "hScroll": false,
+      "scrollWidth": 720
+    },
+    "/methodology": {
+      "ratio": 1.5,
+      "scrollHeight": 1926,
+      "innerHeight": 1280,
+      "headerHeight": 114,
+      "hScroll": false,
+      "scrollWidth": 720
+    },
+    "/evidence": {
+      "ratio": 5.28,
+      "scrollHeight": 6754,
+      "innerHeight": 1280,
+      "headerHeight": 114,
+      "hScroll": false,
+      "scrollWidth": 720
+    },
+    "/evidence/[manifest]": {
+      "ratio": 2.66,
+      "scrollHeight": 3402,
+      "innerHeight": 1280,
+      "headerHeight": 114,
+      "hScroll": false,
+      "scrollWidth": 720
+    }
+  },
+  "768x1024": {
+    "/": {
+      "ratio": 1.75,
+      "scrollHeight": 1797,
+      "innerHeight": 1024,
+      "headerHeight": 66,
+      "hScroll": false,
+      "scrollWidth": 768
+    },
+    "/calculator": {
+      "ratio": 1.1,
+      "scrollHeight": 1131,
+      "innerHeight": 1024,
+      "headerHeight": 66,
+      "hScroll": false,
+      "scrollWidth": 768
+    },
+    "/explore": {
+      "ratio": 2.43,
+      "scrollHeight": 2491,
+      "innerHeight": 1024,
+      "headerHeight": 66,
+      "hScroll": false,
+      "scrollWidth": 768
+    },
+    "/explore/3d": {
+      "ratio": 1,
+      "scrollHeight": 1024,
+      "innerHeight": 1024,
+      "headerHeight": 66,
+      "hScroll": false,
+      "scrollWidth": 768
+    },
+    "/learn": {
+      "ratio": 1.98,
+      "scrollHeight": 2032,
+      "innerHeight": 1024,
+      "headerHeight": 66,
+      "hScroll": false,
+      "scrollWidth": 768
+    },
+    "/methodology": {
+      "ratio": 1.47,
+      "scrollHeight": 1508,
+      "innerHeight": 1024,
+      "headerHeight": 66,
+      "hScroll": false,
+      "scrollWidth": 768
+    },
+    "/evidence": {
+      "ratio": 6.16,
+      "scrollHeight": 6310,
+      "innerHeight": 1024,
+      "headerHeight": 66,
+      "hScroll": false,
+      "scrollWidth": 768
+    },
+    "/evidence/[manifest]": {
+      "ratio": 3.17,
+      "scrollHeight": 3243,
+      "innerHeight": 1024,
+      "headerHeight": 66,
+      "hScroll": false,
+      "scrollWidth": 768
+    }
+  },
+  "844x390": {
+    "/": {
+      "ratio": 4.65,
+      "scrollHeight": 1815,
+      "innerHeight": 390,
+      "headerHeight": 66,
+      "hScroll": false,
+      "scrollWidth": 844
+    },
+    "/calculator": {
+      "ratio": 2.92,
+      "scrollHeight": 1137,
+      "innerHeight": 390,
+      "headerHeight": 66,
+      "hScroll": false,
+      "scrollWidth": 844
+    },
+    "/explore": {
+      "ratio": 6.34,
+      "scrollHeight": 2471,
+      "innerHeight": 390,
+      "headerHeight": 66,
+      "hScroll": false,
+      "scrollWidth": 844
+    },
+    "/explore/3d": {
+      "ratio": 1,
+      "scrollHeight": 390,
+      "innerHeight": 390,
+      "headerHeight": 66,
+      "hScroll": false,
+      "scrollWidth": 844
+    },
+    "/learn": {
+      "ratio": 5.18,
+      "scrollHeight": 2020,
+      "innerHeight": 390,
+      "headerHeight": 66,
+      "hScroll": false,
+      "scrollWidth": 844
+    },
+    "/methodology": {
+      "ratio": 3.77,
+      "scrollHeight": 1471,
+      "innerHeight": 390,
+      "headerHeight": 66,
+      "hScroll": false,
+      "scrollWidth": 844
+    },
+    "/evidence": {
+      "ratio": 15.99,
+      "scrollHeight": 6237,
+      "innerHeight": 390,
+      "headerHeight": 66,
+      "hScroll": false,
+      "scrollWidth": 844
+    },
+    "/evidence/[manifest]": {
+      "ratio": 8.24,
+      "scrollHeight": 3214,
+      "innerHeight": 390,
+      "headerHeight": 66,
+      "hScroll": false,
+      "scrollWidth": 844
+    }
+  },
   "1280x720": {
     "/": {
-      "ratio": 1,
-      "scrollHeight": 720,
+      "ratio": 1.08,
+      "scrollHeight": 776,
       "innerHeight": 720,
       "headerHeight": 73,
       "hScroll": false,
       "scrollWidth": 1280
     },
     "/calculator": {
-      "ratio": 1,
-      "scrollHeight": 720,
+      "ratio": 1.08,
+      "scrollHeight": 776,
       "innerHeight": 720,
       "headerHeight": 73,
       "hScroll": false,
       "scrollWidth": 1280
     },
     "/explore": {
-      "ratio": 1,
-      "scrollHeight": 720,
+      "ratio": 1.08,
+      "scrollHeight": 776,
       "innerHeight": 720,
       "headerHeight": 73,
       "hScroll": false,
       "scrollWidth": 1280
     },
     "/explore/3d": {
-      "ratio": 1,
-      "scrollHeight": 720,
+      "ratio": 1.08,
+      "scrollHeight": 776,
       "innerHeight": 720,
       "headerHeight": 73,
       "hScroll": false,
       "scrollWidth": 1280
     },
     "/learn": {
-      "ratio": 1,
-      "scrollHeight": 720,
+      "ratio": 1.67,
+      "scrollHeight": 1204,
       "innerHeight": 720,
       "headerHeight": 73,
       "hScroll": false,
       "scrollWidth": 1280
     },
     "/methodology": {
-      "ratio": 1,
-      "scrollHeight": 720,
+      "ratio": 1.87,
+      "scrollHeight": 1347,
       "innerHeight": 720,
       "headerHeight": 73,
       "hScroll": false,
       "scrollWidth": 1280
     },
     "/evidence": {
-      "ratio": 1,
-      "scrollHeight": 720,
+      "ratio": 7.19,
+      "scrollHeight": 5179,
+      "innerHeight": 720,
+      "headerHeight": 73,
+      "hScroll": false,
+      "scrollWidth": 1280
+    },
+    "/evidence/[manifest]": {
+      "ratio": 4.18,
+      "scrollHeight": 3012,
       "innerHeight": 720,
       "headerHeight": 73,
       "hScroll": false,
@@ -59,56 +397,64 @@
   },
   "1440x900": {
     "/": {
-      "ratio": 1,
-      "scrollHeight": 900,
+      "ratio": 1.06,
+      "scrollHeight": 956,
       "innerHeight": 900,
       "headerHeight": 73,
       "hScroll": false,
       "scrollWidth": 1440
     },
     "/calculator": {
-      "ratio": 1,
-      "scrollHeight": 900,
+      "ratio": 1.06,
+      "scrollHeight": 956,
       "innerHeight": 900,
       "headerHeight": 73,
       "hScroll": false,
       "scrollWidth": 1440
     },
     "/explore": {
-      "ratio": 1,
-      "scrollHeight": 900,
+      "ratio": 1.06,
+      "scrollHeight": 956,
       "innerHeight": 900,
       "headerHeight": 73,
       "hScroll": false,
       "scrollWidth": 1440
     },
     "/explore/3d": {
-      "ratio": 1,
-      "scrollHeight": 900,
+      "ratio": 1.06,
+      "scrollHeight": 956,
       "innerHeight": 900,
       "headerHeight": 73,
       "hScroll": false,
       "scrollWidth": 1440
     },
     "/learn": {
-      "ratio": 1,
-      "scrollHeight": 900,
+      "ratio": 1.34,
+      "scrollHeight": 1203,
       "innerHeight": 900,
       "headerHeight": 73,
       "hScroll": false,
       "scrollWidth": 1440
     },
     "/methodology": {
-      "ratio": 1,
-      "scrollHeight": 900,
+      "ratio": 1.45,
+      "scrollHeight": 1307,
       "innerHeight": 900,
       "headerHeight": 73,
       "hScroll": false,
       "scrollWidth": 1440
     },
     "/evidence": {
-      "ratio": 1,
-      "scrollHeight": 900,
+      "ratio": 5.77,
+      "scrollHeight": 5190,
+      "innerHeight": 900,
+      "headerHeight": 73,
+      "hScroll": false,
+      "scrollWidth": 1440
+    },
+    "/evidence/[manifest]": {
+      "ratio": 3.37,
+      "scrollHeight": 3032,
       "innerHeight": 900,
       "headerHeight": 73,
       "hScroll": false,
@@ -117,56 +463,64 @@
   },
   "1600x900": {
     "/": {
-      "ratio": 1,
-      "scrollHeight": 900,
+      "ratio": 1.06,
+      "scrollHeight": 956,
       "innerHeight": 900,
       "headerHeight": 73,
       "hScroll": false,
       "scrollWidth": 1600
     },
     "/calculator": {
-      "ratio": 1,
-      "scrollHeight": 900,
+      "ratio": 1.06,
+      "scrollHeight": 956,
       "innerHeight": 900,
       "headerHeight": 73,
       "hScroll": false,
       "scrollWidth": 1600
     },
     "/explore": {
-      "ratio": 1,
-      "scrollHeight": 900,
+      "ratio": 1.06,
+      "scrollHeight": 956,
       "innerHeight": 900,
       "headerHeight": 73,
       "hScroll": false,
       "scrollWidth": 1600
     },
     "/explore/3d": {
-      "ratio": 1,
-      "scrollHeight": 900,
+      "ratio": 1.06,
+      "scrollHeight": 956,
       "innerHeight": 900,
       "headerHeight": 73,
       "hScroll": false,
       "scrollWidth": 1600
     },
     "/learn": {
-      "ratio": 1,
-      "scrollHeight": 900,
+      "ratio": 1.34,
+      "scrollHeight": 1203,
       "innerHeight": 900,
       "headerHeight": 73,
       "hScroll": false,
       "scrollWidth": 1600
     },
     "/methodology": {
-      "ratio": 1,
-      "scrollHeight": 900,
+      "ratio": 1.46,
+      "scrollHeight": 1311,
       "innerHeight": 900,
       "headerHeight": 73,
       "hScroll": false,
       "scrollWidth": 1600
     },
     "/evidence": {
-      "ratio": 1,
-      "scrollHeight": 900,
+      "ratio": 5.78,
+      "scrollHeight": 5201,
+      "innerHeight": 900,
+      "headerHeight": 73,
+      "hScroll": false,
+      "scrollWidth": 1600
+    },
+    "/evidence/[manifest]": {
+      "ratio": 3.37,
+      "scrollHeight": 3032,
       "innerHeight": 900,
       "headerHeight": 73,
       "hScroll": false,
@@ -175,234 +529,464 @@
   },
   "1920x1080": {
     "/": {
-      "ratio": 1,
-      "scrollHeight": 1080,
+      "ratio": 1.05,
+      "scrollHeight": 1136,
       "innerHeight": 1080,
       "headerHeight": 73,
       "hScroll": false,
       "scrollWidth": 1920
     },
     "/calculator": {
-      "ratio": 1,
-      "scrollHeight": 1080,
+      "ratio": 1.05,
+      "scrollHeight": 1136,
       "innerHeight": 1080,
       "headerHeight": 73,
       "hScroll": false,
       "scrollWidth": 1920
     },
     "/explore": {
-      "ratio": 1,
-      "scrollHeight": 1080,
+      "ratio": 1.05,
+      "scrollHeight": 1136,
       "innerHeight": 1080,
       "headerHeight": 73,
       "hScroll": false,
       "scrollWidth": 1920
     },
     "/explore/3d": {
-      "ratio": 1,
-      "scrollHeight": 1080,
+      "ratio": 1.05,
+      "scrollHeight": 1136,
       "innerHeight": 1080,
       "headerHeight": 73,
       "hScroll": false,
       "scrollWidth": 1920
     },
     "/learn": {
-      "ratio": 1,
-      "scrollHeight": 1080,
+      "ratio": 1.11,
+      "scrollHeight": 1203,
       "innerHeight": 1080,
       "headerHeight": 73,
       "hScroll": false,
       "scrollWidth": 1920
     },
     "/methodology": {
-      "ratio": 1,
-      "scrollHeight": 1080,
+      "ratio": 1.22,
+      "scrollHeight": 1314,
       "innerHeight": 1080,
       "headerHeight": 73,
       "hScroll": false,
       "scrollWidth": 1920
     },
     "/evidence": {
-      "ratio": 1,
-      "scrollHeight": 1080,
+      "ratio": 4.82,
+      "scrollHeight": 5209,
+      "innerHeight": 1080,
+      "headerHeight": 73,
+      "hScroll": false,
+      "scrollWidth": 1920
+    },
+    "/evidence/[manifest]": {
+      "ratio": 2.81,
+      "scrollHeight": 3032,
       "innerHeight": 1080,
       "headerHeight": 73,
       "hScroll": false,
       "scrollWidth": 1920
     }
   },
-  "720x1280": {
+  "767x900": {
     "/": {
-      "ratio": 7.29,
-      "scrollHeight": 9335,
-      "innerHeight": 1280,
-      "headerHeight": 73,
+      "ratio": 2.64,
+      "scrollHeight": 2375,
+      "innerHeight": 900,
+      "headerHeight": 114,
       "hScroll": false,
-      "scrollWidth": 720
+      "scrollWidth": 767
     },
     "/calculator": {
+      "ratio": 1.69,
+      "scrollHeight": 1518,
+      "innerHeight": 900,
+      "headerHeight": 114,
+      "hScroll": false,
+      "scrollWidth": 767
+    },
+    "/explore": {
+      "ratio": 3.04,
+      "scrollHeight": 2735,
+      "innerHeight": 900,
+      "headerHeight": 114,
+      "hScroll": false,
+      "scrollWidth": 767
+    },
+    "/explore/3d": {
+      "ratio": 1,
+      "scrollHeight": 900,
+      "innerHeight": 900,
+      "headerHeight": 114,
+      "hScroll": false,
+      "scrollWidth": 767
+    },
+    "/learn": {
+      "ratio": 3.02,
+      "scrollHeight": 2721,
+      "innerHeight": 900,
+      "headerHeight": 114,
+      "hScroll": false,
+      "scrollWidth": 767
+    },
+    "/methodology": {
+      "ratio": 2.12,
+      "scrollHeight": 1906,
+      "innerHeight": 900,
+      "headerHeight": 114,
+      "hScroll": false,
+      "scrollWidth": 767
+    },
+    "/evidence": {
+      "ratio": 7.51,
+      "scrollHeight": 6758,
+      "innerHeight": 900,
+      "headerHeight": 114,
+      "hScroll": false,
+      "scrollWidth": 767
+    },
+    "/evidence/[manifest]": {
+      "ratio": 3.76,
+      "scrollHeight": 3388,
+      "innerHeight": 900,
+      "headerHeight": 114,
+      "hScroll": false,
+      "scrollWidth": 767
+    }
+  },
+  "768x900": {
+    "/": {
+      "ratio": 2,
+      "scrollHeight": 1797,
+      "innerHeight": 900,
+      "headerHeight": 66,
+      "hScroll": false,
+      "scrollWidth": 768
+    },
+    "/calculator": {
+      "ratio": 1.26,
+      "scrollHeight": 1131,
+      "innerHeight": 900,
+      "headerHeight": 66,
+      "hScroll": false,
+      "scrollWidth": 768
+    },
+    "/explore": {
+      "ratio": 2.77,
+      "scrollHeight": 2491,
+      "innerHeight": 900,
+      "headerHeight": 66,
+      "hScroll": false,
+      "scrollWidth": 768
+    },
+    "/explore/3d": {
+      "ratio": 1,
+      "scrollHeight": 900,
+      "innerHeight": 900,
+      "headerHeight": 66,
+      "hScroll": false,
+      "scrollWidth": 768
+    },
+    "/learn": {
+      "ratio": 2.26,
+      "scrollHeight": 2032,
+      "innerHeight": 900,
+      "headerHeight": 66,
+      "hScroll": false,
+      "scrollWidth": 768
+    },
+    "/methodology": {
+      "ratio": 1.68,
+      "scrollHeight": 1508,
+      "innerHeight": 900,
+      "headerHeight": 66,
+      "hScroll": false,
+      "scrollWidth": 768
+    },
+    "/evidence": {
+      "ratio": 7.01,
+      "scrollHeight": 6310,
+      "innerHeight": 900,
+      "headerHeight": 66,
+      "hScroll": false,
+      "scrollWidth": 768
+    },
+    "/evidence/[manifest]": {
+      "ratio": 3.6,
+      "scrollHeight": 3243,
+      "innerHeight": 900,
+      "headerHeight": 66,
+      "hScroll": false,
+      "scrollWidth": 768
+    }
+  },
+  "959x900": {
+    "/": {
+      "ratio": 2.05,
+      "scrollHeight": 1848,
+      "innerHeight": 900,
+      "headerHeight": 66,
+      "hScroll": false,
+      "scrollWidth": 959
+    },
+    "/calculator": {
+      "ratio": 1.19,
+      "scrollHeight": 1068,
+      "innerHeight": 900,
+      "headerHeight": 66,
+      "hScroll": false,
+      "scrollWidth": 959
+    },
+    "/explore": {
+      "ratio": 2.44,
+      "scrollHeight": 2196,
+      "innerHeight": 900,
+      "headerHeight": 66,
+      "hScroll": false,
+      "scrollWidth": 959
+    },
+    "/explore/3d": {
+      "ratio": 1,
+      "scrollHeight": 900,
+      "innerHeight": 900,
+      "headerHeight": 66,
+      "hScroll": false,
+      "scrollWidth": 959
+    },
+    "/learn": {
+      "ratio": 2.16,
+      "scrollHeight": 1942,
+      "innerHeight": 900,
+      "headerHeight": 66,
+      "hScroll": false,
+      "scrollWidth": 959
+    },
+    "/methodology": {
       "ratio": 1.57,
-      "scrollHeight": 2009,
-      "innerHeight": 1280,
-      "headerHeight": 73,
+      "scrollHeight": 1411,
+      "innerHeight": 900,
+      "headerHeight": 66,
       "hScroll": false,
-      "scrollWidth": 720
-    },
-    "/explore": {
-      "ratio": 2.21,
-      "scrollHeight": 2824,
-      "innerHeight": 1280,
-      "headerHeight": 73,
-      "hScroll": false,
-      "scrollWidth": 720
-    },
-    "/explore/3d": {
-      "ratio": 1,
-      "scrollHeight": 1280,
-      "innerHeight": 1280,
-      "headerHeight": 73,
-      "hScroll": false,
-      "scrollWidth": 720
-    },
-    "/learn": {
-      "ratio": 1.4,
-      "scrollHeight": 1798,
-      "innerHeight": 1280,
-      "headerHeight": 73,
-      "hScroll": false,
-      "scrollWidth": 720
-    },
-    "/methodology": {
-      "ratio": 1.29,
-      "scrollHeight": 1648,
-      "innerHeight": 1280,
-      "headerHeight": 73,
-      "hScroll": false,
-      "scrollWidth": 720
+      "scrollWidth": 959
     },
     "/evidence": {
-      "ratio": 3.4,
-      "scrollHeight": 4349,
-      "innerHeight": 1280,
-      "headerHeight": 73,
+      "ratio": 6.92,
+      "scrollHeight": 6232,
+      "innerHeight": 900,
+      "headerHeight": 66,
       "hScroll": false,
-      "scrollWidth": 720
+      "scrollWidth": 959
+    },
+    "/evidence/[manifest]": {
+      "ratio": 3.59,
+      "scrollHeight": 3231,
+      "innerHeight": 900,
+      "headerHeight": 66,
+      "hScroll": false,
+      "scrollWidth": 959
     }
   },
-  "844x390": {
+  "960x900": {
     "/": {
-      "ratio": 165.7,
-      "scrollHeight": 64623,
-      "innerHeight": 390,
+      "ratio": 1.06,
+      "scrollHeight": 956,
+      "innerHeight": 900,
       "headerHeight": 73,
       "hScroll": false,
-      "scrollWidth": 844
+      "scrollWidth": 960
     },
     "/calculator": {
-      "ratio": 4.99,
-      "scrollHeight": 1946,
-      "innerHeight": 390,
+      "ratio": 1.06,
+      "scrollHeight": 956,
+      "innerHeight": 900,
       "headerHeight": 73,
       "hScroll": false,
-      "scrollWidth": 844
+      "scrollWidth": 960
     },
     "/explore": {
-      "ratio": 7.18,
-      "scrollHeight": 2801,
-      "innerHeight": 390,
+      "ratio": 1.06,
+      "scrollHeight": 956,
+      "innerHeight": 900,
       "headerHeight": 73,
       "hScroll": false,
-      "scrollWidth": 844
+      "scrollWidth": 960
     },
     "/explore/3d": {
-      "ratio": 1.02,
-      "scrollHeight": 399,
-      "innerHeight": 390,
+      "ratio": 1.06,
+      "scrollHeight": 956,
+      "innerHeight": 900,
       "headerHeight": 73,
       "hScroll": false,
-      "scrollWidth": 844
+      "scrollWidth": 960
     },
     "/learn": {
-      "ratio": 3.94,
-      "scrollHeight": 1538,
-      "innerHeight": 390,
+      "ratio": 1.43,
+      "scrollHeight": 1284,
+      "innerHeight": 900,
       "headerHeight": 73,
       "hScroll": false,
-      "scrollWidth": 844
+      "scrollWidth": 960
     },
     "/methodology": {
-      "ratio": 3.9,
-      "scrollHeight": 1520,
-      "innerHeight": 390,
+      "ratio": 1.5,
+      "scrollHeight": 1353,
+      "innerHeight": 900,
       "headerHeight": 73,
       "hScroll": false,
-      "scrollWidth": 844
+      "scrollWidth": 960
     },
     "/evidence": {
-      "ratio": 10.64,
-      "scrollHeight": 4149,
-      "innerHeight": 390,
+      "ratio": 6.15,
+      "scrollHeight": 5536,
+      "innerHeight": 900,
       "headerHeight": 73,
       "hScroll": false,
-      "scrollWidth": 844
+      "scrollWidth": 960
+    },
+    "/evidence/[manifest]": {
+      "ratio": 3.32,
+      "scrollHeight": 2988,
+      "innerHeight": 900,
+      "headerHeight": 73,
+      "hScroll": false,
+      "scrollWidth": 960
     }
   },
-  "768x1024": {
+  "1151x900": {
     "/": {
-      "ratio": 45.06,
-      "scrollHeight": 46145,
-      "innerHeight": 1024,
+      "ratio": 1.06,
+      "scrollHeight": 956,
+      "innerHeight": 900,
       "headerHeight": 73,
       "hScroll": false,
-      "scrollWidth": 768
+      "scrollWidth": 1151
     },
     "/calculator": {
-      "ratio": 1.89,
-      "scrollHeight": 1940,
-      "innerHeight": 1024,
+      "ratio": 1.06,
+      "scrollHeight": 956,
+      "innerHeight": 900,
       "headerHeight": 73,
       "hScroll": false,
-      "scrollWidth": 768
+      "scrollWidth": 1151
     },
     "/explore": {
-      "ratio": 2.75,
-      "scrollHeight": 2815,
-      "innerHeight": 1024,
+      "ratio": 1.06,
+      "scrollHeight": 956,
+      "innerHeight": 900,
       "headerHeight": 73,
       "hScroll": false,
-      "scrollWidth": 768
+      "scrollWidth": 1151
     },
     "/explore/3d": {
-      "ratio": 1,
-      "scrollHeight": 1024,
-      "innerHeight": 1024,
+      "ratio": 1.06,
+      "scrollHeight": 956,
+      "innerHeight": 900,
       "headerHeight": 73,
       "hScroll": false,
-      "scrollWidth": 768
+      "scrollWidth": 1151
     },
     "/learn": {
-      "ratio": 1.64,
-      "scrollHeight": 1682,
-      "innerHeight": 1024,
+      "ratio": 1.32,
+      "scrollHeight": 1187,
+      "innerHeight": 900,
       "headerHeight": 73,
       "hScroll": false,
-      "scrollWidth": 768
+      "scrollWidth": 1151
     },
     "/methodology": {
-      "ratio": 1.56,
-      "scrollHeight": 1597,
-      "innerHeight": 1024,
+      "ratio": 1.51,
+      "scrollHeight": 1356,
+      "innerHeight": 900,
       "headerHeight": 73,
       "hScroll": false,
-      "scrollWidth": 768
+      "scrollWidth": 1151
     },
     "/evidence": {
-      "ratio": 4.16,
-      "scrollHeight": 4257,
-      "innerHeight": 1024,
+      "ratio": 5.79,
+      "scrollHeight": 5215,
+      "innerHeight": 900,
       "headerHeight": 73,
       "hScroll": false,
-      "scrollWidth": 768
+      "scrollWidth": 1151
+    },
+    "/evidence/[manifest]": {
+      "ratio": 3.33,
+      "scrollHeight": 2994,
+      "innerHeight": 900,
+      "headerHeight": 73,
+      "hScroll": false,
+      "scrollWidth": 1151
+    }
+  },
+  "1152x900": {
+    "/": {
+      "ratio": 1.06,
+      "scrollHeight": 956,
+      "innerHeight": 900,
+      "headerHeight": 73,
+      "hScroll": false,
+      "scrollWidth": 1152
+    },
+    "/calculator": {
+      "ratio": 1.06,
+      "scrollHeight": 956,
+      "innerHeight": 900,
+      "headerHeight": 73,
+      "hScroll": false,
+      "scrollWidth": 1152
+    },
+    "/explore": {
+      "ratio": 1.06,
+      "scrollHeight": 956,
+      "innerHeight": 900,
+      "headerHeight": 73,
+      "hScroll": false,
+      "scrollWidth": 1152
+    },
+    "/explore/3d": {
+      "ratio": 1.06,
+      "scrollHeight": 956,
+      "innerHeight": 900,
+      "headerHeight": 73,
+      "hScroll": false,
+      "scrollWidth": 1152
+    },
+    "/learn": {
+      "ratio": 1.32,
+      "scrollHeight": 1187,
+      "innerHeight": 900,
+      "headerHeight": 73,
+      "hScroll": false,
+      "scrollWidth": 1152
+    },
+    "/methodology": {
+      "ratio": 1.51,
+      "scrollHeight": 1356,
+      "innerHeight": 900,
+      "headerHeight": 73,
+      "hScroll": false,
+      "scrollWidth": 1152
+    },
+    "/evidence": {
+      "ratio": 5.79,
+      "scrollHeight": 5215,
+      "innerHeight": 900,
+      "headerHeight": 73,
+      "hScroll": false,
+      "scrollWidth": 1152
+    },
+    "/evidence/[manifest]": {
+      "ratio": 3.33,
+      "scrollHeight": 2994,
+      "innerHeight": 900,
+      "headerHeight": 73,
+      "hScroll": false,
+      "scrollWidth": 1152
     }
   }
 }

@@ -1,5 +1,6 @@
 import { abbreviateUnit } from '@/lib/units'
 import { Disclosure } from '@/components/content/Disclosure'
+import { EvidenceFacts } from '@/components/content/EvidenceFacts'
 import { SourceList } from '@/components/content/SourceList'
 import { formatEmissions, type ActivityEvidence } from '@/lib/calculator'
 
@@ -64,12 +65,9 @@ export function FactorRecordDetails({
         )}
       </section>
       <Disclosure summary="Technical disclosure" open>
+        <EvidenceFacts evidence={evidence} unitLabel={unitLabel} />
         <dl className="factor-record-details__technical">
-          <div><dt>Boundary</dt><dd>{evidence.scopeBoundary || 'Not specified'}</dd></div>
-          <div><dt>Region</dt><dd>{evidence.region ?? 'Not specified'}</dd></div>
           <div><dt>GWP horizon</dt><dd>{evidence.gwpHorizon || 'Not specified'}</dd></div>
-          <div><dt>Vintage</dt><dd>{evidence.vintageYear ?? 'Not specified'}</dd></div>
-          <div><dt>Uncertainty</dt><dd>{uncertainty}</dd></div>
           <div><dt>Factor ID</dt><dd className="mono">{evidence.emissionFactorId || 'Not specified'}</dd></div>
           {evidence.methodNotes ? <div><dt>Method note</dt><dd>{evidence.methodNotes}</dd></div> : null}
         </dl>

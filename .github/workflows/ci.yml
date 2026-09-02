@@ -192,7 +192,7 @@ jobs:
       - name: Install web workspace dependencies
         run: pnpm --filter carbon-acx-web install --frozen-lockfile
       - name: Install Playwright browsers
-        run: pnpm --filter carbon-acx-web exec playwright install chromium --with-deps
+        run: pnpm --filter carbon-acx-web exec playwright install chromium firefox webkit --with-deps
       - name: Run Playwright e2e suite
         working-directory: apps/carbon-acx-web
         run: pnpm test:e2e

@@ -7,11 +7,12 @@ A static Next.js App Router site for Carbon ACX’s public carbon-literacy inter
 - **Next App Router static export** — no API routes or runtime data service.
 - **Authoritative generated data** — `src/generated/calculator-data.json`, `catalog-data.json`, `sources.json`, and `stream-catalog.json` are produced from repository authorities. Their schemas are `acx.web-calculator/1-6-0`, `acx.web-catalog/1-0-0`, `acx.web-sources/1-1-0`, and `acx.stream-catalog/1-0-0`; the catalog carries `acx.ai-scenarios/1-1-0` records. Do not hand-edit generated files.
 - **Offline OWID context** — `src/generated/owid-context.json`, `release-data.json`, and `/public/data/` copies are generated from the pinned `data/owid/` snapshot. The context schema is `acx.owid-context/1-1-0`; the release schema is `acx.public-release/1-1-0`. It is labelled macro context only, never a factor or benchmark.
-- **Public routes** — `/`, `/calculator`, `/explore`, `/explore/3d`, `/learn`, `/methodology`, `/manifests`, and `/manifests/[id]`. The methodology primer is at `/methodology#primer`; the learning route uses only generated catalogue records.
+- **Public routes** — `/`, `/calculator`, `/explore`, `/explore/3d`, `/learn`, `/methodology`, `/evidence`, and `/evidence/[id]`. `/evidence/[id]` is the manifest detail path.
 - **Artifacts** — raw immutable artifacts remain available under `/artifacts/`; manifest pages verify fetched bytes against declared SHA-256 digests in the browser.
-- **Publication policy** — only finite, unit-matched factors with a cited source URL, region, scope boundary, GWP horizon, and vintage can be published. Demonstrative or incomplete records are unavailable, never zero.
-- **AI scenario layer** — the calculator resolves `acx.ai-scenarios/1-1-0` records by exact key (`resolveAiScenario`/`resolveScenarioById` in `src/lib/calculator.ts`). Published scenarios multiply into the annual total; estimates render as evidence-only cards excluded from totals (ACX107); unavailable records explain themselves. Scenario cards carry the data-state chip vocabulary: estimate, modeled, metered, stale-vintage (`DataState badge`, stale when review is past due or vintage exceeds five years).
-- **Performance budget** — route-level First Load JS is recorded in `docs/acx/ACX109 Production Grade Hardening Sprint.md`; heavy visualization chunks (`d3-sankey` via ImpactComposition) are lazy-loaded with a loading placeholder.
+- **Publication policy** — only finite, unit-matched factors with a cited source URL, region, scope boundary, GWP horizon, and vintage can be published. Demonstrative or incomplete records are Not available, never zero.
+- **AI scenario layer** — the calculator resolves `acx.ai-scenarios/1-1-0` records by exact key (`resolveAiScenario`/`resolveScenarioById` in `src/lib/calculator.ts`). Published scenarios multiply into the annual total; estimates render as evidence-only cards excluded from totals (ACX107); Not available records explain themselves. Scenario cards use only the `Estimate` and `Stale vintage` data-state labels.
+- **Responsive shell** — six icon-and-label navigation links are ordinary links at every width. The compact rail scrolls horizontally below `60rem`; Calculator and Explore use intrinsic data layouts at `60rem`, and Explore adds its detail column at `72rem`. Reading routes use natural document scroll.
+- **Performance budget** — the ranked result HTML is the source of truth; the optional `d3-sankey` flow is loaded only after opening its disclosure when two positive activities fit the measured panel.
 
 ## Data generation
 
@@ -47,6 +48,6 @@ pnpm test
 pnpm test:e2e
 ```
 
-The end-to-end suite covers the mobile navigation disclosure, route no-overflow scan, light and dark theme accessibility scans, 44px action-control targets, and the 390 × 844 calculator-to-Atlas continuation. For visual checks, use 320 × 800, 390 × 844, 768 × 1024, and 1280 × 800 viewports.
+The end-to-end suite covers six-route navigation in Chromium, Firefox, and WebKit, adaptive Browse/Worksheet and Browse/Record flows, light and dark theme accessibility scans, 44px action-control targets, route no-overflow checks, and manifest verification. Playwright WebKit is labelled as an automated engine, not Safari. For visual checks, use 320 × 800, 390 × 844, 768 × 1024, 1280 × 720, 1440 × 900, and 1920 × 1080 viewports.
 
 From the repository root, `make build-static` packages the static site and artifacts into `dist/site/`.

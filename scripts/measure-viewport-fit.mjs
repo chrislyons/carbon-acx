@@ -9,35 +9,36 @@
  * the production baseline was captured.
  *
  * Usage:
- *   node scripts/measure-viewport-fit.mjs [--site <dir>] [--out <file>] [--json] [--update]
- *
+ *   node scripts/measure-viewport-fit.mjs [--site <dir>] [--out <file>] [--candidate <file>] [--json] [--update]
+
  * Defaults: --site dist/site (repo root), --out scripts/viewport-fit-baseline.json
- *
+
  * Baseline contract: when the baseline file exists, the run is a CHECK —
  * every route/viewport ratio must be <= baseline + 0.05 and no route may
  * gain horizontal overflow; violations exit 1 and nothing is written.
- * Pass --update to overwrite the baseline (route/behavior changes only).
+ * Pass --candidate for a write-only candidate JSON; it never reads or mutates
+ * the committed baseline. Pass --update only after reviewing a candidate.
  */
 import { createServer } from 'node:http'
 import { readFile, stat, writeFile } from 'node:fs/promises'
 import { extname, join, resolve, sep } from 'node:path'
 import { createRequire } from 'node:module'
 import process from 'node:process'
-
-const ROUTES = ['/', '/calculator', '/explore', '/explore/3d', '/learn', '/methodology', '/evidence']
-// @playwright/test resolves from apps/carbon-acx-web (pnpm workspace), not this
-// script's location — anchor a require there.
 const { chromium } = createRequire(resolve('apps/carbon-acx-web/package.json'))('@playwright/test')
-
-// Landscape targets + band-2 regression baselines (portrait/rotated).
+const ROUTES = ['/', '/calculator', '/explore', '/explore/3d', '/learn', '/methodology', '/evidence']
+const DYNAMIC_EVIDENCE_ROUTE = '/evidence/[manifest]'
+// Base matrix plus explicit breakpoint boundaries (CSS px, 900px high).
 const VIEWPORTS = [
+  { name: '320x800', width: 320, height: 800 },
+  { name: '390x844', width: 390, height: 844 },
+  { name: '720x1280', width: 720, height: 1280 },
+  { name: '768x1024', width: 768, height: 1024 },
+  { name: '844x390', width: 844, height: 390 },
   { name: '1280x720', width: 1280, height: 720 },
   { name: '1440x900', width: 1440, height: 900 },
   { name: '1600x900', width: 1600, height: 900 },
   { name: '1920x1080', width: 1920, height: 1080 },
-  { name: '720x1280', width: 720, height: 1280 },
-  { name: '844x390', width: 844, height: 390 }, // rotated phone (landscape dims)
-  { name: '768x1024', width: 768, height: 1024 },
+  ...[767, 768, 959, 960, 1151, 1152].map((width) => ({ name: `${width}x900`, width, height: 900 })),
 ]
 
 const MIME = {
@@ -48,10 +49,11 @@ const MIME = {
 }
 
 function parseArgs(argv) {
-  const args = { site: resolve('dist/site'), out: resolve('scripts/viewport-fit-baseline.json'), json: false, update: false }
+  const args = { site: resolve('dist/site'), out: resolve('scripts/viewport-fit-baseline.json'), candidate: null, json: false, update: false }
   for (let i = 2; i < argv.length; i++) {
     if (argv[i] === '--site') args.site = resolve(argv[++i])
     else if (argv[i] === '--out') args.out = resolve(argv[++i])
+    else if (argv[i] === '--candidate') args.candidate = resolve(argv[++i])
     else if (argv[i] === '--json') args.json = true
     else if (argv[i] === '--update') args.update = true
     else if (argv[i] === '--help' || argv[i] === '-h') args.help = true
@@ -135,39 +137,54 @@ async function measureRoute(browser, base, route, vp) {
 async function main() {
   const args = parseArgs(process.argv)
   if (args.help) { console.log('See header comment in scripts/measure-viewport-fit.mjs'); return }
-  const { server, base, close } = await serveStatic(args.site)
+  const { base, close } = await serveStatic(args.site)
   const browser = await chromium.launch()
   const results = {}
+  let activeRoutes = ROUTES
   try {
+    const discoveryPage = await browser.newPage({ viewport: { width: 1440, height: 900 } })
     try {
-      for (const vp of VIEWPORTS) {
-        results[vp.name] = results[vp.name] ?? {}
-        for (const route of ROUTES) {
-          const m = await measureRoute(browser, base, route, vp)
-          results[vp.name][route] = { ratio: +(m.scrollHeight / m.innerHeight).toFixed(2), ...m }
-          process.stdout.write(`${vp.name} ${route} ratio=${results[vp.name][route].ratio} hScroll=${m.hScroll}\n`)
-        }
-      }
+      await discoveryPage.goto(`${base}/evidence`, { waitUntil: 'load', timeout: 30000 })
+      const manifestLink = discoveryPage.locator('#manifests a').first()
+      const manifestRoute = await manifestLink.count() > 0 ? await manifestLink.getAttribute('href') : null
+      if (manifestRoute) activeRoutes = [...ROUTES, manifestRoute]
     } finally {
-      await browser.close().catch(() => {})
+      await discoveryPage.close()
+    }
+    for (const vp of VIEWPORTS) {
+      results[vp.name] = results[vp.name] ?? {}
+      for (const route of activeRoutes) {
+        const routeKey = route.startsWith('/evidence/') ? DYNAMIC_EVIDENCE_ROUTE : route
+        const m = await measureRoute(browser, base, route, vp)
+        results[vp.name][routeKey] = { ratio: +(m.scrollHeight / m.innerHeight).toFixed(2), ...m }
+        process.stdout.write(`${vp.name} ${route} ratio=${results[vp.name][routeKey].ratio} hScroll=${m.hScroll}\n`)
+      }
     }
   } finally {
+    await browser.close().catch(() => {})
     await close()
   }
-  // Baseline check-or-update.
+
+  if (args.candidate) {
+    await writeFile(args.candidate, JSON.stringify(results, null, 2) + '\n')
+    console.error(`Saved candidate ${args.candidate}; committed baseline was not read or changed.`)
+    return
+  }
+
   let baseline = null
   try { baseline = JSON.parse(await readFile(args.out, 'utf8')) } catch { /* bootstrap */ }
   if (baseline && !args.update) {
     const RATIO_TOLERANCE = 0.05
     const violations = []
     for (const vp of VIEWPORTS) {
-      for (const route of ROUTES) {
-        const base0 = baseline[vp.name]?.[route]
-        const now = results[vp.name][route]
-        if (!base0) violations.push(`${vp.name} ${route}: missing from baseline`)
+      for (const route of activeRoutes) {
+        const routeKey = route.startsWith('/evidence/') ? DYNAMIC_EVIDENCE_ROUTE : route
+        const base0 = baseline[vp.name]?.[routeKey]
+        const now = results[vp.name][routeKey]
+        if (!base0) violations.push(`${vp.name} ${routeKey}: missing from baseline`)
         else {
-          if (now.ratio > base0.ratio + RATIO_TOLERANCE) violations.push(`${vp.name} ${route}: ratio ${now.ratio} > baseline ${base0.ratio} + ${RATIO_TOLERANCE}`)
-          if (now.hScroll && !base0.hScroll) violations.push(`${vp.name} ${route}: new horizontal overflow`)
+          if (now.ratio > base0.ratio + RATIO_TOLERANCE) violations.push(`${vp.name} ${routeKey}: ratio ${now.ratio} > baseline ${base0.ratio} + ${RATIO_TOLERANCE}`)
+          if (now.hScroll && !base0.hScroll) violations.push(`${vp.name} ${routeKey}: new horizontal overflow`)
         }
       }
     }
@@ -177,14 +194,16 @@ async function main() {
       console.error('Baseline untouched. Fix the regression or re-run with --update after review.')
       process.exit(1)
     }
-    console.log(`Baseline check passed (${VIEWPORTS.length * ROUTES.length} route/viewport pairs).`)
+    console.log(`Baseline check passed (${VIEWPORTS.length * activeRoutes.length} route/viewport pairs).`)
     return
   }
   if (!args.json) {
-    // Console table per viewport: route | ratio | hScroll
     console.log('\n=== Summary ===')
     for (const vp of VIEWPORTS) {
-      const rows = ROUTES.map((r) => ({ route: r, ...results[vp.name][r] }))
+      const rows = activeRoutes.map((route) => {
+        const routeKey = route.startsWith('/evidence/') ? DYNAMIC_EVIDENCE_ROUTE : route
+        return { route: routeKey, ...results[vp.name][routeKey] }
+      })
       console.log(`\n${vp.name}`)
       console.table(rows.map(({ route, ratio, hScroll }) => ({ route, ratio, hScroll })))
     }

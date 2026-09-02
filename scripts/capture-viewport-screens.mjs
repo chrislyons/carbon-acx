@@ -1,8 +1,8 @@
 import { createRequire } from 'node:module'
 import { createServer } from 'node:http'
-import { mkdir } from 'node:fs/promises'
-import { readFile } from 'node:fs/promises'
+import { mkdir, readFile } from 'node:fs/promises'
 import { extname, join, resolve, sep } from 'node:path'
+
 const { chromium } = createRequire(resolve('apps/carbon-acx-web/package.json'))('@playwright/test')
 const root = resolve('dist/site')
 const ROOT_ABS = resolve(root)
@@ -26,34 +26,52 @@ const server = createServer(async (req, res) => {
       res.writeHead(200, { 'content-type': MIME[extname(file)] ?? 'application/octet-stream' })
       res.end(data)
       return
-    } catch { /* next */ }
+    } catch {
+      // Try the next static-export candidate.
+    }
   }
   res.writeHead(404).end()
 })
 await new Promise((ok) => server.listen(0, '127.0.0.1', ok))
 const port = server.address().port
 const base = `http://127.0.0.1:${port}`
-let browser
-const ROUTES = ['/', '/calculator', '/explore', '/explore/3d', '/learn', '/methodology', '/evidence']
+const BASE_ROUTES = ['/', '/calculator', '/explore', '/explore/3d', '/learn', '/methodology', '/evidence']
 const VIEWPORTS = [
-  [1280, 720], [1440, 900], [1920, 1080], [720, 1280], [844, 390], [768, 1024], [320, 800], [390, 844],
+  [320, 800], [390, 844], [720, 1280], [768, 1024], [844, 390],
+  [1280, 720], [1440, 900], [1600, 900], [1920, 1080],
 ]
+const THEMES = ['light', 'dark']
+let browser
 try {
   browser = await chromium.launch()
-  for (const [w, h] of VIEWPORTS) {
-    for (const route of ROUTES) {
-      const page = await browser.newPage({ viewport: { width: w, height: h } })
-      try {
-        await page.goto(base + route, { waitUntil: 'load' })
-        await page.waitForTimeout(900)
-        const name = route === '/' ? 'home' : route.replace(/\//g, '-').replace(/^-/, '')
-        await page.screenshot({ path: join(outDir, `${w}x${h}_${name}.png`), fullPage: false })
-      } finally {
-        await page.close()
+  const discoveryContext = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+  await discoveryContext.addInitScript(() => localStorage.setItem('carbon-acx-theme', 'light'))
+  const discoveryPage = await discoveryContext.newPage()
+  await discoveryPage.goto(`${base}/evidence`, { waitUntil: 'load' })
+  const manifestLink = discoveryPage.locator('#manifests a').first()
+  const manifestRoute = await manifestLink.count() > 0 ? await manifestLink.getAttribute('href') : null
+  await discoveryContext.close()
+  const routes = manifestRoute ? [...BASE_ROUTES, manifestRoute] : BASE_ROUTES
+
+  for (const theme of THEMES) {
+    for (const [width, height] of VIEWPORTS) {
+      const context = await browser.newContext({ viewport: { width, height } })
+      await context.addInitScript((savedTheme) => localStorage.setItem('carbon-acx-theme', savedTheme), theme)
+      for (const route of routes) {
+        const page = await context.newPage()
+        try {
+          await page.goto(base + route, { waitUntil: 'load' })
+          await page.waitForTimeout(900)
+          const name = route === '/' ? 'home' : route.replace(/\//g, '-').replace(/^-/, '')
+          await page.screenshot({ path: join(outDir, `${theme}_${width}x${height}_${name}.png`), fullPage: false })
+        } finally {
+          await page.close()
+        }
       }
+      await context.close()
     }
   }
-  console.log('done')
+  console.log(`captured ${THEMES.length * VIEWPORTS.length * routes.length} screens`)
 } finally {
   if (browser) await browser.close().catch(() => {})
   await new Promise((ok) => server.close(ok))

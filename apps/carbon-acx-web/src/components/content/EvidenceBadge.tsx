@@ -5,7 +5,7 @@ export function EvidenceBadge({ evidence }: { evidence: ActivityEvidence }) {
 
   return (
     <span className={`evidence-badge ${available ? 'evidence-badge--published' : 'evidence-badge--unavailable'}`}>
-      {available ? 'Published evidence' : 'Not available'}
+      {available ? 'Published' : 'Not available'}
     </span>
   )
 }

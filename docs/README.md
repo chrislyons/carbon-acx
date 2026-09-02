@@ -13,8 +13,7 @@ docs/
 ├── README.md                  # This index
 ├── acx/
 │   ├── ACX.md                 # ACX document catalog
-│   ├── ACX099 ... ACX108.md   # Current implementation and audit notes
-│   └── archive/               # Historical ACX series where archived
+│   └── ACX099 ... ACX114.md   # Current implementation and audit notes
 ├── archive/                   # General historical implementation docs
 ├── audits/
 │   └── archive/               # Archived audits
@@ -38,10 +37,7 @@ docs/
 ## ACX Naming Conventions
 
 - `ACX.md` is the catalog for the numbered ACX series.
-- ACX099 through ACX108 are the current implementation and audit notes.
-- Earlier numbered documents are historical planning, research, or incident
-  records. Treat their paths and commands as historical unless they are linked
-  from current guidance.
+- ACX099 through ACX114 are the current implementation and audit notes.
 - When archiving docs, move them into the matching archive directory instead of
   deleting them.
 

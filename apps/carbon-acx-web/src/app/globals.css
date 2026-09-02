@@ -39,8 +39,11 @@
 
 /* Carbon ACX public system: paper, ink, oxidized green, signal orange. */
 :root {
+  color-scheme: light;
   --header-h: 4.5rem;
   --bar-h: 3.375rem;
+  --content-max: 120rem;
+  --reading-max: 87.5rem;
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -98,6 +101,7 @@
 }
 
 [data-theme='dark'] {
+  color-scheme: dark;
   --paper: #16201c;
   --ink: #f2eee5;
   --ink-muted: #c0c7bd;
@@ -134,6 +138,7 @@
 }
 
 html {
+  overflow-x: clip;
   scroll-behavior: smooth;
 }
 
@@ -220,22 +225,53 @@ a {
   top: 1rem;
 }
 
-/* Shared shell. Long-form/supporting routes stay narrower than data journeys. */
-.editorial-page {
-  width: min(100% - 2rem, 87.5rem);
+/* Shared shell: dense workspaces widen; reading routes keep a readable measure. */
+.site-shell-body {
+  min-width: 320px;
+  margin: 0;
+  overflow-x: clip;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
+
+@supports not (overflow: clip) {
+  html {
+    overflow-x: hidden;
+  }
+
+  .site-shell-body {
+    overflow-x: hidden;
+  }
+}
+
+.site-shell {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+.site-main {
+  flex: 1 0 auto;
+  min-width: 0;
+}
+
+.editorial-page,
+.page-shell {
+  width: min(100% - 2rem, var(--reading-max));
   margin-inline: auto;
+}
+
+.workspace {
+  width: min(100% - 2rem, var(--content-max));
   padding-block: clamp(1rem, 2.5vw, 2.5rem) clamp(2rem, 5vw, 5rem);
 }
 
-
-.page-shell--reading {
-  padding-block: clamp(2.5rem, 4vw, 3.5rem);
+.reading-page {
+  width: min(100% - 2rem, var(--reading-max));
+  padding-block: clamp(1.5rem, 4vw, 3.5rem);
 }
 
-.page-shell {
-  width: min(100% - 2rem, 87.5rem);
-  margin-inline: auto;
-}
 
 .ruled-section {
   border-block: 1px solid var(--rule);
@@ -269,31 +305,33 @@ a {
   text-transform: uppercase;
 }
 
-/* The masthead is opaque and ruled; no glass treatment. */
+/* The masthead remains opaque and ruled; it joins the flow on compact screens. */
 .site-header {
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 20;
   border-bottom: 1px solid var(--rule);
   background: var(--paper);
 }
 
 .site-header__inner {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: 'brand nav theme';
   align-items: center;
-  justify-content: space-between;
   gap: 1rem;
   width: 100%;
+  max-width: var(--content-max);
   padding-inline: 1rem;
-  padding-block: 0.8rem;
-  min-height: var(--header-h);
+  padding-block: 0.65rem;
   box-sizing: border-box;
 }
 
 .site-header__brand {
+  grid-area: brand;
   color: var(--ink);
   font: 700 1.2rem/1 var(--font-display);
 }
+
 
 .site-header__brand span {
   display: block;
@@ -303,69 +341,65 @@ a {
   text-transform: uppercase;
 }
 
-.site-header__desktop-nav {
-  display: none;
-  gap: 1rem;
+.site-header__nav {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.25rem;
+  grid-area: nav;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--rule) transparent;
+  scroll-snap-type: inline proximity;
 }
 
-.site-header__desktop-nav a,
-.site-header__mobile-nav a {
-  border-bottom: 1px solid transparent;
-  font-size: 0.9rem;
+.site-header__nav a {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  border-bottom: 2px solid transparent;
+  padding: 0.35rem 0.55rem;
+  font-size: 0.86rem;
+  scroll-snap-align: center;
 }
 
-.site-header__desktop-nav a[aria-current='page'],
-.site-header__desktop-nav a:hover,
-.site-header__mobile-nav a[aria-current='page'],
-.site-header__mobile-nav a:hover {
+.site-header__nav a[aria-current='page'],
+.site-header__nav a:hover {
   border-color: var(--signal);
 }
 
-.mode-switcher__button,
-.site-header__mobile-toggle {
+.mode-switcher__button {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
   min-height: 44px;
+  place-items: center;
+  grid-area: theme;
+  border: 0;
   border-radius: 0;
-  padding: 0.35rem 0.65rem;
+  padding: 0;
   background: transparent;
   color: inherit;
-  font: 600 0.72rem/1 var(--font-mono);
-}
-
-.mode-switcher__button {
-  border: 0;
-}
-
-.site-header__mobile-toggle {
-  border: 1px solid var(--rule);
-}
-
-.site-header__mobile-toggle,
-.site-header__mobile-nav {
-  display: none;
 }
 
 .site-footer {
-  position: sticky;
-  bottom: 0;
-  z-index: 20;
   flex: 0 0 auto;
-  height: var(--bar-h);
-  min-height: var(--bar-h);
-  overflow: hidden;
-  margin-top: 0;
   border-top: 1px solid var(--rule);
   background: var(--paper);
 }
 
 .reference-strip {
-  width: 100%;
-  height: 100%;
   display: flex;
+  min-height: var(--bar-h);
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
   padding-inline: 1rem;
-  padding-block: 0;
   color: var(--ink-muted);
   font-size: 0.8rem;
 }
@@ -377,6 +411,9 @@ a {
 }
 
 .reference-strip a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   color: var(--ink);
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -541,6 +578,13 @@ a {
   overflow-wrap: anywhere;
 }
 
+.source-list a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  overflow-wrap: anywhere;
+}
+
 .source-list__id {
   display: inline-block;
   margin-right: 0.45rem;
@@ -548,6 +592,83 @@ a {
   font: 700 0.7rem var(--font-mono);
 }
 
+.evidence-facts,
+.source-registry__facts {
+  margin: 0;
+}
+
+.evidence-facts {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.evidence-facts div,
+.source-registry__facts div {
+  display: grid;
+  grid-template-columns: 7rem minmax(0, 1fr);
+  gap: 0.75rem;
+  border-top: 1px solid var(--rule);
+  padding-block: 0.45rem;
+}
+
+.evidence-facts dt,
+.source-registry__facts dt {
+  color: var(--ink-muted);
+}
+
+.evidence-facts dd,
+.source-registry__facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.source-registry {
+  display: grid;
+  gap: 0;
+  border-top: 1px solid var(--rule);
+}
+
+.source-registry__entry {
+  border-bottom: 1px solid var(--rule);
+}
+
+.source-registry__entry summary {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.source-registry__entry summary > span:last-child {
+  color: var(--ink-muted);
+  font: 0.68rem var(--font-mono);
+  text-align: right;
+}
+
+.source-registry__id {
+  color: var(--oxide);
+  font: 700 0.72rem var(--font-mono);
+  overflow-wrap: anywhere;
+}
+
+.source-registry__facts {
+  padding: 0 0 0.75rem 1.25rem;
+  font-size: 0.78rem;
+}
+
+.source-registry__facts a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--oxide);
+  text-decoration: underline;
+  text-underline-offset: 0.15rem;
+  min-height: 44px;
+}
 .data-state {
   border: 1px solid var(--rule);
   border-left: 4px solid var(--oxide);
@@ -602,34 +723,118 @@ a {
   font-size: 1.1rem;
 }
 
-.quantity-field {
-  display: grid;
-  grid-template-columns: auto minmax(10rem, 16rem) auto;
-  justify-content: start;
-  align-items: end;
-  gap: 0.9rem;
-  margin-top: 2rem;
-  font-weight: 600;
+
+.impact-trace__visual {
+  position: relative;
+  min-width: 0;
 }
 
-.quantity-field input,
-.quantity-field select {
-  width: 100%;
-  border: 0;
-  border-bottom: 2px solid var(--ink);
+.impact-trace__mode-rail {
+  position: absolute;
+  z-index: 2;
+  inset-block-start: 0.65rem;
+  inset-inline-start: 0.65rem;
+  padding: 0.25rem;
+  border: 1px solid var(--rule);
+  background: var(--background-elevated);
+  background: color-mix(in srgb, var(--background-elevated) 92%, transparent);
+
+}
+.trace-mode-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.trace-mode {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  min-height: 44px;
+  place-items: center;
+  border: 1px solid var(--rule);
   border-radius: 0;
-  padding: 0.25rem 0;
+  padding: 0;
   background: transparent;
   color: inherit;
-  font: 700 1.5rem var(--font-mono);
 }
 
-.quantity-field select {
-  appearance: none;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 600;
+.trace-mode:hover,
+.trace-mode.is-selected {
+  border-color: var(--oxide);
+  background: var(--background-hover);
 }
+
+.trace-mode.is-selected {
+  color: var(--oxide);
+}
+
+.trace-mode .activity-mark {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+.impact-trace__plot,
+.trace-invalid-layout__body {
+  min-width: 0;
+}
+
+.impact-trace__plot {
+  width: 100%;
+  height: clamp(200px, min(60vw, 48vh, calc(100vh - 520px)), 720px);
+}
+
+.trace-invalid-layout {
+  position: relative;
+  min-height: clamp(200px, min(60vw, 48vh, calc(100vh - 520px)), 720px);
+  border-top: 1px solid var(--rule);
+  padding-top: 0.4rem;
+}
+
+.trace-invalid-layout .impact-trace__mode-rail {
+  inset-block-start: 0.65rem;
+}
+
+.trace-invalid-layout__body {
+  display: grid;
+  align-content: start;
+  gap: 0.65rem;
+  padding-inline-start: 3.7rem;
+}
+
+.quantity-field {
+  display: grid;
+  flex: 0 1 16rem;
+  grid-template-columns: minmax(0, 16rem);
+  width: min(16rem, 100%);
+  justify-content: start;
+  align-items: start;
+  gap: 0.4rem;
+  margin-inline-start: auto;
+  color: var(--ink-muted);
+  font: 650 0.74rem/1.2 var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.quantity-field input {
+  width: 100%;
+  border: 1px solid var(--rule);
+  border-radius: 0;
+  padding: 0.6rem 0.65rem;
+  background: var(--background-elevated);
+  color: var(--ink);
+  font: 700 1.25rem/1 var(--font-mono);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.quantity-field input:focus {
+  border-color: var(--focus-ring);
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus-ring) 20%, transparent);
+}
+
 
 .field-error {
   color: var(--signal);
@@ -663,6 +868,27 @@ button.text-link {
   text-align: left;
 }
 
+.impact-trace__equation {
+  margin-top: 0.55rem;
+  color: var(--ink-muted);
+  font: 0.78rem/1.45 var(--font-mono);
+  overflow-wrap: anywhere;
+}
+
+
+.trace-invalid-copy {
+  margin-top: 0.55rem;
+  color: var(--ink-muted);
+  font-size: 0.78rem;
+}
+
+.trace-invalid-copy {
+  border-block: 1px solid var(--rule);
+  padding-block: 1rem;
+  color: var(--signal);
+  font-weight: 650;
+}
+
 button.text-link:hover {
   border-color: var(--oxide);
   background: var(--background-hover);
@@ -678,7 +904,7 @@ button.text-link:hover {
 .impact-trace__svg {
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
   overflow: visible;
 }
 
@@ -727,19 +953,27 @@ button.text-link:hover {
 }
 
 
-.impact-trace__value {
+.impact-trace__result-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
   margin-top: 0.5rem;
+}
+
+.impact-trace__value {
+  min-width: 0;
+  margin: 0;
   color: var(--ink);
   font: 650 clamp(1.3rem, 3vw, 2.2rem)/1 var(--font-display);
 }
-.impact-trace figcaption {
-  margin-top: 0.7rem;
-  color: var(--ink-muted);
-  font-size: 0.76rem;
-  line-height: 1.5;
-}
+
 
 .evidence-rail {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  align-self: stretch;
   border-left: 1px solid var(--rule);
   padding-left: 1.5rem;
 }
@@ -767,54 +1001,87 @@ button.text-link:hover {
   font: 0.75rem var(--font-mono);
 }
 
+.evidence-rail .disclosure {
+  min-height: 0;
+}
+
+.evidence-rail .disclosure[open] .disclosure__body {
+  max-height: min(22rem, calc(100vh - 14rem));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
 /* Front-door job paths. */
 .editorial-jobs {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(1.25rem, 3vw, 3rem);
+  display: block;
   padding-block: 2rem;
 }
 
-.editorial-jobs article {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  min-width: 0;
+.home-page .editorial-jobs {
+  border-bottom: 0;
 }
 
-.editorial-jobs article + article {
+.editorial-jobs > ol {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(1.25rem, 3vw, 3rem);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: job-path;
+}
+
+.editorial-jobs > ol > li {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  counter-increment: job-path;
+}
+
+.editorial-jobs > ol > li + li {
   border-left: 1px solid var(--rule);
   padding-left: clamp(1.25rem, 3vw, 3rem);
 }
 
+.editorial-jobs > ol > li::before {
+  content: counter(job-path, decimal-leading-zero);
+  color: var(--ink-muted);
+  font: 0.7rem var(--font-mono);
+}
+
 .job-path__icon {
-  margin-bottom: 0.8rem;
+  margin-block: 0.55rem 0.35rem;
   color: var(--oxide);
 }
 
 .editorial-jobs h2 {
-  margin: 0.7rem 0 1rem;
-  font: 650 clamp(1.7rem, 3vw, 2.8rem)/0.95 var(--font-display);
+  margin: 0.3rem 0 0.45rem;
+  font: 650 clamp(1.25rem, 2.2vw, 2rem)/1.05 var(--font-display);
   letter-spacing: -0.04em;
 }
 
-.editorial-jobs article > p:not(.section-kicker) {
+.job-path__action {
+  color: var(--signal);
+  font: 650 0.68rem/1 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+
+.editorial-jobs li > p {
   max-width: 34rem;
   color: var(--ink-muted);
 }
 
 .editorial-jobs .text-link {
-  margin-top: auto;
-  padding-top: 1.25rem;
+  margin-top: 0.75rem;
+  padding-top: 0.55rem;
 }
 
-.editorial-jobs small {
-  margin-top: 0.7rem;
-  color: var(--ink-muted);
-  font: 0.72rem var(--font-mono);
-}
-
-/* Calculator: compact category rail, activity shelf, basket line items. */
+/* Calculator: compact category rail, activity shelf, and worksheet lines. */
 .worksheet__groups,
 .mode-switcher {
   display: flex;
@@ -867,7 +1134,18 @@ button.text-link:hover {
   display: block;
   width: 1.75rem;
   height: 1.75rem;
+  color: var(--category-color, currentColor);
+}
+
+.category-button.is-selected .activity-mark,
+.mode-switcher button.is-selected .activity-mark {
   color: currentColor;
+}
+
+@supports (color: color-mix(in srgb, black, white)) {
+  [data-theme='dark'] .activity-mark {
+    color: color-mix(in srgb, var(--category-color, currentColor) 72%, white);
+  }
 }
 
 .activity-shelf {
@@ -875,7 +1153,7 @@ button.text-link:hover {
 }
 
 .activity-shelf__heading,
-.basket-header {
+.worksheet-header {
   display: flex;
   align-items: end;
   justify-content: space-between;
@@ -887,13 +1165,13 @@ button.text-link:hover {
 }
 
 .activity-shelf__heading h2,
-.basket-header h2 {
+.worksheet-header h2 {
   margin-top: 0.45rem;
   font: 650 clamp(1.5rem, 2.5vw, 2.25rem)/1 var(--font-display);
 }
 
 .activity-shelf__heading > p,
-.basket-header > p {
+.worksheet-header > p {
   max-width: 28rem;
   color: var(--ink-muted);
   font-size: 0.88rem;
@@ -963,66 +1241,29 @@ button.text-link:hover {
   color: var(--paper);
 }
 
-.basket-header {
+.worksheet-header {
   margin-top: 2rem;
   padding-block: 1.25rem;
 }
 
-/* No full-width dividers in the basket header: the rule under the header
-   text reuses the activity-editor half-div (left half only, never under
-   the tally card). */
-.basket-header.ruled-section {
+.worksheet-header.ruled-section {
   border-block: 0;
 }
 
-.basket-header > div:first-child {
+.worksheet-header > div:first-child {
   border-bottom: 1px solid var(--rule);
   padding-bottom: 0.75rem;
 }
 
-.category-tally {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-}
 
-.category-tally__item {
-  display: grid;
-  place-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  border: 1px solid var(--rule);
-  color: var(--ink-muted);
-}
-
-.category-tally__item.is-selected {
-  border-color: currentColor;
-  background: color-mix(in srgb, currentColor 13%, transparent);
-}
-
-.category-tally__item .activity-mark {
-  width: 1.5rem;
-  height: 1.5rem;
-  margin: 0;
-}
-
-.worksheet__body,
-.atlas__scan {
+.worksheet__body {
   display: grid;
   align-items: start;
   gap: clamp(1.5rem, 4vw, 3rem);
-}
-
-.worksheet__body {
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
 }
 
-.atlas__scan {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-}
-
-.worksheet__body > *,
-.atlas__scan > * {
+.worksheet__body > * {
   min-width: 0;
 }
 
@@ -1260,11 +1501,202 @@ textarea:focus {
   display: grid;
   grid-template-columns: minmax(10rem, 1.1fr) minmax(8rem, 1fr) minmax(9rem, 0.8fr);
   align-items: center;
+
   gap: 0.75rem;
   border-top: 1px solid var(--rule);
   padding-top: 0.75rem;
 }
+ 
+.calculator-view-toggle {
+  display: flex;
+  gap: 0.35rem;
+  margin-block: 1rem;
+}
 
+.calculator-view-toggle button {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid var(--rule);
+  border-radius: 0;
+  padding: 0.55rem 0.75rem;
+  background: transparent;
+  color: inherit;
+  font-weight: 650;
+}
+
+.calculator-view-toggle button[aria-pressed='true'] {
+  border-color: var(--oxide);
+  background: var(--oxide);
+  color: var(--paper);
+}
+
+.calculator__columns {
+  display: grid;
+  gap: var(--gap-panel);
+}
+
+.calculator__columns > [data-compact-view='hidden'] {
+  display: none;
+}
+
+.worksheet-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-block: 0 1rem;
+  padding-block: 0.75rem;
+}
+
+.worksheet-header h2 {
+  margin-top: 0.35rem;
+  font: 650 clamp(1.5rem, 2.5vw, 2.25rem)/1 var(--font-display);
+}
+
+.worksheet-header > div:first-child {
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.75rem;
+}
+
+.activity-editor {
+  align-items: start;
+  gap: var(--gap-panel);
+}
+
+.activity-editor.is-active {
+  border: 1px solid var(--oxide);
+  padding: 1rem;
+}
+
+.activity-editor__evidence {
+  margin-top: 0.4rem;
+}
+
+.activity-editor__evidence summary {
+  min-height: 44px;
+}
+
+.action-complete {
+  border-color: var(--oxide) !important;
+  background: var(--oxide) !important;
+  color: var(--paper) !important;
+}
+
+.activity-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--rule);
+  padding-block: 0.7rem;
+}
+
+.activity-line__summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.activity-line__summary > span {
+  display: grid;
+  min-width: 0;
+  gap: 0.2rem;
+}
+
+.activity-line__summary strong,
+.activity-line__summary small {
+  overflow-wrap: anywhere;
+}
+
+.activity-line__summary small {
+  color: var(--ink-muted);
+  font: 0.68rem/1.35 var(--font-mono);
+}
+
+.activity-line__summary b {
+  color: var(--ink);
+  font: 650 0.82rem var(--font-mono);
+  white-space: nowrap;
+}
+
+.activity-line > .evidence-badge {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.activity-line__actions {
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: 1 / -1;
+  gap: 0.4rem;
+}
+
+.activity-line__actions button {
+  min-height: 44px;
+  border: 1px solid var(--rule);
+  border-radius: 0;
+  padding: 0.45rem 0.65rem;
+  background: transparent;
+  color: inherit;
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.activity-line__actions button:hover {
+  border-color: var(--oxide);
+  background: var(--background-hover);
+}
+
+.category-composition {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.category-composition li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  border-top: 1px solid var(--rule);
+  padding-block: 0.5rem;
+}
+
+.category-composition strong {
+  font-family: var(--font-mono);
+}
+
+.benchmark-selector {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 1rem;
+  color: var(--ink-muted);
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.scenario-disclosure {
+  margin-top: 1.25rem;
+  border-top: 1px solid var(--rule);
+}
+
+.scenario-disclosure > summary {
+  min-height: 44px;
+  padding-block: 0.75rem;
+  color: var(--oxide);
+  cursor: pointer;
+  font-weight: 700;
+}
 .impact-rank__label {
   display: flex;
   align-items: flex-start;
@@ -1287,7 +1719,6 @@ textarea:focus {
 
 .impact-rank__label span {
   margin-top: 0.2rem;
-  color: var(--ink-muted);
   font-size: 0.7rem;
 }
 
@@ -1350,6 +1781,20 @@ textarea:focus {
 
 .impact-rank__zero {
   color: var(--oxide);
+}
+
+.impact-flow-disclosure {
+  margin-top: 1.25rem;
+  border-top: 1px solid var(--rule);
+  padding-top: 0.75rem;
+}
+
+.impact-flow-disclosure summary {
+  min-height: 44px;
+  padding-block: 0.55rem;
+  color: var(--oxide);
+  cursor: pointer;
+  font-weight: 650;
 }
 
 .impact-flow {
@@ -1646,6 +2091,63 @@ textarea:focus {
   display: block;
 }
 
+.atlas-view-toggle {
+  display: flex;
+  gap: 0.35rem;
+  margin-block: 1rem;
+}
+
+.atlas-view-toggle button,
+.atlas__back {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid var(--rule);
+  border-radius: 0;
+  padding: 0.55rem 0.75rem;
+  background: transparent;
+  color: inherit;
+  font-weight: 650;
+}
+
+.atlas-view-toggle button[aria-pressed='true'] {
+  border-color: var(--oxide);
+  background: var(--oxide);
+  color: var(--paper);
+}
+
+.atlas__live {
+  margin-block: 0.75rem;
+  color: var(--ink-muted);
+  font: 0.72rem var(--font-mono);
+}
+
+.atlas__filters {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.atlas__filters label {
+  display: grid;
+  gap: 0.3rem;
+  color: var(--ink-muted);
+  font-size: 0.76rem;
+  font-weight: 650;
+}
+
+.atlas__filters input,
+.atlas__filters select {
+  min-height: 44px;
+}
+
+.atlas__filters .text-link {
+  justify-content: flex-start;
+}
+
+.atlas__back {
+  margin-bottom: 1rem;
+}
+
 .table-wrap {
   overflow-x: auto;
 }
@@ -1668,57 +2170,15 @@ textarea:focus {
   font-weight: 700;
 }
 
-/* Methodology and learning routes. */
-.editorial-fork {
-  display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap: clamp(2rem, 8vw, 8rem);
-  padding-block: 2rem;
-}
 
-.editorial-fork article + article {
-  border-left: 1px solid var(--rule);
-  padding-left: clamp(1.5rem, 5vw, 5rem);
-}
-
-.editorial-fork h2 {
-  margin: 0.7rem 0 1.5rem;
-  font: 650 clamp(2rem, 4vw, 3.6rem)/0.95 var(--font-display);
-}
-
-.primer-card {
-  margin-top: 2.5rem;
-}
-
-.primer-card > h2 {
-  font: 650 clamp(1.8rem, 3vw, 3rem)/1 var(--font-display);
-  letter-spacing: -0.04em;
-}
-
-.primer-card .disclosure {
-  margin-top: 1.5rem;
-}
-
-.primer-card__questions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem 2rem;
-}
-
-.primer-card__questions article,
 .working-example {
+  margin-top: 1.5rem;
   border-top: 1px solid var(--rule);
-  padding-top: 1rem;
+  padding-top: 1.5rem;
 }
 
-.primer-card__questions h3,
 .factor-record-details h3 {
   font: 650 1.15rem/1.1 var(--font-display);
-}
-
-.working-example {
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
 }
 
 .working-example__equation,
@@ -1750,7 +2210,6 @@ textarea:focus {
 }
 
 .factor-record-details__technical div,
-.learning-card__metadata div,
 .owid-context__basis div {
   display: grid;
   grid-template-columns: 8rem minmax(0, 1fr);
@@ -1760,13 +2219,11 @@ textarea:focus {
 }
 
 .factor-record-details__technical dt,
-.learning-card__metadata dt,
 .owid-context__basis dt {
   color: var(--ink-muted);
 }
 
 .factor-record-details__technical dd,
-.learning-card__metadata dd,
 .owid-context__basis dd {
   margin: 0;
   overflow-wrap: anywhere;
@@ -1799,16 +2256,6 @@ textarea:focus {
   overflow-wrap: anywhere;
 }
 
-.learning-card__metadata {
-  margin-top: 0.25rem;
-}
-
-.methodology-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-  margin-top: 2.5rem;
-}
 
 .reference-panel,
 .manifest-list {
@@ -1876,127 +2323,510 @@ textarea:focus {
   font-weight: 650;
 }
 
-/* Keep every public control touch-sized. */
-.category-button,
-.mode-switcher button,
-.activity-tile__add,
-.activity-editor__actions button,
-.data-matrix__group button,
-.atlas-record,
-.atlas__table > button,
-.detail-pane > button,
-.site-header button {
+.reading-disclaimer {
+  margin-block: 1rem;
+  border-block: 1px solid var(--rule);
+  padding-block: 0.75rem;
+  color: var(--ink-muted);
+  font: 0.78rem/1.45 var(--font-mono);
+}
+
+.in-content-subnav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  margin-block: 1rem;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.65rem;
+}
+
+.in-content-subnav a {
+  display: inline-flex;
   min-height: 44px;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0;
+  color: var(--oxide);
+  font-weight: 650;
 }
 
-@media (min-width: 701px) {
-  .site-header__desktop-nav {
-    display: flex;
-  }
+.in-content-subnav a:hover {
+  color: var(--signal);
 }
 
-@media (min-width: 640px) {
-  .metric-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
+.learning-layout {
+  margin-top: 1rem;
 }
 
-@media (max-width: 900px) {
-  .impact-rank__row {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  }
-
-  .impact-rank__meta {
-    grid-column: 1 / -1;
-  }
+.learning-card {
+  gap: 0.9rem;
 }
 
-@media (max-width: 700px) {
-  .worksheet__body,
-  .atlas__scan {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .result-composition {
-    position: static;
-  }
+.learning-card__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
 }
 
-@media (max-width: 700px) {
+.learning-card__header > svg {
+  flex: 0 0 auto;
+  margin-top: 0.15rem;
+  color: var(--oxide);
+}
+
+.learning-card__header h2 {
+  margin-top: 0.35rem;
+}
+
+.learning-card > section {
+  border-top: 1px solid var(--rule);
+  padding-top: 0.8rem;
+}
+
+.learning-card > section > .evidence-facts {
+  margin-top: 0.65rem;
+}
+
+.learning-card__arithmetic p {
+  margin-top: 0.35rem;
+}
+
+.learning-card__disclaimer {
+  color: var(--ink-muted);
+  font-size: 0.78rem;
+}
+
+.methodology-path {
+  display: grid;
+  gap: var(--gap-panel);
+  margin-top: 1.5rem;
+}
+
+.methodology-path > header {
+  max-width: 48rem;
+}
+
+.methodology-path > header h2 {
+  margin-top: 0.45rem;
+  font: 650 clamp(1.8rem, 4vw, 3rem)/1 var(--font-display);
+  letter-spacing: -0.04em;
+}
+
+.methodology-path > header > p:last-child {
+  margin-top: 0.75rem;
+  color: var(--ink-muted);
+}
+
+.methodology-path .working-example {
+  margin: 0;
+}
+
+.methodology-actions,
+.manifest-detail__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1rem;
+  margin-top: 1rem;
+}
+
+.methodology-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.methodology-steps li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 0.75rem;
+  border-top: 1px solid var(--rule);
+  padding: 1rem 1rem 1.25rem 0;
+}
+
+.methodology-step__number {
+  color: var(--oxide);
+  font: 700 0.78rem var(--font-mono);
+}
+
+.methodology-steps h3 {
+  font: 650 1.2rem/1.1 var(--font-display);
+}
+
+.methodology-steps p {
+  margin-top: 0.45rem;
+}
+
+.methodology-step__example {
+  color: var(--ink-muted);
+  font: 0.7rem/1.4 var(--font-mono);
+  overflow-wrap: anywhere;
+}
+
+.methodology-benchmark {
+  margin-block: 1.5rem 2rem;
+}
+
+.methodology-benchmark h2 {
+  margin-top: 0.35rem;
+  font: 650 1.6rem/1.1 var(--font-display);
+}
+
+.methodology-benchmark p {
+  margin-top: 0.65rem;
+}
+
+.trust-path {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  margin: 1.25rem 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trust-path li {
+  display: grid;
+  gap: 0.25rem;
+  border-top: 1px solid var(--rule);
+  padding: 0.7rem 1rem 0.7rem 0;
+}
+
+.trust-path li + li {
+  border-left: 1px solid var(--rule);
+  padding-left: 1rem;
+}
+
+.trust-path span {
+  color: var(--oxide);
+  font: 700 0.7rem var(--font-mono);
+}
+
+.trust-path strong {
+  font: 650 1rem/1.1 var(--font-display);
+}
+
+.trust-path small {
+  color: var(--ink-muted);
+  font: 0.68rem/1.4 var(--font-mono);
+}
+
+.manifest-card {
+  display: block;
+}
+
+.manifest-card:hover {
+  border-color: var(--surface-border-strong);
+}
+
+.manifest-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.manifest-card h2 {
+  font: 650 1rem/1.1 var(--font-display);
+}
+
+.manifest-card p {
+  margin-top: 0.5rem;
+  color: var(--ink-muted);
+  font-size: 0.8rem;
+}
+
+.manifest-card .mono {
+  margin-top: 0.35rem;
+  color: var(--ink-muted);
+  font-size: 0.68rem;
+  overflow-wrap: anywhere;
+}
+
+.manifest-detail__method {
+  margin-block: 1rem;
+  color: var(--ink-muted);
+  font: 0.72rem var(--font-mono);
+}
+
+.manifest-detail__grid {
+  display: grid;
+  gap: var(--gap-panel);
+}
+
+.manifest-detail__grid h2 {
+  margin-top: 0.45rem;
+  font: 650 1.45rem/1.1 var(--font-display);
+}
+
+.manifest-detail__hash {
+  display: block;
+  margin-top: 1rem;
+  border: 1px solid var(--rule);
+  padding: 0.75rem;
+  background: var(--background-elevated);
+  color: var(--ink);
+  font: 0.72rem/1.45 var(--font-mono);
+  overflow-wrap: anywhere;
+}
+
+.manifest-detail__verify {
+  margin-top: 1rem;
+}
+
+.manifest-detail__grid p {
+  margin-top: 0.75rem;
+  color: var(--ink-muted);
+}
+
+.manifest-detail__facts {
+  margin-top: 1rem;
+}
+
+.manifest-detail__facts div {
+  display: grid;
+  grid-template-columns: 9rem minmax(0, 1fr);
+  gap: 0.75rem;
+  border-top: 1px solid var(--rule);
+  padding-block: 0.55rem;
+}
+
+.manifest-detail__facts dt {
+  color: var(--ink-muted);
+}
+
+.manifest-detail__facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.manifest-detail__raw,
+.manifest-detail__references {
+  margin-top: var(--gap-section);
+}
+
+.manifest-detail__references > ol {
+  display: grid;
+  gap: 0;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.manifest-detail__references > ol li {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  gap: 0.75rem;
+  border-top: 1px solid var(--rule);
+  padding-block: 0.55rem;
+}
+
+.manifest-detail__references > ol span {
+  color: var(--oxide);
+}
+
+.manifest-detail__references > ol code {
+  overflow-wrap: anywhere;
+}
+
+/* Responsive information architecture. Breakpoints map to the shared
+   48rem / 60rem / 72rem contracts; all routes retain one DOM order. */
+:root {
+  --gap-section: clamp(1.25rem, 2.8vw, 2.5rem);
+  --gap-panel: clamp(0.75rem, 1.4vw, 1.5rem);
+  --panel-padding: clamp(0.75rem, 1.4vw, 1.25rem);
+}
+
+.workspace > *,
+.reading-page > * {
+  min-width: 0;
+}
+
+.tab-headerbar {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--rule);
+  padding-block: 0.75rem;
+  background: var(--paper);
+}
+
+.tab-headerbar__identity {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.tab-headerbar__identity > svg {
+  flex: 0 0 auto;
+  color: var(--oxide);
+}
+
+.tab-headerbar__identity > div {
+  min-width: 0;
+}
+
+.tab-headerbar__title {
+  margin-top: 0.3rem;
+  color: var(--ink);
+  font: 650 clamp(1.25rem, 2.2vw, 1.9rem)/1 var(--font-display);
+  letter-spacing: 0.01em;
+}
+
+.tab-headerbar__right {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+.tab-headerbar__meta {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  color: var(--ink-muted);
+  font: 500 0.74rem/1.3 var(--font-mono);
+  text-align: right;
+}
+
+.tab-headerbar__meta strong {
+  color: var(--ink);
+  font-weight: 650;
+}
+
+.tab-headerbar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.tab-headerbar__actions a,
+.tab-headerbar__actions button {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid var(--rule);
+  border-radius: 0;
+  padding: 0.45rem 0.65rem;
+  background: transparent;
+  color: var(--ink);
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+
+.tab-headerbar__actions a:hover,
+.tab-headerbar__actions button:hover {
+  border-color: var(--oxide);
+  background: var(--background-hover);
+}
+
+.tab-headerbar__actions .action-destructive {
+  border-color: var(--signal);
+  color: var(--signal);
+}
+
+.panel {
+  min-width: 0;
+  border: 1px solid var(--rule);
+  background: var(--background-elevated);
+}
+
+.panel__scroll {
+  min-width: 0;
+}
+
+.atlas__scope-note {
+  margin-top: 0.75rem;
+  border-left: 0.25rem solid var(--signal);
+  padding-left: 0.65rem;
+  color: var(--signal);
+  font: 0.75rem var(--font-mono);
+}
+
+
+.reading-page [data-panel-scroll] {
+  overflow: visible;
+  max-height: none;
+  overscroll-behavior: auto;
+  scrollbar-gutter: auto;
+}
+
+
+@media (max-width: 47.999rem) {
   .site-header__inner {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto;
-    gap: 0.5rem;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'brand theme'
+      'nav nav';
+    gap: 0.45rem;
+    padding-block: 0.55rem;
   }
 
-  .site-header__brand {
-    min-width: 0;
+  .site-header__nav {
+    justify-content: flex-start;
+    margin-inline: -1rem;
+    padding-inline: 1rem;
   }
 
-  .site-header__desktop-nav {
-    display: none;
-  }
-
-  .site-header__mobile-toggle {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 44px;
-  }
-
-  .site-header__mobile-nav {
-    display: grid;
-    grid-column: 1 / -1;
-    width: 100%;
-    margin-top: 0.5rem;
-    border-top: 1px solid var(--rule);
-  }
-
-  .site-header__mobile-nav a {
-    display: flex;
-    align-items: center;
-    min-height: 44px;
-    border-bottom-color: var(--rule);
+  .site-header__nav::after {
+    content: '';
+    flex: 0 0 0.5rem;
   }
 
   .reference-strip {
-    display: block;
+    align-items: flex-start;
+    flex-direction: column;
+    padding-block: 0.8rem;
   }
 
   .reference-strip nav {
-    margin-top: 0.75rem;
+    gap: 0.75rem 1rem;
+  }
+
+  .workspace,
+  .reading-page {
+    width: min(100% - 1.25rem, var(--reading-max));
   }
 
   .trace-estimate,
   .editorial-jobs,
-  .editorial-fork,
-  .methodology-grid,
-  .learning-grid {
-    grid-template-columns: 1fr;
+  .learning-grid,
+  .methodology-steps,
+  .worksheet__body,
+  .atlas__layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .trace-estimate {
+    gap: 1.5rem;
   }
 
   .trace-estimate h1 {
     max-width: 15ch;
   }
 
-  .evidence-rail,
-  .editorial-jobs article + article,
-  .editorial-fork article + article {
+  .evidence-rail {
     border-left: 0;
     border-top: 1px solid var(--rule);
     padding: 1.5rem 0 0;
   }
 
-  .quantity-field {
-    grid-template-columns: 1fr auto;
-  }
-
-  .quantity-field > span:first-child {
-    grid-column: 1 / -1;
-  }
 
   .activity-shelf__heading,
-  .basket-header {
+  .worksheet-header {
     align-items: flex-start;
     flex-direction: column;
   }
@@ -2010,7 +2840,7 @@ textarea:focus {
   }
 
   .impact-rank__row {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .impact-rank__meta {
@@ -2018,7 +2848,7 @@ textarea:focus {
   }
 
   .atlas__filters {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .evidence-rail dl div,
@@ -2026,9 +2856,8 @@ textarea:focus {
   .factor-record-details__technical div,
   .benchmark-context dl div,
   .benchmark-context__sources li,
-  .learning-card__metadata div,
   .owid-context__basis div {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 0.2rem;
   }
 
@@ -2038,325 +2867,312 @@ textarea:focus {
     gap: 0.35rem;
   }
 
-  .primer-card__questions,
   .owid-context__latest {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .owid-context__values li {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 0.2rem;
   }
-}
 
-@media (max-width: 700px) {
-  .impact-trace__tick--minor {
-    display: none;
+  .tab-headerbar,
+  .tab-headerbar__right {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .tab-headerbar__right,
+  .tab-headerbar__meta,
+  .tab-headerbar__actions {
+
+    width: 100%;
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .tab-headerbar__meta {
+    gap: 0.55rem;
+    font-size: 0.68rem;
+  }
+
+  .tab-headerbar__actions {
+    gap: 0.4rem;
+  }
+
+  .tab-headerbar__actions a,
+  .tab-headerbar__actions button {
+    flex: 1 1 auto;
+    justify-content: center;
   }
 }
 
+@media (max-width: 47.999rem) {
+  .trust-path {
+    grid-template-columns: minmax(0, 1fr);
+  }
 
-@media (max-width: 420px) {
-  .page-shell {
-    width: min(100% - 1.25rem, 87.5rem);
+  .trust-path li + li {
+    border-left: 0;
+    padding-left: 0;
+  }
+}
+
+@media (max-width: 59.999rem) {
+
+  .impact-trace__result-row {
+    flex-wrap: wrap;
+  }
+
+  .impact-trace__result-row .quantity-field {
+    flex-basis: 100%;
+    width: 100%;
+    margin-inline-start: 0;
+  }
+  .editorial-jobs > ol {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .editorial-jobs > ol > li + li {
+    border-left: 0;
+    border-top: 1px solid var(--rule);
+    padding: 1.5rem 0 0;
+  }
+
+  .atlas__layout > [data-compact-view='hidden'],
+  .calculator__columns > [data-compact-view='hidden'] {
+    display: none;
+  }
+
+  .atlas__rail .mode-switcher {
+    flex-wrap: nowrap;
+    margin-inline: 0;
+    overflow-x: auto;
+    padding-inline: 0;
+  }
+
+  .atlas__rail .mode-switcher button {
+    flex: 0 0 15rem;
+  }
+}
+
+@media (min-width: 48rem) and (max-width: 59.999rem) {
+  .workspace,
+  .reading-page {
+    width: min(100% - 2rem, var(--reading-max));
+  }
+
+  .trace-estimate {
+    grid-template-columns: minmax(0, 1.2fr) minmax(15rem, 0.8fr);
+  }
+
+  .learning-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .worksheet__body {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
   }
 
   .activity-shelf__grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .impact-trace__tick--minor {
-    display: none;
+  .trust-path,
+  .methodology-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .category-button,
-  .mode-switcher button {
-    flex-basis: 100%;
+  .impact-rank__row {
+    grid-template-columns: minmax(10rem, 1fr) minmax(8rem, 1fr);
   }
-}
 
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    scroll-behavior: auto !important;
-    transition-duration: 0.01ms !important;
+  .impact-rank__meta {
+    grid-column: 1 / -1;
   }
 }
 
-.atlas__scope-note {
-  margin-top: 0.75rem;
-  border-left: 0.25rem solid var(--signal);
-  padding-left: 0.65rem;
-  color: var(--signal);
-  font: 0.75rem var(--font-mono);
-}
-
-.atlas__lab-link {
-  margin-top: 1.5rem;
-  border-top: 1px solid var(--rule);
-  padding-top: 1rem;
-}
-
-/* ============================================================================
-   Landscape viewport system (Phase 1 — shared layout & spacing).
-
-   Breakpoint contract (owner-approved, 2026-08):
-   - <=700px     Mobile portrait cascade. Untouched: menu contract pinned by
-                 redesigned-primary-flow.spec at 320x800 / 390x844.
-   - 701-1023px  Portrait band (phones portrait AND rotated, tablets portrait).
-                 The 9x16 gold-standard zone: today's stacked flow stays
-                 byte-identical in behavior — no panel system, no hero
-                 compression.
-   - >=1024px    Landscape density system. App-stage composition, panel
-                 primitives and density tokens apply only inside the media
-                 blocks below; nothing here affects viewports <1024px.
-   - >=1200px    Three-column Atlas grid and methodology rail.
-   - (>=1024px, <=820px height) Short-landscape typographic compression.
-   - >=1680px    Ultrawide app-shell widening.
-
-   Opt-in contract: routes join by adding `app-stage` to their root element.
-   Reading routes (`/`, `/learn`, `/methodology`, `/evidence`) stay on plain
-   block flow. `[data-panel-scroll]` is the JSX contract for inner scroll:
-   every element carrying it must also set tabindex="0", role="region" and an
-   aria-label.
-
-   Browsers without :has() (pre-15.4 Safari) degrade to today's master-scroll
-   behavior by design — no polyfill.
-   ========================================================================== */
-
-:root {
-  --hero-size: clamp(2rem, 4.2vw, 3.4rem);
-  --shell-max: 87.5rem;
-  --app-shell-max: 112.5rem;
-  --gap-panel: clamp(0.9rem, 1.4vw, 1.5rem);
-  /* vh-aware so short landscape compresses vertical rhythm without a second code path. */
-  --gap-section: clamp(1rem, 2.2vh, 2.5rem);
-}
-
-@media (min-width: 1024px) and (max-height: 820px) {
-  :root {
-    --hero-size: clamp(1.55rem, 2.35vw, 2.1rem);
-    --gap-section: clamp(0.6rem, 1.6vh, 1.25rem);
+@media (min-width: 60rem) {
+  html {
+    scroll-padding-block-start: calc(var(--header-h) + var(--bar-h) + 1rem);
   }
-}
 
-/* Mid landscape (up to ~1000px tall): keep display type from overshooting
-   its row budget on tall-but-not-short desktops. */
-@media (min-width: 1024px) and (max-height: 1000px) {
-  :root {
-    --hero-size: clamp(2rem, min(4.2vw, 5vh), 3.4rem);
+  :where(section, h1, h2, h3, [id]) {
+    scroll-margin-block-start: calc(var(--header-h) + var(--bar-h) + 1rem);
   }
-}
 
-@media (min-width: 1024px) {
-  /* App-stage: viewport-fit without dvh math. main is already flex-1 inside
-     the min-h-screen flex-col shell, so when content fits, panels receive
-     exactly viewport - header - footer; taller content is contained by panel
-     scroll instead of master scroll. */
-  main:has(> .app-stage) {
+  .site-header {
+    position: sticky;
+    top: 0;
+  }
+
+  .site-header__inner {
+    min-height: var(--header-h);
+  }
+
+  .workspace:not(.home-page):not(.three-d-page) {
     display: flex;
+    height: calc(100vh - var(--header-h));
+    min-height: 0;
     flex-direction: column;
-    /* Contain, don't grow: without an explicit minimum the flex item's
-       auto min-height lets inner panel heights push the master scroll. */
+    overflow: hidden;
+  }
+
+  .workspace:not(.home-page),
+  .reading-page {
+    padding-block: 1rem;
+  }
+
+  .reading-page {
+    padding-block: 1.5rem 2rem;
+  }
+
+  .home-page {
+    display: flex;
+    height: calc(100vh - var(--header-h));
+    min-height: 0;
+    flex-direction: column;
+    overflow-y: auto;
+    padding-block: 1rem 0;
+  }
+
+  .home-page .trace-estimate {
+    flex: 0 0 auto;
+    grid-template-rows: auto;
+    min-height: auto;
+    padding-block: 0;
+  }
+
+  .home-page .trace-estimate__lead {
+    display: block;
+    min-height: auto;
+  }
+
+  .home-page .impact-trace {
+    display: block;
+    min-height: auto;
+    flex: 0 0 auto;
+  }
+
+  .home-page .impact-trace__visual {
+    display: block;
+  }
+
+  .home-page .impact-trace__plot {
+    height: clamp(200px, min(60vw, 48vh, calc(100vh - 520px)), 720px);
+  }
+
+  .home-page .editorial-jobs {
+    flex: 0 0 auto;
+    padding-block: 0.4rem;
+  }
+
+  .home-page .editorial-jobs h2 {
+    font-size: clamp(1.15rem, 1.6vw, 1.65rem);
+    margin-block: 0.2rem 0.35rem;
+  }
+
+  .home-page .editorial-jobs li > p {
+    font-size: 0.78rem;
+    line-height: 1.4;
+  }
+
+  .home-page .editorial-jobs .text-link {
+    padding-top: 0.45rem;
+  }
+
+  .calculator__columns,
+  .atlas__layout {
     flex: 1 1 auto;
     min-height: 0;
   }
 
-  .app-stage {
-    flex: 1 1 auto;
-    display: flex;
-    flex-direction: column;
+  .calculator__columns > .panel,
+  .atlas__layout > .panel {
     min-height: 0;
   }
 
-  .app-stage__grid {
-    flex: 1 1 auto;
+  .three-d-page {
+    height: calc(100vh - var(--header-h));
+    overflow-y: auto;
+  }
+
+  .workspace {
+    width: min(100% - 2rem, var(--content-max));
+  }
+
+  .reading-page {
+    width: min(100% - 2rem, var(--reading-max));
+  }
+
+  .site-footer .reference-strip {
+    min-height: 44px;
+  }
+
+  .tab-headerbar {
+    position: sticky;
+    top: 0;
+    z-index: 19;
+    min-height: var(--bar-h);
+    padding-block: 0.5rem;
+  }
+
+  .reading-page .tab-headerbar {
+    top: calc(var(--header-h) + 1px);
+  }
+  .atlas__layout {
     display: grid;
+    grid-template-rows: minmax(0, 1fr);
+    grid-auto-rows: minmax(0, 1fr);
     min-height: 0;
   }
-
-  /* App routes widen their shell; reading routes keep line-length discipline. */
-  .editorial-page.app-stage,
-  .page-shell.app-stage {
-    width: min(100% - 2rem, var(--app-shell-max));
-  }
-
-  /* The shell wrapper is content-sized by default, which lets panel content
-     push the master scroll before panel bounds resolve. Cap it only on
-     app-stage routes so reading routes keep natural flow. */
-  .min-h-screen.flex-col:has(> main > .app-stage) {
-    height: 100vh;
-    min-height: 0;
-  }
-
-  /* Panel primitives (landscape composition only; below 1024px these classes
-     are inert because no route renders them there). */
-  .panel {
+  .calculator__columns > [data-compact-view='hidden'],
+  .atlas__layout > [data-compact-view='hidden'] {
     display: flex;
+  }
+
+  .tab-headerbar__identity {
+    min-height: 2.4rem;
+  }
+
+  .tab-headerbar__meta {
+    white-space: nowrap;
+  }
+
+  .workspace .panel {
+    display: flex;
+    min-height: 0;
     flex-direction: column;
-    min-height: 0;
-    border: 1px solid var(--rule);
-    background: var(--background-elevated);
   }
 
-  .panel__header {
+  .workspace .panel__scroll {
     display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 0.65rem 1rem;
-    border-bottom: 1px solid var(--rule);
-  }
-
-  .panel__body {
-    padding: 1rem;
+    flex: 1 1 auto;
     min-height: 0;
-  }
-
-  .panel__scroll {
+    flex-direction: column;
     overflow-y: auto;
     overscroll-behavior: contain;
-    min-height: 0;
     scrollbar-gutter: stable;
-    padding: 1rem;
-  }
-}
-
-@media (min-width: 1680px) {
-  :root {
-    --app-shell-max: 118rem;
-  }
-}
-
-/* ============================================================================
-   Phase 2: home + calculator landscape density (>=1024px only).
-   ========================================================================== */
-
-@media (min-width: 1024px) {
-  /* --- Home: hero + trace + evidence + jobs row as one composition. --- */
-  .trace-estimate {
-    gap: clamp(1.5rem, 4vw, 4rem);
-    padding-block: clamp(0.4rem, 1.2vh, 2rem);
+    padding: var(--panel-padding);
   }
 
-  .trace-estimate h1 {
-    font-size: var(--hero-size);
-    max-width: none;
-    margin-top: 0.35rem;
-    margin-bottom: 0.4rem;
+  .workspace .panel__scroll:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: -3px;
   }
 
-  .trace-estimate__lead > p:not(.section-kicker) {
-    font-size: 1rem;
-    line-height: 1.55;
-  }
-
-  .quantity-field {
-    margin-top: 0.35rem;
-  }
-
-  .impact-trace {
-    margin-top: 0.7rem;
-  }
-
-  /* Wide viewBox (960x190) sizes the chart by width — no letterboxing. */
-  .impact-trace__svg {
-    width: 100%;
-    height: auto;
-    min-height: 0;
-  }
-
-  .impact-trace__value {
-    font-size: clamp(1.05rem, 2vw, 1.35rem);
-    margin-top: 0.15rem;
-  }
-
-  .impact-trace figcaption {
-    margin-top: 0.25rem;
-    line-height: 1.35;
-    font-size: 0.72rem;
-  }
-
-  .trace-estimate__lead > .text-link {
-    margin-top: 0.45rem;
-  }
-
-  .editorial-jobs {
-    padding-block: clamp(0.6rem, 1.5vh, 1.2rem);
-  }
-
-  /* Merge the icon into the kicker row without touching DOM: icon shares
-     row 1 with the kicker; heading/copy/link stay their own rows. */
-  .editorial-jobs article {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    column-gap: 0.5rem;
-    align-items: start;
-  }
-
-  .editorial-jobs article > .job-path__icon {
-    grid-row: 1;
-    grid-column: 1;
-    width: 1.25rem;
-    height: 1.25rem;
-    margin: 0.05rem 0 0;
-    transform: translateY(-0.05rem);
-  }
-
-  .editorial-jobs article > .section-kicker {
-    grid-row: 1;
-    grid-column: 2;
-    align-self: center;
-  }
-
-  .editorial-jobs h2 {
-    grid-column: 2;
-    font-size: clamp(1.15rem, 1.8vw, 1.9rem);
-    margin: 0.25rem 0 0.3rem;
-  }
-
-  .editorial-jobs article > p:not(.section-kicker),
-  .editorial-jobs article > .text-link,
-  .editorial-jobs article > small {
-    grid-column: 2;
-  }
-
-  .editorial-jobs article > p:not(.section-kicker) {
-    font-size: 0.88rem;
-    line-height: 1.38;
-  }
-
-  .editorial-jobs .text-link {
-    padding-top: 0.4rem;
-  }
-
-  .editorial-jobs small {
-    margin-top: 0.25rem;
-  }
-
-  /* --- Calculator app-stage: two panel columns, inner scroll. --- */
   .calculator__columns {
-    flex: 1 1 auto;
-    min-height: 0;
     display: grid;
     grid-template-columns: minmax(16rem, 21rem) minmax(0, 1fr);
-    gap: var(--gap-panel);
     align-items: stretch;
+    gap: var(--gap-panel);
   }
 
   .calculator__columns > .panel {
-    min-height: 0;
+    min-height: 34rem;
   }
 
-  .calculator__columns .panel__scroll {
-    flex: 1 1 auto;
-  }
-
-  /* Compact vertical category rail inside the shelf panel. */
   .calculator__shelf .worksheet__groups {
     flex-direction: column;
     flex-wrap: nowrap;
@@ -2373,123 +3189,30 @@ textarea:focus {
     padding-block: 1rem;
   }
 
-  .calculator__shelf .activity-shelf__heading {
-    margin-bottom: 0.7rem;
-  }
-
   .calculator__shelf .activity-shelf__grid {
     grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
   }
 
-  /* Basket header becomes one compact ruled row inside the worksheet panel. */
-  .basket-header {
-    padding-block: 0.65rem;
-    margin-block: 0;
+  .worksheet__body {
+    grid-template-columns: minmax(0, 1fr) minmax(30rem, 1.1fr);
   }
 
-  /* ResultPanel sticky now anchors to the worksheet panel scroll container
-     (page-relative `top` no longer applies). */
   .result-composition {
+    position: sticky;
     top: 1rem;
   }
-}
-
-@media (min-width: 1024px) and (max-height: 820px) {
-  .source-list {
-    gap: 0.45rem;
-    font-size: 0.72rem;
-  }
-
-  .evidence-rail__badges {
-    gap: 0.35rem;
-    margin-top: 0.6rem;
-  }
-
-  .evidence-chip {
-    min-height: 1.35rem;
-    font-size: 0.64rem;
-  }
-}
-
-/* ============================================================================
-   Phase 2b: short-landscape shell compression (>=1024px, <=820px height).
-   Footer slims to a single reference line (plan recommendation, owner-
-   approved open question #2); page padding defers to the section rhythm.
-   ========================================================================== */
-@media (min-width: 1024px) and (max-height: 820px) {
-  .editorial-page {
-    padding-block: var(--gap-section);
-  }
-
-  .reference-strip {
-    font-size: 0.72rem;
-  }
-
-  .reference-strip nav {
-    gap: 0.75rem;
-  }
-}
-
-/* ============================================================================
-   Phase 3: Activity Atlas regions (explore).
-   Base rules recreate the former .atlas__scan pairing for <1024px so the
-   portrait band keeps today's visual flow with the new markup; the landscape
-   media blocks re-region everything >=1024px.
-   ========================================================================== */
-.atlas__layout {
-  /* Stacked reading order below the landscape system; the >=1024px block
-     re-regions into rail/matrix/detail. Keeping the base single-column
-     protects the 701–1023px portrait band from a two-column auto-place. */
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  align-items: start;
-  gap: clamp(1.5rem, 4vw, 3rem);
-}
-
-.atlas__rail {
-  grid-column: 1 / -1;
-}
-
-.atlas__layout > * {
-  min-width: 0;
-}
-
-@media (min-width: 1024px) {
-  /* App routes use the tight section rhythm everywhere above 1024px. */
 
   .atlas__layout {
-    flex: 1 1 auto;
-    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(14rem, 18rem) minmax(0, 1fr);
     align-items: stretch;
-    grid-template-columns: minmax(13rem, 16rem) minmax(0, 1fr);
-    grid-template-rows: repeat(2, minmax(0, 1fr));
-    grid-template-areas:
-      'rail matrix'
-      'rail detail';
     gap: var(--gap-panel);
   }
 
-  .atlas__rail {
-    grid-area: rail;
-  }
-
-  .atlas__center {
-    grid-area: matrix;
-  }
-
-  .atlas__detail {
-    grid-area: detail;
-  }
-
   .atlas__layout > .panel {
-    min-height: 0;
+    min-height: 36rem;
   }
 
-  .atlas__layout .panel__scroll {
-    flex: 1 1 auto;
-  }
-
-  /* Compact vertical catalogue rail. */
   .atlas__rail .mode-switcher {
     flex-direction: column;
     flex-wrap: nowrap;
@@ -2503,599 +3226,128 @@ textarea:focus {
     flex: 0 0 auto;
   }
 
-  .atlas__rail .mode-switcher button span {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
   .atlas__rail .atlas__filters {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 0.65rem;
     border-top: 1px solid var(--rule);
     padding-top: 0.75rem;
   }
 
-  /* Table opens inside the center scroll region. */
   .atlas__table {
     margin-top: 1.25rem;
   }
 
-  .table-wrap {
-    max-height: 40vh;
-    overflow-y: auto;
-  }
-}
-
-@media (min-width: 1200px) {
-  .atlas__layout {
-    grid-template-columns: minmax(14rem, 17rem) minmax(0, 1fr) minmax(18rem, 23rem);
-    grid-template-rows: minmax(0, 1fr);
-    grid-template-areas: 'rail matrix detail';
-  }
-}
-
-/* ============================================================================
-   Phase 4: methodology two-column editorial grid + learn density.
-   Landscape only; the <=1023px band keeps today's stacked reading flow.
-   ========================================================================== */
-@media (min-width: 1024px) {
-  /* Reading shells keep tight vertical rhythm; width is governed by app-stage. */
-  .page-shell--reading {
-    padding-block: 0.5rem var(--gap-section);
-  }
-
-  .reference-panel {
-    margin-top: var(--gap-section);
-  }
-
-  /* Learn density. */
-  .learning-grid {
-    gap: var(--gap-panel);
-  }
-
-  .learning-card h2 {
-    font-size: clamp(1.3rem, 2vw, 2.15rem);
-  }
-}
-
-@media (min-width: 1024px) {
-  /* Four metadata rows become two columns of two inside each card. */
-  .learning-card__metadata {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.35rem 1rem;
-  }
-
-  .learning-card__metadata div {
-    border-top: 0;
-    padding-block: 0;
-  }
-}
-
-@media (min-width: 1024px) and (max-height: 820px) {
-  .learning-card h2 {
-    font-size: clamp(1.15rem, 1.7vw, 1.6rem);
-  }
-}
-
-/* ============================================================================
-   Phase 4b: reading-route bounded scroll + width corrections.
-   ========================================================================== */
-@media (min-width: 1024px) {
-  .primer-card__questions {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  /* Display titles on reading routes use the landscape hero scale too. */
-  .page-shell--reading .surface-card {
-    padding: var(--gap-panel);
-  }
-}
-@media (min-width: 1024px) {
-  /* Wide references stay on the page but never drive master scroll. */
-  .reference-scroll {
-    max-height: min(22rem, 38vh);
-    overflow: auto;
-    overscroll-behavior: contain;
-    scrollbar-gutter: stable;
-  }
-
-  .primer-scroll {
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    scrollbar-gutter: stable;
-  }
-
-  .primer-scroll {
-    /* No cap: all six primer questions render in flow; framed bars stay pinned. */
-  }
-
-  .methodology__owid,
-  .methodology__registry {
-    max-height: min(31vh, 26rem);
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    scrollbar-gutter: stable;
-  }
-
-  .methodology__owid:focus-visible,
-  .methodology__registry:focus-visible {
-    outline: 3px solid var(--focus-ring);
-    outline-offset: -3px;
-  }
-
-  .reference-scroll:focus-visible {
-    outline: 3px solid var(--focus-ring);
-    outline-offset: -3px;
-  }
-
-
-  /* OWID context card inside its grid cell becomes a dense record. */
-  .methodology-layout > .methodology__owid .owid-context {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0 var(--gap-panel);
-    align-items: start;
-  }
-
-  .methodology-layout > .methodology__owid .owid-context > * {
-    margin-top: 0;
-  }
-}
-
-@media (min-width: 1024px) {
-  /* Cards are uniform link cards; bound their long internals so all three
-     share one screen without hiding anything. */
-  .learning-card > .reference-scroll {
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    scrollbar-gutter: stable;
-    max-height: min(9.5vh, 5.5rem);
-  }
-
-  .learning-card > .reference-scroll:has(> .learning-card__metadata) {
-    max-height: min(10.5vh, 6.5rem);
-  }
-
-  .learning-card__metadata {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.5rem 1rem;
-    align-content: start;
-  }
-
-  /* Half-width items stack label over value: no horizontal truncation. */
-  .learning-layout .learning-card__metadata div {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0.15rem;
-  }
-
-  .learning-layout .learning-card__metadata dd {
-    text-align: left;
-  }
-
-  .learning-card__metadata div {
-    border-top: 0;
-    padding-block: 0;
-  }
-
-  .learning-card h2 {
-    margin-block: 0.35rem;
-  }
-
-  .learning-card {
-    gap: 0.65rem;
-  }
-
-  .learning-grid.mt-8,
-  .learning-card + * ,
-  main > .page-shell--reading > .mt-8 {
-    margin-top: var(--gap-section);
-  }
-
-  .page-shell--reading .surface-card p {
-    line-height: 1.5;
-  }
-
-  .learning-card h2 {
-    font-size: clamp(1.15rem, 1.6vw, 1.55rem);
-  }
-
-  .methodology-grid {
-    gap: calc(var(--gap-panel) * 0.6);
-  }
-}
-
-/* ============================================================================
-   Phase 5: Evidence library grid (manifests). Uniform link cards become a
-   two-column grid on landscape; the band keeps the single column.
-   ========================================================================== */
-@media (min-width: 1024px) {
-  .manifest-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--gap-panel);
-    margin-top: 0;
-  }
-
-  .manifest-list .surface-card {
-    padding: 0.8rem 0.9rem;
-  }
-
-  .manifest-list h2 {
-    font-size: 1rem;
-  }
-
-  .manifest-list .surface-card p {
-    font-size: 0.85rem;
-    line-height: 1.4;
-    margin-top: 0.4rem;
-  }
-
-  .manifest-list .surface-card > div {
-    gap: 0.5rem;
-  }
-}
-
-/* ============================================================================
-   Phase 6: normalized tab headerbar (status bar) on every non-home tab.
-   54px (var(--bar-h)), sticky directly below the topbar (var(--header-h)).
-   The former hero proclamations are distilled into the bar title + meta.
-   ========================================================================== */
-.tab-headerbar {
-  position: sticky;
-  top: calc(var(--header-h) + 1px);
-  z-index: 19;
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  height: var(--bar-h);
-  min-height: var(--bar-h);
-  overflow: hidden;
-  padding-inline: 1rem;
-  background: var(--paper);
-}
-
-.tab-headerbar__title {
-  flex: 0 0 auto;
-  color: var(--ink);
-  font: 650 1.15rem/1 var(--font-display);
-  letter-spacing: 0.01em;
-}
-
-.tab-headerbar__meta {
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 1rem;
-  color: var(--ink-muted);
-  font: 500 0.74rem/1.2 var(--font-mono);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.tab-headerbar__meta strong {
-  color: var(--ink);
-  font-weight: 650;
-}
-
-.tab-headerbar__meta .text-link {
-  white-space: nowrap;
-}
-
-@media (max-width: 700px) {
-  .tab-headerbar__meta {
-    gap: 0.6rem;
-    font-size: 0.68rem;
-  }
-}
-
-
-
-/* Landscape app-stage for the reading tabs: full app-shell width, viewport
-   bounded, inner regions scroll. */
-@media (min-width: 1024px) {
-  .page-shell.app-stage,
-  .page-shell--reading.app-stage {
-    width: min(100% - 2rem, var(--app-shell-max));
-    padding-block: 0;
-  }
-
-  /* Reading tabs: content grids absorb the freed hero space. */
-  .learning-layout {
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .learning-layout > .learning-grid {
-    flex: 1 1 auto;
-    min-height: 0;
-    grid-template-rows: minmax(0, 1fr);
-    overflow: hidden;
-  }
-
-  .learning-layout > .learning-grid > .learning-card {
-    min-height: 0;
-    margin: 0;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    scrollbar-gutter: stable;
-  }
-
-  .manifests-page {
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-  }
-}
-
-/* ============================================================================
-   Phase 6b: freed-viewport layouts for reading tabs.
-   ========================================================================== */
-@media (min-width: 1024px) {
   .methodology-layout {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    scrollbar-gutter: stable;
-    align-content: start;
+    display: grid;
+    gap: var(--gap-panel);
   }
 
-  .methodology-layout > * {
-    margin-top: 0;
-  }
 
-  .manifests-page > .manifest-list {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    scrollbar-gutter: stable;
-    align-content: start;
-  }
-}
-
-/* App-stage routes scroll within the capped shell wrapper (not the document),
-   so the sticky topbar, tab status bar and footer all stay pinned while
-   bounded panels scroll inside. */
-@media (min-width: 1024px) {
-  .min-h-screen.flex-col:has(> main > .app-stage) {
-    overflow-y: auto;
-  }
-}
-
-/* ============================================================================
-   Phase 7: tab footerbar — per-tab utility area mirroring the tab headerbar.
-   54px, sticky above the site footer bottombar; replaces bottom CTA blocks.
-   ========================================================================== */
-.tab-footerbar {
-  position: sticky;
-  bottom: calc(var(--bar-h) + 1px);
-  z-index: 19;
-  flex: 0 0 auto;
-  margin-top: auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  height: var(--bar-h);
-  min-height: var(--bar-h);
-  overflow: hidden;
-  padding-inline: 1rem;
-  border-top: 1px solid var(--rule);
-  background: var(--paper);
-}
-
-.tab-footerbar__group {
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  gap: 1rem;
-}
-
-.tab-footerbar__meta {
-  color: var(--ink-muted);
-  font: 500 0.74rem/1.2 var(--font-mono);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.tab-footerbar__meta strong {
-  color: var(--ink);
-  font-weight: 650;
-}
-
-/* Actions keep the app-wide 44px touch-target contract inside the 54px bar,
-   rendered as clean underlined text (no boxed buttons). */
-.tab-footerbar button,
-.tab-footerbar .text-link {
-  display: inline-flex;
-  align-items: center;
-  min-height: 2.75rem;
-  padding: 0;
-}
-
-.tab-footerbar button.text-link {
-  border: 0;
-  border-bottom: 1px solid currentColor;
-  border-radius: 0;
-  background: transparent;
-  font: 700 0.9rem/1.2 var(--font-sans);
-}
-
-.tab-footerbar button.text-link:hover {
-  border-bottom-color: var(--signal);
-  background: transparent;
-}
-
-.disclosure--static {
-  padding-top: 0.75rem;
-}
-
-@media (max-width: 700px) {
-  .tab-footerbar__group {
-    gap: 0.6rem;
-  }
-
-  .tab-footerbar__meta {
-    font-size: 0.68rem;
-  }
-  /* Bars adapt on the portrait band: content may wrap instead of clipping
-     inside the fixed 54px desktop geometry. */
-  .site-footer {
-    height: auto;
-  }
-
-  .tab-footerbar {
-    height: auto;
-    min-height: var(--bar-h);
-    flex-wrap: wrap;
-    padding-block: 0.5rem;
-  }
-
-  /* Definite svg height: with height:auto the svg's pixel size derives from
-     the measured viewBox, which feeds back into the figure box and grows the
-     chart forever. The landscape system sizes the svg at 100% instead. */
-  .impact-trace__svg {
-    height: clamp(120px, 34vw, 240px);
-  }
-}
-
-/* ============================================================================
-   Phase 8: Evidence tab consolidation + slim Methodology reading tab.
-   ========================================================================== */
-@media (min-width: 1024px) {
-  .evidence-page {
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
+  .learning-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--gap-panel);
   }
 
   .evidence-layout {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    scrollbar-gutter: stable;
     display: grid;
-    gap: var(--gap-panel);
-    align-content: start;
-    align-items: stretch;
     grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-    grid-template-areas:
-      'sources benchmarks'
-      'dataset global'
-      'manifests manifests';
+    gap: var(--gap-panel);
+    align-items: start;
   }
 
-  .evidence-layout > #manifests { grid-area: manifests; }
-  .evidence-layout > #dataset { grid-area: dataset; }
-  .evidence-layout > #sources { grid-area: sources; }
-  .evidence-layout > #benchmarks { grid-area: benchmarks; }
-  .evidence-layout > #global { grid-area: global; }
-
   .evidence-layout > * {
-    margin-top: 0;
     min-width: 0;
   }
 
-  .evidence-layout > .manifest-list {
-    margin-top: 0.5rem;
+  .manifest-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--gap-panel);
   }
 
-  /* Global context + release: bounded so it never drives the section scroll. */
   .evidence-global {
-    max-height: min(52vh, 44rem);
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    scrollbar-gutter: stable;
+    display: grid;
+    gap: var(--gap-panel);
   }
-
-  .evidence-global:focus-visible {
-    outline: 3px solid var(--focus-ring);
-    outline-offset: -3px;
+  .manifest-detail__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
-  /* Slim methodology: one editorial column, four policy cards in one row. */
-  .methodology-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
-  .methodology-layout > .primer-card {
-    margin-top: 0;
-  }
-
-  .page-shell--reading .primer-card {
-    padding: var(--gap-panel);
+  .calculator__columns > .panel,
+  .atlas__layout > .panel {
+    min-height: 0;
   }
 }
 
-/* ============================================================================
-   Phase 9: home joins the app-stage frame — the chart absorbs viewport slack.
-   ========================================================================== */
-@media (min-width: 1024px) {
-  /* Every app-stage root fills the bounded main — without flex: 1 1 auto the
-     page shrinks to content and a dead band opens above the sticky footer.
-     HOME ONLY: opens with section rhythm (no tab headerbar above it).
-     min-height: 0 gives the flex chain an absolute bound — without it the
-     chart's measured viewBox feeds back into layout height and grows forever. */
-  .editorial-page.app-stage,
-  .page-shell.app-stage,
-  .page-shell--reading.app-stage {
-    flex: 1 1 auto;
-    min-height: 0;
-    /* The bars and sections own the rhythm; the fat editorial padding would
-       reintroduce a 5vw dead band above the sticky footer. */
-    padding-block: 0;
+@media (min-width: 72rem) {
+  .atlas__layout {
+    grid-template-columns: minmax(14rem, 17rem) minmax(0, 1fr) minmax(18rem, 23rem);
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --rule: #657168;
+    --surface-border-strong: #2f3c35;
   }
 
-  .editorial-page.home-page.app-stage {
-    padding-block: clamp(1.25rem, 3vh, 2.25rem) 0;
+  [data-theme='dark'] {
+    --rule: #a6b2a8;
+    --surface-border-strong: #d5e0d5;
   }
 
-  .editorial-page.app-stage .trace-estimate {
-    flex: 1 1 auto;
-    min-height: 0;
-    /* Definite row: without it the svg's 100% height resolves against an
-       auto row and the measured viewBox feeds back into layout — forever. */
-    grid-template-rows: minmax(0, 1fr);
+  .surface-card,
+  .panel,
+  .data-state,
+  .atlas-record,
+  .activity-tile,
+  .action-link,
+  .tab-headerbar__actions a,
+  .tab-headerbar__actions button {
+    border-width: 2px;
+  }
+}
+
+@media (forced-colors: active) {
+  .site-header,
+  .site-footer,
+  .tab-headerbar,
+  .surface-card,
+  .panel,
+  .data-state,
+  .activity-tile,
+  .atlas-record,
+  .action-link,
+  .tab-headerbar__actions a,
+  .tab-headerbar__actions button {
+    border-color: CanvasText;
+    background: Canvas;
+    color: CanvasText;
   }
 
-  .editorial-page.app-stage .trace-estimate__lead {
-    display: flex;
-    flex-direction: column;
+  .site-header__nav a[aria-current='page'],
+  .site-header__nav a:hover,
+  .tab-headerbar__actions a:hover,
+  .tab-headerbar__actions button:hover,
+  .atlas-record.is-selected {
+    border-color: Highlight;
+    background: Highlight;
+    color: HighlightText;
   }
 
-  /* The chart is the flex-grow element: dead space becomes chart space. */
-  .editorial-page.app-stage .trace-estimate__lead > .impact-trace {
-    flex: 1 1 auto;
-    min-height: 9rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    margin-top: 0.6rem;
+  .evidence-badge,
+  .data-state__chip,
+  .unavailable-mark {
+    forced-color-adjust: auto;
+    color: CanvasText;
   }
+}
 
-  .editorial-page.app-stage .trace-estimate__lead > .impact-trace > .impact-trace__svg {
-    flex: 1 1 auto;
-    min-height: 0;
-    height: 100%;
-    width: 100%;
-  }
-
-  .editorial-page.app-stage .editorial-jobs {
-    flex: 0 0 auto;
-    margin-top: var(--gap-section);
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }

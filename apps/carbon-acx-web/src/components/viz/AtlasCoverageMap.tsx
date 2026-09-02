@@ -4,13 +4,14 @@ import { BadgeCheck, Factory, Network, UserRound } from 'lucide-react'
 import { useId } from 'react'
 import { ActivityMark } from '@/components/calculator/ActivityMark'
 import { buildAtlasCoverageGroups } from '@/lib/visualization'
-import { getActivityById, getAtlasMode, type AtlasMode, type CatalogActivity } from '@/lib/calculator'
+import { getActivityById, type AtlasMode, type CatalogActivity } from '@/lib/calculator'
 
 const modeIcons: Record<AtlasMode, typeof UserRound> = {
   personal: UserRound,
   systems: Network,
   industrial: Factory,
 }
+
 export function AtlasModeIcon({ mode }: { mode: AtlasMode }) {
   const Icon = modeIcons[mode]
   return <Icon aria-hidden="true" size={24} />
@@ -18,35 +19,40 @@ export function AtlasModeIcon({ mode }: { mode: AtlasMode }) {
 
 export function AtlasCoverageMap({
   records,
+  mode,
   selectedId,
   onSelect,
 }: {
   records: CatalogActivity[]
+  mode: AtlasMode
   selectedId: string | null
   onSelect: (record: CatalogActivity) => void
 }) {
   const patternPrefix = useId().replaceAll(':', '')
-  const groups = buildAtlasCoverageGroups(records)
+  const groups = buildAtlasCoverageGroups(records, mode)
   return (
     <section className="data-matrix" aria-label="Activity Atlas coverage map">
       <p className="section-kicker">Coverage map</p>
-      <p className="atlas-coverage__legend"><BadgeCheck aria-hidden="true" size={18} /> Published <UnavailableMark patternId={`${patternPrefix}-legend`} /> Unavailable — not zero</p>
+      <p className="atlas-coverage__legend">
+        <BadgeCheck aria-hidden="true" size={18} /> Published
+        <UnavailableMark patternId={`${patternPrefix}-legend`} /> Not available — not zero
+      </p>
       {groups.length ? groups.map((group) => (
-        <section key={group.category} className="data-matrix__group">
+        <section key={group.groupKey} className="data-matrix__group">
           <header>
             <div>
-              <p className="section-kicker">Category</p>
-              <h2>{group.label}</h2>
+              <p className="section-kicker">{group.groupKind === 'sector' ? 'Sector' : 'Calculator category'}</p>
+              <h2>{group.groupLabel}</h2>
             </div>
-            <span>{group.records.length} records · {group.publishedCount} published · {group.unavailableCount} unavailable</span>
+            <span>{group.records.length} records · {group.publishedCount} published · {group.unavailableCount} not available</span>
           </header>
           <div className="atlas-coverage__records">
             {group.records.map((record) => {
-              const mode = getAtlasMode(record)
               const activity = mode === 'personal' ? getActivityById(record.id) : undefined
               const published = record.evidence.publicationStatus === 'published'
               return (
                 <button
+                  id={`atlas-record-${record.id}`}
                   key={record.id}
                   type="button"
                   className={selectedId === record.id ? 'atlas-record is-selected' : 'atlas-record'}
@@ -59,7 +65,7 @@ export function AtlasCoverageMap({
                   <span className="atlas-record__name">{record.name}</span>
                   <span className="atlas-record__state">
                     {published ? <BadgeCheck aria-hidden="true" size={18} /> : <UnavailableMark patternId={`${patternPrefix}-${record.id.replaceAll('.', '-')}`} />}
-                    <small>{published ? 'Published' : 'Unavailable'}</small>
+                    <small>{published ? 'Published' : 'Not available'}</small>
                   </span>
                 </button>
               )

@@ -1,4 +1,4 @@
-import { defineConfig } from '@playwright/test'
+import { defineConfig, devices } from '@playwright/test'
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -6,6 +6,11 @@ export default defineConfig({
     baseURL: 'http://127.0.0.1:3000',
     headless: true,
   },
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+  ],
   webServer: {
     // The app is a static export (output: 'export'), so `next start` cannot
     // serve it. Use the dev server for e2e — it renders the same client
