@@ -1,8 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useRef } from 'react'
+import { Moon, Sun } from 'lucide-react'
 import { usePathname } from 'next/navigation'
+import { useEffect, useRef } from 'react'
 import { useTheme } from '@/components/providers/ThemeProvider'
 import { ROUTE_ITEMS } from '@/components/layout/routeMeta'
 
@@ -43,19 +44,9 @@ export function Header() {
   return (
     <header className="site-header">
       <div className="page-shell site-header__inner">
-        <div className="site-header__row">
-          <Link href="/" className="site-header__brand">
-            Carbon ACX <span>carbon literacy index</span>
-          </Link>
-          <button
-            type="button"
-            className="mode-switcher__button"
-            onClick={toggleTheme}
-            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-          >
-            {theme === 'dark' ? 'Light mode' : 'Dark mode'}
-          </button>
-        </div>
+        <Link href="/" className="site-header__brand">
+          Carbon ACX <span>carbon literacy index</span>
+        </Link>
         <nav aria-label="Primary" className="site-header__nav">
           {ROUTE_ITEMS.map((route) => {
             const current = isCurrent(route.href)
@@ -74,6 +65,16 @@ export function Header() {
             )
           })}
         </nav>
+        <button
+          type="button"
+          className="mode-switcher__button"
+          onClick={toggleTheme}
+          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          aria-pressed={theme === 'dark'}
+          title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          {theme === 'dark' ? <Sun aria-hidden="true" size={18} strokeWidth={2} /> : <Moon aria-hidden="true" size={18} strokeWidth={2} />}
+        </button>
       </div>
     </header>
   )

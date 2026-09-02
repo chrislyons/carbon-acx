@@ -1,11 +1,12 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { ActivityMark } from '@/components/calculator/ActivityMark'
 import { EvidenceBadge, EvidenceFacts, SourceList } from '@/components/content'
 import { ImpactTrace } from '@/components/viz/ImpactTrace'
 import { abbreviateUnit } from '@/lib/units'
+import { useGraphKeyboard } from '@/components/viz/useGraphKeyboard'
 import { ACTIVITIES, CATEGORY_INFO, calculateEmissions, encodeCalculatorInputs, formatEmissions, getActivityById } from '@/lib/calculator'
 
 const MIN_DISTANCE = 10
@@ -35,49 +36,71 @@ export function TraceEstimate() {
   const result = distance === null
     ? null
     : calculateEmissions([{ activityId: activity.id, quantity: distance }]).results[0] ?? null
+
+  const selectAdjacentVehicle = useCallback((direction: 'previous' | 'next') => {
+    const index = commuterVehicles.findIndex((vehicle) => vehicle.id === activityId)
+    const offset = direction === 'next' ? 1 : -1
+    setActivityId(commuterVehicles[(index + offset + commuterVehicles.length) % commuterVehicles.length].id)
+  }, [activityId])
+
+  const stepDistance = useCallback((direction: 'previous' | 'next', event: KeyboardEvent) => {
+    if (distance === null) return false
+    const step = event.shiftKey ? 200 : 50
+    const nextDistance = direction === 'next' ? distance + step : distance - step
+    setDistanceDraft(String(Math.min(MAX_DISTANCE, Math.max(MIN_DISTANCE, nextDistance))))
+  }, [distance])
+
+  useGraphKeyboard({
+    onHorizontalStep: stepDistance,
+    onVerticalStep: (direction) => {
+      selectAdjacentVehicle(direction)
+    },
+  })
   const distanceError = 'Enter a distance from 10 to 200,000 km.'
+
+  const modeControls = (
+    <div className="trace-mode-buttons">
+      {commuterVehicles.map((vehicle) => {
+        const selected = vehicle.id === activity.id
+        const label = vehicleLabels[vehicle.id] ?? vehicle.name
+        return (
+          <button
+            key={vehicle.id}
+            type="button"
+            className={selected ? 'trace-mode is-selected' : 'trace-mode'}
+            aria-label={label}
+            aria-pressed={selected}
+            title={label}
+            onClick={() => setActivityId(vehicle.id)}
+          >
+            <ActivityMark category={vehicle.category} activityId={vehicle.id} size={24} />
+          </button>
+        )
+      })}
+    </div>
+  )
+
+  const quantityControl = (
+    <label className="quantity-field" htmlFor="annual-distance">
+      <span>Annual distance (km)</span>
+      <input
+        id="annual-distance"
+        type="number"
+        min={MIN_DISTANCE}
+        max={MAX_DISTANCE}
+        step="10"
+        inputMode="decimal"
+        value={distanceDraft}
+        onChange={(event) => setDistanceDraft(event.target.value)}
+        aria-invalid={distance === null}
+        aria-describedby={distance === null ? 'annual-distance-error' : undefined}
+      />
+    </label>
+  )
 
   return (
     <section className="trace-estimate" aria-label="Published travel estimate">
       <div className="trace-estimate__lead">
-        <div className="trace-controls">
-          <div>
-            <p className="section-kicker">Travel mode</p>
-            <div className="trace-controls__modes" role="group" aria-label="Travel mode">
-              {commuterVehicles.map((vehicle) => {
-                const selected = vehicle.id === activity.id
-                return (
-                  <button
-                    key={vehicle.id}
-                    type="button"
-                    className={selected ? 'trace-mode is-selected' : 'trace-mode'}
-                    aria-pressed={selected}
-                    onClick={() => setActivityId(vehicle.id)}
-                  >
-                    <ActivityMark category={vehicle.category} activityId={vehicle.id} size={24} />
-                    <span>{vehicleLabels[vehicle.id] ?? vehicle.name}</span>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-          <label className="quantity-field" htmlFor="annual-distance">
-            <span>Annual distance (km)</span>
-            <input
-              id="annual-distance"
-              type="number"
-              min={MIN_DISTANCE}
-              max={MAX_DISTANCE}
-              step="10"
-              inputMode="decimal"
-              value={distanceDraft}
-              onChange={(event) => setDistanceDraft(event.target.value)}
-              aria-invalid={distance === null}
-              aria-describedby={distance === null ? 'annual-distance-error' : undefined}
-            />
-          </label>
-          {distance === null ? <p id="annual-distance-error" role="alert" className="field-error">{distanceError}</p> : null}
-        </div>
         {result && distance !== null ? (
           <>
             <ImpactTrace
@@ -92,15 +115,25 @@ export function TraceEstimate() {
               unitLabel={abbreviateUnit(activity.unitLabel)}
               emissions={result.emissions}
               color={CATEGORY_INFO[activity.category].color}
+              modeControls={modeControls}
+              quantityControl={quantityControl}
               onQuantityChange={(nextDistance) => setDistanceDraft(String(nextDistance))}
             />
-            <p className="trace-drag-hint">Drag marker or edit annual distance</p>
             <Link className="text-link text-link--primary" href={`/calculator?data=${encodeCalculatorInputs({ [activity.id]: distance })}`}>
               Open this estimate in the calculator
             </Link>
           </>
         ) : (
-          <p className="trace-invalid-copy">Enter a valid distance to continue</p>
+          <div className="trace-invalid-layout">
+            <div className="impact-trace__mode-rail" role="group" aria-label="Travel mode">
+              {modeControls}
+            </div>
+            <div className="trace-invalid-layout__body">
+              <p id="annual-distance-error" role="alert" className="field-error">{distanceError}</p>
+              <p className="trace-invalid-copy">Enter a valid distance to continue</p>
+              {quantityControl}
+            </div>
+          </div>
         )}
       </div>
       <aside className="evidence-rail" aria-label="Factor evidence">
@@ -113,7 +146,7 @@ export function TraceEstimate() {
         <p className="evidence-rail__example">Record 1 of {publishedActivityCount} published calculator activities</p>
         {distance !== null ? (
           <details className="disclosure">
-            <summary>{activity.evidence.sourceIds.length} sources</summary>
+            <summary>{activity.evidence.sourceIds.length} source{activity.evidence.sourceIds.length === 1 ? '' : 's'}</summary>
             <div className="disclosure__body">
               <SourceList sourceIds={activity.evidence.sourceIds} citations={activity.evidence.sourceCitations} urls={activity.evidence.sourceUrls} />
             </div>

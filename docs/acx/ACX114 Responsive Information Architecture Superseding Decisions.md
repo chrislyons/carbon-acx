@@ -62,3 +62,10 @@ The decision is implemented on `feat/frontend-information-density`. The implemen
 - **Visual capture:** the final capture harness produced 144 screens across nine viewports and light/dark themes, covering the public routes and discovered manifest detail.
 
 The implementation evidence intentionally distinguishes automated browser engines from product-browser verification. That distinction is part of the support contract, not a claim that Playwright WebKit is Safari.
+
+## Final visual density and PR candidate pass (2026-08-30)
+
+- Home now uses a viewport-aware commute plot with an absolutely overlaid 44×44 glyph mode rail, a right-anchored annual-distance field beside the impact statement, no redundant line labels/legend/caption/drag copy, concise pathway actions, and no hero eyebrow.
+- Graph navigation is provided by graph-agnostic `useGraphKeyboard` commands: Left/Right step the commute quantity, Up/Down cycle modes, and editable controls retain native arrow behavior. Home evidence disclosures use a contained scroll region.
+- Global chrome is ordered `brand → primary links → theme glyph`; visible theme-mode text and its outline are removed. Desktop workspace/reading padding and sticky offsets are compacted, and the Home/footer divider is single rather than doubled.
+- Direct browser inspection covered 1568×1018, 1032×1568, 1280×720, 390×844, and 320×800. Header/footer bounds, footer reachability, graph overlay geometry, source-detail scrolling, and horizontal overflow were checked in the running app.

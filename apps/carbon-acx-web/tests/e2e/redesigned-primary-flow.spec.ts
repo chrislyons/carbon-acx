@@ -3,9 +3,9 @@ import { expect, test } from '@playwright/test'
 test('front door presents three ordered jobs', async ({ page }) => {
   await page.goto('/')
   const jobs = [
-    ['Read the six-step method', '/methodology#primer'],
-    ['Build the worksheet', '/calculator'],
-    ['Inspect the Activity Atlas', '/explore'],
+    ['Open method', '/methodology#primer'],
+    ['Open worksheet', '/calculator'],
+    ['Browse the Atlas', '/explore'],
   ] as const
   for (const [name, href] of jobs) {
     await expect(page.getByRole('link', { name, exact: true })).toHaveAttribute('href', href)
@@ -149,13 +149,83 @@ test('Home marker drag uses bounded ten-kilometre steps', async ({ page }) => {
   expect(distance % 10).toBe(0)
 })
 
-test('Home mode controls retain attached evidence and visible chart labels', async ({ page }) => {
+test('Home mode controls retain attached evidence without redundant labels', async ({ page }) => {
   await page.goto('/')
   await page.waitForTimeout(250)
   await page.getByRole('button', { name: 'Toronto bus' }).click()
-  await expect(page.locator('.trace-mode[aria-pressed="true"]')).toContainText('Toronto bus')
-  await expect(page.locator('.impact-trace__line-label')).toHaveText(['Car', 'Toronto bus', 'Toronto subway'])
-  await expect(page.getByText('Transit uses passenger-kilometres; the car example assumes one occupant.')).toBeVisible()
+  await expect(page.locator('.trace-mode[aria-pressed="true"]')).toHaveAttribute('aria-label', 'Toronto bus')
+  await expect(page.locator('.impact-trace__line-label')).toHaveCount(0)
+  await expect(page.locator('.impact-trace__legend, .impact-trace figcaption, .trace-drag-hint')).toHaveCount(0)
+})
+
+test('Home graph arrow keys step distance and commute mode', async ({ page }) => {
+  await page.goto('/')
+  await page.waitForTimeout(250)
+  const distance = page.getByLabel('Annual distance (km)')
+  await page.keyboard.press('ArrowRight')
+  await expect(distance).toHaveValue('1050')
+  await page.keyboard.press('ArrowLeft')
+  await expect(distance).toHaveValue('1000')
+  await page.keyboard.press('ArrowDown')
+  await expect(page.getByRole('button', { name: 'Toronto bus' })).toHaveAttribute('aria-pressed', 'true')
+  await page.keyboard.press('ArrowDown')
+  await expect(page.getByRole('button', { name: 'Toronto subway' })).toHaveAttribute('aria-pressed', 'true')
+  await page.keyboard.press('ArrowUp')
+  await expect(page.getByRole('button', { name: 'Toronto bus' })).toHaveAttribute('aria-pressed', 'true')
+  await distance.focus()
+  await page.keyboard.press('ArrowRight')
+  await expect(distance).toHaveValue('1000')
+})
+
+test('Home evidence source details use a contained scroll region', async ({ page }) => {
+  await page.setViewportSize({ width: 1032, height: 1568 })
+  await page.goto('/')
+  const summary = page.locator('.evidence-rail details summary')
+  await summary.click()
+  await expect(summary).toContainText('1 source')
+  const style = await page.locator('.evidence-rail .disclosure__body').evaluate((element) => {
+    const computed = getComputedStyle(element)
+    return { overflowY: computed.overflowY, maxHeight: computed.maxHeight }
+  })
+  expect(style.overflowY).toBe('auto')
+  expect(style.maxHeight).not.toBe('none')
+})
+
+test('Home graph controls overlay a viewport-responsive plot', async ({ page }) => {
+  for (const viewport of [{ width: 1568, height: 1018 }, { width: 1032, height: 1568 }]) {
+    await page.setViewportSize(viewport)
+    await page.goto('/')
+    const metrics = await page.evaluate(() => {
+      const plot = document.querySelector('.impact-trace__plot')!.getBoundingClientRect()
+      const rail = document.querySelector('.impact-trace__mode-rail')!
+      const button = rail.querySelector('button')!.getBoundingClientRect()
+      const row = document.querySelector('.impact-trace__result-row')!.getBoundingClientRect()
+      const value = document.querySelector('.impact-trace__value')!.getBoundingClientRect()
+      const quantity = document.querySelector('.impact-trace__result-row .quantity-field')!.getBoundingClientRect()
+      return {
+        plotWidth: plot.width,
+        plotHeight: plot.height,
+        railPosition: getComputedStyle(rail).position,
+        buttonWidth: button.width,
+        buttonHeight: button.height,
+        rowTop: row.top,
+        rowBottom: row.bottom,
+        valueLeft: value.left,
+        valueBottom: value.bottom,
+        quantityTop: quantity.top,
+        quantityBottom: quantity.bottom,
+        quantityLeft: quantity.left,
+      }
+    })
+    expect(metrics.railPosition).toBe('absolute')
+    expect(metrics.buttonWidth).toBe(metrics.buttonHeight)
+    expect(metrics.plotHeight).toBeLessThanOrEqual(metrics.plotWidth * 1.1)
+    expect(metrics.valueTop).toBeGreaterThanOrEqual(metrics.rowTop)
+    expect(metrics.valueBottom).toBeLessThanOrEqual(metrics.rowBottom)
+    expect(metrics.quantityTop).toBeGreaterThanOrEqual(metrics.rowTop)
+    expect(metrics.quantityBottom).toBeLessThanOrEqual(metrics.rowBottom)
+    expect(metrics.quantityLeft).toBeGreaterThan(metrics.valueLeft)
+  }
 })
 
 test('compact Calculator Browse switches to focused Worksheet and explicit Done', async ({ page }) => {

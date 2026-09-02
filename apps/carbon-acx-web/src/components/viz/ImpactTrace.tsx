@@ -1,7 +1,7 @@
 'use client'
 
 import { useLayoutEffect, useRef, useState } from 'react'
-import type { PointerEvent as ReactPointerEvent } from 'react'
+import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react'
 import { scaleLinear } from 'd3-scale'
 import { formatEmissions } from '@/lib/calculator'
 
@@ -21,6 +21,8 @@ export function ImpactTrace({
   unitLabel,
   emissions,
   color,
+  modeControls,
+  quantityControl,
   onQuantityChange,
 }: {
   lines: TraceLine[]
@@ -29,22 +31,24 @@ export function ImpactTrace({
   unitLabel: string
   emissions: number
   color: string
+  modeControls: ReactNode
+  quantityControl: ReactNode
   onQuantityChange: (quantity: number) => void
 }) {
-  const figureRef = useRef<HTMLElement>(null)
+  const plotRef = useRef<HTMLDivElement>(null)
   const svgRef = useRef<SVGSVGElement>(null)
-  const [box, setBox] = useState({ width: 960, height: 190 })
+  const [box, setBox] = useState({ width: 960, height: 320 })
   const [dragging, setDragging] = useState(false)
   const selectedLine = lines.find((line) => line.id === activeId) ?? lines[0]
 
   useLayoutEffect(() => {
-    const element = figureRef.current
+    const element = plotRef.current
     if (!element || typeof ResizeObserver === 'undefined') return
     const observer = new ResizeObserver((entries) => {
       const rect = entries[0]?.contentRect
       if (!rect) return
       const width = Math.max(360, Math.round(rect.width))
-      const height = Math.max(140, Math.min(240, Math.round(width * 0.2)))
+      const height = Math.max(220, Math.round(rect.height))
       setBox((current) => {
         if (Math.abs(width - current.width) <= 2 && Math.abs(height - current.height) <= 2) return current
         return { width, height }
@@ -95,81 +99,81 @@ export function ImpactTrace({
   }
 
   return (
-    <figure className="impact-trace" ref={figureRef} aria-labelledby="impact-trace-caption">
-      <svg
-        ref={svgRef}
-        className="impact-trace__svg"
-        viewBox={`0 0 ${chartWidth} ${chartHeight}`}
-        role="img"
-        aria-labelledby="impact-trace-title impact-trace-caption"
-      >
-        <title id="impact-trace-title">Annual travel distance to carbon impact trace</title>
-        {lines.map((line, index) => {
-          const active = line.id === activeId
-          const lineY = y(line.factor * MAX_QUANTITY)
-          const labelY = Math.min(chartHeight - 54, 28 + index * 16)
-          return (
-            <g key={line.id}>
-              <line
-                x1={x(0)}
-                y1={y(0)}
-                x2={x(MAX_QUANTITY)}
-                y2={lineY}
-                stroke={active ? color : 'var(--ink-muted)'}
-                strokeWidth={active ? 3 : 2}
-                strokeOpacity={active ? 1 : 0.4}
-              />
-              <text className="impact-trace__line-label" x={chartWidth - 40} y={labelY} textAnchor="end">
-                {line.label}
-              </text>
-            </g>
-          )
-        })}
-        {ticks.map((tick, index) => (
-          <g key={tick} className={index % 2 === 0 ? 'impact-trace__tick' : 'impact-trace__tick impact-trace__tick--minor'}>
-            <line x1={x(tick)} y1={chartHeight - 40} x2={x(tick)} y2={chartHeight - 32} stroke="currentColor" strokeWidth="1" />
-            <text x={x(tick)} y={chartHeight - 12} textAnchor="middle">{Math.round(tick).toLocaleString('en-CA')}</text>
-          </g>
-        ))}
-        <line x1={x(0)} y1={chartHeight - 40} x2={x(MAX_QUANTITY)} y2={chartHeight - 40} stroke="currentColor" strokeOpacity="0.35" />
-        <text className="impact-trace__axis-label" x={chartWidth - 36} y={chartHeight - 52} textAnchor="end">annual distance ({unitLabel})</text>
-        <text className="impact-trace__axis-label" x="40" y="16">CO₂e / year</text>
-        <circle
-          cx={pointX}
-          cy={pointY}
-          r="24"
-          fill="transparent"
-          className={dragging ? 'impact-trace__slider is-dragging' : 'impact-trace__slider'}
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={endPointer}
-          onPointerCancel={endPointer}
-        />
-        <circle
-          cx={pointX}
-          cy={pointY}
-          r="7"
-          fill="var(--background)"
-          stroke={color}
-          strokeWidth="3"
-          pointerEvents="none"
-        />
-        <text className="impact-trace__marker-label" x={Math.min(pointX + 14, chartWidth - 260)} y={Math.max(pointY - 16, 30)} fill="currentColor" pointerEvents="none">
-          {`${Math.round(quantity).toLocaleString('en-CA')} ${unitLabel} · ${formatEmissions(emissions)}/yr`}
-        </text>
-      </svg>
-      <p className="impact-trace__value" aria-live="polite">
-        {Math.round(quantity).toLocaleString('en-CA')} {unitLabel} · {formatEmissions(emissions)}/yr
-      </p>
+    <figure className="impact-trace" aria-label="Annual travel emissions trace" aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown">
+      <div className="impact-trace__visual">
+        <div className="impact-trace__mode-rail" role="group" aria-label="Travel mode">
+          {modeControls}
+        </div>
+        <div className="impact-trace__plot" ref={plotRef}>
+          <svg
+            ref={svgRef}
+            className="impact-trace__svg"
+            viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+            role="img"
+            aria-labelledby="impact-trace-title"
+          >
+            <title id="impact-trace-title">Annual travel distance to carbon impact trace</title>
+            {lines.map((line) => {
+              const active = line.id === activeId
+              const lineY = y(line.factor * MAX_QUANTITY)
+              return (
+                <g key={line.id}>
+                  <line
+                    x1={x(0)}
+                    y1={y(0)}
+                    x2={x(MAX_QUANTITY)}
+                    y2={lineY}
+                    stroke={active ? color : 'var(--ink-muted)'}
+                    strokeWidth={active ? 3 : 2}
+                    strokeOpacity={active ? 1 : 0.4}
+                  />
+                </g>
+              )
+            })}
+            {ticks.map((tick, index) => (
+              <g key={tick} className={index % 2 === 0 ? 'impact-trace__tick' : 'impact-trace__tick impact-trace__tick--minor'}>
+                <line x1={x(tick)} y1={chartHeight - 40} x2={x(tick)} y2={chartHeight - 32} stroke="currentColor" strokeWidth="1" />
+                <text x={x(tick)} y={chartHeight - 12} textAnchor="middle">{Math.round(tick).toLocaleString('en-CA')}</text>
+              </g>
+            ))}
+            <line x1={x(0)} y1={chartHeight - 40} x2={x(MAX_QUANTITY)} y2={chartHeight - 40} stroke="currentColor" strokeOpacity="0.35" />
+            <text className="impact-trace__axis-label" x={chartWidth - 36} y={chartHeight - 52} textAnchor="end">annual distance ({unitLabel})</text>
+            <text className="impact-trace__axis-label" x="88" y="16">CO₂e / year</text>
+            <circle
+              cx={pointX}
+              cy={pointY}
+              r="24"
+              fill="transparent"
+              className={dragging ? 'impact-trace__slider is-dragging' : 'impact-trace__slider'}
+              onPointerDown={onPointerDown}
+              onPointerMove={onPointerMove}
+              onPointerUp={endPointer}
+              onPointerCancel={endPointer}
+            />
+            <circle
+              cx={pointX}
+              cy={pointY}
+              r="7"
+              fill="var(--background)"
+              stroke={color}
+              strokeWidth="3"
+              pointerEvents="none"
+            />
+            <text className="impact-trace__marker-label" x={Math.min(pointX + 14, chartWidth - 260)} y={Math.max(pointY - 16, 30)} fill="currentColor" pointerEvents="none">
+              {`${Math.round(quantity).toLocaleString('en-CA')} ${unitLabel} · ${formatEmissions(emissions)}/yr`}
+            </text>
+          </svg>
+        </div>
+      </div>
+      <div className="impact-trace__result-row">
+        <p className="impact-trace__value" aria-live="polite">
+          {Math.round(quantity).toLocaleString('en-CA')} {unitLabel} · {formatEmissions(emissions)}/yr
+        </p>
+        {quantityControl}
+      </div>
       <p className="impact-trace__equation">
         {Math.round(quantity).toLocaleString('en-CA')} {unitLabel} × {selectedLine?.factor ?? 0} g CO₂e / {selectedLine?.unitLabel ?? unitLabel} = {formatEmissions(emissions)}/yr
       </p>
-      <ul className="impact-trace__legend" aria-label="Travel mode legend">
-        {lines.map((line) => <li key={line.id} className={line.id === activeId ? 'is-selected' : ''}>{line.label} · {line.factor} g CO₂e / {line.unitLabel}</li>)}
-      </ul>
-      <figcaption id="impact-trace-caption">
-        Solid line: selected mode. Quiet lines: alternatives at the same distance. Transit uses passenger-kilometres; the car example assumes one occupant.
-      </figcaption>
     </figure>
   )
 }

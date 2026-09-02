@@ -158,7 +158,7 @@ Full session log in `docs/acx/ACX113 Interactive Home Tab and Framed Tab System.
 
 Decision record: `docs/acx/ACX114 Responsive Information Architecture Superseding Decisions.md`. Implementation branch: `feat/frontend-information-density`.
 
-- Replaced the mobile menu and global Home arrow controls with a six-link icon/label route rail governed by `routeMeta`; normalized the shell around 48/60/72rem breakpoints, natural reading scroll, wide workspace panel scrollers, explicit theme precedence, forced-colors/reduced-motion paths, and a compact normal-flow footer.
+- Replaced the mobile menu with a six-link icon/label route rail governed by `routeMeta`; restored modular Home graph arrow commands (left/right distance, up/down commute mode); normalized the shell around 48/60/72rem breakpoints, natural reading scroll, wide workspace panel scrollers, explicit theme precedence, forced-colors/reduced-motion paths, and a compact normal-flow footer.
 - Added immutable generated-source adapters, shared `EvidenceFacts` and `SourceRegistry` renderers, normalized Published/Not available status language, and exact Atlas grouping/matching contracts.
 - Rebuilt Home, Calculator, Explore, Learn, Methodology, Evidence, manifest detail, and 3D surfaces around task narratives. Calculator now has Browse/Worksheet views, focused editors with explicit Done, evidence inspector focus restoration, scenario disclosure, ranked HTML impact composition, and lazy Sankey flow. Explore has three authority modes, filters, responsive Browse/Record views, selection reconciliation, a server-rendered map/detail path, and the 3D fallback remains accessible.
 - Added contract tests, responsive density/accessibility coverage, theme precedence, fallback API coverage, exact manifest discovery, lazy chunk checks, and browser-engine-specific Playwright configuration. Updated root/web READMEs and the ACX catalog.
@@ -166,3 +166,10 @@ Decision record: `docs/acx/ACX114 Responsive Information Architecture Supersedin
 - Final Playwright matrix: 458 passed, 4 intentional skips across Chromium 141.0.7390.37, Firefox 142.0.1, and WebKit 26.0. Static viewport harness: 120 route/viewport pairs, all with `hScroll=false`. Performance medians: Home 1,480 ms LCP / 0.00043 CLS; Calculator 1,428 ms / 0.03396 / 32 ms max interaction; Explore 1,532 ms / 0 CLS / 32 ms max interaction.
 - Visual capture harness produced 144 screens across nine viewports and both light/dark themes, including the discovered manifest detail route.
 - Apple verification boundary is explicit: Safari 26.5 tooling and iOS 18.2/18.4/26.4 runtimes are available but actual Safari/iOS interaction was not run; physical Edge, physical iOS Safari, and prior browser majors remain unverified.
+
+## 2026-08-30 — final visual density and PR candidate pass
+
+- Home now uses a viewport-aware commute plot with an absolutely overlaid 44×44 glyph mode rail, a right-anchored annual-distance field beside the impact statement, no redundant line labels/legend/caption/drag copy, concise pathway actions, and no hero eyebrow.
+- Added graph-agnostic `useGraphKeyboard` commands: Left/Right step the commute quantity, Up/Down cycle modes, and editable controls retain native arrow behavior. Home evidence disclosures use a contained scroll region.
+- Reordered the global chrome to `brand → primary links → theme glyph`, removed visible theme-mode text and outline, reduced duplicate tab sticky offsets and shell padding, and removed the doubled Home/footer divider.
+- Browser evidence covers 1568×1018, 1032×1568, 1280×720, 390×844, and 320×800 surfaces. Header/footer bounds, footer reachability, graph overlay geometry, source-detail scrolling, and horizontal overflow were inspected directly in the running app.

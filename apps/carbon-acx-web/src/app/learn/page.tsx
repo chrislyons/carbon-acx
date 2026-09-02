@@ -110,7 +110,7 @@ function LearningCard({
         <EvidenceFacts evidence={record.evidence} unitLabel={record.unitLabel} />
       </section>
       <details className="disclosure">
-        <summary>{record.evidence.sourceIds.length} sources</summary>
+        <summary>{record.evidence.sourceIds.length} source{record.evidence.sourceIds.length === 1 ? '' : 's'}</summary>
         <div className="disclosure__body">
           <SourceList sourceIds={record.evidence.sourceIds} citations={record.evidence.sourceCitations} urls={record.evidence.sourceUrls} />
         </div>
