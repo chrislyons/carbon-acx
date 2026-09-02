@@ -128,6 +128,10 @@ test('Home numeric fallback remains functional without optional pointer APIs', a
     Object.defineProperty(SVGElement.prototype, 'hasPointerCapture', { configurable: true, value: undefined })
   })
   await page.goto('/')
+  await page.getByRole('button', { name: 'Toronto bus' }).click()
+  await expect(page.getByRole('button', { name: 'Toronto bus' })).toHaveAttribute('aria-pressed', 'true')
+  await page.getByRole('button', { name: 'Car' }).click()
+  await expect(page.getByRole('button', { name: 'Car' })).toHaveAttribute('aria-pressed', 'true')
   const distance = page.getByLabel('Annual distance (km)')
   await distance.fill('1250')
   await expect(page.locator('.impact-trace__value')).toContainText('1,250 km · 225.0 kg CO₂e/yr')
@@ -161,6 +165,10 @@ test('Home mode controls retain attached evidence without redundant labels', asy
 
 test('Home graph arrow keys step distance and commute mode', async ({ page }) => {
   await page.goto('/')
+  await page.getByRole('button', { name: 'Toronto bus' }).click()
+  await expect(page.getByRole('button', { name: 'Toronto bus' })).toHaveAttribute('aria-pressed', 'true')
+  await page.getByRole('button', { name: 'Car' }).click()
+  await expect(page.getByRole('button', { name: 'Car' })).toHaveAttribute('aria-pressed', 'true')
   const distance = page.getByLabel('Annual distance (km)')
   await expect(distance).toHaveValue('1000')
   await page.keyboard.press('ArrowRight')
