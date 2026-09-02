@@ -40,6 +40,7 @@ for (const viewport of BASE_VIEWPORTS) {
     for (const route of ROUTES) {
       test(`${route} keeps document width and visible control contracts`, async ({ page }) => {
         await page.goto(route)
+        await page.waitForTimeout(250)
         const metrics = await routeMetrics(page)
         expect(metrics.documentWidth, `${route} introduces document horizontal overflow`).toBeLessThanOrEqual(metrics.width)
         expect(metrics.controls.every((control) => control.height >= 44), `${route} has a visible control below 44px`).toBe(true)
@@ -47,10 +48,24 @@ for (const viewport of BASE_VIEWPORTS) {
           expect(metrics.documentHeight / metrics.viewportHeight, `${route} exceeds the wide master-scroll budget`).toBeLessThanOrEqual(1.1)
         }
         if (READING_ROUTES.includes(route as (typeof READING_ROUTES)[number])) {
-          const proseScrollers = await page.locator('.reading-page [data-panel-scroll]').evaluateAll(
-            (elements) => elements.filter((element) => element.scrollHeight > element.clientHeight + 1).length,
-          )
-          expect(proseScrollers, `${route} uses a bounded prose scroller`).toBe(0)
+          const readingMetrics = await page.locator('.reading-page').evaluate((element) => {
+            const { left, right } = element.getBoundingClientRect()
+            const style = getComputedStyle(element)
+            return {
+              left,
+              right,
+              overflowY: style.overflowY,
+              maxHeight: style.maxHeight,
+              scrollHeight: element.scrollHeight,
+              clientHeight: element.clientHeight,
+            }
+          })
+          const minimumGutter = viewport.width < 768 ? 10 : 16
+          expect(readingMetrics.left, `${route} keeps its reading gutter`).toBeGreaterThanOrEqual(minimumGutter)
+          expect(viewport.width - readingMetrics.right, `${route} keeps its reading gutter`).toBeGreaterThanOrEqual(minimumGutter)
+          expect(readingMetrics.overflowY, `${route} keeps prose in natural document flow`).toBe('visible')
+          expect(readingMetrics.maxHeight, `${route} does not bound its reading path`).toBe('none')
+          expect(readingMetrics.scrollHeight, `${route} renders its full reading content`).toBeGreaterThanOrEqual(readingMetrics.clientHeight)
         }
       })
     }
@@ -61,6 +76,7 @@ for (const width of BOUNDARY_VIEWPORTS) {
   test(`breakpoint boundary ${width}px keeps source order and no overflow`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 })
     await page.goto('/explore')
+    await page.waitForTimeout(250)
     const metrics = await routeMetrics(page)
     expect(metrics.documentWidth).toBeLessThanOrEqual(width)
     await expect(page.locator('.atlas__layout')).toBeVisible()

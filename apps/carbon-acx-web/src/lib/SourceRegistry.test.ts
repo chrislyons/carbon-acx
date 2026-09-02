@@ -22,7 +22,7 @@ describe('SourceRegistry', () => {
     const html = renderToStaticMarkup(createElement(SourceRegistry, { entries: [entry] }))
     expect(html).toContain('<details class="source-registry__entry">')
     expect(html).toContain('SRC.TEST')
-    expect(html).toContain('2 calculator · 3 Atlas · 1 AI scenarios')
+    expect(html).toContain('2 calculator · 3 Atlas · 1 AI scenario')
     expect(html).toContain('Calculator records</dt><dd>2')
     expect(html).toContain('Atlas records</dt><dd>3')
     expect(html).toContain('AI scenarios</dt><dd>1')

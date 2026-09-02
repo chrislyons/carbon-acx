@@ -104,15 +104,18 @@ for (const viewport of [
 
 test('Home invalid distance suppresses the chart and continuation until recovery', async ({ page }) => {
   await page.goto('/')
-  await page.waitForTimeout(250)
   const distance = page.getByLabel('Annual distance (km)')
-  await distance.fill('9')
+  await expect(distance).toHaveValue('1000')
+  await distance.focus()
+  await page.keyboard.press('ControlOrMeta+A')
+  await page.keyboard.type('1')
   await expect(page.locator('#annual-distance-error')).toContainText('Enter a distance from 10 to 200,000 km.')
+  await expect(distance).toBeFocused()
   await expect(page.locator('.impact-trace')).toHaveCount(0)
   await expect(page.locator('.trace-estimate a')).toHaveCount(0)
   await expect(page.getByText('Enter a valid distance to continue', { exact: true })).toBeVisible()
 
-  await distance.fill('1250')
+  await page.keyboard.type('250')
   await expect(page.locator('.impact-trace__value')).toContainText('1,250 km · 225.0 kg CO₂e/yr')
   await expect(page.getByRole('link', { name: 'Open this estimate in the calculator' })).toHaveAttribute('href', /\/calculator\?data=/)
 })
@@ -125,7 +128,6 @@ test('Home numeric fallback remains functional without optional pointer APIs', a
     Object.defineProperty(Element.prototype, 'hasPointerCapture', { configurable: true, value: undefined })
   })
   await page.goto('/')
-  await page.waitForTimeout(250)
   const distance = page.getByLabel('Annual distance (km)')
   await distance.fill('1250')
   await expect(page.locator('.impact-trace__value')).toContainText('1,250 km · 225.0 kg CO₂e/yr')
@@ -151,7 +153,6 @@ test('Home marker drag uses bounded ten-kilometre steps', async ({ page }) => {
 
 test('Home mode controls retain attached evidence without redundant labels', async ({ page }) => {
   await page.goto('/')
-  await page.waitForTimeout(250)
   await page.getByRole('button', { name: 'Toronto bus' }).click()
   await expect(page.locator('.trace-mode[aria-pressed="true"]')).toHaveAttribute('aria-label', 'Toronto bus')
   await expect(page.locator('.impact-trace__line-label')).toHaveCount(0)
@@ -160,8 +161,8 @@ test('Home mode controls retain attached evidence without redundant labels', asy
 
 test('Home graph arrow keys step distance and commute mode', async ({ page }) => {
   await page.goto('/')
-  await page.waitForTimeout(250)
   const distance = page.getByLabel('Annual distance (km)')
+  await expect(distance).toHaveValue('1000')
   await page.keyboard.press('ArrowRight')
   await expect(distance).toHaveValue('1050')
   await page.keyboard.press('ArrowLeft')
@@ -210,6 +211,7 @@ test('Home graph controls overlay a viewport-responsive plot', async ({ page }) 
         buttonHeight: button.height,
         rowTop: row.top,
         rowBottom: row.bottom,
+        valueTop: value.top,
         valueLeft: value.left,
         valueBottom: value.bottom,
         quantityTop: quantity.top,
@@ -232,7 +234,6 @@ test('compact Calculator Browse switches to focused Worksheet and explicit Done'
   await page.setViewportSize({ width: 390, height: 844 })
   await page.addInitScript(() => localStorage.removeItem('carbon-acx-calculator-inputs'))
   await page.goto('/calculator')
-  await page.waitForTimeout(250)
   await page.getByRole('button', { name: 'Add School run by car to the worksheet' }).click()
   await expect(page.getByRole('button', { name: 'Worksheet', exact: true })).toHaveAttribute('aria-pressed', 'true')
   const quantity = page.locator('[id="TRAN.SCHOOLRUN.CAR.KM-quantity"]')

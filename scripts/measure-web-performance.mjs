@@ -7,8 +7,15 @@ import { resolve } from 'node:path'
 import { setTimeout as sleep } from 'node:timers/promises'
 import { chromium } from '../apps/carbon-acx-web/node_modules/@playwright/test/index.mjs'
 
-const PREFERRED_PORT = Number(process.env.ACX_PERFORMANCE_PORT ?? 4180)
-const SAMPLE_COUNT = Number(process.env.ACX_SAMPLE_COUNT ?? 3)
+const SAMPLE_COUNT = parseSampleCount(process.env.ACX_SAMPLE_COUNT)
+function parseSampleCount(value) {
+  if (value === undefined) return 3
+  const count = Number(value)
+  if (!Number.isInteger(count) || count < 1) {
+    throw new Error(`ACX_SAMPLE_COUNT must be a positive integer; received ${JSON.stringify(value)}`)
+  }
+  return count
+}
 const NETWORK = {
   latency: 150,
   downloadThroughput: (1.6 * 1024 * 1024) / 8,
@@ -80,9 +87,26 @@ async function getFreePort() {
     probe.listen(0, '127.0.0.1', () => resolvePort())
   })
   const address = probe.address()
-  const port = typeof address === 'object' && address ? address.port : PREFERRED_PORT
+  if (typeof address !== 'object' || !address) throw new Error('Could not determine static server port')
   await new Promise((resolveClose, rejectClose) => probe.close((error) => error ? rejectClose(error) : resolveClose()))
-  return port
+  return address.port
+}
+
+async function stopStaticServer(server) {
+  if (!server || server.exitCode !== null) return
+  await new Promise((resolveStop) => {
+    const onExit = () => resolveStop()
+    server.once('exit', onExit)
+    try {
+      if (!server.kill('SIGTERM') && server.exitCode !== null) {
+        server.off('exit', onExit)
+        resolveStop()
+      }
+    } catch {
+      server.off('exit', onExit)
+      resolveStop()
+    }
+  })
 }
 
 async function startStaticServer() {
@@ -92,8 +116,13 @@ async function startStaticServer() {
     stdio: ['ignore', 'pipe', 'inherit'],
   })
   const base = `http://127.0.0.1:${port}`
-  await waitForServer(`${base}/`)
-  return { server, base }
+  try {
+    await waitForServer(`${base}/`)
+    return { server, base }
+  } catch (error) {
+    await stopStaticServer(server)
+    throw error
+  }
 }
 
 async function measureSample(browser, base, definition, iteration) {
@@ -202,21 +231,25 @@ const definitions = [
 
 async function main() {
   await mkdir(resolve('dist'), { recursive: true })
-  const { server, base } = await startStaticServer()
-  const browser = await chromium.launch()
-  const browserVersion = browser.version()
-  console.log(`Chromium: ${browserVersion}`)
+  let server
+  let browser
+  let base
+  let browserVersion
   const samples = []
   try {
+    ({ server, base } = await startStaticServer())
+    browser = await chromium.launch()
+    browserVersion = browser.version()
+    console.log(`Chromium: ${browserVersion}`)
     for (const definition of definitions) {
       for (let iteration = 1; iteration <= SAMPLE_COUNT; iteration += 1) {
         samples.push(await measureSample(browser, base, definition, iteration))
       }
     }
-  for (const sample of samples) console.log(`${sample.name} #${sample.iteration} LCP ${sample.lcp}ms (${sample.lcpElement}: ${sample.lcpText}) CLS ${sample.cls} events ${sample.eventTimingEntries} flow ${sample.flow?.opened ?? false}`)
+    for (const sample of samples) console.log(`${sample.name} #${sample.iteration} LCP ${sample.lcp}ms (${sample.lcpElement}: ${sample.lcpText}) CLS ${sample.cls} events ${sample.eventTimingEntries} flow ${sample.flow?.opened ?? false}`)
   } finally {
-    await browser.close()
-    server.kill('SIGTERM')
+    await browser?.close().catch(() => {})
+    await stopStaticServer(server)
   }
 
   const medians = Object.fromEntries(definitions.map((definition) => {

@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
+import type { Locator } from '@playwright/test'
 
 const routes = ['/', '/calculator', '/explore', '/explore/3d', '/learn', '/methodology', '/evidence']
 const themes = ['light', 'dark'] as const
@@ -8,6 +9,16 @@ const viewports = [
   { name: '390 × 844', size: { width: 390, height: 844 } },
   { name: '768 × 1024', size: { width: 768, height: 1024 } },
 ] as const
+
+async function expectTouchTarget(control: Locator, name: string) {
+  await expect(control, `${name} is visible`).toBeVisible()
+  const { height, width } = await control.evaluate((element) => {
+    const rect = element.getBoundingClientRect()
+    return { height: rect.height, width: rect.width }
+  })
+  expect(height, `${name} meets the 44px touch-target height`).toBeGreaterThanOrEqual(44)
+  expect(width, `${name} meets the 44px touch-target width`).toBeGreaterThanOrEqual(44)
+}
 
 for (const theme of themes) {
   for (const viewport of viewports) {
@@ -47,6 +58,28 @@ for (const theme of themes) {
       )
       expect(actionBoxes).not.toEqual([])
       expect(actionBoxes.every((box) => box.height >= 44)).toBe(true)
+    })
+  }
+}
+
+for (const theme of themes) {
+  for (const viewport of viewports) {
+    test(`evidence and manifest actions are touch-sized in ${theme} at ${viewport.name}`, async ({ page }) => {
+      await page.addInitScript((savedTheme) => localStorage.setItem('carbon-acx-theme', savedTheme), theme)
+      if (viewport.size) await page.setViewportSize(viewport.size)
+      await page.goto('/evidence')
+      await expect(page.locator('html')).toHaveAttribute('data-theme', theme)
+
+      await expectTouchTarget(page.locator('#main-content').getByRole('link', { name: 'Raw artifacts' }), 'Raw artifacts')
+      await expectTouchTarget(page.getByRole('link', { name: 'Open the data-stream catalog' }), 'Data-stream catalog')
+      const manifestLink = page.locator('#manifests .manifest-card').first()
+      await expectTouchTarget(manifestLink, 'Manifest detail')
+      const manifestHref = await manifestLink.getAttribute('href')
+      expect(manifestHref).toMatch(/^\/evidence\/.+/)
+
+      await page.goto(manifestHref!)
+      await expectTouchTarget(page.getByRole('link', { name: 'Back to Evidence' }), 'Back to Evidence')
+      await expectTouchTarget(page.getByRole('button', { name: 'Verify downloaded bytes' }), 'Verify downloaded bytes')
     })
   }
 }

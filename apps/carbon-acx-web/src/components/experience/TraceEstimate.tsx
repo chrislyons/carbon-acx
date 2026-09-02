@@ -14,7 +14,7 @@ const MAX_DISTANCE = 200_000
 const commuterVehicleIds = ['TRAN.SCHOOLRUN.CAR.KM', 'TRAN.TTC.BUS.KM', 'TRAN.TTC.SUBWAY.KM'] as const
 const commuterVehicles = commuterVehicleIds.map((id) => getActivityById(id)!)
 const defaultVehicle = commuterVehicles[0]
-const publishedActivityCount = ACTIVITIES.filter((item) => item.evidence.publicationStatus === 'published').length
+const publishedActivities = ACTIVITIES.filter((item) => item.evidence.publicationStatus === 'published')
 
 const vehicleLabels: Record<string, string> = {
   'TRAN.SCHOOLRUN.CAR.KM': 'Car',
@@ -36,6 +36,8 @@ export function TraceEstimate() {
   const result = distance === null
     ? null
     : calculateEmissions([{ activityId: activity.id, quantity: distance }]).results[0] ?? null
+  const isValidDistance = result !== null && distance !== null
+  const publishedActivityOrdinal = publishedActivities.findIndex((item) => item.id === activity.id) + 1
 
   const selectAdjacentVehicle = useCallback((direction: 'previous' | 'next') => {
     const index = commuterVehicles.findIndex((vehicle) => vehicle.id === activityId)
@@ -101,40 +103,33 @@ export function TraceEstimate() {
   return (
     <section className="trace-estimate" aria-label="Published travel estimate">
       <div className="trace-estimate__lead">
-        {result && distance !== null ? (
-          <>
-            <ImpactTrace
-              lines={commuterVehicles.map((vehicle) => ({
-                id: vehicle.id,
-                label: vehicleLabels[vehicle.id] ?? vehicle.name,
-                factor: vehicle.emissionFactor,
-                unitLabel: abbreviateUnit(vehicle.unitLabel),
-              }))}
-              activeId={activity.id}
-              quantity={distance}
-              unitLabel={abbreviateUnit(activity.unitLabel)}
-              emissions={result.emissions}
-              color={CATEGORY_INFO[activity.category].color}
-              modeControls={modeControls}
-              quantityControl={quantityControl}
-              onQuantityChange={(nextDistance) => setDistanceDraft(String(nextDistance))}
-            />
-            <Link className="text-link text-link--primary" href={`/calculator?data=${encodeCalculatorInputs({ [activity.id]: distance })}`}>
-              Open this estimate in the calculator
-            </Link>
-          </>
-        ) : (
-          <div className="trace-invalid-layout">
-            <div className="impact-trace__mode-rail" role="group" aria-label="Travel mode">
-              {modeControls}
-            </div>
-            <div className="trace-invalid-layout__body">
+        <ImpactTrace
+          lines={commuterVehicles.map((vehicle) => ({
+            id: vehicle.id,
+            label: vehicleLabels[vehicle.id] ?? vehicle.name,
+            factor: vehicle.emissionFactor,
+            unitLabel: abbreviateUnit(vehicle.unitLabel),
+          }))}
+          activeId={activity.id}
+          quantity={distance ?? MIN_DISTANCE}
+          unitLabel={abbreviateUnit(activity.unitLabel)}
+          emissions={result?.emissions ?? 0}
+          color={CATEGORY_INFO[activity.category].color}
+          modeControls={modeControls}
+          quantityControl={quantityControl}
+          onQuantityChange={(nextDistance) => setDistanceDraft(String(nextDistance))}
+          invalidContent={isValidDistance ? undefined : (
+            <>
               <p id="annual-distance-error" role="alert" className="field-error">{distanceError}</p>
               <p className="trace-invalid-copy">Enter a valid distance to continue</p>
-              {quantityControl}
-            </div>
-          </div>
-        )}
+            </>
+          )}
+        />
+        {isValidDistance ? (
+          <Link className="text-link text-link--primary" href={`/calculator?data=${encodeCalculatorInputs({ [activity.id]: distance })}`}>
+            Open this estimate in the calculator
+          </Link>
+        ) : null}
       </div>
       <aside className="evidence-rail" aria-label="Factor evidence">
         <p className="section-kicker">Evidence attached to this estimate</p>
@@ -143,7 +138,11 @@ export function TraceEstimate() {
           <span className="evidence-chip">Factor · {formatEmissions(activity.emissionFactor)}/unit</span>
         </div>
         <EvidenceFacts evidence={activity.evidence} unitLabel={activity.unitLabel} />
-        <p className="evidence-rail__example">Record 1 of {publishedActivityCount} published calculator activities</p>
+        <p className="evidence-rail__example">
+          {publishedActivityOrdinal > 0
+            ? `Record ${publishedActivityOrdinal} of ${publishedActivities.length} published calculator activities`
+            : `${publishedActivities.length} published calculator activities`}
+        </p>
         {distance !== null ? (
           <details className="disclosure">
             <summary>{activity.evidence.sourceIds.length} source{activity.evidence.sourceIds.length === 1 ? '' : 's'}</summary>

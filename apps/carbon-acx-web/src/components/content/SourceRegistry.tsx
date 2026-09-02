@@ -14,7 +14,7 @@ export function SourceRegistry({ entries }: { entries: SourceRegistryEntry[] }) 
         <details key={entry.sourceId} className="source-registry__entry">
           <summary>
             <span className="source-registry__id">{entry.sourceId}</span>
-            <span>{entry.calculatorRecordCount} calculator · {entry.atlasRecordCount} Atlas · {entry.aiScenarioCount} AI scenarios</span>
+            <span>{entry.calculatorRecordCount} calculator · {entry.atlasRecordCount} Atlas · {entry.aiScenarioCount} AI {entry.aiScenarioCount === 1 ? 'scenario' : 'scenarios'}</span>
           </summary>
           <dl className="source-registry__facts">
             <div><dt>Citation</dt><dd>{entry.citation || 'Not specified'}</dd></div>

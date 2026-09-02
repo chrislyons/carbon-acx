@@ -236,10 +236,14 @@ function CalculatorContent() {
   const reset = () => {
     setSelectedIds([])
     setCollapsedIds([])
+    setInputs({})
     setDrafts({})
     setErrors({})
     setActiveEditorId(null)
     setEvidenceId(null)
+    setScenarioGrams(0)
+    setScenarioOpen(false)
+    if (scenarioDetailsRef.current) scenarioDetailsRef.current.open = false
     setView('browse')
     setAnnouncement('Worksheet cleared.')
     localStorage.removeItem(STORAGE_KEY)
@@ -366,7 +370,15 @@ function CalculatorContent() {
                 />
               )}
             </div>
-            <details ref={scenarioDetailsRef} className="scenario-disclosure" onToggle={(event) => setScenarioOpen(event.currentTarget.open)}>
+            <details
+              ref={scenarioDetailsRef}
+              className="scenario-disclosure"
+              onToggle={(event) => {
+                const open = event.currentTarget.open
+                setScenarioOpen(open)
+                if (!open) setScenarioGrams(0)
+              }}
+            >
               <summary>Add a documented AI scenario</summary>
               {scenarioOpen ? <ScenarioPane onPublishedGrams={setScenarioGrams} /> : null}
             </details>

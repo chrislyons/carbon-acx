@@ -24,6 +24,7 @@ export function ImpactTrace({
   modeControls,
   quantityControl,
   onQuantityChange,
+  invalidContent,
 }: {
   lines: TraceLine[]
   activeId: string
@@ -34,12 +35,14 @@ export function ImpactTrace({
   modeControls: ReactNode
   quantityControl: ReactNode
   onQuantityChange: (quantity: number) => void
+  invalidContent?: ReactNode
 }) {
   const plotRef = useRef<HTMLDivElement>(null)
   const svgRef = useRef<SVGSVGElement>(null)
   const [box, setBox] = useState({ width: 960, height: 320 })
   const [dragging, setDragging] = useState(false)
   const selectedLine = lines.find((line) => line.id === activeId) ?? lines[0]
+  const isInvalid = invalidContent !== undefined
 
   useLayoutEffect(() => {
     const element = plotRef.current
@@ -56,7 +59,7 @@ export function ImpactTrace({
     })
     observer.observe(element)
     return () => observer.disconnect()
-  }, [])
+  }, [isInvalid])
 
   const { width: chartWidth, height: chartHeight } = box
   const x = scaleLinear().domain([0, MAX_QUANTITY]).range([40, chartWidth - 36])
@@ -99,8 +102,13 @@ export function ImpactTrace({
   }
 
   return (
-    <figure className="impact-trace" aria-label="Annual travel emissions trace" aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown">
-      <div className="impact-trace__visual">
+    <figure
+      className={invalidContent === undefined ? 'impact-trace' : 'trace-invalid-layout'}
+      aria-label={invalidContent === undefined ? 'Annual travel emissions trace' : undefined}
+      aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown"
+    >
+      {invalidContent === undefined ? (
+        <div className="impact-trace__visual">
         <div className="impact-trace__mode-rail" role="group" aria-label="Travel mode">
           {modeControls}
         </div>
@@ -164,16 +172,27 @@ export function ImpactTrace({
             </text>
           </svg>
         </div>
+        </div>
+      ) : (
+        <div className="impact-trace__mode-rail" role="group" aria-label="Travel mode">
+          {modeControls}
+        </div>
+      )}
+      <div className={invalidContent === undefined ? 'impact-trace__result-row' : 'trace-invalid-layout__body'}>
+        {invalidContent ?? (
+          <p className="impact-trace__value" aria-live="polite">
+            {Math.round(quantity).toLocaleString('en-CA')} {unitLabel} · {formatEmissions(emissions)}/yr
+          </p>
+        )}
+        <div key="quantity-control" style={{ display: 'contents' }}>
+          {quantityControl}
+        </div>
       </div>
-      <div className="impact-trace__result-row">
-        <p className="impact-trace__value" aria-live="polite">
-          {Math.round(quantity).toLocaleString('en-CA')} {unitLabel} · {formatEmissions(emissions)}/yr
+      {invalidContent === undefined ? (
+        <p className="impact-trace__equation">
+          {Math.round(quantity).toLocaleString('en-CA')} {unitLabel} × {selectedLine?.factor ?? 0} g CO₂e / {selectedLine?.unitLabel ?? unitLabel} = {formatEmissions(emissions)}/yr
         </p>
-        {quantityControl}
-      </div>
-      <p className="impact-trace__equation">
-        {Math.round(quantity).toLocaleString('en-CA')} {unitLabel} × {selectedLine?.factor ?? 0} g CO₂e / {selectedLine?.unitLabel ?? unitLabel} = {formatEmissions(emissions)}/yr
-      </p>
+      ) : null}
     </figure>
   )
 }

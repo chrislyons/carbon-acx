@@ -48,10 +48,10 @@ try {
   await discoveryContext.addInitScript(() => localStorage.setItem('carbon-acx-theme', 'light'))
   const discoveryPage = await discoveryContext.newPage()
   await discoveryPage.goto(`${base}/evidence`, { waitUntil: 'load' })
-  const manifestRoute = await discoveryPage.locator('#manifests a').first().getAttribute('href')
+  const manifestLink = discoveryPage.locator('#manifests a').first()
+  const manifestRoute = await manifestLink.count() > 0 ? await manifestLink.getAttribute('href') : null
   await discoveryContext.close()
-  if (!manifestRoute) throw new Error('Evidence page has no manifest detail link')
-  const routes = [...BASE_ROUTES, manifestRoute]
+  const routes = manifestRoute ? [...BASE_ROUTES, manifestRoute] : BASE_ROUTES
 
   for (const theme of THEMES) {
     for (const [width, height] of VIEWPORTS) {
