@@ -183,3 +183,12 @@ Full report and topology map in `docs/acx/ACX115 Backend Architectural Audit and
 - Inspected the Cloudflare edge topology: Pages static export, Pages Functions path sanitization and reverse proxying (`functions/carbon-acx/[[path]].ts`), and fail-closed Worker endpoint (`workers/compute/index.ts`).
 - Verified and documented integrity constraints: AST-evaluated functional unit formulas, fail-closed audit pipelines, and immutable cryptographic figure manifests.
 - Documented findings and recommendations in ACX115; updated `docs/acx/ACX.md` catalog.
+
+## 2026-09-04 (2) — frontend architecture, narrative flow, and viewport topology
+
+Full report and narrative map in `docs/acx/ACX116 Frontend Architecture, Narrative Flow, and Viewport Topology.md`.
+
+- Audited the Next.js 15 / React 19 static export architecture (`apps/carbon-acx-web`), CSS-first Tailwind v4 tokens without disruptive preflight, and deferred D3/WebGL visual subsystems.
+- Analyzed the cognitive narrative journey across 6 routes: Intuition (Home trace) → Action (Calculator worksheet) → Systems literacy (Explore Atlas) → Epistemic rules (Learn / Methodology) → Cryptographic trust (Evidence / Web Crypto SHA-256 verifier).
+- Documented viewport real estate allocation: Workspace layouts with contained panel scrolling at >= 60rem versus natural reading document flow for prose pages, supported by responsive breakpoint grids (48rem, 60rem, 72rem) and zero horizontal overflow guarantees.
+- Documented findings and architectural opportunities in ACX116; updated `docs/acx/ACX.md` catalog.
