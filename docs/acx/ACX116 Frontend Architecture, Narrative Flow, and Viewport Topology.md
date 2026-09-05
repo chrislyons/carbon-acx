@@ -173,6 +173,67 @@ The UI layout is governed by the superseding decisions in **ACX114**, organizing
   - Dark mode $\rightarrow$ Explicit theme token precedence respecting `forced-colors: active` and high contrast.
 - **Sub-Second Perceived Performance:** Zero dynamic client data queries. First-load JS is tightly budgeted (~102 kB shared vendor bundle, ~160 kB route bundle), with heavy visualization libraries (`d3-sankey`, `three`) deferred to on-demand dynamic imports.
 
-### Minor Opportunities for Future Iterations
-1. **Dynamic Workspace Height on Short Displays:** On very short landscape viewports (e.g. $1280\times600$), the locked viewport height (`calc(100vh - 4.5rem)`) leaves narrow vertical space for the inner scroll panels. Relaxing the height lock below 650px vertical height could provide a smoother experience.
-2. **Preset Profiles in Calculator:** While users can share and load custom worksheets via URL, introducing 2–3 pre-populated benchmark personas (e.g. "Toronto Transit Commuter", "Rural Driver") would shorten time-to-value for casual users.
+---
+
+## 6. Frontend Recommendations & Action Plan
+
+### 6.1. Viewport & Layout Mechanics
+1. **Relax locked viewport height on short displays ($< 680\text{px}$ vertical):**
+   - *Problem:* At $\ge 60\text{rem}$ ($960\text{px}$), `.workspace` locks height to `calc(100vh - var(--header-h))` with internal `.panel__scroll` regions. On short 16:9 viewports (e.g. $1366\times768$ with browser chrome, or $1280\times600$), header ($4.5\text{rem}$) + tab header ($3.375\text{rem}$) leave only $\sim 380\text{px}$ for dual inner scrollers, causing cramped scrolling.
+   - *Decision:* Add `@media (min-width: 60rem) and (max-height: 42.5rem)` override setting `.workspace { height: auto; min-height: 0; }` and `.panel__scroll { overflow-y: visible; }` to restore natural document scroll when vertical height is constrained.
+   - *Check:* Verify $1280\times600$ viewport in Playwright tests; ensure no clipped content or awkward nested scrollbars.
+2. **Add sticky column headers inside `.panel__scroll`:**
+   - *Problem:* In `/calculator` and `/explore`, scrolling long lists in `.panel__scroll` moves category navigation and table headers out of view.
+   - *Decision:* Apply `position: sticky; top: 0; z-index: 10; background: var(--surface-panel);` to `.worksheet__groups`, `.mode-switcher`, and `.data-matrix__group > header`.
+   - *Check:* Confirm sticky headers do not obscure the focused item when tabbing through activity cards.
+
+### 6.2. Narrative Flow & Cognitive Transitions
+1. **Introduce 1-click baseline presets ("Personas") in the Calculator:**
+   - *Problem:* `/calculator` starts with an empty worksheet or previous local storage. First-time visitors face high initial cognitive load selecting 21 activities and inputting annual numbers from scratch.
+   - *Decision:* Add 3 evidence-backed, 1-click starter baselines in `ActivityShelf.tsx`:
+     - *Urban Transit Commuter:* Subway, bus, vegetarian meals, apartment natural gas, streaming.
+     - *Suburban Driver:* Car commute ($15,000\text{ km}$), mixed meals, single-family gas/refrigeration.
+     - *Remote Tech Worker:* Heavy digital streaming, laptop/cloud runtime, short-haul flight, coffee.
+   - *Check:* Presets populate valid positive inputs without triggering dirty-form validation errors or overriding custom values without confirmation.
+2. **Bridge the cognitive divide between Personal Footprint and Structural Systems:**
+   - *Problem:* Moving from `/calculator` (personal household activities) to `/explore` (materials, heavy industry, military operations, feedback loops) can feel disconnected. Users can mistake industrial layers for things they should personally calculate.
+   - *Decision:* Add an explicit boundary banner at the top of `/explore` mode switcher explaining the epistemic division: *Personal activities are composable screening inventories; structural and industrial layers represent collective societal infrastructure and are strictly non-additive.*
+   - *Check:* Prevents user confusion regarding why industrial records cannot be added to the personal worksheet tally.
+3. **Elevate AI Inference Scenarios from hidden disclosure to first-class card:**
+   - *Problem:* `ScenarioPane.tsx` is collapsed inside `<details className="disclosure">` at the bottom of the worksheet, burying one of the most timely aspects of digital carbon accounting.
+   - *Decision:* Render `ScenarioPane` as a dedicated sibling section in the worksheet when digital activities are present in the basket, or promote a persistent "AI Workload" badge in the category rail.
+   - *Check:* Verify that scenario grams continue to isolate undisclosed model parameters and do not join totals if marked `unavailable`.
+
+### 6.3. Epistemic Representation & Uncertainty
+1. **Display aggregate confidence intervals on the primary tally:**
+   - *Problem:* In `/calculator`, individual ranked bars show uncertainty whiskers ($[\text{low}, \text{high}]$), but the top tally card renders a single scalar point estimate ($XX,XXX\text{ kg CO}_2\text{e/yr}$). This contradicts the repository principle that screening calculations carry bounded error margins.
+   - *Decision:* Propagate uncertainty through `calculateEmissions()`: compute $\sum \text{low}$ and $\sum \text{high}$ for bounded factors and display the range directly beneath the headline total: e.g. `$14,200\text{ kg CO}_2\text{e/yr}$ (bounded: $11,800\text{--}16,400\text{ kg}$)`. Disclose when any active factor lacks uncertainty data.
+   - *Check:* Ensure items with `uncertainty: 'unquantified'` do not zero-out the range; display `"+ unquantified factors"` instead.
+2. **Contextualize territorial benchmarks against household totals:**
+   - *Problem:* `BenchmarkContext.tsx` compares a user's household activity sum directly against Canadian per-capita territorial emissions ($15.2\text{ t CO}_2\text{e}$). Territorial totals include heavy industry, mining, and freight exports that individual household activities cannot mathematically match, making user footprints look artificially tiny.
+   - *Decision:* Add a visual split or clarification marker in `BenchmarkSpectrum.tsx` distinguishing *Direct Household Scope 1+2 portion ($\sim 3.8\text{ t}$)* from *Embedded National Infrastructure & Industry ($\sim 11.4\text{ t}$)*.
+   - *Check:* Preserves current benchmark data while eliminating misleading direct comparisons between personal transport/food and national industrial outputs.
+
+### 6.4. Interactive Affordances & Ergonomics
+1. **Expose keyboard shortcut indicators on the Home commute chart:**
+   - *Problem:* `useGraphKeyboard.ts` enables directional stepping ($\leftarrow/\rightarrow$ for distance, $\uparrow/\downarrow$ for mode), but the only hint is an unrendered `aria-keyshortcuts` attribute. Most sighted keyboard users never discover it.
+   - *Decision:* Render a subtle, accessible shortcut chip on `ImpactTrace.tsx`: e.g. `<kbd>←</kbd><kbd>→</kbd> Adjust distance · <kbd>↑</kbd><kbd>↓</kbd> Switch mode`.
+   - *Check:* Hide indicators on touch-primary devices using `@media (hover: none) and (pointer: coarse)`.
+2. **Provide a "Return to Browse" floating anchor on mobile:**
+   - *Problem:* On $< 48\text{rem}$ mobile viewports, clicking "Add to worksheet" switches view state to `'worksheet'`. Adding another activity requires scrolling back up to the top view toggle to switch back to `'browse'`.
+   - *Decision:* Add an inline `"Add another activity +"` action button at the bottom of the worksheet list on mobile, toggling `setView('browse')` and focusing the category rail.
+   - *Check:* Measure mobile task completion time; ensure focus moves cleanly to the selected category button.
+3. **Persist custom user units in worksheet export:**
+   - *Problem:* `encodeCalculatorInputs` encodes an activity-to-quantity map into the URL query string, but does not capture user-selected benchmark comparisons or collapsed UI states.
+   - *Decision:* Extend serialization schema to versioned payload: `v=2&b=ontario_average&d=...`.
+   - *Check:* Maintain backward compatibility with legacy `?data=<base64>` query params.
+
+### 6.5. Frontend Codebase & CSS Architecture
+1. **Modularize `globals.css` into logical layers:**
+   - *Problem:* `apps/carbon-acx-web/src/app/globals.css` has grown to over 3,350 lines in a single file, blending token definitions, typography, route-specific components, and deep responsive overrides.
+   - *Decision:* Refactor into modular CSS imports (`styles/tokens.css`, `styles/layout.css`, `styles/components/*.css`, `styles/responsive.css`).
+   - *Check:* Zero impact on CSS bundle size; verify PostCSS/Tailwind v4 pipeline bundles correctly without specificity regressions.
+2. **Automate client-side contrast regression checks:**
+   - *Problem:* The site supports light mode, dark mode, `forced-colors: active`, and `prefers-contrast: more`. Theme tokens are defined across two CSS root scopes (`:root` and `[data-theme='dark']`).
+   - *Decision:* Add automated Playwright Axe checks specifically verifying contrast ratios for `--viz-unavailable` hatchings and `--ink-muted` labels across all four theme variations.
+   - *Check:* Ensure zero WCAG 2.1 AA violations on status chips, whisker bars, and mono reference codes.

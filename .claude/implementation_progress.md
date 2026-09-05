@@ -191,4 +191,4 @@ Full report and narrative map in `docs/acx/ACX116 Frontend Architecture, Narrati
 - Audited the Next.js 15 / React 19 static export architecture (`apps/carbon-acx-web`), CSS-first Tailwind v4 tokens without disruptive preflight, and deferred D3/WebGL visual subsystems.
 - Analyzed the cognitive narrative journey across 6 routes: Intuition (Home trace) → Action (Calculator worksheet) → Systems literacy (Explore Atlas) → Epistemic rules (Learn / Methodology) → Cryptographic trust (Evidence / Web Crypto SHA-256 verifier).
 - Documented viewport real estate allocation: Workspace layouts with contained panel scrolling at >= 60rem versus natural reading document flow for prose pages, supported by responsive breakpoint grids (48rem, 60rem, 72rem) and zero horizontal overflow guarantees.
-- Documented findings and architectural opportunities in ACX116; updated `docs/acx/ACX.md` catalog.
+- Documented findings and architectural opportunities in ACX116, including a comprehensive 5-domain UI/UX and narrative action plan (Section 6); updated `docs/acx/ACX.md` catalog.
