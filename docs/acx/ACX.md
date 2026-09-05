@@ -4,6 +4,7 @@ Active catalog for Carbon ACX project documents.
 
 ## Recent Documents
 
+- [ACX115 Backend Architectural Audit and Dataflow Topology](./ACX115%20Backend%20Architectural%20Audit%20and%20Dataflow%20Topology.md)
 - [ACX114 Responsive Information Architecture Superseding Decisions](./ACX114%20Responsive%20Information%20Architecture%20Superseding%20Decisions.md)
 - [ACX113 Interactive Home Tab and Framed Tab System](./ACX113%20Interactive%20Home%20Tab%20and%20Framed%20Tab%20System.md)
 - [ACX112 Landscape Viewport Optimization](./ACX112%20Landscape%20Viewport%20Optimization.md)
@@ -131,6 +132,7 @@ Active catalog for Carbon ACX project documents.
 - [ACX112 Landscape Viewport Optimization](./ACX112%20Landscape%20Viewport%20Optimization.md)
 - [ACX113 Interactive Home Tab and Framed Tab System](./ACX113%20Interactive%20Home%20Tab%20and%20Framed%20Tab%20System.md)
 - [ACX114 Responsive Information Architecture Superseding Decisions](./ACX114%20Responsive%20Information%20Architecture%20Superseding%20Decisions.md)
+- [ACX115 Backend Architectural Audit and Dataflow Topology](./ACX115%20Backend%20Architectural%20Audit%20and%20Dataflow%20Topology.md)
 
 ## Navigation
 
@@ -144,4 +146,4 @@ Active catalog for Carbon ACX project documents.
 
 ---
 
-**Last Updated:** 2026-09-02
+**Last Updated:** 2026-09-04

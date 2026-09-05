@@ -173,3 +173,13 @@ Decision record: `docs/acx/ACX114 Responsive Information Architecture Supersedin
 - Added graph-agnostic `useGraphKeyboard` commands: Left/Right step the commute quantity, Up/Down cycle modes, and editable controls retain native arrow behavior. Home evidence disclosures use a contained scroll region.
 - Reordered the global chrome to `brand → primary links → theme glyph`, removed visible theme-mode text and outline, reduced duplicate tab sticky offsets and shell padding, and removed the doubled Home/footer divider.
 - Browser evidence covers 1568×1018, 1032×1568, 1280×720, 390×844, and 320×800 surfaces. Header/footer bounds, footer reachability, graph overlay geometry, source-detail scrolling, and horizontal overflow were inspected directly in the running app.
+
+## 2026-09-04 — backend architecture audit and dataflow topology
+
+Full report and topology map in `docs/acx/ACX115 Backend Architectural Audit and Dataflow Topology.md`.
+
+- Analyzed the multi-layer offline derivation, schema validation (Pydantic v2 + SQLite triggers), and DAL abstraction (`CsvStore`, `DuckDbStore`, `SqlStore`).
+- Audited `scripts/generate_web_calculator_data.py` atomic generation of versioned data authorities (`acx.web-calculator/1-6-0`, `acx.web-catalog/1-0-0`, `acx.stream-catalog/1-0-0`, `acx.public-release/1-1-0`).
+- Inspected the Cloudflare edge topology: Pages static export, Pages Functions path sanitization and reverse proxying (`functions/carbon-acx/[[path]].ts`), and fail-closed Worker endpoint (`workers/compute/index.ts`).
+- Verified and documented integrity constraints: AST-evaluated functional unit formulas, fail-closed audit pipelines, and immutable cryptographic figure manifests.
+- Documented findings and recommendations in ACX115; updated `docs/acx/ACX.md` catalog.
