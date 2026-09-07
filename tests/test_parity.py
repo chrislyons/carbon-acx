@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from calc import derive
+from calc.derive import pipeline as derive_pipeline
 from calc.dal import CsvStore, SqlStore
 from scripts.import_csv_to_db import import_csv_to_db
 
@@ -39,6 +40,8 @@ def test_csv_and_sql_outputs_match(
     monkeypatch.setenv("ACX_GENERATED_AT", "1970-01-01T00:00:00+00:00")
     csv_root = tmp_path / "csv"
     db_root = tmp_path / "db"
+    # export_view mirrors outputs into ARTIFACT_ROOT; keep that out of the repo tree.
+    monkeypatch.setattr(derive_pipeline, "ARTIFACT_ROOT", tmp_path / "artifacts")
 
     derive.export_view(CsvStore(), output_root=csv_root)
 

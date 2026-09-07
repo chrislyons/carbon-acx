@@ -13,7 +13,10 @@ def test_backend_parity(
 ) -> None:
     monkeypatch.delenv("ACX_DATA_BACKEND", raising=False)
     monkeypatch.setenv("ACX_GENERATED_AT", "1970-01-01T00:00:00+00:00")
+    # export_view mirrors outputs into ARTIFACT_ROOT; keep that out of the repo tree.
+    from calc.derive import pipeline as derive_pipeline
 
+    monkeypatch.setattr(derive_pipeline, "ARTIFACT_ROOT", tmp_path_factory.mktemp("artifacts"))
     outputs: dict[str, Path] = {}
     for name in ("csv", "duckdb"):
         if name == "duckdb":
