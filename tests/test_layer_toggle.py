@@ -4,12 +4,13 @@ from dash import html
 
 import calc.derive as derive_mod
 from calc import citations
+from calc.dal import CsvStore
 from calc.schema import ActivitySchedule, EmissionFactor, LayerId, Profile
 
 from app import app as app_module
 
 
-class LayeredStore:
+class LayeredStore(CsvStore):
     def load_emission_factors(self):
         return [
             EmissionFactor(activity_id="coffee", value_g_per_unit=1, source_id="SRC.POORE2018"),
@@ -39,12 +40,6 @@ class LayeredStore:
                 freq_per_day=1,
             ),
         ]
-
-    def load_grid_intensity(self):
-        return []
-
-    def load_activities(self):
-        return []
 
 
 def _extract_reference_texts(children) -> list[str]:

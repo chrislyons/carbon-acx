@@ -5,7 +5,7 @@ ROOT_DIR=$(cd "$(dirname "$0")/.." && pwd)
 REQUIRED_NODE="20.19.4"
 REQUIRED_PNPM="10.5.2"
 REQUIRED_PYTHON_MINOR="3.11"
-REQUIRED_POETRY_MINOR="1.8"
+REQUIRED_POETRY_MINOR="2.2"
 
 CHECK_ONLY=0
 if [[ "${1:-}" == "--check-only" ]]; then

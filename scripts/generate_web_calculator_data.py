@@ -20,6 +20,13 @@ if str(SCRIPT_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPT_REPO_ROOT))
 
 from tools.citations.scan_claims import load_manifest_specs  # noqa: E402
+from calc.selection import (  # noqa: E402
+    FactorCandidate,
+    GridCandidate,
+    grid_row_id,
+    select_emission_factor,
+    select_grid_row,
+)
 
 try:
     from ._owid_snapshot import (
@@ -36,7 +43,7 @@ except ImportError:  # direct execution: python3 scripts/generate_web_calculator
         validate_manifest,
     )
 
-SCHEMA_VERSION = "acx.web-calculator/1-6-0"
+SCHEMA_VERSION = "acx.web-calculator/1-7-0"
 CATALOG_SCHEMA_VERSION = "acx.web-catalog/1-0-0"
 AI_SCENARIOS_SCHEMA_VERSION = "acx.ai-scenarios/1-1-0"
 
@@ -126,7 +133,6 @@ EXPECTED_BENCHMARK_KEYS = {
     "british_columbia_average",
     "manitoba_average",
 }
-REGION_PREFERENCE = {"CA-ON": 0, "CA": 1, "GLOBAL": 2, "": 3}
 GRAMS_PER_TONNE = 1_000_000
 BENCHMARK_DERIVATION_TOLERANCE_T = 0.15
 
@@ -201,17 +207,20 @@ def _unit_label(unit: str) -> str:
 
 
 def _pick_factor(activity_id: str, rows: list[dict[str, str]]) -> dict[str, str]:
-    candidates = [row for row in rows if row["activity_id"] == activity_id]
-    if not candidates:
-        raise KeyError(f"Missing emission factor for {activity_id}")
-
-    def sort_key(row: dict[str, str]) -> tuple[int, int]:
-        return (
-            REGION_PREFERENCE.get(row.get("region", "").strip(), 99),
-            -(_int_or_none(row.get("vintage_year")) or 0),
+    candidates = [
+        FactorCandidate(
+            region=row.get("region"),
+            vintage_year=_int_or_none(row.get("vintage_year")),
+            ef_id=row.get("ef_id"),
+            payload=row,
         )
-
-    return sorted(candidates, key=sort_key)[0]
+        for row in rows
+        if row["activity_id"] == activity_id
+    ]
+    choice = select_emission_factor(candidates)
+    if choice is None:
+        raise KeyError(f"Missing emission factor for {activity_id}")
+    return choice.payload
 
 
 def _grid_lookup(rows: list[dict[str, str]]) -> dict[str, list[GridIntensityRow]]:
@@ -229,8 +238,6 @@ def _grid_lookup(rows: list[dict[str, str]]) -> dict[str, list[GridIntensityRow]
                 source_id=(row.get("source_id") or "").strip() or None,
             )
         )
-    for values in lookup.values():
-        values.sort(key=lambda item: item.vintage_year or 0)
     return lookup
 
 
@@ -239,17 +246,19 @@ def _pick_grid_row(
     vintage_year: int | None,
     lookup: dict[str, list[GridIntensityRow]],
 ) -> GridIntensityRow:
-    candidates = lookup.get(region_code)
-    if not candidates:
+    candidates = [
+        GridCandidate(
+            region=row.region,
+            vintage_year=row.vintage_year,
+            source_id=row.source_id,
+            payload=row,
+        )
+        for row in lookup.get(region_code, [])
+    ]
+    choice = select_grid_row(candidates, region=region_code, vintage_year=vintage_year)
+    if choice is None:
         raise KeyError(f"Missing grid intensity for {region_code}")
-    if vintage_year is not None:
-        exact = next((row for row in candidates if row.vintage_year == vintage_year), None)
-        if exact:
-            return exact
-        older = [row for row in candidates if row.vintage_year and row.vintage_year <= vintage_year]
-        if older:
-            return older[-1]
-    return candidates[-1]
+    return choice.payload
 
 
 def _citation_for(source_id: str, sources: dict[str, dict[str, str]]) -> str:
@@ -378,6 +387,9 @@ def _factor_evidence(
     uncertainty_low = _float_or_none(factor.get("uncert_low_g_per_unit"))
     uncertainty_high = _float_or_none(factor.get("uncert_high_g_per_unit"))
     is_grid_indexed = (factor.get("is_grid_indexed") or "").strip().lower() in {"true", "1", "yes"}
+    grid_intensity_id: str | None = None
+    grid_region: str | None = None
+    grid_vintage_year: int | None = None
 
     if is_grid_indexed:
         electricity_kwh = _float_or_none(factor.get("electricity_kwh_per_unit"))
@@ -386,6 +398,9 @@ def _factor_evidence(
         grid_row = _pick_grid_row(region, vintage_year, grid_rows)
         if not grid_row.source_id:
             raise ValueError(f"Grid-indexed factor missing grid source: {activity_id}")
+        grid_intensity_id = grid_row_id(grid_row.region, grid_row.vintage_year)
+        grid_region = grid_row.region
+        grid_vintage_year = grid_row.vintage_year
         value_g_per_unit = electricity_kwh * grid_row.g_per_kwh
         source_ids.append(grid_row.source_id)
         source_citations.append(_citation_for(grid_row.source_id, sources))
@@ -420,6 +435,15 @@ def _factor_evidence(
             "scopeBoundary": scope_boundary,
             "gwpHorizon": gwp_horizon,
             "vintageYear": vintage_year,
+            "gridRowId": grid_intensity_id,
+            "gridRegion": grid_region,
+            "gridVintageYear": grid_vintage_year,
+            "evidenceType": (factor.get("evidence_type") or "").strip() or None,
+            "qualityGrade": (factor.get("quality_grade") or "").strip() or None,
+            "applicabilityBoundary": ((factor.get("applicability_boundary") or "").strip() or None),
+            "uncertaintyStatus": (factor.get("uncertainty_status") or "").strip() or None,
+            "uncertaintyReason": (factor.get("uncertainty_reason") or "").strip() or None,
+            "claimLocator": (factor.get("claim_locator") or "").strip() or None,
             "sourceIds": source_ids,
             "sourceCitations": source_citations,
             "sourceUrls": source_urls,
@@ -446,6 +470,15 @@ def _unavailable_evidence(
         "scopeBoundary": ((factor or {}).get("scope_boundary") or "").strip(),
         "gwpHorizon": ((factor or {}).get("gwp_horizon") or "").strip(),
         "vintageYear": _int_or_none((factor or {}).get("vintage_year")),
+        "gridRowId": None,
+        "gridRegion": None,
+        "gridVintageYear": None,
+        "evidenceType": None,
+        "qualityGrade": None,
+        "applicabilityBoundary": None,
+        "uncertaintyStatus": None,
+        "uncertaintyReason": None,
+        "claimLocator": None,
         "sourceIds": [],
         "sourceCitations": [],
         "sourceUrls": [],

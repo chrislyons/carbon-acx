@@ -8,11 +8,13 @@ if TYPE_CHECKING:  # pragma: no cover - imported for static type checking
     from ..schema import (
         Activity,
         ActivityDependency,
+        ActivityFunctionalUnitMap,
         ActivitySchedule,
         Asset,
         EmissionFactor,
         Entity,
         FeedbackLoop,
+        FunctionalUnit,
         GridIntensity,
         Layer,
         Operation,
@@ -22,18 +24,23 @@ if TYPE_CHECKING:  # pragma: no cover - imported for static type checking
 from .csv import CsvStore
 from .duckdb import DuckDbStore
 from ..dal_sql import SqlStore
+from ..dataset import DatasetLoadError, DatasetSnapshot, load_dataset_snapshot
 
 __all__ = [
     "Activity",
     "ActivityDependency",
+    "ActivityFunctionalUnitMap",
     "ActivitySchedule",
     "Asset",
     "CsvStore",
     "DataStore",
+    "DatasetLoadError",
+    "DatasetSnapshot",
     "DuckDbStore",
     "FeedbackLoop",
     "EmissionFactor",
     "Entity",
+    "FunctionalUnit",
     "GridIntensity",
     "Layer",
     "Operation",
@@ -41,16 +48,19 @@ __all__ = [
     "Site",
     "SqlStore",
     "choose_backend",
+    "load_dataset_snapshot",
 ]
 
 _SCHEMA_EXPORTS = {
     "Activity",
     "ActivityDependency",
+    "ActivityFunctionalUnitMap",
     "ActivitySchedule",
     "Asset",
     "EmissionFactor",
     "Entity",
     "FeedbackLoop",
+    "FunctionalUnit",
     "GridIntensity",
     "Layer",
     "Operation",
@@ -82,6 +92,10 @@ class DataStore(Protocol):
 
     def load_activity_dependencies(self) -> Sequence[ActivityDependency]: ...
 
+    def load_functional_units(self) -> Sequence[FunctionalUnit]: ...
+
+    def load_activity_fu_map(self) -> Sequence[ActivityFunctionalUnitMap]: ...
+
     def load_feedback_loops(self) -> Sequence[FeedbackLoop]: ...
 
 
@@ -90,11 +104,13 @@ def __getattr__(name: str) -> Any:
         from ..schema import (
             Activity,
             ActivityDependency,
+            ActivityFunctionalUnitMap,
             ActivitySchedule,
             Asset,
             EmissionFactor,
             Entity,
             FeedbackLoop,
+            FunctionalUnit,
             GridIntensity,
             Layer,
             Operation,
@@ -105,11 +121,13 @@ def __getattr__(name: str) -> Any:
         namespace = {
             "Activity": Activity,
             "ActivityDependency": ActivityDependency,
+            "ActivityFunctionalUnitMap": ActivityFunctionalUnitMap,
             "ActivitySchedule": ActivitySchedule,
             "Asset": Asset,
             "EmissionFactor": EmissionFactor,
             "Entity": Entity,
             "FeedbackLoop": FeedbackLoop,
+            "FunctionalUnit": FunctionalUnit,
             "GridIntensity": GridIntensity,
             "Layer": Layer,
             "Operation": Operation,

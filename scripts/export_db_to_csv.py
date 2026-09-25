@@ -15,26 +15,67 @@ PLACEHOLDER_NOTE = "__IMPORT_PLACEHOLDER__"
 
 BOOLEAN_COLUMNS: dict[str, tuple[str, ...]] = {
     "emission_factors": ("is_grid_indexed",),
-    "activity_schedule": ("office_days_only",),
+    "activity_schedule": ("office_days_only", "office_only", "use_canada_average"),
 }
 
 
 TABLE_ORDER = [
     "sources",
     "units",
-    "activities",
-    "profiles",
-    "emission_factors",
-    "activity_schedule",
-    "grid_intensity",
+    "sectors",
     "layers",
     "entities",
     "sites",
     "assets",
+    "activities",
+    "functional_units",
+    "activity_fu_map",
     "operations",
+    "profiles",
+    "emission_factors",
+    "activity_schedule",
     "dependencies",
     "feedback_loops",
+    "grid_intensity",
 ]
+
+# Tables whose SQLite DDL is a superset of the canonical CSV projection. Export
+# must emit the canonical column set so the result still satisfies the dataflow
+# manifest's ordered provenance (and `make data-audit`) after a round trip.
+CANONICAL_COLUMNS: dict[str, tuple[str, ...]] = {
+    "activity_schedule": (
+        "profile_id",
+        "sector_id",
+        "activity_id",
+        "layer_id",
+        "freq_per_day",
+        "freq_per_week",
+        "office_days_only",
+        "region_override",
+        "schedule_notes",
+        "distance_km",
+        "passengers",
+        "hours",
+        "viewers",
+        "servings",
+    ),
+}
+
+# These SQL columns are supported compute inputs but are not yet represented in
+# the canonical activity_schedule.csv header. Refuse to erase populated values
+# during export; a future schema migration must promote them explicitly.
+PROJECTED_COLUMNS: dict[str, tuple[str, ...]] = {
+    "activity_schedule": (
+        "quantity_per_week",
+        "office_only",
+        "mix_region",
+        "use_canada_average",
+    ),
+}
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+DEFAULT_EXPORT_DIR = REPO_ROOT / "build" / "db_export"
+CANONICAL_DATA_DIR = REPO_ROOT / "data"
 
 # Export must round-trip authorities byte-faithfully: ORDER BY rowid follows
 # insertion (= authored CSV) order. Plain SELECT may satisfy via PK index scans,
@@ -55,23 +96,37 @@ def _open_connection(db_path: Path, backend: str):
 
 
 def _fetch_columns(conn, table: str) -> list[str]:
+    canonical = CANONICAL_COLUMNS.get(table)
+    if canonical is not None:
+        return list(canonical)
     cursor = conn.execute(f"SELECT * FROM {table} LIMIT 0")
     description = cursor.description or []
     return [col[0] for col in description]
 
 
-def _format_bool(value: Any, *, default_false: bool = False) -> str:
+def _reject_populated_projection(conn, table: str) -> None:
+    for column in PROJECTED_COLUMNS.get(table, ()):
+        count = conn.execute(f"SELECT COUNT(*) FROM {table} WHERE {column} IS NOT NULL").fetchone()[
+            0
+        ]
+        if count:
+            raise ValueError(
+                f"cannot export {table}.{column}: column contains {count} populated "
+                "value(s) but is not in the canonical CSV projection"
+            )
+
+
+def _format_bool(value: Any) -> str:
     if value is None:
         return ""
-    return "TRUE" if bool(value) else ("FALSE" if default_false else "")
+    return "TRUE" if bool(value) else "FALSE"
 
 
 def _format_value(table: str, column: str, value: Any) -> str:
     if value is None:
         return ""
-    if column in BOOLEAN_COLUMNS.get(table, ()):  # bool columns
-        default_false = table == "activity_schedule"
-        return _format_bool(value, default_false=default_false)
+    if column in BOOLEAN_COLUMNS.get(table, ()):  # bool columns preserve tri-state
+        return _format_bool(value)
     if isinstance(value, float):
         return repr(value)
     return str(value)
@@ -111,6 +166,7 @@ def export_db_to_csv(db_path: Path, out_dir: Path, *, backend: str = "sqlite") -
     conn = _open_connection(db_path, backend)
     try:
         for table in TABLE_ORDER:
+            _reject_populated_projection(conn, table)
             columns = _fetch_columns(conn, table)
             rows = _fetch_rows(conn, table, columns)
             _write_csv(out_dir / f"{table}.csv", columns, rows, table)
@@ -118,16 +174,42 @@ def export_db_to_csv(db_path: Path, out_dir: Path, *, backend: str = "sqlite") -
         conn.close()
 
 
+def resolve_out_dir(out: Path | None, *, in_place: bool) -> Path:
+    """Resolve the CSV destination without silently clobbering canonical ``data/``.
+
+    Default is the derived ``build/db_export`` directory. ``--in-place`` is the
+    only way to target the canonical ``data/`` directory, and an explicit
+    ``--out data`` without it is rejected.
+    """
+
+    canonical = CANONICAL_DATA_DIR.resolve()
+    if in_place:
+        if out is not None:
+            raise ValueError("--in-place cannot be combined with --out")
+        return canonical
+    if out is not None:
+        resolved = Path(out).resolve()
+        if resolved == canonical:
+            raise ValueError("refusing to overwrite canonical data/; pass --in-place")
+        return resolved
+    return DEFAULT_EXPORT_DIR
+
+
 def main(argv: Iterable[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Export ACX SQL tables to CSV snapshots")
     parser.add_argument(
         "--db", type=Path, required=True, help="Path to the SQLite/DuckDB database file"
     )
-    parser.add_argument(
+    destination = parser.add_mutually_exclusive_group()
+    destination.add_argument(
         "--out",
         type=Path,
-        required=True,
-        help="Destination directory for exported CSV files",
+        help="Destination directory for exported CSV files (default: build/db_export)",
+    )
+    destination.add_argument(
+        "--in-place",
+        action="store_true",
+        help="Write the canonical data/ directory (explicit; never implicit)",
     )
     parser.add_argument(
         "--backend",
@@ -136,8 +218,14 @@ def main(argv: Iterable[str] | None = None) -> int:
         help="Database engine to use when connecting",
     )
     args = parser.parse_args(list(argv) if argv is not None else None)
-    args.out.mkdir(parents=True, exist_ok=True)
-    export_db_to_csv(args.db, args.out, backend=args.backend)
+    if not args.db.is_file():
+        parser.error(f"database file not found: {args.db}")
+    try:
+        out_dir = resolve_out_dir(args.out, in_place=args.in_place)
+    except ValueError as error:
+        parser.error(str(error))
+    out_dir.mkdir(parents=True, exist_ok=True)
+    export_db_to_csv(args.db, out_dir, backend=args.backend)
     return 0
 
 

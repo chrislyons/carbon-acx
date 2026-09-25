@@ -8,11 +8,13 @@ import pandas as pd
 from ..schema import (
     Activity,
     ActivityDependency,
+    ActivityFunctionalUnitMap,
     ActivitySchedule,
     Asset,
     FeedbackLoop,
     EmissionFactor,
     Entity,
+    FunctionalUnit,
     GridIntensity,
     Layer,
     Operation,
@@ -84,9 +86,6 @@ class CsvStore:
 
     def load_emission_factors(self) -> Sequence[EmissionFactor]:
         rows = _load_csv(DATA_DIR / "emission_factors.csv")
-        for row in rows:
-            if row.get("region") == "GLOBAL":
-                row["region"] = None
         return [EmissionFactor(**row) for row in rows]
 
     def load_profiles(self) -> Sequence[Profile]:
@@ -104,6 +103,14 @@ class CsvStore:
     def load_activity_dependencies(self) -> Sequence[ActivityDependency]:
         rows = _load_csv(DATA_DIR / "dependencies.csv")
         return [ActivityDependency(**row) for row in rows]
+
+    def load_functional_units(self) -> Sequence[FunctionalUnit]:
+        rows = _load_csv(DATA_DIR / "functional_units.csv")
+        return [FunctionalUnit(**row) for row in rows]
+
+    def load_activity_fu_map(self) -> Sequence[ActivityFunctionalUnitMap]:
+        rows = _load_csv(DATA_DIR / "activity_fu_map.csv")
+        return [ActivityFunctionalUnitMap(**row) for row in rows]
 
     def load_feedback_loops(self) -> Sequence[FeedbackLoop]:
         path = DATA_DIR / "feedback_loops.csv"

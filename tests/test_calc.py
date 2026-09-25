@@ -1,4 +1,5 @@
 from calc import citations
+from calc.dal import CsvStore
 from calc.derive import compute_emission, get_grid_intensity
 from calc.schema import ActivitySchedule, EmissionFactor, LayerId, Profile
 
@@ -9,7 +10,7 @@ def test_export_metadata_and_references(derived_output_dir, derived_output_root)
     import calc.derive as derive_mod
     from calc.schema import GridIntensity
 
-    class FakeStore:
+    class FakeStore(CsvStore):
         def load_emission_factors(self):
             return [
                 EmissionFactor(activity_id="coffee", value_g_per_unit=1, source_id="SRC.POORE2018"),
@@ -50,9 +51,6 @@ def test_export_metadata_and_references(derived_output_dir, derived_output_root)
 
         def load_grid_intensity(self):
             return [GridIntensity(region="CA-ON", intensity_g_per_kwh=100)]
-
-        def load_activities(self):
-            return []
 
     out_dir = derived_output_dir
     derive_mod.export_view(FakeStore(), output_root=derived_output_root)

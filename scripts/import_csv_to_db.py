@@ -67,6 +67,8 @@ VALIDATORS: dict[str, type[BaseModel]] = {
     "operations": schema.Operation,
     "dependencies": schema.ActivityDependency,
     "feedback_loops": schema.FeedbackLoop,
+    "functional_units": schema.FunctionalUnit,
+    "activity_fu_map": schema.ActivityFunctionalUnitMap,
 }
 TABLE_ORDER = [
     "sources",
@@ -77,6 +79,8 @@ TABLE_ORDER = [
     "sites",
     "assets",
     "activities",
+    "functional_units",
+    "activity_fu_map",
     "operations",
     "profiles",
     "emission_factors",
@@ -165,11 +169,6 @@ def _apply_conversions(table: str, rows: list[OrderedDict[str, Any]]) -> None:
                 value = row[column]
                 row[column] = _to_bool_flag(value)
 
-        if table == "emission_factors" and row.get("region") == "GLOBAL":
-            row["region"] = None
-        if table == "profiles" and row.get("region_code_default") == "GLOBAL":
-            row["region_code_default"] = None
-
 
 def _validate_rows(table: str, rows: list[OrderedDict[str, Any]]) -> None:
     validator = VALIDATORS.get(table)
@@ -209,6 +208,8 @@ def _clear_tables(conn, backend: str) -> None:
         "entities",
         "layers",
         "profiles",
+        "activity_fu_map",
+        "functional_units",
         "activities",
         "sectors",
         "units",

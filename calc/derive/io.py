@@ -24,9 +24,11 @@ __all__ = [
     "FLOAT_QUANTISER",
     "INTENSITY_COLUMNS",
     "OUTPUT_ROOT_ENV",
+    "QUALITY_FIELDS",
     "REPO_ROOT",
     "apply_build_hash",
     "compute_build_hash",
+    "factor_quality_fields",
     "is_safe_output_dir",
     "normalise_mapping",
     "normalise_value",
@@ -47,6 +49,16 @@ ARTIFACT_ROOT = Path(
 ).resolve()
 BUILD_HASH_RE = re.compile(r"^[0-9a-f]{12}$")
 
+#: Canonical evidence-quality fields propagated from emission factors.
+QUALITY_FIELDS = (
+    "evidence_type",
+    "quality_grade",
+    "applicability_boundary",
+    "uncertainty_status",
+    "uncertainty_reason",
+    "claim_locator",
+)
+
 EXPORT_COLUMNS = [
     "profile_id",
     "activity_id",
@@ -54,8 +66,16 @@ EXPORT_COLUMNS = [
     "activity_name",
     "activity_category",
     "scope_boundary",
+    "emission_factor_id",
+    "evidence_type",
+    "quality_grade",
+    "applicability_boundary",
+    "uncertainty_status",
+    "uncertainty_reason",
+    "claim_locator",
     "emission_factor_vintage_year",
     "grid_region",
+    "grid_row_id",
     "grid_vintage_year",
     "annual_emissions_g",
     "annual_emissions_g_low",
@@ -80,6 +100,14 @@ INTENSITY_COLUMNS = [
     "scope_boundary",
     "region",
     "source_ids_csv",
+    "emission_factor_id",
+    "grid_row_id",
+    "evidence_type",
+    "quality_grade",
+    "applicability_boundary",
+    "uncertainty_status",
+    "uncertainty_reason",
+    "claim_locator",
 ]
 
 
@@ -118,6 +146,18 @@ def normalise_value(value: Any) -> Any:
     if isinstance(coerced, tuple):
         return tuple(normalise_value(item) for item in coerced)
     return coerced
+
+
+def factor_quality_fields(factor: Any) -> dict[str, Any]:
+    """Return ``{field: value}`` for the canonical quality fields of ``factor``.
+
+    Missing attributes (older schema rows or non-factor inputs) resolve to
+    ``None`` so canonical rows always carry explicit, conservative placeholders.
+    """
+
+    if factor is None:
+        return {field: None for field in QUALITY_FIELDS}
+    return {field: getattr(factor, field, None) for field in QUALITY_FIELDS}
 
 
 def normalise_mapping(record: dict) -> dict:

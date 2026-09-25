@@ -10,14 +10,14 @@
     "data/assets.csv": "77bb50687dc6b305a0dbb072bf40a339261592896e884a32acc459806b56cce2",
     "data/benchmarks.csv": "26b3b457644c6f3cbdce3ceeb3e12f03f18784a78b69f0e97864d87d968b45fd",
     "data/carbon_pricing.csv": "250478f335e945898c6755ae45e79a8cc0d04d352843497722f7262c44de8f45",
-    "data/dataflow_manifest.csv": "632fa6ffbb6c0d3c0ceac3d4347772ae14b0a095dea9a782fb64c046fb03ff3f",
+    "data/dataflow_manifest.csv": "7530efcfc497d9e28af276b27259540ac78221d202cbbaf88a8d68ea7229fe7a",
     "data/dependencies.csv": "cc32ce1885b495498bb5275e5401efc93532e49bf73be1ffcca4a7a569eab2a2",
-    "data/emission_factors.csv": "ad34a6ad016eda6ef5a2e8f300fed8d2ee80d899ec51c0175d6eba64031f8949",
+    "data/emission_factors.csv": "9e8c727df7ca614588e0b0186b4355ad3addbaf648562ed2b66f230a2a015663",
     "data/entities.csv": "6430bdbe7894354da4ac182304ec2ba41e7e50cfcf5f1fa3fbbaeecec7d8a2a9",
     "data/equity_benchmarks.csv": "964377a5ffc46a2e74147ca7ddcab64b12b4cb526495d0528d93251ee0f6e857",
     "data/feedback_loops.csv": "99ad238b10d31bbbf7a3078a57f658d69a84ce7454711982f21771c8c7a5a06b",
     "data/functional_units.csv": "b69173956a89e40456a04e9e105605c899c98eaa12fb149341344ff2938923eb",
-    "data/grid_intensity.csv": "eef48ccab8eb9c7d4ad766cce601fcba5ef90ec01c2b9d91a284b426b7013eb4",
+    "data/grid_intensity.csv": "bd91e8f7c72f736b9373e239e73f9bae9541560eb10d4f5a361c086cdea672a3",
     "data/icons.csv": "d456ba71d5991db070440e087bdd97848af1d9ea12d2e68788d64b56b7767475",
     "data/layers.csv": "ac1124abc311aa9cbab6de0834d0f9911b35da9534e0c0513197e15aa631a6d0",
     "data/operations.csv": "087385b6ec2c5e0d17d4d33b2ebd37ae6adae9f17c93c5df7bdf9b8eb0d14613",
@@ -28,26 +28,26 @@
     "data/sectors.csv": "bb7b55fc4e05c1d738c791036dace3bbfa97e8ad1953a3b6ae9ea98531be2d3c",
     "data/sites.csv": "8341af48d8baa8b7b9d9bf40faf4807bb9b943c1c97775f8ed5f7ddcdcb95c40",
     "data/source_decisions.csv": "fa78fe3664c30b207ea02a9da0851bf70f74acd62b8d03f4314418a0a8392ce4",
-    "data/sources.csv": "747e0b67bf119916585435c7d7a412bd7f37d1197b7b5f7edebb98766dcb5bdc",
+    "data/sources.csv": "0c7b4aea8158887868e6f2367861eafcd20ca68919c47593b6c90fd485d96c0c",
     "data/units.csv": "ac7fc205596b064d60ab410833c1577fa372ce6c8fea296330b47dc126dc7f76",
     "refs/sources_manifest.csv": "e3e6e929833749031be8301f088c000176d9daf2029d1d35e2e9ca558ebccf8d",
-    "scripts/generate_web_calculator_data.py": "391444d30bcc9c374b52bbbf5c9826df3998cb4defea246f6d445665eec91fb4"
+    "scripts/generate_web_calculator_data.py": "71749cefc39c2de9d475100cde7b854a6f9d5d4304651cefb4dfb86ba361670c"
   },
   "authorities": {
     "calculator": {
-      "schemaVersion": "acx.web-calculator/1-6-0",
+      "schemaVersion": "acx.web-calculator/1-7-0",
       "path": "/data/calculator-data.json",
-      "sha256": "65185065de543b0425bbde28cb28e160492410d8d27753d3136fc2fac1ef5c3a"
+      "sha256": "0e5dce6a2a2fee0286f1b3a3e886833a6fbbc7e9585c0cd57c4c6e5eeeb01ff5"
     },
     "catalog": {
       "schemaVersion": "acx.web-catalog/1-0-0",
       "path": "/data/catalog-data.json",
-      "sha256": "c3e4d4381ab331f3d99a259143f6923b3d5b0bc860de1f5da116b7063b348026"
+      "sha256": "1e921a062a840e9fc8ff5b0079b28687215dda7e4f946b4414c72b0a31c94a47"
     },
     "sources": {
       "schemaVersion": "acx.web-sources/1-1-0",
       "path": "/data/sources.json",
-      "sha256": "45951e83ff07de074d1206e124444393c0bd51d4d1c6cb4878760b106e437a50"
+      "sha256": "3feb435001ae32c3269b5178fe947930a6a92d0f6e5fbafdd536f1084ec53bac"
     },
     "owidContext": {
       "schemaVersion": "acx.owid-context/1-1-0",
@@ -57,7 +57,7 @@
     "streamCatalog": {
       "schemaVersion": "acx.stream-catalog/1-0-0",
       "path": "/data/stream-catalog.json",
-      "sha256": "0ce56d9f74bdc7dbeccfb9fe074b35bbaef45cf26726bd9c23fc1966c95de328"
+      "sha256": "976b65eaf21f4d4f057a68fa9b50a921ce0e114c215b98453dfec08dc6ece159"
     }
   },
   "sourceRegistryPath": "/data/sources.json",

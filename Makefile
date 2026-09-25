@@ -11,7 +11,8 @@ AUDIT_AS_OF ?= $(if $(ACX_AUDIT_DATE),$(ACX_AUDIT_DATE),$(shell date -u +%F))
 DEFAULT_GENERATED_AT = 1970-01-01T00:00:00+00:00
 .PHONY: install lint test audit ci_build_pages app format validate release build-backend build package sbom build-static \
         db_init db_import db_export build_csv build_db citations-scan refs-check refs-fetch refs-normalize refs-audit \
-        data-audit publication-audit verify_manifests catalog validate-manifests validate-diff-fixtures build-web bootstrap doctor owid-context-update
+        data-audit publication-audit verify_manifests catalog validate-manifests validate-diff-fixtures build-web bootstrap doctor owid-context-update \
+        validate-site db_export_in_place
 
 install:
 	poetry install --with dev --no-root
@@ -90,16 +91,23 @@ package: data-audit $(PACKAGED_MANIFEST) build-web sbom
 	mkdir -p $(DIST_SITE_DIR)
 	cp -R $(WEB_APP_DIST)/. $(DIST_SITE_DIR)/
 	PYTHONPATH=. poetry run python -m scripts.prepare_pages_bundle --site $(DIST_SITE_DIR) --artifacts $(PACKAGED_ARTIFACTS_DIR)
+	$(MAKE) validate-site
 
 catalog: $(CATALOG_PATH)
 
 $(CATALOG_PATH): calc/make_catalog.py data/activities.csv data/emission_factors.csv data/profiles.csv data/activity_schedule.csv data/grid_intensity.csv
 	PYTHONPATH=. poetry run python -m calc.make_catalog --output $@
 
+# Full CI gate: package builds dist/site and runs the validate-site smoke check.
 ci_build_pages: install lint test package
 
 build-static: package
 	@echo "Static site available at $(DIST_SITE_DIR)"
+
+# Deterministic smoke gate for the packaged Pages bundle. Consumes the existing
+# $(DIST_SITE_DIR) produced by `make package`; never rebuilds it.
+validate-site:
+	PYTHONPATH=. poetry run python -m scripts.validate_pages_bundle --site $(DIST_SITE_DIR)
 
 app:
 	ACX_DATA_BACKEND=$(ACX_DATA_BACKEND) PYTHONPATH=. poetry run python -m app.app
@@ -135,8 +143,13 @@ db_init:
 db_import:
 	PYTHONPATH=. poetry run python scripts/import_csv_to_db.py --db acx.db --data ./data
 
+# Non-destructive by default: writes the derived `build/db_export` bundle.
 db_export:
-	PYTHONPATH=. poetry run python scripts/export_db_to_csv.py --db acx.db --out ./data
+	PYTHONPATH=. poetry run python scripts/export_db_to_csv.py --db acx.db
+
+# Explicit canonical regeneration of `data/`; destructive by intent.
+db_export_in_place:
+	PYTHONPATH=. poetry run python scripts/export_db_to_csv.py --db acx.db --in-place
 
 build_csv:
 	ACX_OUTPUT_ROOT=dist/artifacts/csv ACX_DATA_BACKEND=csv PYTHONPATH=. poetry run python -m calc.derive

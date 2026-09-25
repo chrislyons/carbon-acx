@@ -217,3 +217,40 @@ Integrated `feat/acx110-health-pass` into `main` with current main frontend beha
 1. Make `dist/site` the sole Pages deployment artifact and remove the competing `apps/carbon-acx-web/dist` contract.
 2. Replace silent loader fallbacks and reconcile analyst/web factor selection through one policy and selected-factor provenance.
 3. Add factor evidence-quality/applicability fields and claim-level locators; add DDL/Pydantic schema-drift and exact release-bundle smoke gates.
+
+## 2026-09-25 — approved backend hardening implementation
+
+Implemented the approved P0/P1/P2 backend plan across delivery, data contracts,
+provenance, and operations.
+
+### Delivered
+
+- Canonicalized Pages output on `dist/site`; added deterministic bundle smoke
+  validation, release asset publication, CI timeouts/concurrency, a corrected
+  Node/pnpm release setup, fail-closed dependency audits, `SECURITY.md`, and
+  CODEOWNERS coverage.
+- Added strict `DatasetSnapshot` loading across CSV, DuckDB, and SQLite; removed
+  per-table fallback paths and added complete functional-unit DAL coverage.
+- Unified factor/grid selection in `calc.selection`; recorded selected factor
+  IDs, namespaced grid-row IDs, and quality metadata in derive/service/web
+  outputs. Bumped the web calculator authority to `acx.web-calculator/1-7-0`.
+- Added explicit factor evidence-quality fields, SQL/CSV round-trip coverage
+  including `GLOBAL`, schema-drift checks, non-destructive database export, and
+  claim/provenance freshness audits.
+- Normalized citation numbering, documented external evidence retention and
+  evidence-root verification, and clarified legacy Pages/Worker authority.
+
+### Verification
+
+- `ACX_AUDIT_DATE=2026-09-25 make validate` — passed; 208 tests passed, 4 skipped.
+- `make build` and `make package` — passed; manifest, publication, combined
+  Python/Node SBOM, and `dist/site` bundle gates passed.
+- Web unit/type/lint — passed; 47 Vitest tests passed. Chromium E2E against
+  the packaged Pages bundle passed 166/166.
+- Node edge tests — 23/23 passed; static Pages smoke returned CSP-bearing root
+  and artifact responses and a 410 for the encoded legacy artifact namespace.
+- `poetry check --lock` passed under Poetry 2.2.1; the repository's active
+  workflows now pin the lockfile generator version.
+- Dependency scans remain intentionally red on the existing baseline: 122
+  pnpm advisories and 63 Python advisories. No unrelated dependency upgrades
+  were included; remediation requires separate review.

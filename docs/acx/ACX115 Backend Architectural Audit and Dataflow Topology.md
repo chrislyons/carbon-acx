@@ -103,7 +103,7 @@ The repository supports three interchangeable storage/retrieval engines conformi
 
 ### 3.3. Web Authority Generation (`scripts/generate_web_calculator_data.py`)
 The generation pipeline turns raw CSVs and offline data into seven canonical JSON authorities:
-1. `acx.web-calculator/1-6-0` (`calculator-data.json`): Curated activities, factors, and Canadian territorial benchmarks.
+1. `acx.web-calculator/1-7-0` (`calculator-data.json`): Curated activities, factors, selected grid rows, evidence-quality metadata, and Canadian territorial benchmarks.
 2. `acx.web-catalog/1-0-0` (`catalog-data.json`): Complete activity catalog and AI inference scenarios.
 3. `acx.ai-scenarios/1-1-0`: Source-backed AI usage benchmarks.
 4. `acx.web-sources/1-1-0` (`sources.json`): Master bibliography and retrieval metadata.
@@ -115,9 +115,9 @@ The generation pipeline turns raw CSVs and offline data into seven canonical JSO
 
 ### 3.4. Edge & Serverless Architecture
 - **Cloudflare Pages Static Export:** The web app (`apps/carbon-acx-web`) is configured with `output: 'export'`. All pages are pre-rendered at build time. No dynamic Node.js server runs in production.
-- **Legacy Pages Function (`functions/carbon-acx/[[path]].ts`):** The checked-in function is scoped to `/carbon-acx/*`, not the root `/artifacts/` routes consumed by the web app. It sanitizes artifact keys, applies artifact headers, and optionally reverse-proxies when `CARBON_ACX_ORIGIN` is configured; current production routing depends on the packaged `_headers` bundle.
+- **Legacy Pages Function (`functions/carbon-acx/[[path]].ts`):** The checked-in function is scoped to `/carbon-acx/*`, not the root `/artifacts/` routes consumed by the web app. It rejects the legacy artifact namespace, sanitizes encoded paths, applies the packaged security policy, and optionally reverse-proxies non-artifact compatibility requests to an explicitly configured HTTPS `CARBON_ACX_ORIGIN`; root artifact delivery depends on the packaged `_headers` bundle.
 - **Cloudflare Worker Compute (`workers/compute/index.ts`):**
-  - Configured via `wrangler.toml` (`main = "workers/compute/index.ts"`, compatibility date `2024-05-01`).
+  - Configured via the dedicated `workers/compute/wrangler.toml`; the root `wrangler.toml` is Pages-only.
   - Currently implemented as an intentional **fail-closed endpoint**: `/api/compute` returns HTTP 503 (`unavailable`) because live edge computation provenance has not been verified against the canonical Python contract (`calc/service.py`).
   - Health check `/api/health` reports `{ ok: true, compute: "unavailable" }`.
 
@@ -130,7 +130,7 @@ The generation pipeline turns raw CSVs and offline data into seven canonical JSO
 | **Data Integrity** | Fail-closed: missing data is represented as `null`/`unavailable`, never fabricated or coerced to 0. |
 | **Provenance** | Every calculation references a published source ID with an immutable SHA-256 in `refs/sources_manifest.csv` and an approved decision in `data/source_decisions.csv`. |
 | **Audit Requirement** | `make data-audit` and `scripts/audit_publication.py` verify that `reviewDueAt >= AUDIT_AS_OF` and hashes match byte-for-byte. |
-| **Zero Runtime Mutation** | Production is entirely static. Cloudflare Pages serves immutable pre-calculated assets and JSON authorities. |
+| **Zero Runtime Mutation** | Production is entirely static. Cloudflare Pages serves hash-verifiable pre-calculated assets and JSON authorities with revalidation. |
 | **Strict Type Boundaries** | Python Pydantic models forbid undeclared fields (`extra="forbid"`). Next.js uses strict TypeScript and Next typegen. |
 | **Security at Edge** | Pages Functions and Pages `_headers` enforce strict CSP (`frame-ancestors 'none'`, `object-src 'none'`), HSTS, nosniff, and granular CORS. |
 
@@ -233,3 +233,55 @@ round-trip fixture covers every canonical table and representation.
 These are bounded hardening steps. The existing CSV/Pydantic validation, immutable manifests,
 offline OWID snapshot, fail-closed publication audit, and cross-backend parity tests should remain
 the foundation; the next work is contract unification, not a new microservice.
+
+## 7. Hardening implementation (2026-09-25)
+
+The approved follow-up is now implemented on `main`:
+
+- `dist/site` is the sole Pages output. `make package` assembles the static app,
+  packaged artifacts, `_headers`, `_redirects`, and the byte inventory;
+  `make validate-site` verifies paths, byte sizes, and SHA-256 hashes. Release
+  and CI workflows now install the complete toolchain, time-bound their jobs,
+  upload the actual site/artifact bundles, and fail closed on dependency audit
+  errors.
+- `calc.dataset.load_dataset_snapshot()` is the single-load, fail-closed dataset
+  boundary. CSV, DuckDB, and SQLite stores now implement the complete functional
+  unit contract; service, derivation, API, and web paths no longer fall back
+  per table.
+- `calc.selection` defines one deterministic factor policy and one grid-vintage
+  policy. Selected factor IDs, namespaced grid-row IDs, and factor-quality
+  metadata are recorded in derived rows, manifests, and web evidence. Web uses
+  the factor region when it has no profile context; derive/service use an
+  explicit schedule/profile region when present. The web calculator contract
+  is now `acx.web-calculator/1-7-0`.
+- Emission-factor quality fields are explicit and conservative. Unknown
+  evidence is represented as `unknown`/`not_reported`/`not_recorded`, never
+  silently upgraded. Citation numbers are derived per emitted reference set;
+  source freshness and external evidence-root verification are offline and
+  documented.
+- Database export defaults to `build/db_export`; canonical `data/` requires an
+  explicit `--in-place` operation. SQL constraints, CSV import/export, schema
+  drift, all canonical tables, `GLOBAL`/optional metadata round trips, and
+  fail-closed handling of projected schedule columns are covered by tests.
+- The legacy `/carbon-acx/*` Function is compatibility-only, rejects encoded
+  traversal/artifact namespaces, and applies the packaged security policy. The
+  Worker remains explicitly non-authoritative and fail-closed. Pages and Worker
+  Wrangler configurations are split; `SECURITY.md` and CODEOWNERS cover the
+  release/security surfaces.
+
+### Verification
+
+- `make validate`: 208 passed, 4 skipped; Ruff, Black, documentation lint,
+  asset validation, data audit, and metadata audit passed.
+- Web unit/type/lint checks passed; 47 Vitest tests passed.
+- `make package` and `make validate-site` passed; 47 indexed files and 25
+  verified manifest hashes were checked. The combined deterministic SBOM
+  contains 934 components across the Poetry and pnpm lockfiles.
+- Node containment suite passed 23/23; Chromium E2E against the packaged Pages
+  bundle passed 166/166.
+
+The fail-closed dependency audit correctly reports existing baseline findings:
+122 pnpm advisories and 63 Python advisories across 22 packages. Dependency
+upgrades remain a separately reviewed change; no unrelated upgrades were folded
+into this hardening pass. Firefox/WebKit E2E and local `yamllint` remain
+environment-specific checks; CI owns the multi-browser and YAML gates.

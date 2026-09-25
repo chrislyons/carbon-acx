@@ -6,7 +6,7 @@
 
 > **Current dataset version:** v1.2
 
-Carbon ACX is a public carbon-literacy web app and open reference stack. It turns auditable CSV inputs into a reproducible dataset, then publishes annual activity estimates, an evidence-first Activity Atlas, and static Cloudflare Pages bundles. The calculator uses `acx.web-calculator/1-6-0`; the distinct catalog uses `acx.web-catalog/1-0-0`; `sources`, OWID context, and the public release are independently versioned authorities. `acx.stream-catalog/1-0-0` exposes their source-contract inventory. Every public calculation uses a cited, published factor; incomplete records are shown as unavailable rather than converted to zero.
+Carbon ACX is a public carbon-literacy web app and open reference stack. It turns auditable CSV inputs into a reproducible dataset, then publishes annual activity estimates, an evidence-first Activity Atlas, and static Cloudflare Pages bundles. The calculator uses `acx.web-calculator/1-7-0`; the distinct catalog uses `acx.web-catalog/1-0-0`; `sources`, OWID context, and the public release are independently versioned authorities. `acx.stream-catalog/1-0-0` exposes their source-contract inventory. Every public calculation uses a cited, published factor; incomplete records are shown as unavailable rather than converted to zero.
 
 ---
 
@@ -33,7 +33,7 @@ Primary navigation is six ordinary icon-and-label links. Below `60rem`, the link
 | **Source-of-truth data** | Canonical CSVs for activities, emission factors, schedules, grid intensity, and more live under `data/`, ready for rebuilds and audits. |
 | **Derivation toolkit** | `python -m calc.derive` validates inputs, composes emissions, exports intensity matrices, and emits immutable manifests with hashed figures in `dist/artifacts/`. |
 | **Primary web app** | `apps/carbon-acx-web/` contains the static Next.js public product: Start here, Estimate, Activity Atlas, Learn, How we know, and the Evidence library. |
-| **Published-data contract** | `scripts/generate_web_calculator_data.py` emits `acx.web-calculator/1-6-0`, `acx.web-catalog/1-0-0`, source-backed `acx.ai-scenarios/1-1-0`, `acx.web-sources/1-1-0`, `acx.stream-catalog/1-0-0`, offline `acx.owid-context/1-1-0`, and `acx.public-release/1-1-0` authorities from canonical data. The release binds public-byte and input SHA-256 values; incomplete records remain unavailable rather than zero. |
+| **Published-data contract** | `scripts/generate_web_calculator_data.py` emits `acx.web-calculator/1-7-0`, `acx.web-catalog/1-0-0`, source-backed `acx.ai-scenarios/1-1-0`, `acx.web-sources/1-1-0`, `acx.stream-catalog/1-0-0`, offline `acx.owid-context/1-1-0`, and `acx.public-release/1-1-0` authorities from canonical data. The release binds public-byte and input SHA-256 values; incomplete records remain unavailable rather than zero. |
 | **Packaging automation** | `make package` builds the static Next.js export into `dist/site`, then packages immutable raw artifacts and Pages metadata beside it. |
 
 ## At-a-glance layers
@@ -85,7 +85,7 @@ Layer descriptions, types, and activities are sourced directly from `data/layers
 
 ### Prerequisites
 
-- Python 3.11 with Poetry 1.8.x for the canonical data and CLI tooling.
+- Python 3.11 with Poetry 2.2.x for the canonical data and CLI tooling.
 - Node.js 20.19.4 with pnpm 10.5.2 for the web app and workspace builds.
 - Make, Git, and a Cloudflare account (optional) if you plan to deploy Functions or Workers.
 
@@ -109,7 +109,7 @@ make build
 
 - **Public routes:** `/`, `/calculator`, `/explore`, `/explore/3d`, `/learn`, `/methodology`, `/evidence`, and `/evidence/[id]`.
 - **Dash analyst explorer (local-only, unsupported):** `make app` launches the legacy Dash server for analyst exploration. It is frozen — local-only, excluded from CI and deploy pipelines, and no longer receiving fixes; the supported experience is the Next.js web app.
-- **Static preview:** after `make package`, run `wrangler pages dev dist/site` to inspect the production-style static bundle and `/artifacts/`.
+- **Static preview:** after `make package`, run `pnpm --filter carbon-acx-web exec wrangler pages dev dist/site --cwd ../..` to inspect the production-style static bundle and `/artifacts/`.
 
 ---
 
@@ -126,6 +126,11 @@ make build
 - `data/source_decisions.csv` records source adjudication, evidence hashes, review dates, and affected outputs. `data/sources.csv` is the canonical citation registry; `refs/sources_manifest.csv` is the retrieval ledger.
 - Run `ACX_AUDIT_DATE=YYYY-MM-DD make data-audit` before publishing. It is fail-closed for undeclared files, duplicate keys, unresolved sources, stale reviews, missing decisions, and invalid ledger metadata.
 - `make build-web` regenerates the calculator, catalogue, source, OWID-context, release, and byte-parity public authorities. `make package` builds the static Pages bundle and hash-verifiable artifacts.
+- Factor rows carry explicit evidence-quality, applicability, uncertainty, and claim-locator metadata; unknown evidence remains explicitly unknown rather than inferred.
+- `make validate-site` checks the exact `dist/site` bundle, artifact inventory, headers, and manifest hashes before release.
+- `make db_export` writes a derived export by default; canonical `data/` replacement requires the explicit in-place operation.
+- Raw source bytes remain artifact-only; the retrieval ledger and evidence-root audit provide the reproducible verification boundary.
+- `ACX_GENERATED_AT=1970-01-01T00:00:00+00:00` is a deterministic authority-build sentinel; release timing and source freshness come from the Git tag/run and `review_due_at`, not that sentinel.
 - The Worker compute endpoint remains unavailable until provenance is verified: non-OPTIONS `/api/compute` requests return the exact HTTP 503 unavailable contract, and `/api/health` reports `compute: "unavailable"`.
 
 
@@ -133,7 +138,7 @@ make build
 
 - `make doctor` validates the pinned Node, pnpm, Python, and Poetry versions used by the recovery baseline.
 - `make validate` runs Ruff, Black, documentation lint, pytest, asset validation, and the data/ledger audit in one pass.
-- `make package` builds the static public app, copies it to `dist/site`, packages raw artifacts, and writes immutable caching headers for Cloudflare Pages.
+- `make package` builds the static public app, copies it to `dist/site`, packages raw artifacts, and writes immutable caching headers for Cloudflare Pages; run `make validate-site` against that exact bundle.
 - `pnpm --filter carbon-acx-web test:e2e` covers six-route adaptive navigation, evidence arithmetic, benchmarks, Not available data, the 2D fallback, route overflow at compact widths, artifact verification, and serious/critical Axe violations.
 - Additional helpers include `make sbom`, `make catalog`, and the source-ledger commands in `calc/` and `tools/citations/`.
 

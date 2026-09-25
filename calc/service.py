@@ -16,9 +16,24 @@ from .upstream import dependency_metadata
 from .api import collect_activity_source_keys
 from .citations import format_references as _format_references
 from .dal import DataStore, choose_backend
-from .derive.emissions import EmissionDetails, compute_emission_details, resolve_grid_row
-from .derive.io import EXPORT_COLUMNS, normalise_mapping, sort_export_rows
+from .dataset import DatasetSnapshot, load_dataset_snapshot
+from .derive.emissions import (
+    EmissionDetails,
+    build_grid_intensity_lookup,
+    compute_emission_details,
+    group_factors_by_activity,
+    resolve_grid_region,
+    resolve_grid_row,
+    select_activity_factor,
+)
+from .derive.io import (
+    EXPORT_COLUMNS,
+    factor_quality_fields,
+    normalise_mapping,
+    sort_export_rows,
+)
 from .derive.layers import resolve_layer_id
+from .selection import grid_row_id
 from .utils.clock import resolve_generated_at
 from .utils.labels import normalise_category_label
 from .schema import (
@@ -28,15 +43,6 @@ from .schema import (
     GridIntensity,
     LayerId,
     Profile,
-    RegionCode,
-    load_activities as schema_load_activities,
-    load_activity_dependencies,
-    load_assets as schema_load_assets,
-    load_entities as schema_load_entities,
-    load_functional_units as schema_load_functional_units,
-    load_feedback_loops as schema_load_feedback_loops,
-    load_operations as schema_load_operations,
-    load_sites as schema_load_sites,
 )
 
 COMPUTE_PROFILE_CONTRACT_VERSION = "acx.compute-profile/1-0-0"
@@ -127,20 +133,6 @@ def _apply_override(sched: ActivitySchedule, value: float) -> ActivitySchedule:
         },
         deep=True,
     )
-
-
-def _collect_grid_maps(
-    entries: Iterable[GridIntensity],
-) -> tuple[dict[str | RegionCode, float | None], dict[str | RegionCode, GridIntensity]]:
-    lookup: dict[str | RegionCode, float | None] = {}
-    by_region: dict[str | RegionCode, GridIntensity] = {}
-    for row in entries:
-        lookup[row.region] = row.intensity_g_per_kwh
-        by_region[row.region] = row
-        if hasattr(row.region, "value"):
-            lookup[row.region.value] = row.intensity_g_per_kwh
-            by_region[row.region.value] = row
-    return lookup, by_region
 
 
 def _resolve_profile(profiles: Mapping[str, Profile], profile_id: str) -> Profile:
@@ -247,6 +239,8 @@ def _build_manifest_payload(
     manifest_regions: set[str],
     manifest_ef_vintages: set[int],
     manifest_grid_vintages: set[int],
+    manifest_ef_ids: set[str],
+    manifest_grid_row_ids: set[str],
     manifest_vintage_matrix: dict[str, int],
     citation_keys: list[str],
     layer_citation_keys: dict[str, list[str]],
@@ -260,6 +254,10 @@ def _build_manifest_payload(
         "vintages": {
             "emission_factors": sorted(manifest_ef_vintages),
             "grid_intensity": sorted(manifest_grid_vintages),
+        },
+        "selection": {
+            "emission_factor_ids": sorted(manifest_ef_ids),
+            "grid_row_ids": sorted(manifest_grid_row_ids),
         },
         "vintage_matrix": {
             key: manifest_vintage_matrix[key] for key in sorted(manifest_vintage_matrix)
@@ -305,6 +303,7 @@ def compute_profile(
     overrides: Mapping[str, Any] | None = None,
     *,
     datastore: DataStore | None = None,
+    snapshot: DatasetSnapshot | None = None,
 ) -> dict[str, Any]:
     """Return figure slices for ``profile_id`` applying optional overrides."""
 
@@ -316,87 +315,26 @@ def compute_profile(
     store = datastore or choose_backend()
     should_close = datastore is None and hasattr(store, "close")
     try:
-        activities = {activity.activity_id: activity for activity in store.load_activities()}
-        if not activities:
-            try:
-                activities = {
-                    activity.activity_id: activity for activity in schema_load_activities()
-                }
-            except Exception:  # pragma: no cover - defensive fallback
-                activities = {}
-        load_operations_fn = getattr(store, "load_operations", None)
-        operations_iter = load_operations_fn() if callable(load_operations_fn) else []
-        operations = {op.operation_id: op for op in operations_iter}
-        if not operations:
-            try:
-                operations = {op.operation_id: op for op in schema_load_operations()}
-            except Exception:  # pragma: no cover - defensive fallback
-                operations = {}
+        snap = snapshot if snapshot is not None else load_dataset_snapshot(store)
 
-        load_entities_fn = getattr(store, "load_entities", None)
-        entity_iter = list(load_entities_fn()) if callable(load_entities_fn) else []
-        if not entity_iter:
-            try:
-                entity_iter = list(schema_load_entities())
-            except Exception:  # pragma: no cover - defensive fallback
-                entity_iter = []
-        entities = {entity.entity_id: entity for entity in entity_iter if entity.entity_id}
+        activities = {activity.activity_id: activity for activity in snap.activities}
+        operations = {operation.operation_id: operation for operation in snap.operations}
+        entities = {entity.entity_id: entity for entity in snap.entities if entity.entity_id}
+        sites = {site.site_id: site for site in snap.sites if site.site_id}
+        assets = {asset.asset_id: asset for asset in snap.assets if asset.asset_id}
+        feedback_loops = list(snap.feedback_loops)
+        functional_units = {
+            fu.functional_unit_id: fu for fu in snap.functional_units if fu.functional_unit_id
+        }
 
-        load_sites_fn = getattr(store, "load_sites", None)
-        site_iter = list(load_sites_fn()) if callable(load_sites_fn) else []
-        if not site_iter:
-            try:
-                site_iter = list(schema_load_sites(entities=entity_iter or None))
-            except Exception:  # pragma: no cover - defensive fallback
-                site_iter = []
-        sites = {site.site_id: site for site in site_iter if site.site_id}
-
-        load_assets_fn = getattr(store, "load_assets", None)
-        asset_iter = list(load_assets_fn()) if callable(load_assets_fn) else []
-        if not asset_iter:
-            try:
-                asset_iter = list(
-                    schema_load_assets(sites=site_iter or None, entities=entity_iter or None)
-                )
-            except Exception:  # pragma: no cover - defensive fallback
-                asset_iter = []
-        assets = {asset.asset_id: asset for asset in asset_iter if asset.asset_id}
-
-        load_feedback_fn = getattr(store, "load_feedback_loops", None)
-        feedback_loops = list(load_feedback_fn()) if callable(load_feedback_fn) else []
-        if not feedback_loops:
-            try:
-                feedback_loops = list(
-                    schema_load_feedback_loops(activities=list(activities.values()))
-                )
-            except Exception:  # pragma: no cover - defensive fallback
-                feedback_loops = []
-
-        load_fu_fn = getattr(store, "load_functional_units", None)
-        fu_iter = list(load_fu_fn()) if callable(load_fu_fn) else []
-        if not fu_iter:
-            try:
-                fu_iter = list(schema_load_functional_units())
-            except Exception:  # pragma: no cover - defensive fallback
-                fu_iter = []
-        functional_units = {fu.functional_unit_id: fu for fu in fu_iter if fu.functional_unit_id}
-
-        emission_factors = {ef.activity_id: ef for ef in store.load_emission_factors()}
-        profiles = {item.profile_id: item for item in store.load_profiles()}
+        factor_groups = group_factors_by_activity(snap.emission_factors)
+        profiles = {item.profile_id: item for item in snap.profiles}
         profile = _resolve_profile(profiles, profile_id)
 
-        grid_lookup, grid_by_region = _collect_grid_maps(store.load_grid_intensity())
+        grid_rows: list[GridIntensity] = list(snap.grid_intensity)
+        grid_lookup = build_grid_intensity_lookup(grid_rows)
 
-        dependency_loader = getattr(store, "load_activity_dependencies", None)
-        dependency_records = list(dependency_loader()) if callable(dependency_loader) else []
-        if not dependency_records:
-            try:
-                dependency_records = load_activity_dependencies(
-                    activities=list(activities.values()) or None,
-                    operations=list(operations.values()) or None,
-                )
-            except Exception:  # pragma: no cover - defensive fallback
-                dependency_records = []
+        dependency_records = list(snap.activity_dependencies)
         dependency_map: dict[str, list[dict[str, Any]]] = {}
         for dependency in dependency_records:
             child_id = dependency.child_activity_id
@@ -450,9 +388,7 @@ def compute_profile(
         civilian_layers = {LayerId.PROFESSIONAL.value, LayerId.ONLINE.value}
         bubble_upstream_lookup: dict[tuple[str | None, str], list[dict[str, Any]]] = {}
 
-        schedules = [
-            sched for sched in store.load_activity_schedule() if sched.profile_id == profile_id
-        ]
+        schedules = [sched for sched in snap.activity_schedule if sched.profile_id == profile_id]
         if not schedules:
             raise ValueError(f"profile {profile_id!r} has no associated schedule rows")
 
@@ -463,6 +399,8 @@ def compute_profile(
         manifest_regions: set[str] = set()
         manifest_ef_vintages: set[int] = set()
         manifest_grid_vintages: set[int] = set()
+        manifest_ef_ids: set[str] = set()
+        manifest_grid_row_ids: set[str] = set()
         manifest_vintage_matrix: dict[str, int] = {}
 
         for sched in schedules:
@@ -470,7 +408,10 @@ def compute_profile(
             if override is not None:
                 sched = _apply_override(sched, override)
 
-            ef = emission_factors.get(sched.activity_id)
+            preferred_region = resolve_grid_region(sched, profile)
+            ef = select_activity_factor(
+                factor_groups.get(sched.activity_id, ()), preferred_region=preferred_region
+            )
             activity = activities.get(sched.activity_id)
 
             layer_id = resolve_layer_id(sched, profile, activity)
@@ -483,9 +424,20 @@ def compute_profile(
             if ef:
                 if ef.vintage_year is not None:
                     manifest_ef_vintages.add(int(ef.vintage_year))
+                if ef.ef_id:
+                    manifest_ef_ids.add(str(ef.ef_id))
                 if ef.is_grid_indexed:
-                    grid_row = resolve_grid_row(sched, profile, grid_by_region)
+                    grid_row = resolve_grid_row(
+                        sched,
+                        profile,
+                        grid_rows,
+                        preferred_region=ef.region,
+                        vintage_year=ef.vintage_year,
+                    )
                     if grid_row is not None:
+                        manifest_grid_row_ids.add(
+                            grid_row_id(grid_row.region, grid_row.vintage_year)
+                        )
                         region_value = (
                             grid_row.region.value
                             if hasattr(grid_row.region, "value")
@@ -527,6 +479,8 @@ def compute_profile(
                         if isinstance(ef, EmissionFactor) and ef.vintage_year is not None
                         else None
                     ),
+                    "emission_factor_id": (ef.ef_id if isinstance(ef, EmissionFactor) else None),
+                    **factor_quality_fields(ef if isinstance(ef, EmissionFactor) else None),
                     "grid_region": (
                         grid_row.region.value
                         if grid_row and hasattr(grid_row.region, "value")
@@ -535,6 +489,11 @@ def compute_profile(
                     "grid_vintage_year": (
                         int(grid_row.vintage_year)
                         if grid_row and grid_row.vintage_year is not None
+                        else None
+                    ),
+                    "grid_row_id": (
+                        grid_row_id(grid_row.region, grid_row.vintage_year)
+                        if grid_row is not None
                         else None
                     ),
                     "annual_emissions_g": emission,
@@ -618,6 +577,8 @@ def compute_profile(
             manifest_regions=manifest_regions,
             manifest_ef_vintages=manifest_ef_vintages,
             manifest_grid_vintages=manifest_grid_vintages,
+            manifest_ef_ids=manifest_ef_ids,
+            manifest_grid_row_ids=manifest_grid_row_ids,
             manifest_vintage_matrix=manifest_vintage_matrix,
             citation_keys=citation_keys,
             layer_citation_keys=layer_citation_keys,

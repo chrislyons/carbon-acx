@@ -7,9 +7,21 @@
 # Domain owners.
 /data/*.csv           @acx-data-owner
 /calc/schema.py       @acx-eng-owner
-/calc/derive.py       @acx-eng-owner
-/calc/dal.py          @acx-eng-owner
-/docs/*.md            @acx-docs-owner
+/calc/derive/           @acx-eng-owner
+/calc/dal/               @acx-eng-owner
+/calc/dataset.py         @acx-eng-owner
+/calc/selection.py       @acx-eng-owner
+/scripts/prepare_pages_bundle.py @acx-cicd-owner
+/scripts/export_db_to_csv.py    @acx-data-owner
+/tools/sbom.py                  @acx-cicd-owner
+/wrangler.toml                  @acx-cicd-owner
+/workers/compute/               @acx-cicd-owner
+/apps/carbon-acx-web/wrangler.toml @acx-cicd-owner
+/docs/**               @acx-docs-owner
 /app/*                @acx-ux-owner
 Makefile              @acx-cicd-owner
 /.github/workflows/*  @acx-cicd-owner
+
+# Security policy and the deployment smoke gate that release/CI publishing depends on.
+/SECURITY.md                      @acx-cicd-owner
+/scripts/validate_pages_bundle.py @acx-cicd-owner

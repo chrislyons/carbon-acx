@@ -11,11 +11,13 @@ except ImportError:  # pragma: no cover - handled lazily
 from ..schema import (
     Activity,
     ActivityDependency,
+    ActivityFunctionalUnitMap,
     ActivitySchedule,
     Asset,
     FeedbackLoop,
     EmissionFactor,
     Entity,
+    FunctionalUnit,
     GridIntensity,
     Layer,
     Operation,
@@ -136,6 +138,14 @@ class DuckDbStore:
     def load_activity_dependencies(self) -> Sequence[ActivityDependency]:
         rows = self._load("dependencies.csv")
         return [ActivityDependency(**row) for row in rows]
+
+    def load_functional_units(self) -> Sequence[FunctionalUnit]:
+        rows = self._load("functional_units.csv")
+        return [FunctionalUnit(**row) for row in rows]
+
+    def load_activity_fu_map(self) -> Sequence[ActivityFunctionalUnitMap]:
+        rows = self._load("activity_fu_map.csv")
+        return [ActivityFunctionalUnitMap(**row) for row in rows]
 
     def load_feedback_loops(self) -> Sequence[FeedbackLoop]:
         try:

@@ -1,33 +1,36 @@
 [1] Environment and Climate Change Canada, “National Inventory Report 1990–2023: Greenhouse Gas Sources and Sinks in Canada,” Ottawa, ON, Canada, 2025. Available: https://www.canada.ca/en/environment-climate-change/services/climate-change/greenhouse-gas-emissions/inventory.html
 [2] University of Bristol and DIMPACT, “DIMPACT Video Streaming Carbon Modelling Guidance,” 2022. Available: https://dimpact.org/resources#video-streaming-guidance
 [3] Independent Electricity System Operator, “Power Data—Emissions and Grid Intensity (Ontario),” 2025. Available: https://www.ieso.ca/en/Power-Data/Data-Directory
-[4] R. Hintemann and S. Hinterholzer, “Energy Consumption of Digital Services: Streaming vs. Social Media,” Borderstep Institute and IITP, 2022. Available: https://www.borderstep.de/
-[5] U.S. Environmental Protection Agency, “Waste Reduction Model (WARM), Version 15,” Oct. 2023. Available: https://www.epa.gov/warm/versions-waste-reduction-model-warm#15
-[6] Toronto Water, “2023 Drinking Water System Annual Report,” City of Toronto, Feb. 2024. Available: https://www.toronto.ca/services-payments/water-environment/
-[7] U.S. Environmental Protection Agency, “SmartWay Carrier Partner Tool: Technical Documentation,” 2023. Available: https://www.epa.gov/smartway
-[8] Natural Resources Canada, “Canada Freight Emissions Factors (Modal),” 2024. Available: https://natural-resources.canada.ca
-[9] International Civil Aviation Organization, “CORSIA CO2 Estimation and Reporting Tool (CERT) — Methodology,” 2024. Available: https://www.icao.int/environmental-protection/CORSIA/Pages/default.aspx
-[10] Canadian Urban Transit Association and Ontario Ministry of Transportation, “Ontario Urban Transit Fact Book—2017 Operating Data: Toronto,” 2017. Available: https://raw.githubusercontent.com/Nate-Wessel/TTC-funding/master/sources/Ontario_Transit_Factbooks/ttc/2017.pdf
-[11] International Civil Aviation Organization, “CORSIA Default Life Cycle Emissions Factors for International Aviation,” 2023. Available: https://www.icao.int/environmental-protection/CORSIA/Pages/default.aspx
-[12] UK Department for Energy Security and Net Zero, “UK Government GHG Conversion Factors for Company Reporting,” 2024. Available: https://www.gov.uk/government/collections/government-conversion-factors-for-company-reporting
-[13] International Energy Agency, “Aviation,” Paris, France, 2023. Available: https://www.iea.org/reports/aviation
-[14] Natural Resources Canada, “Fuel Life Cycle Assessment Modelling for Canada,” 2024. Available: https://natural-resources.canada.ca/energy-efficiency/transportation-alternative-fuels
-[15] J. Poore and T. Nemecek, “Reducing food’s environmental impacts through producers and consumers,” Science, vol. 360, no. 6392, pp. 987–992, 2018. Available: https://doi.org/10.1126/science.aaq0216
-[16] Global Cement and Concrete Association, “Getting the Numbers Right (GNR) 2023 Data Release,” 2023. Available: https://gccassociation.org/sustainability-innovation/gnr/
-[17] worldsteel Association, “Sustainable Steel—Indicators 2023,” 2023. Available: https://worldsteel.org/steel-topics/sustainable-steel/
-[18] PlasticsEurope, “Plastics—The Facts 2022: An Analysis of European Plastics Production, Demand and Waste Data,” 2022. Available: https://plasticseurope.org/knowledge-hub/plastics-the-facts-2022/
-[19] GardaWorld Protective Services, “Protective Services Sustainability and Emissions Benchmarking,” Montreal, QC, Canada, 2024. Available: https://www.garda.com/
-[20] Waste and Resources Action Programme, “Valuing Our Clothes: The Cost of UK Fashion,” 2017. Available: https://www.wrap.ngo/
-[21] Quantis, “Measuring Fashion: Environmental Impact of the Global Apparel and Footwear Industries Study,” 2018. Available: https://quantis.com/
-[22] K. Niinimäki et al., “The Environmental Price of Fast Fashion,” Nature Reviews Earth & Environment, vol. 1, pp. 189–200, 2020. Available: https://doi.org/10.1038/s43017-020-0039-9
-[23] Waste and Resources Action Programme, “Household Appliance Carbon Factors,” 2023. Available: https://www.wrap.ngo/
-[24] International Energy Agency, “Cooling and Appliance Efficiency Outlook,” Paris, France, 2024. Available: https://www.iea.org/reports/the-future-of-cooling
-[25] Technology and Economic Assessment Panel, “TEAP 2023 Assessment Report—HFC Phase-down,” United Nations Environment Programme, 2023. Available: https://ozone.unep.org/
-[26] International Energy Agency Cool Coalition, “Cooling for All: Operational Benchmarks,” 2024. Available: https://coolcoalition.org/
-[27] Food and Agriculture Organization and United Nations Environment Programme, “Sustainable Food Cold Chains: Opportunities, Challenges and the Way Forward,” Nairobi and Rome, 2022. Available: https://openknowledge.fao.org/server/api/core/bitstreams/cf42e3c6-157e-4ea9-8873-8b3cc9242b96/content
-[28] National Oceanic and Atmospheric Administration, “Global Ocean Monitoring and Observing: State of the Ocean Climate 2023,” Silver Spring, MD, USA, 2023. Available: https://oceanservice.noaa.gov/
-[29] National Aeronautics and Space Administration, “State of the Cryosphere 2023,” Greenbelt, MD, USA, 2023. Available: https://science.nasa.gov/earth-science/
-[30] Environment and Climate Change Canada, “Northern Canada Permafrost Network Synthesis Report,” Ottawa, ON, Canada, 2023. Available: https://www.canada.ca/en/environment-climate-change/services/climate-change/science-research-data.html
-[31] Alberta Energy Regulator, “Tailings Management Framework: 2023 Annual Report,” Calgary, AB, Canada, 2024. Available: https://www.aer.ca/
-[32] International Council on Mining and Metals, “Global Acid Rock Drainage Guidance,” London, U.K., 2022. Available: https://www.icmm.com/en-gb
-[33] Global Ocean Oxygen Network, “Declining Oxygen: The Global Ocean Oxygen Network Status Report 2020,” Paris, France: UNESCO-IOC, 2020. Available: https://unesdoc.unesco.org/ark:/48223/pf0000376705
+[4] Canada Energy Regulator, “Provincial and Territorial Energy Profiles—British Columbia,” 2024. Available: https://www.cer-rec.gc.ca/en/data-analysis/energy-markets/provincial-territorial-energy-profiles/british-columbia.html
+[5] Canada Energy Regulator, “Provincial and Territorial Energy Profiles—Quebec,” 2024. Available: https://www.cer-rec.gc.ca/en/data-analysis/energy-markets/provincial-territorial-energy-profiles/quebec.html
+[6] Canada Energy Regulator, “Provincial and Territorial Energy Profiles—Alberta,” 2024. Available: https://www.cer-rec.gc.ca/en/data-analysis/energy-markets/provincial-territorial-energy-profiles/alberta.html
+[7] R. Hintemann and S. Hinterholzer, “Energy Consumption of Digital Services: Streaming vs. Social Media,” Borderstep Institute and IITP, 2022. Available: https://www.borderstep.de/
+[8] U.S. Environmental Protection Agency, “Waste Reduction Model (WARM), Version 15,” Oct. 2023. Available: https://www.epa.gov/warm/versions-waste-reduction-model-warm#15
+[9] Toronto Water, “2023 Drinking Water System Annual Report,” City of Toronto, Feb. 2024. Available: https://www.toronto.ca/services-payments/water-environment/
+[10] U.S. Environmental Protection Agency, “SmartWay Carrier Partner Tool: Technical Documentation,” 2023. Available: https://www.epa.gov/smartway
+[11] Natural Resources Canada, “Canada Freight Emissions Factors (Modal),” 2024. Available: https://natural-resources.canada.ca
+[12] International Civil Aviation Organization, “CORSIA CO2 Estimation and Reporting Tool (CERT) — Methodology,” 2024. Available: https://www.icao.int/environmental-protection/CORSIA/Pages/default.aspx
+[13] Canadian Urban Transit Association and Ontario Ministry of Transportation, “Ontario Urban Transit Fact Book—2017 Operating Data: Toronto,” 2017. Available: https://raw.githubusercontent.com/Nate-Wessel/TTC-funding/master/sources/Ontario_Transit_Factbooks/ttc/2017.pdf
+[14] International Civil Aviation Organization, “CORSIA Default Life Cycle Emissions Factors for International Aviation,” 2023. Available: https://www.icao.int/environmental-protection/CORSIA/Pages/default.aspx
+[15] UK Department for Energy Security and Net Zero, “UK Government GHG Conversion Factors for Company Reporting,” 2024. Available: https://www.gov.uk/government/collections/government-conversion-factors-for-company-reporting
+[16] International Energy Agency, “Aviation,” Paris, France, 2023. Available: https://www.iea.org/reports/aviation
+[17] Natural Resources Canada, “Fuel Life Cycle Assessment Modelling for Canada,” 2024. Available: https://natural-resources.canada.ca/energy-efficiency/transportation-alternative-fuels
+[18] J. Poore and T. Nemecek, “Reducing food’s environmental impacts through producers and consumers,” Science, vol. 360, no. 6392, pp. 987–992, 2018. Available: https://doi.org/10.1126/science.aaq0216
+[19] Global Cement and Concrete Association, “Getting the Numbers Right (GNR) 2023 Data Release,” 2023. Available: https://gccassociation.org/sustainability-innovation/gnr/
+[20] worldsteel Association, “Sustainable Steel—Indicators 2023,” 2023. Available: https://worldsteel.org/steel-topics/sustainable-steel/
+[21] PlasticsEurope, “Plastics—The Facts 2022: An Analysis of European Plastics Production, Demand and Waste Data,” 2022. Available: https://plasticseurope.org/knowledge-hub/plastics-the-facts-2022/
+[22] GardaWorld Protective Services, “Protective Services Sustainability and Emissions Benchmarking,” Montreal, QC, Canada, 2024. Available: https://www.garda.com/
+[23] Waste and Resources Action Programme, “Valuing Our Clothes: The Cost of UK Fashion,” 2017. Available: https://www.wrap.ngo/
+[24] Quantis, “Measuring Fashion: Environmental Impact of the Global Apparel and Footwear Industries Study,” 2018. Available: https://quantis.com/
+[25] K. Niinimäki et al., “The Environmental Price of Fast Fashion,” Nature Reviews Earth & Environment, vol. 1, pp. 189–200, 2020. Available: https://doi.org/10.1038/s43017-020-0039-9
+[26] Waste and Resources Action Programme, “Household Appliance Carbon Factors,” 2023. Available: https://www.wrap.ngo/
+[27] International Energy Agency, “Cooling and Appliance Efficiency Outlook,” Paris, France, 2024. Available: https://www.iea.org/reports/the-future-of-cooling
+[28] Technology and Economic Assessment Panel, “TEAP 2023 Assessment Report—HFC Phase-down,” United Nations Environment Programme, 2023. Available: https://ozone.unep.org/
+[29] International Energy Agency Cool Coalition, “Cooling for All: Operational Benchmarks,” 2024. Available: https://coolcoalition.org/
+[30] Food and Agriculture Organization and United Nations Environment Programme, “Sustainable Food Cold Chains: Opportunities, Challenges and the Way Forward,” Nairobi and Rome, 2022. Available: https://openknowledge.fao.org/server/api/core/bitstreams/cf42e3c6-157e-4ea9-8873-8b3cc9242b96/content
+[31] National Oceanic and Atmospheric Administration, “Global Ocean Monitoring and Observing: State of the Ocean Climate 2023,” Silver Spring, MD, USA, 2023. Available: https://oceanservice.noaa.gov/
+[32] National Aeronautics and Space Administration, “State of the Cryosphere 2023,” Greenbelt, MD, USA, 2023. Available: https://science.nasa.gov/earth-science/
+[33] Environment and Climate Change Canada, “Northern Canada Permafrost Network Synthesis Report,” Ottawa, ON, Canada, 2023. Available: https://www.canada.ca/en/environment-climate-change/services/climate-change/science-research-data.html
+[34] Alberta Energy Regulator, “Tailings Management Framework: 2023 Annual Report,” Calgary, AB, Canada, 2024. Available: https://www.aer.ca/
+[35] International Council on Mining and Metals, “Global Acid Rock Drainage Guidance,” London, U.K., 2022. Available: https://www.icmm.com/en-gb
+[36] Global Ocean Oxygen Network, “Declining Oxygen: The Global Ocean Oxygen Network Status Report 2020,” Paris, France: UNESCO-IOC, 2020. Available: https://unesdoc.unesco.org/ark:/48223/pf0000376705

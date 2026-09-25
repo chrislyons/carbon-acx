@@ -12,6 +12,10 @@ related:
 **Status**: 🔴 CRITICAL - Application not loading
 **Symptoms**: Minimal content ("Carbon ACX" only), 3D visualization not rendering
 
+> **Current operator override (2026-09-25):** run `make package` and deploy
+> `dist/site`; raw Next.js output examples below are historical diagnostics,
+> not the current Pages contract.
+
 ---
 
 ## Symptoms
@@ -47,10 +51,9 @@ WebFetch results:
 - Page-specific chunks when navigating
 
 **Fix if missing**:
-- Cloudflare Pages build configuration issue
-- Check build command is `pnpm build:web`
-- Check output directory is `apps/carbon-acx-web/dist`
-
+- Run `make package` and confirm `dist/site/index.html` exists.
+- Run `make validate-site`; do not deploy the raw `apps/carbon-acx-web/dist` tree.
+- Deploy `dist/site` through the configured Pages project/integration.
 ### 2. **Base Path / Public Path Mismatch**
 
 **Hypothesis**: Vite build assumes root path `/` but Cloudflare is serving from subdirectory.

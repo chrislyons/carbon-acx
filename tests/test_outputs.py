@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 import calc.derive as derive_mod
+from calc.dataset import DatasetSnapshot
 from calc.derive import pipeline as derive_pipeline
 from calc.derive.io import prepare_output_dir
 from calc.utils.clock import resolve_generated_at
@@ -28,6 +29,24 @@ class EmptyStore:
 
     def load_activities(self):
         return []
+
+
+_EMPTY_SNAPSHOT = DatasetSnapshot(
+    layers=(),
+    entities=(),
+    sites=(),
+    assets=(),
+    operations=(),
+    activities=(),
+    emission_factors=(),
+    profiles=(),
+    activity_schedule=(),
+    grid_intensity=(),
+    activity_dependencies=(),
+    functional_units=(),
+    activity_fu_map=(),
+    feedback_loops=(),
+)
 
 
 def _read_manifest_hash(manifest_path: Path) -> str:
@@ -52,7 +71,7 @@ def test_export_view_rejects_root_output(monkeypatch):
     monkeypatch.setenv("ACX_OUTPUT_ROOT", "/")
     monkeypatch.delenv("ACX_ALLOW_OUTPUT_RM", raising=False)
     with pytest.raises(ValueError):
-        derive_mod.export_view(EmptyStore())
+        derive_mod.export_view(EmptyStore(), snapshot=_EMPTY_SNAPSHOT)
 
 
 def test_default_export_writes_hashed_artifacts(monkeypatch):
@@ -66,7 +85,7 @@ def test_default_export_writes_hashed_artifacts(monkeypatch):
         existing_names = {item.name for item in artifact_root.iterdir()}
 
     try:
-        derive_mod.export_view(EmptyStore())
+        derive_mod.export_view(EmptyStore(), snapshot=_EMPTY_SNAPSHOT)
         assert artifact_root.exists()
         new_dirs = [
             path
@@ -105,7 +124,7 @@ def test_export_can_write_a_relocatable_build_pointer(monkeypatch, tmp_path):
     monkeypatch.setenv("ACX_ALLOW_OUTPUT_RM", "1")
     monkeypatch.setenv("ACX_GENERATED_AT", "2024-01-01T00:00:00+00:00")
 
-    derive_mod.export_view(EmptyStore())
+    derive_mod.export_view(EmptyStore(), snapshot=_EMPTY_SNAPSHOT)
 
     pointer = json.loads((artifact_root / "latest-build.json").read_text(encoding="utf-8"))
     assert pointer["artifact_dir"] == "."

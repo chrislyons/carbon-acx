@@ -36,6 +36,24 @@ CREATE TABLE activities (
     FOREIGN KEY (default_unit) REFERENCES units(unit_code)
 );
 
+CREATE TABLE functional_units (
+    functional_unit_id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    domain TEXT NOT NULL,
+    si_equiv TEXT,
+    notes TEXT
+);
+
+CREATE TABLE activity_fu_map (
+    activity_id TEXT NOT NULL,
+    functional_unit_id TEXT NOT NULL,
+    conversion_formula TEXT,
+    assumption_notes TEXT,
+    PRIMARY KEY (activity_id, functional_unit_id),
+    FOREIGN KEY (activity_id) REFERENCES activities(activity_id),
+    FOREIGN KEY (functional_unit_id) REFERENCES functional_units(functional_unit_id)
+);
+
 CREATE TABLE profiles (
     profile_id TEXT PRIMARY KEY,
     sector_id TEXT NOT NULL,
@@ -50,6 +68,7 @@ CREATE TABLE profiles (
     FOREIGN KEY (sector_id) REFERENCES sectors(sector_id),
     CHECK (
         region_code_default IS NULL
+        OR region_code_default = 'GLOBAL'
         OR (
             substr(region_code_default, 1, 2) = 'CA'
             AND (
@@ -84,6 +103,12 @@ CREATE TABLE emission_factors (
     method_notes TEXT,
     uncert_low_g_per_unit REAL,
     uncert_high_g_per_unit REAL,
+    evidence_type TEXT,
+    quality_grade TEXT,
+    applicability_boundary TEXT,
+    uncertainty_status TEXT,
+    uncertainty_reason TEXT,
+    claim_locator TEXT,
     FOREIGN KEY (activity_id) REFERENCES activities(activity_id),
     FOREIGN KEY (sector_id) REFERENCES sectors(sector_id),
     FOREIGN KEY (unit) REFERENCES units(unit_code),
@@ -128,6 +153,7 @@ CREATE TABLE emission_factors (
     ),
     CHECK (
         region IS NULL
+        OR region = 'GLOBAL'
         OR (
             substr(region, 1, 2) = 'CA'
             AND (
@@ -178,6 +204,7 @@ CREATE TABLE activity_schedule (
     CHECK (use_canada_average IN (0, 1) OR use_canada_average IS NULL),
     CHECK (
         region_override IS NULL
+        OR region_override = 'GLOBAL'
         OR (
             substr(region_override, 1, 2) = 'CA'
             AND (
@@ -187,6 +214,22 @@ CREATE TABLE activity_schedule (
                     AND substr(region_override, 3, 1) = '-'
                     AND substr(region_override, 4, 1) BETWEEN 'A' AND 'Z'
                     AND substr(region_override, 5, 1) BETWEEN 'A' AND 'Z'
+                )
+            )
+        )
+    ),
+    CHECK (
+        mix_region IS NULL
+        OR mix_region = 'GLOBAL'
+        OR (
+            substr(mix_region, 1, 2) = 'CA'
+            AND (
+                length(mix_region) = 2
+                OR (
+                    length(mix_region) = 5
+                    AND substr(mix_region, 3, 1) = '-'
+                    AND substr(mix_region, 4, 1) BETWEEN 'A' AND 'Z'
+                    AND substr(mix_region, 5, 1) BETWEEN 'A' AND 'Z'
                 )
             )
         )
@@ -209,6 +252,12 @@ CREATE TABLE grid_intensity (
     g_per_kwh_low REAL,
     g_per_kwh_high REAL,
     source_id TEXT,
+    evidence_type TEXT,
+    quality_grade TEXT,
+    applicability_boundary TEXT,
+    uncertainty_status TEXT,
+    uncertainty_reason TEXT,
+    claim_locator TEXT,
     PRIMARY KEY (region_code, vintage_year),
     FOREIGN KEY (source_id) REFERENCES sources(source_id),
     CHECK (

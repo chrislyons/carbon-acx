@@ -9,7 +9,38 @@ from pathlib import Path
 from typing import Iterable, List, Sequence
 
 SOURCES_PATH = Path(__file__).resolve().parents[1] / "data" / "sources.csv"
-_IEEE_NUMBER_PREFIX = re.compile(r"^\s*\[\d+\]\s*")
+# Retained as a defensive normalizer for any surviving legacy data (for example
+# third-party fixtures). The canonical registry is prefix-free so that citation
+# numbers are always derived from the emitted reference set, never the source row.
+_IEEE_NUMBER_PREFIX = re.compile(r"^\s*\[(\d+)\]\s*")
+
+
+def strip_embedded_number(citation: str) -> str:
+    """Return ``citation`` without a legacy embedded IEEE number prefix."""
+
+    return _IEEE_NUMBER_PREFIX.sub("", citation).strip()
+
+
+def has_embedded_number(citation: str) -> bool:
+    """Return whether ``citation`` still carries a legacy embedded number prefix."""
+
+    return _IEEE_NUMBER_PREFIX.match(citation) is not None
+
+
+def validate_reference_numbering(references: Sequence[str]) -> List[str]:
+    """Return errors when emitted references are not numbered ``[1]..[n]`` in order."""
+
+    errors: List[str] = []
+    for offset, text in enumerate(references, start=1):
+        match = _IEEE_NUMBER_PREFIX.match(text)
+        if match is None:
+            errors.append(f"reference {offset} is missing a sequential [{offset}] label")
+            continue
+        if int(match.group(1)) != offset:
+            errors.append(
+                f"reference {offset} is labelled [{match.group(1)}] instead of [{offset}]"
+            )
+    return errors
 
 
 @dataclass(frozen=True)
@@ -94,12 +125,16 @@ def format_ieee(ref: Reference) -> str:
 
     if ref.index is None:
         raise ValueError("Reference index required for IEEE formatting")
-    text = _IEEE_NUMBER_PREFIX.sub("", ref.citation).strip()
+    text = strip_embedded_number(ref.citation)
     return f"[{ref.index}] {text}"
 
 
 def format_references(citation_keys: Sequence[str]) -> List[str]:
-    """Return IEEE-formatted reference strings for ``citation_keys`` in order."""
+    """Return IEEE-formatted reference strings for ``citation_keys`` in order.
+
+    Numbering is derived per emitted set: the first unique key is ``[1]`` and each
+    subsequent key advances by one. Source rows never supply their own number.
+    """
 
     references = references_for(citation_keys)
     return [format_ieee(ref.numbered(idx)) for idx, ref in enumerate(references, start=1)]
@@ -147,5 +182,8 @@ __all__ = [
     "collect_activity_source_keys",
     "format_ieee",
     "format_references",
+    "has_embedded_number",
     "references_for",
+    "strip_embedded_number",
+    "validate_reference_numbering",
 ]

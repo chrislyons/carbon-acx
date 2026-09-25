@@ -1,14 +1,7 @@
-name = "carbon-acx-compute"
-main = "workers/compute/index.ts"
-compatibility_date = "2024-05-01"
-
-[vars]
-ACX_DATASET_VERSION = "dev"
-
-# Cloudflare Pages build configuration
-# Build command: pnpm run build:web
-# Output directory: apps/carbon-acx-web/dist
-pages_build_output_dir = "apps/carbon-acx-web/dist"
-
-[dev]
-port = 8787
+# Cloudflare Pages project configuration.
+# The deployable bundle is the prebuilt `dist/site` tree produced by
+# `make package` (static app + /artifacts + _headers + _redirects +
+# artifacts/index.json). `make validate-site` smoke-checks that bundle.
+name = "carbon-acx"
+compatibility_date = "2025-01-01"
+pages_build_output_dir = "dist/site"

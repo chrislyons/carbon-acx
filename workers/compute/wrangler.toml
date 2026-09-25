@@ -1,0 +1,11 @@
+# Cloudflare Worker configuration for the fail-closed compute surface.
+# Deploy explicitly with: pnpm --filter carbon-acx-web exec wrangler deploy --config ../../workers/compute/wrangler.toml
+name = "carbon-acx-compute"
+main = "index.ts"
+compatibility_date = "2024-05-01"
+
+[vars]
+ACX_DATASET_VERSION = "dev"
+
+[dev]
+port = 8787

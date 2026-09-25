@@ -17,6 +17,7 @@ from .. import citations, figures
 from .. import manifest as manifest_module
 from ..citations import collect_activity_source_keys
 from ..dal import DataStore, choose_backend
+from ..dataset import DatasetSnapshot, load_dataset_snapshot
 from ..figures_manifest import (
     FigureManifestArtifacts,
     build_collection_index,
@@ -34,25 +35,21 @@ from ..schema import (
     Operation,
     Profile,
     RegionCode,
-    load_activities as schema_load_activities,
-    load_activity_dependencies,
-    load_activity_fu_map,
-    load_assets as schema_load_assets,
-    load_entities as schema_load_entities,
-    load_feedback_loops as schema_load_feedback_loops,
-    load_functional_units,
-    load_operations as schema_load_operations,
-    load_sites as schema_load_sites,
 )
+from ..selection import grid_row_id
 from ..upstream import dependency_metadata
 from ..utils.clock import resolve_generated_at
 from ..utils.env import env_flag
 from ..utils.labels import normalise_category_label
 from .emissions import (
     EmissionDetails,
+    build_grid_intensity_lookup,
     compute_emission_details,
     get_grid_intensity,
+    group_factors_by_activity,
+    resolve_grid_region,
     resolve_grid_row,
+    select_activity_factor,
     weekly_quantity,
 )
 from .formulas import (
@@ -69,6 +66,7 @@ from .io import (
     REPO_ROOT,
     apply_build_hash,
     compute_build_hash,
+    factor_quality_fields,
     normalise_mapping,
     normalise_value,
     prepare_output_dir,
@@ -102,6 +100,7 @@ def build_intensity_matrix(
     fu_id: str | None = None,
     *,
     ds: DataStore | None = None,
+    snapshot: DatasetSnapshot | None = None,
     output_dir: Path | None = None,
     emission_factors: Sequence[EmissionFactor] | None = None,
     activity_fu_map: Sequence[ActivityFunctionalUnitMap] | None = None,
@@ -112,47 +111,32 @@ def build_intensity_matrix(
     operation_variables: Mapping[str, Mapping[str, Any]] | None = None,
     activities: Sequence[Activity] | None = None,
     grid_lookup: Mapping[str | RegionCode, float | None] | None = None,
-    grid_by_region: Mapping[str | RegionCode, GridIntensity] | None = None,
+    grid_rows: Sequence[GridIntensity] | None = None,
 ) -> pd.DataFrame:
     datastore = ds or choose_backend()
+    snap = snapshot if snapshot is not None else load_dataset_snapshot(datastore)
 
-    activities_seq = (
-        list(activities) if activities is not None else list(datastore.load_activities())
-    )
+    activities_seq = list(activities) if activities is not None else list(snap.activities)
     activities_by_id = {activity.activity_id: activity for activity in activities_seq}
 
     functional_units_seq = (
-        list(functional_units) if functional_units is not None else list(load_functional_units())
+        list(functional_units) if functional_units is not None else list(snap.functional_units)
     )
     functional_units_by_id = {fu.functional_unit_id: fu for fu in functional_units_seq}
 
     emission_factors_seq = (
-        list(emission_factors)
-        if emission_factors is not None
-        else list(datastore.load_emission_factors())
+        list(emission_factors) if emission_factors is not None else list(snap.emission_factors)
     )
-    ef_by_activity: dict[str, EmissionFactor] = {}
-    for ef in emission_factors_seq:
-        if ef.activity_id not in ef_by_activity:
-            ef_by_activity[ef.activity_id] = ef
+    ef_by_activity = group_factors_by_activity(emission_factors_seq)
 
-    profiles_seq = list(profiles) if profiles is not None else list(datastore.load_profiles())
+    profiles_seq = list(profiles) if profiles is not None else list(snap.profiles)
     profiles_by_id = {profile.profile_id: profile for profile in profiles_seq}
 
     schedules_seq = (
-        list(activity_schedule)
-        if activity_schedule is not None
-        else list(datastore.load_activity_schedule())
+        list(activity_schedule) if activity_schedule is not None else list(snap.activity_schedule)
     )
 
-    if operations is not None:
-        operations_seq = list(operations)
-    else:
-        loader = getattr(datastore, "load_operations", None)
-        if callable(loader):
-            operations_seq = list(loader())
-        else:
-            operations_seq = []
+    operations_seq = list(operations) if operations is not None else list(snap.operations)
     operations_by_activity: dict[str, list[Operation]] = defaultdict(list)
     for op in operations_seq:
         operations_by_activity[op.activity_id].append(op)
@@ -160,27 +144,12 @@ def build_intensity_matrix(
     operation_variables_map = operation_variables or {}
 
     activity_fu_seq = (
-        list(activity_fu_map)
-        if activity_fu_map is not None
-        else list(
-            load_activity_fu_map(
-                activities=activities_seq,
-                functional_units=functional_units_seq,
-            )
-        )
+        list(activity_fu_map) if activity_fu_map is not None else list(snap.activity_fu_map)
     )
 
-    if grid_lookup is None or grid_by_region is None:
-        lookup: dict[str | RegionCode, float | None] = {}
-        by_region: dict[str | RegionCode, GridIntensity] = {}
-        for grid in datastore.load_grid_intensity():
-            lookup[grid.region] = grid.intensity_g_per_kwh
-            by_region[grid.region] = grid
-            if hasattr(grid.region, "value"):
-                lookup[grid.region.value] = grid.intensity_g_per_kwh
-                by_region[grid.region.value] = grid
-        grid_lookup = lookup if grid_lookup is None else grid_lookup
-        grid_by_region = by_region if grid_by_region is None else grid_by_region
+    grid_rows_seq = list(grid_rows) if grid_rows is not None else list(snap.grid_intensity)
+    if grid_lookup is None:
+        grid_lookup = build_grid_intensity_lookup(grid_rows_seq)
 
     schedules_by_activity: dict[str, list[ActivitySchedule]] = defaultdict(list)
     for sched in schedules_seq:
@@ -200,14 +169,21 @@ def build_intensity_matrix(
         if not schedule_list and not operation_list:
             continue
 
-        ef = ef_by_activity.get(mapping.activity_id)
+        ef_candidates = ef_by_activity.get(mapping.activity_id, [])
+        mapping_factor = select_activity_factor(ef_candidates)
+        ef = mapping_factor
         activity = activities_by_id.get(mapping.activity_id)
         functional_unit = functional_units_by_id.get(mapping.functional_unit_id)
 
-        if schedule_list and ef is not None:
+        if schedule_list:
             for sched in schedule_list:
                 profile = profiles_by_id.get(sched.profile_id)
                 if profile is None:
+                    continue
+
+                preferred_region = resolve_grid_region(sched, profile)
+                ef = select_activity_factor(ef_candidates, preferred_region=preferred_region)
+                if ef is None:
                     continue
 
                 variables = schedule_variable_map(sched)
@@ -245,8 +221,14 @@ def build_intensity_matrix(
                             ef.region.value if hasattr(ef.region, "value") else str(ef.region)
                         )
                 elif ef.is_grid_indexed:
-                    if grid_by_region:
-                        grid_row = resolve_grid_row(sched, profile, grid_by_region)
+                    if grid_rows_seq:
+                        grid_row = resolve_grid_row(
+                            sched,
+                            profile,
+                            grid_rows_seq,
+                            preferred_region=ef.region,
+                            vintage_year=ef.vintage_year,
+                        )
                     grid_intensity = None
                     grid_low = None
                     grid_high = None
@@ -358,12 +340,20 @@ def build_intensity_matrix(
                         "scope_boundary": ef.scope_boundary,
                         "region": region_value,
                         "source_ids_csv": ",".join(source_ids),
+                        "emission_factor_id": ef.ef_id,
+                        "grid_row_id": (
+                            grid_row_id(grid_row.region, grid_row.vintage_year)
+                            if grid_row is not None
+                            else None
+                        ),
+                        **factor_quality_fields(ef),
                     }
                 )
 
         if not operation_list:
             continue
 
+        ef = mapping_factor
         for operation in operation_list:
             if (
                 operation.functional_unit_id
@@ -453,6 +443,9 @@ def build_intensity_matrix(
                     "scope_boundary": ef.scope_boundary if ef else None,
                     "region": region_value,
                     "source_ids_csv": ",".join(source_ids),
+                    "emission_factor_id": ef.ef_id if ef else None,
+                    "grid_row_id": None,
+                    **factor_quality_fields(ef),
                 }
             )
 
@@ -478,98 +471,30 @@ def build_intensity_matrix(
 def export_view(
     ds: Optional[DataStore] = None,
     output_root: Path | str | None = None,
+    *,
+    snapshot: DatasetSnapshot | None = None,
 ) -> pd.DataFrame:
     datastore = ds or choose_backend()
-    activities = {activity.activity_id: activity for activity in datastore.load_activities()}
-    if not activities:
-        try:
-            activities = {activity.activity_id: activity for activity in schema_load_activities()}
-        except Exception:  # pragma: no cover - defensive fallback
-            activities = {}
-    load_operations_fn = getattr(datastore, "load_operations", None)
-    operations_iter = load_operations_fn() if callable(load_operations_fn) else []
-    operations = {operation.operation_id: operation for operation in operations_iter}
-    if not operations:
-        try:
-            operations = {op.operation_id: op for op in schema_load_operations()}
-        except Exception:  # pragma: no cover - defensive fallback
-            operations = {}
-    load_entities_fn = getattr(datastore, "load_entities", None)
-    entity_iter = list(load_entities_fn()) if callable(load_entities_fn) else []
-    if not entity_iter:
-        try:
-            entity_iter = list(schema_load_entities())
-        except Exception:  # pragma: no cover - defensive fallback
-            entity_iter = []
-    entities = {entity.entity_id: entity for entity in entity_iter if entity.entity_id}
+    snap = snapshot if snapshot is not None else load_dataset_snapshot(datastore)
 
-    load_sites_fn = getattr(datastore, "load_sites", None)
-    site_iter = list(load_sites_fn()) if callable(load_sites_fn) else []
-    if not site_iter:
-        try:
-            site_iter = list(schema_load_sites(entities=entity_iter or None))
-        except Exception:  # pragma: no cover - defensive fallback
-            site_iter = []
-    sites = {site.site_id: site for site in site_iter if site.site_id}
-
-    load_assets_fn = getattr(datastore, "load_assets", None)
-    asset_iter = list(load_assets_fn()) if callable(load_assets_fn) else []
-    if not asset_iter:
-        try:
-            asset_iter = list(
-                schema_load_assets(sites=site_iter or None, entities=entity_iter or None)
-            )
-        except Exception:  # pragma: no cover - defensive fallback
-            asset_iter = []
-    assets = {asset.asset_id: asset for asset in asset_iter if asset.asset_id}
-    efs = {ef.activity_id: ef for ef in datastore.load_emission_factors()}
-    profiles = {p.profile_id: p for p in datastore.load_profiles()}
-    load_feedback_loops_fn = getattr(datastore, "load_feedback_loops", None)
-    feedback_loops = list(load_feedback_loops_fn()) if callable(load_feedback_loops_fn) else []
-    if not feedback_loops:
-        try:
-            feedback_loops = list(schema_load_feedback_loops(activities=list(activities.values())))
-        except Exception:  # pragma: no cover - defensive fallback
-            feedback_loops = []
-    if activities:
-        try:
-            functional_units = list(load_functional_units())
-            activity_fu_mappings = list(
-                load_activity_fu_map(
-                    activities=list(activities.values()),
-                    functional_units=functional_units,
-                )
-            )
-        except ValueError:
-            functional_units = []
-            activity_fu_mappings = []
-    else:
-        functional_units = []
-        activity_fu_mappings = []
+    activities = {activity.activity_id: activity for activity in snap.activities}
+    operations = {operation.operation_id: operation for operation in snap.operations}
+    entities = {entity.entity_id: entity for entity in snap.entities if entity.entity_id}
+    sites = {site.site_id: site for site in snap.sites if site.site_id}
+    assets = {asset.asset_id: asset for asset in snap.assets if asset.asset_id}
+    efs = group_factors_by_activity(snap.emission_factors)
+    profiles = {profile.profile_id: profile for profile in snap.profiles}
+    feedback_loops = list(snap.feedback_loops)
+    functional_units = list(snap.functional_units)
+    activity_fu_mappings = list(snap.activity_fu_map)
     functional_units_by_id = {
         fu.functional_unit_id: fu
         for fu in functional_units
         if getattr(fu, "functional_unit_id", None)
     }
-    grid_lookup: Dict[str | RegionCode, Optional[float]] = {}
-    grid_by_region: Dict[str | RegionCode, GridIntensity] = {}
-    for gi in datastore.load_grid_intensity():
-        grid_lookup[gi.region] = gi.intensity_g_per_kwh
-        grid_by_region[gi.region] = gi
-        if hasattr(gi.region, "value"):
-            grid_lookup[gi.region.value] = gi.intensity_g_per_kwh
-            grid_by_region[gi.region.value] = gi
-
-    dependency_loader = getattr(datastore, "load_activity_dependencies", None)
-    dependency_records = list(dependency_loader()) if callable(dependency_loader) else []
-    if not dependency_records:
-        try:
-            dependency_records = load_activity_dependencies(
-                activities=list(activities.values()) or None,
-                operations=list(operations.values()) or None,
-            )
-        except Exception:  # pragma: no cover - defensive fallback
-            dependency_records = []
+    grid_rows: list[GridIntensity] = list(snap.grid_intensity)
+    grid_lookup: Dict[str | RegionCode, Optional[float]] = build_grid_intensity_lookup(grid_rows)
+    dependency_records = list(snap.activity_dependencies)
     dependency_map: dict[str, list[dict[str, Any]]] = {}
     for dependency in dependency_records:
         child_id = dependency.child_activity_id
@@ -630,12 +555,17 @@ def export_view(
     manifest_layers: set[str] = set()
     manifest_ef_vintages: set[int] = set()
     manifest_grid_vintages: set[int] = set()
+    manifest_ef_ids: set[str] = set()
+    manifest_grid_row_ids: set[str] = set()
     manifest_vintage_matrix: dict[str, int] = {}
 
-    schedules = datastore.load_activity_schedule()
+    schedules = snap.activity_schedule
     for sched in schedules:
         profile = profiles.get(sched.profile_id)
-        ef = efs.get(sched.activity_id)
+        preferred_region = resolve_grid_region(sched, profile)
+        ef = select_activity_factor(
+            efs.get(sched.activity_id, ()), preferred_region=preferred_region
+        )
         activity = activities.get(sched.activity_id)
 
         grid_row: Optional[GridIntensity] = None
@@ -650,9 +580,18 @@ def export_view(
         if profile and ef:
             if ef.vintage_year is not None:
                 manifest_ef_vintages.add(int(ef.vintage_year))
+            if ef.ef_id:
+                manifest_ef_ids.add(str(ef.ef_id))
             if ef.is_grid_indexed:
-                grid_row = resolve_grid_row(sched, profile, grid_by_region)
+                grid_row = resolve_grid_row(
+                    sched,
+                    profile,
+                    grid_rows,
+                    preferred_region=ef.region,
+                    vintage_year=ef.vintage_year,
+                )
                 if grid_row is not None:
+                    manifest_grid_row_ids.add(grid_row_id(grid_row.region, grid_row.vintage_year))
                     region_value = (
                         grid_row.region.value
                         if hasattr(grid_row.region, "value")
@@ -694,6 +633,8 @@ def export_view(
                     if isinstance(ef, EmissionFactor) and ef.vintage_year is not None
                     else None
                 ),
+                "emission_factor_id": (ef.ef_id if isinstance(ef, EmissionFactor) else None),
+                **factor_quality_fields(ef if isinstance(ef, EmissionFactor) else None),
                 "grid_region": (
                     grid_row.region.value
                     if grid_row and hasattr(grid_row.region, "value")
@@ -702,6 +643,11 @@ def export_view(
                 "grid_vintage_year": (
                     int(grid_row.vintage_year)
                     if grid_row and grid_row.vintage_year is not None
+                    else None
+                ),
+                "grid_row_id": (
+                    grid_row_id(grid_row.region, grid_row.vintage_year)
+                    if grid_row is not None
                     else None
                 ),
                 "annual_emissions_g": emission,
@@ -878,6 +824,10 @@ def export_view(
         "vintage_matrix": {
             key: manifest_vintage_matrix[key] for key in sorted(manifest_vintage_matrix)
         },
+        "selection": {
+            "emission_factor_ids": sorted(manifest_ef_ids),
+            "grid_row_ids": sorted(manifest_grid_row_ids),
+        },
         "sources": citation_keys,
         "layers": sorted_layers,
     }
@@ -910,15 +860,15 @@ def export_view(
 
     build_intensity_matrix(
         ds=datastore,
+        snapshot=snap,
         output_dir=out_dir,
-        emission_factors=list(efs.values()),
+        emission_factors=list(snap.emission_factors),
         activity_fu_map=activity_fu_mappings,
         functional_units=functional_units,
         profiles=list(profiles.values()),
         activity_schedule=schedules,
         activities=list(activities.values()),
-        grid_lookup=grid_lookup,
-        grid_by_region=grid_by_region,
+        grid_rows=grid_rows,
     )
 
     export_csv_path = out_dir / "export_view.csv"

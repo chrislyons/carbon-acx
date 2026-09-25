@@ -80,7 +80,7 @@ All AI-generated changes must be human-reviewed.
 ⸻
 
 8. Cloudflare & CI/CD
-	•	wrangler.toml is the single source of truth—treat edits as high-risk.
+	•	Cloudflare config is split by surface: root `wrangler.toml` is Pages, `apps/carbon-acx-web/wrangler.toml` is the workspace Pages view, and `workers/compute/wrangler.toml` is the fail-closed Worker; treat each as high-risk.
 	•	Use binding names for secrets/resources (KV, R2, D1, Queues).
 	•	CI workflow changes must be minimal, reversible, and guarded by branch protection.
 

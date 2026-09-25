@@ -12,6 +12,10 @@ related:
 
 Define a reproducible build-and-deploy process for **carbon-acx**: build artifacts from CSV inputs, verify them (tests/linters), and publish a **static site** (client-side Plotly + prebuilt JSON/CSV + plain-text IEEE references) on **Cloudflare Pages**. This guide specifies branch strategy, CI workflow, artifact layout, cache policy, environment variables, and rollback procedures.
 
+> **Current operator override (2026-09-25):** deploy the output of
+> `make package` at `dist/site`. Raw `apps/carbon-acx-web/dist` examples in this
+> historical guide are not a Pages deployment contract.
+
 ***
 
 ## **1. Deployment model**
@@ -61,8 +65,8 @@ Define a reproducible build-and-deploy process for **carbon-acx**: build artifac
 1. **Create Project** → **Connect to Git** → select chrislyons/carbon-acx.
 2. **Build settings**
     - **Framework preset**: None (static).
-    - **Build command**: make ci_build_pages (see §6).
-    - **Build output directory**: dist/ (contains site/ + copied calc/outputs/).
+    - **Build command**: `make package` (see §6).
+    - **Build output directory**: `dist/site` (the complete Pages bundle).
 3. **Environment variables**
     - PYTHON_VERSION=3.11 (if using Pages Builds).
     - POETRY_VIRTUALENVS_IN_PROJECT=true (if needed).

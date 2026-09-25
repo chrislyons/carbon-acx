@@ -15,7 +15,8 @@ predictable across pull requests.
    ACX_AUDIT_DATE=YYYY-MM-DD make package
    pnpm --filter carbon-acx-web test
    pnpm --filter carbon-acx-web typecheck
-   node --import tsx --test workers/compute/index.test.ts
+   node --import tsx --test 'functions/**/*.test.ts' 'workers/**/*.test.ts'
+   make validate-site
    ```
 
 ## Pull request checklist

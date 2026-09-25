@@ -3,20 +3,25 @@
 # Copy to .github/workflows/dep-audit.yml in any repo with CI.
 # Triggers on PRs that modify dependency files, audits for vulnerabilities
 # and suspicious new packages, then posts a summary comment on the PR.
+#
+# Fail-closed contract: every scanner must emit a parseable report. A missing or
+# malformed report, an unexpected exit code, or an unresolvable dependency set
+# fails the audit instead of passing quietly. Findings are reported as-is:
+# this workflow never suppresses, ignores, or auto-fixes a vulnerability.
 
 name: Dependency Audit
 
 'on':
   pull_request:
     paths:
-      - 'package.json'
-      - 'package-lock.json'
-      - 'pnpm-lock.yaml'
-      - 'requirements.txt'
-      - 'pyproject.toml'
-      - 'poetry.lock'
-      - 'Pipfile'
-      - 'Pipfile.lock'
+      - '**/package.json'
+      - '**/package-lock.json'
+      - '**/pnpm-lock.yaml'
+      - '**/requirements*.txt'
+      - '**/pyproject.toml'
+      - '**/poetry.lock'
+      - '**/Pipfile'
+      - '**/Pipfile.lock'
 
 concurrency:
   group: dep-audit-${{ github.event.pull_request.number }}
@@ -29,6 +34,7 @@ permissions:
 jobs:
   dep-audit:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       # ------------------------------------------------------------------ #
@@ -47,19 +53,36 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Setup Python 3.13
+      - name: Setup pnpm
+        if: ${{ hashFiles('pnpm-lock.yaml') != '' }}
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1  # v4
+        with:
+          version: 10.5.2
+          run_install: false
+
+      - name: Setup Python 3.11
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5
         with:
-          python-version: '3.13'
+          python-version: '3.11'
 
-      - name: Install pip-audit
-        run: pip install pip-audit
+      - name: Install Poetry
+        if: ${{ hashFiles('poetry.lock') != '' }}
+        uses: abatilo/actions-poetry@fd0e6716a0de25ef6ade151b8b53190b0376acfd  # v3
+        with:
+          poetry-version: '2.2.1'
+
+      # Poetry projects audit the locked set through `poetry run pip-audit`
+      # (pip-audit==2.9.0 in poetry.lock); other projects get the same pin here.
+      - name: Install pip-audit (non-Poetry projects)
+        if: ${{ hashFiles('poetry.lock') == '' }}
+        run: python -m pip install --disable-pip-version-check "pip-audit==2.9.0"
 
       # ------------------------------------------------------------------ #
       # 3. Detect project type and run audits                                #
       # ------------------------------------------------------------------ #
       - name: Run dependency audits
         id: audit
+        timeout-minutes: 20
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.sha }}
@@ -73,88 +96,185 @@ jobs:
           append() { FINDINGS="${FINDINGS}"$'\n'"$1"; }
           fail()   { AUDIT_STATUS="fail"; append "FAIL: $1"; }
           info()   { append "INFO: $1"; }
+          # Surface raw scanner errors in the log and the PR comment instead of
+          # discarding them behind `2>/dev/null`.
+          err_tail() { { head -c 300 "$1" 2>/dev/null || true; } | tr '\n' ' '; }
 
-          # ---- npm audit ------------------------------------------------
-          if [ -f package.json ]; then
-            echo "::group::npm audit"
-            info "npm project detected"
+          # High/critical advisories from an npm- or pnpm-shaped audit report.
+          js_advisories() {
+            jq -r '
+              if (.advisories? | type) == "object" then
+                .advisories | to_entries[]
+                | select(.value.severity == "high" or .value.severity == "critical")
+                | "  - \(.value.module_name) [\(.value.severity)] \(.value.title)"
+              elif (.vulnerabilities? | type) == "object" then
+                .vulnerabilities | to_entries[]
+                | select(.value.severity == "high" or .value.severity == "critical")
+                | "  - \(.key) [\(.value.severity)]"
+              else empty
+              end' "$1"
+          }
 
-            # Install without running scripts to populate node_modules
-            npm ci --ignore-scripts --no-audit 2>/dev/null || \
-              npm install --ignore-scripts --no-audit 2>/dev/null || true
+          # PyPI dependencies carrying advisories from a pip-audit JSON report.
+          py_advisories() {
+            jq -r '
+              def deps: if type == "object" then (.dependencies // []) else . end;
+              deps[] | select((.vulns // []) | length > 0)
+              | "  - \(.name)==\(.version): \([.vulns[].id] | join(", "))"' "$1"
+          }
 
-            npm audit --json > /tmp/npm-audit.json 2>&1 || true
+          # ---- JavaScript / TypeScript audit (pnpm preferred) ------------
+          JS_TOOL=""
+          if [ -f pnpm-lock.yaml ]; then
+            JS_TOOL="pnpm"
+          elif [ -f package.json ] || [ -f package-lock.json ]; then
+            JS_TOOL="npm"
+          fi
 
-            # Parse HIGH / CRITICAL counts from audit JSON
-            HIGH=$(jq '[.vulnerabilities // {} | to_entries[].value
-                        | select(.severity == "high")] | length' \
-                        /tmp/npm-audit.json 2>/dev/null || echo 0)
-            CRIT=$(jq '[.vulnerabilities // {} | to_entries[].value
-                        | select(.severity == "critical")] | length' \
-                        /tmp/npm-audit.json 2>/dev/null || echo 0)
+          if [ -n "$JS_TOOL" ]; then
+            echo "::group::${JS_TOOL} audit"
+            info "${JS_TOOL} project detected"
 
-            info "npm audit: high=${HIGH} critical=${CRIT}"
+            JS_JSON=/tmp/js-audit.json
+            JS_ERR=/tmp/js-audit.err
+            JS_RC=0
+            rm -f "$JS_JSON" "$JS_ERR"
 
-            if [ "$HIGH" -gt 0 ] || [ "$CRIT" -gt 0 ]; then
-              fail "npm audit found ${HIGH} high and ${CRIT} critical vulnerabilities"
-              # Surface the affected package names
-              jq -r '.vulnerabilities // {} | to_entries[]
-                     | select(.value.severity == "high" or .value.severity == "critical")
-                     | "  - \(.key) [\(.value.severity)]"' \
-                     /tmp/npm-audit.json 2>/dev/null | while read line; do
-                append "$line"
-              done
+            if [ "$JS_TOOL" = "pnpm" ]; then
+              # pnpm audit resolves directly from pnpm-lock.yaml; no install
+              # (and therefore no unrelated install failure) is involved.
+              pnpm audit --json --audit-level high > "$JS_JSON" 2> "$JS_ERR" || JS_RC=$?
+            else
+              if [ ! -f package-lock.json ] \
+                && ! npm install --ignore-scripts --no-audit > /dev/null 2>&1
+              then
+                fail "npm install failed — audit could not resolve the dependency tree"
+              fi
+              npm audit --json --audit-level=high > "$JS_JSON" 2> "$JS_ERR" || JS_RC=$?
+            fi
+
+            if [ ! -s "$JS_JSON" ] || ! jq -e . "$JS_JSON" > /dev/null 2>&1; then
+              fail "${JS_TOOL} audit produced no parseable report (exit ${JS_RC}): $(err_tail "$JS_ERR")"
+            else
+              HIGH=$(jq -r '.metadata.vulnerabilities.high // empty' "$JS_JSON" 2>/dev/null || true)
+              CRIT=$(jq -r '.metadata.vulnerabilities.critical // empty' "$JS_JSON" 2>/dev/null || true)
+              if ! [[ "$HIGH" =~ ^[0-9]+$ ]] || ! [[ "$CRIT" =~ ^[0-9]+$ ]]; then
+                fail "${JS_TOOL} audit report carries no severity summary — cannot verify the scan"
+              else
+                info "${JS_TOOL} audit: high=${HIGH} critical=${CRIT}"
+                if [ "$HIGH" -gt 0 ] || [ "$CRIT" -gt 0 ]; then
+                  fail "${JS_TOOL} audit found ${HIGH} high and ${CRIT} critical vulnerabilities"
+                  while IFS= read -r line; do append "$line"; done < <(js_advisories "$JS_JSON")
+                fi
+                if [ "$JS_RC" -ne 0 ] && [ "$JS_RC" -ne 1 ]; then
+                  fail "${JS_TOOL} audit exited ${JS_RC}: $(err_tail "$JS_ERR")"
+                elif [ "$JS_RC" -eq 1 ] && [ "$HIGH" -eq 0 ] && [ "$CRIT" -eq 0 ]; then
+                  fail "${JS_TOOL} audit exited 1 without reporting high/critical advisories — scanner failure"
+                fi
+              fi
             fi
             echo "::endgroup::"
           fi
 
-          # ---- pip-audit ------------------------------------------------
-          PYTHON_PROJECT=0
-          [ -f pyproject.toml ]    && PYTHON_PROJECT=1
-          [ -f requirements.txt ]  && PYTHON_PROJECT=1
-          [ -f Pipfile ]           && PYTHON_PROJECT=1
-
-          if [ "$PYTHON_PROJECT" -eq 1 ]; then
+          # ---- Python audit (pip-audit) ---------------------------------
+          if [ -f requirements.txt ] || [ -f poetry.lock ] || [ -f Pipfile ] || [ -f pyproject.toml ]; then
             echo "::group::pip-audit"
             info "Python project detected"
 
-            # Build audit target flags
-            AUDIT_ARGS="--format=json --output=/tmp/pip-audit.json"
+            PY_JSON=/tmp/pip-audit.json
+            PY_ERR=/tmp/pip-audit.err
+            PY_RC=0
+            PY_READY=1
+            rm -f "$PY_JSON" "$PY_ERR"
+
             if [ -f requirements.txt ]; then
-              AUDIT_ARGS="$AUDIT_ARGS -r requirements.txt"
-            elif [ -f pyproject.toml ]; then
-              # pip-audit can scan the local project if installed
-              pip install --quiet . 2>/dev/null || true
+              pip-audit --strict --format=json --output="$PY_JSON" -r requirements.txt 2> "$PY_ERR" || PY_RC=$?
+            elif [ -f poetry.lock ] && command -v poetry > /dev/null 2>&1; then
+              # Audit the locked dependency set, not whatever pip happens to
+              # resolve, and never skip an unverifiable dependency.
+              POETRY_ARGS=(--no-interaction --no-root)
+              if grep -q '^\[tool.poetry.extras\]' pyproject.toml 2>/dev/null; then
+                POETRY_ARGS+=(--all-extras)
+              fi
+              if poetry install "${POETRY_ARGS[@]}" > /tmp/poetry-install.log 2>&1; then
+                poetry run pip-audit --strict --format=json --output="$PY_JSON" 2> "$PY_ERR" || PY_RC=$?
+              else
+                PY_READY=0
+                fail "poetry install failed — pip-audit could not run against poetry.lock: $(err_tail /tmp/poetry-install.log)"
+              fi
             elif [ -f Pipfile ]; then
-              pip install --quiet pipenv 2>/dev/null || true
-              pipenv install --quiet 2>/dev/null || true
-              AUDIT_ARGS="$AUDIT_ARGS -r <(pipenv requirements 2>/dev/null)"
+              python -m pip install --disable-pip-version-check --quiet pipenv > /dev/null 2>&1 \
+                || fail "could not install pipenv — Pipfile audit may not run"
+              if pipenv requirements > /tmp/pipenv-requirements.txt 2> "$PY_ERR"; then
+                pip-audit --strict --format=json --output="$PY_JSON" \
+                  -r /tmp/pipenv-requirements.txt 2>> "$PY_ERR" || PY_RC=$?
+              else
+                PY_READY=0
+                fail "could not export Pipfile requirements — pip-audit did not run"
+              fi
+            elif pip install --quiet . > /tmp/pip-install.log 2>&1; then
+              pip-audit --strict --format=json --output="$PY_JSON" 2> "$PY_ERR" || PY_RC=$?
+            else
+              PY_READY=0
+              fail "pip install . failed — pip-audit could not run against the project: $(err_tail /tmp/pip-install.log)"
             fi
 
-            pip-audit $AUDIT_ARGS 2>/dev/null || true
-
-            if [ -f /tmp/pip-audit.json ]; then
-              # pip-audit JSON: array of {name, version, vulns:[{id, fix_versions, aliases, description}]}
-              # Severity is inferred from CVSS via aliases; filter HIGH/CRITICAL by CVSS score
-              HIGH=$(jq '[.[] | select(.vulns | length > 0) | .vulns[]
-                          | select(.aliases[]? | test("CVE-"; "i"))
-                         ] | length' /tmp/pip-audit.json 2>/dev/null || echo 0)
-              # pip-audit does not natively expose CVSS severity; treat any vuln as high
-              VULN_COUNT=$(jq '[.[] | select(.vulns | length > 0)] | length' \
-                              /tmp/pip-audit.json 2>/dev/null || echo 0)
-
-              info "pip-audit: packages_with_vulns=${VULN_COUNT}"
-
-              if [ "$VULN_COUNT" -gt 0 ]; then
-                fail "pip-audit found ${VULN_COUNT} package(s) with vulnerabilities"
-                jq -r '.[] | select(.vulns | length > 0)
-                       | "  - \(.name)==\(.version): \([.vulns[].id] | join(", "))"' \
-                       /tmp/pip-audit.json 2>/dev/null | while read line; do
-                  append "$line"
-                done
+            if [ "$PY_READY" -eq 1 ]; then
+              if [ ! -s "$PY_JSON" ] || ! jq -e . "$PY_JSON" > /dev/null 2>&1; then
+                # pip-audit writes its JSON report (a manifest format) only after
+                # a completed audit; no report means the scan did not finish.
+                fail "pip-audit produced no parseable report (exit ${PY_RC}): $(err_tail "$PY_ERR")"
+              else
+                VULN_COUNT=$(jq '[
+                    (if type == "object" then (.dependencies // []) else . end)[]
+                    | select((.vulns // []) | length > 0)
+                  ] | length' "$PY_JSON" 2>/dev/null || true)
+                if ! [[ "$VULN_COUNT" =~ ^[0-9]+$ ]]; then
+                  fail "pip-audit report carries no dependency summary — cannot verify the scan"
+                else
+                  info "pip-audit: packages_with_vulns=${VULN_COUNT}"
+                  if [ "$VULN_COUNT" -gt 0 ]; then
+                    fail "pip-audit found ${VULN_COUNT} package(s) with vulnerabilities"
+                    while IFS= read -r line; do append "$line"; done < <(py_advisories "$PY_JSON")
+                  fi
+                  if [ "$PY_RC" -ne 0 ] && [ "$PY_RC" -ne 1 ]; then
+                    fail "pip-audit exited ${PY_RC}: $(err_tail "$PY_ERR")"
+                  elif [ "$PY_RC" -eq 1 ] && [ "$VULN_COUNT" -eq 0 ]; then
+                    fail "pip-audit exited 1 without reporting vulnerabilities — scanner failure"
+                  fi
+                fi
               fi
             fi
             echo "::endgroup::"
+            if [ -f tools/validator/requirements.txt ] && command -v poetry > /dev/null 2>&1; then
+              VALIDATOR_JSON=/tmp/validator-pip-audit.json
+              VALIDATOR_ERR=/tmp/validator-pip-audit.err
+              VALIDATOR_RC=0
+              poetry run pip-audit --strict --format=json --output="$VALIDATOR_JSON" \
+                -r tools/validator/requirements.txt 2> "$VALIDATOR_ERR" || VALIDATOR_RC=$?
+              if [ ! -s "$VALIDATOR_JSON" ] || ! jq -e . "$VALIDATOR_JSON" > /dev/null 2>&1; then
+                fail "validator pip-audit produced no parseable report (exit ${VALIDATOR_RC}): $(err_tail "$VALIDATOR_ERR")"
+              else
+                VALIDATOR_VULN_COUNT=$(jq '[
+                    (if type == "object" then (.dependencies // []) else . end)[]
+                    | select((.vulns // []) | length > 0)
+                  ] | length' "$VALIDATOR_JSON" 2>/dev/null || true)
+                if ! [[ "$VALIDATOR_VULN_COUNT" =~ ^[0-9]+$ ]]; then
+                  fail "validator pip-audit report carries no dependency summary"
+                else
+                  info "validator pip-audit: packages_with_vulns=${VALIDATOR_VULN_COUNT}"
+                  if [ "$VALIDATOR_VULN_COUNT" -gt 0 ]; then
+                    fail "validator pip-audit found ${VALIDATOR_VULN_COUNT} package(s) with vulnerabilities"
+                    while IFS= read -r line; do append "$line"; done < <(py_advisories "$VALIDATOR_JSON")
+                  fi
+                  if [ "$VALIDATOR_RC" -ne 0 ] && [ "$VALIDATOR_RC" -ne 1 ]; then
+                    fail "validator pip-audit exited ${VALIDATOR_RC}: $(err_tail "$VALIDATOR_ERR")"
+                  elif [ "$VALIDATOR_RC" -eq 1 ] && [ "$VALIDATOR_VULN_COUNT" -eq 0 ]; then
+                    fail "validator pip-audit exited 1 without reporting vulnerabilities"
+                  fi
+                fi
+              fi
+            fi
           fi
 
           # ----------------------------------------------------------------
@@ -163,101 +283,114 @@ jobs:
           echo "::group::New package age checks"
           info "Diffing lockfiles between base (${BASE_SHA}) and head (${HEAD_SHA})"
 
-          # --- npm new packages ---
+          diff_lockfile() {
+            local lockfile=$1 out=$2
+            if ! git diff "${BASE_SHA}..${HEAD_SHA}" -- "$lockfile" > "$out" 2> /tmp/lockfile-diff.err; then
+              fail "could not diff ${lockfile} between base and head: $(err_tail /tmp/lockfile-diff.err)"
+              return 1
+            fi
+          }
+
+          # --- npm / pnpm new packages ---
           if [ -f package-lock.json ] || [ -f pnpm-lock.yaml ]; then
 
             LOCKFILE=""
-            [ -f package-lock.json ] && LOCKFILE="package-lock.json"
             [ -f pnpm-lock.yaml ]    && LOCKFILE="pnpm-lock.yaml"
+            [ -f package-lock.json ] && LOCKFILE="package-lock.json"
 
-            # Extract added lines from the lockfile diff
-            git diff "${BASE_SHA}..${HEAD_SHA}" -- "$LOCKFILE" 2>/dev/null \
-              | grep '^+' \
-              | grep -v '^+++' \
-              | grep -Eo '"[^"@]+@[^"]+"|node_modules/[^/":]+' \
-              | sed 's|node_modules/||; s|"||g' \
-              | sort -u > /tmp/new-npm-pkgs.txt || true
+            if diff_lockfile "$LOCKFILE" /tmp/lockfile.diff; then
+              # Added package keys differ per lockfile format; an extraction that
+              # matches nothing is reported rather than treated as "all clear".
+              if [ "$LOCKFILE" = "pnpm-lock.yaml" ]; then
+                { grep -E "^\+ +'?[^'[:space:]:]+@[0-9][^'[:space:]:]*'?:$" /tmp/lockfile.diff || true; } \
+                  | sed "s/^+ *//; s/'//g; s/:$//; s/(.*$//" \
+                  | sed '/^$/d' | sort -u > /tmp/new-npm-pkgs.txt
+              else
+                { grep -Eo '"[^"@]+@[^"]+"|node_modules/[^/":]+' /tmp/lockfile.diff || true; } \
+                  | sed 's|node_modules/||; s|"||g' \
+                  | sed '/^$/d' | sort -u > /tmp/new-npm-pkgs.txt
+              fi
 
-            if [ -s /tmp/new-npm-pkgs.txt ]; then
-              info "New npm packages detected:"
-              while IFS= read -r pkg; do
-                # Strip version specifier to get bare name
-                PKGNAME=$(echo "$pkg" | sed 's/@[^@]*$//')
-                [ -z "$PKGNAME" ] && continue
+              if [ -s /tmp/new-npm-pkgs.txt ]; then
+                info "New npm packages detected in ${LOCKFILE} diff:"
+                while IFS= read -r pkg; do
+                  # Strip version specifier to get bare name
+                  PKGNAME=$(echo "$pkg" | sed 's/@[^@]*$//')
+                  [ -z "$PKGNAME" ] && continue
 
-                # Query npm registry for publish date
-                REG_JSON=$(curl -sf --max-time 10 \
-                  "https://registry.npmjs.org/${PKGNAME}" 2>/dev/null || echo "{}")
-                CREATED=$(echo "$REG_JSON" | jq -r '.time.created // empty' 2>/dev/null || echo "")
-                LATEST=$(echo "$REG_JSON"  | jq -r '.["dist-tags"].latest // empty' 2>/dev/null || echo "")
+                  # Query npm registry for publish date
+                  REG_JSON=$(curl -sf --max-time 10 \
+                    "https://registry.npmjs.org/${PKGNAME}" 2>/dev/null || echo "{}")
+                  CREATED=$(echo "$REG_JSON" | jq -r '.time.created // empty' 2>/dev/null || echo "")
+                  LATEST=$(echo "$REG_JSON"  | jq -r '.["dist-tags"].latest // empty' 2>/dev/null || echo "")
 
-                if [ -n "$CREATED" ]; then
-                  # Age in days
-                  CREATED_EPOCH=$(date -d "$CREATED" +%s 2>/dev/null || \
-                                  date -j -f "%Y-%m-%dT%H:%M:%S" \
-                                  "${CREATED%%.*}" +%s 2>/dev/null || echo 0)
-                  NOW_EPOCH=$(date +%s)
-                  AGE_DAYS=$(( (NOW_EPOCH - CREATED_EPOCH) / 86400 ))
+                  if [ -n "$CREATED" ]; then
+                    # Age in days
+                    CREATED_EPOCH=$(date -d "$CREATED" +%s 2>/dev/null || \
+                                    date -j -f "%Y-%m-%dT%H:%M:%S" \
+                                    "${CREATED%%.*}" +%s 2>/dev/null || echo 0)
+                    NOW_EPOCH=$(date +%s)
+                    AGE_DAYS=$(( (NOW_EPOCH - CREATED_EPOCH) / 86400 ))
 
-                  if [ "$AGE_DAYS" -lt 7 ]; then
-                    fail "npm package '${PKGNAME}' was published only ${AGE_DAYS} day(s) ago — possible typosquat or brand-new supply-chain risk"
+                    if [ "$AGE_DAYS" -lt 7 ]; then
+                      fail "npm package '${PKGNAME}' was published only ${AGE_DAYS} day(s) ago — possible typosquat or brand-new supply-chain risk"
+                    else
+                      info "  + ${PKGNAME} (${LATEST:-unknown}) — age: ${AGE_DAYS} days"
+                    fi
                   else
-                    info "  + ${PKGNAME} (${LATEST:-unknown}) — age: ${AGE_DAYS} days"
+                    fail "could not verify npm package '${PKGNAME}' age — registry lookup failed"
                   fi
-                else
-                  info "  + ${PKGNAME} — could not verify age (registry unreachable?)"
-                fi
-              done < /tmp/new-npm-pkgs.txt
-            else
-              info "No new npm packages detected in lockfile diff"
+                done < /tmp/new-npm-pkgs.txt
+              else
+                info "No new npm packages detected in ${LOCKFILE} diff"
+              fi
             fi
           fi
 
           # --- Python new packages ---
           PYLOCKFILE=""
-          [ -f poetry.lock ]       && PYLOCKFILE="poetry.lock"
-          [ -f Pipfile.lock ]      && PYLOCKFILE="Pipfile.lock"
-          [ -f requirements.txt ]  && PYLOCKFILE="requirements.txt"
+          [ -f poetry.lock ]      && PYLOCKFILE="poetry.lock"
+          [ -f Pipfile.lock ]     && PYLOCKFILE="Pipfile.lock"
+          [ -f requirements.txt ] && PYLOCKFILE="requirements.txt"
 
           if [ -n "$PYLOCKFILE" ]; then
-            git diff "${BASE_SHA}..${HEAD_SHA}" -- "$PYLOCKFILE" 2>/dev/null \
-              | grep '^+' \
-              | grep -v '^+++' \
-              | grep -Eo 'name\s*=\s*"[^"]+"|^[A-Za-z0-9_.-]+[>=<!=]' \
-              | sed 's/name\s*=\s*"//; s/"//; s/[>=<!=].*//' \
-              | tr '[:upper:]' '[:lower:]' \
-              | sort -u > /tmp/new-py-pkgs.txt || true
+            if diff_lockfile "$PYLOCKFILE" /tmp/py-lockfile.diff; then
+              { grep -Eo 'name\s*=\s*"[^"]+"|^[A-Za-z0-9_.-]+[>=<!=]' /tmp/py-lockfile.diff || true; } \
+                | sed 's/name\s*=\s*"//; s/"//; s/[>=<!=].*//' \
+                | tr '[:upper:]' '[:lower:]' \
+                | sed '/^$/d' | sort -u > /tmp/new-py-pkgs.txt
 
-            if [ -s /tmp/new-py-pkgs.txt ]; then
-              info "New Python packages detected:"
-              while IFS= read -r pkg; do
-                [ -z "$pkg" ] && continue
+              if [ -s /tmp/new-py-pkgs.txt ]; then
+                info "New Python packages detected in ${PYLOCKFILE} diff:"
+                while IFS= read -r pkg; do
+                  [ -z "$pkg" ] && continue
 
-                # Query PyPI for upload date
-                PYPI_JSON=$(curl -sf --max-time 10 \
-                  "https://pypi.org/pypi/${pkg}/json" 2>/dev/null || echo "{}")
-                UPLOAD_TIME=$(echo "$PYPI_JSON" | \
-                  jq -r '.releases // {} | to_entries | sort_by(.key) | first | .value[0].upload_time // empty' \
-                  2>/dev/null || echo "")
+                  # Query PyPI for upload date
+                  PYPI_JSON=$(curl -sf --max-time 10 \
+                    "https://pypi.org/pypi/${pkg}/json" 2>/dev/null || echo "{}")
+                  UPLOAD_TIME=$(echo "$PYPI_JSON" | \
+                    jq -r '.releases // {} | to_entries | sort_by(.key) | first | .value[0].upload_time // empty' \
+                    2>/dev/null || echo "")
 
-                if [ -n "$UPLOAD_TIME" ]; then
-                  UPLOAD_EPOCH=$(date -d "$UPLOAD_TIME" +%s 2>/dev/null || \
-                                 date -j -f "%Y-%m-%dT%H:%M:%S" \
-                                 "${UPLOAD_TIME%%.*}" +%s 2>/dev/null || echo 0)
-                  NOW_EPOCH=$(date +%s)
-                  AGE_DAYS=$(( (NOW_EPOCH - UPLOAD_EPOCH) / 86400 ))
+                  if [ -n "$UPLOAD_TIME" ]; then
+                    UPLOAD_EPOCH=$(date -d "$UPLOAD_TIME" +%s 2>/dev/null || \
+                                   date -j -f "%Y-%m-%dT%H:%M:%S" \
+                                   "${UPLOAD_TIME%%.*}" +%s 2>/dev/null || echo 0)
+                    NOW_EPOCH=$(date +%s)
+                    AGE_DAYS=$(( (NOW_EPOCH - UPLOAD_EPOCH) / 86400 ))
 
-                  if [ "$AGE_DAYS" -lt 7 ]; then
-                    fail "PyPI package '${pkg}' first appeared only ${AGE_DAYS} day(s) ago — possible typosquat or supply-chain risk"
+                    if [ "$AGE_DAYS" -lt 7 ]; then
+                      fail "PyPI package '${pkg}' first appeared only ${AGE_DAYS} day(s) ago — possible typosquat or supply-chain risk"
+                    else
+                      info "  + ${pkg} — age: ${AGE_DAYS} days"
+                    fi
                   else
-                    info "  + ${pkg} — age: ${AGE_DAYS} days"
+                    fail "could not verify PyPI package '${pkg}' age — registry lookup failed"
                   fi
-                else
-                  info "  + ${pkg} — could not verify age (PyPI unreachable?)"
-                fi
-              done < /tmp/new-py-pkgs.txt
-            else
-              info "No new Python packages detected in lockfile diff"
+                done < /tmp/new-py-pkgs.txt
+              else
+                info "No new Python packages detected in ${PYLOCKFILE} diff"
+              fi
             fi
           fi
 
@@ -333,7 +466,8 @@ jobs:
 
           </details>
 
-          > Audits: \`npm audit\` (HIGH/CRITICAL), \`pip-audit\` (any CVE), lockfile age check (packages < 7 days old).
+          > Audits: \`pnpm audit\` / \`npm audit\` (HIGH/CRITICAL), \`pip-audit --strict\` (any advisory),
+          > lockfile age check (packages < 7 days old). Scanner failures fail the audit.
           COMMENT
           )
 

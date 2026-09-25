@@ -22,7 +22,7 @@ HEADERS_TEMPLATE = (
       Cache-Control: no-cache
 
     /artifacts/*
-      Cache-Control: public, max-age=31536000, immutable
+      Cache-Control: public, max-age=0, must-revalidate
       Access-Control-Allow-Origin: *
       Access-Control-Allow-Methods: GET, HEAD, OPTIONS
       Access-Control-Allow-Headers: Content-Type

@@ -98,7 +98,7 @@ canonical CSV / OWID snapshot / governance ledgers
 
 | Public authority | Schema | Source / trigger | Consumer | Failure behavior |
 | --- | --- | --- | --- | --- |
-| `calculator-data.json` | `acx.web-calculator/1-6-0` | curated activities, factors, grid, benchmarks, sources; generation | calculator and methodology | factor/source/unit failure aborts publication |
+| `calculator-data.json` | `acx.web-calculator/1-7-0` | curated activities, factors, selected grid rows, evidence-quality metadata, benchmarks, and sources; generation | calculator and methodology | factor/source/unit/selection failure aborts publication |
 | `catalog-data.json` | `acx.web-catalog/1-0-0` | complete activity catalog and AI scenarios; generation | Explore and Learn routes | unresolved factors remain explicit `null`/unavailable; invalid scenario aborts generation |
 | `sources.json` | `acx.web-sources/1-1-0` | active source registry + retrieval/decision bindings; generation | source evidence consumers | incomplete ledger binding aborts applicable publication |
 | `stream-catalog.json` | `acx.stream-catalog/1-0-0` | `dataflow_manifest.csv`; generation | release auditors and Methodology link | invalid manifest metadata aborts generation |

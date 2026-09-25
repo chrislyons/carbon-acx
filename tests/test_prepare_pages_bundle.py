@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import hashlib
+import json
 from pathlib import Path
 
 import pytest
 
 from scripts.prepare_pages_bundle import HEADERS_TEMPLATE, REDIRECTS_TEMPLATE, prepare_pages_bundle
+from scripts.validate_pages_bundle import BundleValidationError, validate_pages_bundle
 
 
 def _write_site_stub(site_root: Path) -> None:
@@ -72,3 +75,104 @@ def test_headers_template_carries_security_policies() -> None:
     csp = next(line for line in lines if line.startswith("Content-Security-Policy:"))
     for directive in ("default-src 'self'", "frame-ancestors 'none'", "object-src 'none'"):
         assert directive in csp
+
+
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _write_valid_bundle(site_root: Path) -> None:
+    site_root.mkdir(parents=True, exist_ok=True)
+    (site_root / "index.html").write_text("<!doctype html>", encoding="utf-8")
+    (site_root / "_headers").write_text(HEADERS_TEMPLATE, encoding="utf-8")
+    (site_root / "_redirects").write_text(REDIRECTS_TEMPLATE, encoding="utf-8")
+
+    artifacts = site_root / "artifacts"
+    figure = artifacts / "figures" / "bubble.json"
+    reference = artifacts / "references" / "bubble_refs.txt"
+    figure_manifest = artifacts / "manifests" / "bubble.manifest.json"
+    dataset_manifest = artifacts / "calc" / "outputs" / "manifest.json"
+    for path in (figure, reference, figure_manifest, dataset_manifest):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text('{"ok": true}', encoding="utf-8")
+
+    collection = {
+        "figures": [
+            {
+                "figure_id": "bubble",
+                "figure_method": "figures.bubble",
+                "hash_prefix": "00000000",
+                "manifests": [
+                    {"path": "manifests/bubble.manifest.json", "sha256": _sha256(figure_manifest)}
+                ],
+                "figures": [{"path": "figures/bubble.json", "sha256": _sha256(figure)}],
+                "references": [
+                    {"path": "references/bubble_refs.txt", "sha256": _sha256(reference)}
+                ],
+            }
+        ],
+        "dataset_manifest": {
+            "path": "calc/outputs/manifest.json",
+            "sha256": _sha256(dataset_manifest),
+        },
+    }
+    (artifacts / "manifest.json").write_text(json.dumps(collection), encoding="utf-8")
+
+    files = [
+        {"path": path.relative_to(artifacts).as_posix(), "bytes": path.stat().st_size}
+        for path in sorted(artifacts.rglob("*"))
+        if path.is_file() and path.name != "index.json"
+    ]
+    (artifacts / "index.json").write_text(json.dumps({"files": files}), encoding="utf-8")
+
+
+def _read_index(artifacts: Path) -> dict:
+    return json.loads((artifacts / "index.json").read_text(encoding="utf-8"))
+
+
+def test_validate_pages_bundle_accepts_packaged_site(tmp_path: Path) -> None:
+    site_root = tmp_path / "dist" / "site"
+    _write_valid_bundle(site_root)
+
+    report = validate_pages_bundle(site_root)
+
+    assert report.indexed_files == 5
+    assert report.manifest_hashes == 4
+    assert report.figures == 1
+    assert report.references == 1
+
+
+def test_validate_pages_bundle_rejects_unsafe_artifact_path(tmp_path: Path) -> None:
+    site_root = tmp_path / "dist" / "site"
+    _write_valid_bundle(site_root)
+
+    artifacts = site_root / "artifacts"
+    index = _read_index(artifacts)
+    index["files"][0]["path"] = "../../etc/passwd"
+    (artifacts / "index.json").write_text(json.dumps(index), encoding="utf-8")
+
+    with pytest.raises(BundleValidationError) as excinfo:
+        validate_pages_bundle(site_root)
+    assert any("escapes the artifact root" in message for message in excinfo.value.errors)
+
+
+def test_validate_pages_bundle_rejects_tampered_figure(tmp_path: Path) -> None:
+    site_root = tmp_path / "dist" / "site"
+    _write_valid_bundle(site_root)
+
+    figure = site_root / "artifacts" / "figures" / "bubble.json"
+    figure.write_text('{"ok": false}', encoding="utf-8")
+
+    with pytest.raises(BundleValidationError) as excinfo:
+        validate_pages_bundle(site_root)
+    assert any("hash mismatch" in message for message in excinfo.value.errors)
+
+
+def test_validate_pages_bundle_requires_pages_metadata(tmp_path: Path) -> None:
+    site_root = tmp_path / "dist" / "site"
+    _write_valid_bundle(site_root)
+    (site_root / "_redirects").unlink()
+
+    with pytest.raises(BundleValidationError) as excinfo:
+        validate_pages_bundle(site_root)
+    assert any("_redirects" in message for message in excinfo.value.errors)

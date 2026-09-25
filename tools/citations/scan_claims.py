@@ -14,6 +14,8 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Dict, List, Mapping, Sequence
 
+from calc.citations import has_embedded_number
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = REPO_ROOT / "data"
 SITE_ARTIFACTS_DIR = REPO_ROOT / "site" / "public" / "artifacts"
@@ -352,6 +354,12 @@ def _registry_source_ids(as_of: date | None = None) -> tuple[set[str], list[str]
         if source_id in source_ids:
             errors.append(f"Duplicate source_id in data/sources.csv: {source_id}")
         source_ids.add(source_id)
+        ieee_citation = row.get("ieee_citation") or ""
+        if has_embedded_number(ieee_citation):
+            errors.append(
+                f"data/sources.csv row {row_number} embeds a citation number; "
+                "numbers are derived per emitted reference set"
+            )
         for column in ("ieee_citation", "url", "year", "license", "review_due_at"):
             if not (row.get(column) or "").strip():
                 errors.append(f"data/sources.csv row {row_number} has no {column}")

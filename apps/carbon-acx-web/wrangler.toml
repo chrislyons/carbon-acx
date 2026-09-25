@@ -1,7 +1,10 @@
 # Wrangler configuration for Cloudflare Pages
-name = "carbon-acx-web"
+# Pages serve the prebuilt bundle assembled by `make package` at the repo root
+# (`dist/site`), not the raw Next.js export in this workspace. Path is resolved
+# relative to this wrangler.toml.
+name = "carbon-acx"
 compatibility_date = "2025-01-01"
-pages_build_output_dir = "dist"
+pages_build_output_dir = "../../dist/site"
 
 [env.production]
 routes = [

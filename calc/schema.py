@@ -163,6 +163,15 @@ ScopeBoundary = Literal[
 ]
 
 
+# Factor evidence-quality metadata. These are optional and backward compatible;
+# canonical rows without real evidence carry the conservative sentinels
+# ``unknown`` / ``not_reported`` / ``not_recorded`` instead of invented grades.
+EvidenceType = Literal["measured", "modelled", "estimated", "proxy", "unknown"]
+QualityGrade = Literal["primary", "secondary", "indicative", "unknown"]
+ApplicabilityBoundary = Literal["direct", "proxy", "unknown"]
+UncertaintyStatus = Literal["quantified", "bounded", "not_reported"]
+
+
 class Activity(BaseModel):
     activity_id: str
     sector_id: Optional[str] = None
@@ -241,6 +250,12 @@ class EmissionFactor(BaseModel):
     method_notes: Optional[str] = None
     uncert_low_g_per_unit: Optional[float] = None
     uncert_high_g_per_unit: Optional[float] = None
+    evidence_type: Optional[EvidenceType] = None
+    quality_grade: Optional[QualityGrade] = None
+    applicability_boundary: Optional[ApplicabilityBoundary] = None
+    uncertainty_status: Optional[UncertaintyStatus] = None
+    uncertainty_reason: Optional[str] = None
+    claim_locator: Optional[str] = None
 
     model_config = BASE_MODEL_CONFIG
 
@@ -421,6 +436,12 @@ class GridIntensity(BaseModel):
     intensity_high_g_per_kwh: Optional[float] = Field(default=None, alias="g_per_kwh_high")
     source_id: Optional[str] = None
     vintage_year: Optional[int] = None
+    evidence_type: Optional[EvidenceType] = None
+    quality_grade: Optional[QualityGrade] = None
+    applicability_boundary: Optional[ApplicabilityBoundary] = None
+    uncertainty_status: Optional[UncertaintyStatus] = None
+    uncertainty_reason: Optional[str] = None
+    claim_locator: Optional[str] = None
 
     model_config = BASE_MODEL_CONFIG
 

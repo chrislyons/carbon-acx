@@ -437,7 +437,7 @@
     },
     {
       "streamId": "acx.emission-factors",
-      "schemaVersion": "acx.emission-factors/1-0-0",
+      "schemaVersion": "acx.emission-factors/1-1-0",
       "sourceOfTruth": "data/emission_factors.csv",
       "recordKey": [
         "ef_id"
@@ -460,7 +460,13 @@
         "source_id",
         "method_notes",
         "uncert_low_g_per_unit",
-        "uncert_high_g_per_unit"
+        "uncert_high_g_per_unit",
+        "evidence_type",
+        "quality_grade",
+        "applicability_boundary",
+        "uncertainty_status",
+        "uncertainty_reason",
+        "claim_locator"
       ],
       "provenance": {
         "ef_id": "structural",
@@ -480,7 +486,13 @@
         "source_id": "structural",
         "method_notes": "modelled",
         "uncert_low_g_per_unit": "external",
-        "uncert_high_g_per_unit": "external"
+        "uncert_high_g_per_unit": "external",
+        "evidence_type": "structural",
+        "quality_grade": "structural",
+        "applicability_boundary": "structural",
+        "uncertainty_status": "structural",
+        "uncertainty_reason": "structural",
+        "claim_locator": "structural"
       },
       "sourceColumns": [
         "source_id",
@@ -670,7 +682,7 @@
     },
     {
       "streamId": "acx.grid-intensity",
-      "schemaVersion": "acx.grid-intensity/1-0-0",
+      "schemaVersion": "acx.grid-intensity/1-1-0",
       "sourceOfTruth": "data/grid_intensity.csv",
       "recordKey": [
         "region_code",
@@ -685,7 +697,13 @@
         "g_per_kwh",
         "g_per_kwh_low",
         "g_per_kwh_high",
-        "source_id"
+        "source_id",
+        "evidence_type",
+        "quality_grade",
+        "applicability_boundary",
+        "uncertainty_status",
+        "uncertainty_reason",
+        "claim_locator"
       ],
       "provenance": {
         "region_code": "structural",
@@ -696,7 +714,13 @@
         "g_per_kwh": "external",
         "g_per_kwh_low": "external",
         "g_per_kwh_high": "external",
-        "source_id": "structural"
+        "source_id": "structural",
+        "evidence_type": "structural",
+        "quality_grade": "structural",
+        "applicability_boundary": "structural",
+        "uncertainty_status": "structural",
+        "uncertainty_reason": "structural",
+        "claim_locator": "structural"
       },
       "sourceColumns": [
         "source_id"

@@ -11,11 +11,15 @@ name: CI
 
 permissions:
   contents: read
-  actions: write
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   lint-yaml:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
       - uses: ibiqlik/action-yamllint@2576378a8e339169678f9939646ee3ee325e845c  # v3
@@ -25,6 +29,7 @@ jobs:
 
   build-static:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     needs: [lint-yaml]
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
@@ -50,7 +55,7 @@ jobs:
       - name: Install Poetry
         uses: abatilo/actions-poetry@fd0e6716a0de25ef6ade151b8b53190b0376acfd  # v3
         with:
-          poetry-version: "1.8.3"
+          poetry-version: "2.2.1"
       - name: Verify pinned toolchain
         run: ./scripts/bootstrap.sh --check-only
       - name: Set audit date
@@ -62,9 +67,6 @@ jobs:
       - name: Install web workspace dependencies
         run: pnpm --filter carbon-acx-web install --frozen-lockfile
 
-
-      - name: Install validator dependencies
-        run: pip install -r tools/validator/requirements.txt
 
       - name: Install deps
         run: poetry install --no-interaction --no-root --extras "db"
@@ -84,6 +86,10 @@ jobs:
           make build-static
           make publication-audit
 
+      - name: Validate deployable Pages bundle
+        timeout-minutes: 10
+        run: make validate-site
+
       - name: Upload data artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
@@ -98,6 +104,7 @@ jobs:
 
   tests:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: [build-static]
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
@@ -143,7 +150,7 @@ jobs:
           python-version: "3.11"
       - uses: abatilo/actions-poetry@fd0e6716a0de25ef6ade151b8b53190b0376acfd  # v3
         with:
-          poetry-version: "1.8.3"
+          poetry-version: "2.2.1"
       - name: Verify pinned toolchain
         run: ./scripts/bootstrap.sh --check-only
       - name: Install workspace dependencies
@@ -167,13 +174,19 @@ jobs:
         run: node --import tsx --test workers/compute/index.test.ts
 
       - name: Run Pages Function containment tests
-        run: node --import tsx --test 'functions/carbon-acx/[[path]].test.ts'
+        run: node --import tsx --test 'functions/**/*.test.ts'
 
   e2e:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     needs: [build-static]
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+      - name: Download packaged static site
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90df5c8093  # v4.3.0
+        with:
+          name: dist-site
+          path: dist/site
       - name: Determine required Node version
         id: node_engine
         run: |

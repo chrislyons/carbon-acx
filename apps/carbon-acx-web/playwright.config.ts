@@ -12,11 +12,10 @@ export default defineConfig({
     { name: 'webkit', use: { ...devices['Desktop Safari'] } },
   ],
   webServer: {
-    // The app is a static export (output: 'export'), so `next start` cannot
-    // serve it. Use the dev server for e2e — it renders the same client
-    // components the static build ships. Reuses an already-running dev server
-    // locally; starts its own in CI.
-    command: 'pnpm dev --port 3000',
+    // Serve the exact packaged Pages bundle, including root functions and
+    // artifact routes. Reuses an already-running local server; starts its own
+    // Wrangler Pages server in CI.
+    command: 'pnpm exec wrangler pages dev dist/site --cwd ../.. --port 3000',
     url: 'http://127.0.0.1:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120000,

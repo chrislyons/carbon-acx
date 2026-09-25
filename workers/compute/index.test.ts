@@ -23,6 +23,7 @@ test('compute returns the exact unavailable contract for malformed POST payloads
   assert.equal(response.headers.get('cache-control'), 'no-store');
   assert.equal(response.headers.get('access-control-allow-origin'), '*');
   assert.equal(response.headers.get('content-type'), 'application/json; charset=utf-8');
+  assert.equal(response.headers.get('x-acx-compute-authority'), 'unavailable');
   assert.equal(await response.text(), JSON.stringify(unavailable));
 });
 
@@ -43,6 +44,7 @@ test('OPTIONS retains the generic CORS response', async () => {
   assert.equal(response.headers.get('access-control-allow-origin'), '*');
   assert.equal(response.headers.get('access-control-allow-methods'), 'GET,POST,OPTIONS');
   assert.equal(response.headers.get('access-control-allow-headers'), 'content-type');
+  assert.equal(response.headers.get('x-acx-compute-authority'), 'unavailable');
 });
 
 test('health reports unavailable compute data', async () => {
@@ -82,23 +84,38 @@ test('unknown paths are not found', async () => {
   assert.deepEqual(await response.json(), { error: 'not found' });
 });
 
-test('carbon-acx prefix is normalised', async () => {
-  const response = await fetchWorker('/carbon-acx/api/health');
+test('the legacy /carbon-acx prefix is not a worker alias', async () => {
+  for (const path of ['/carbon-acx/api/health', '/carbon-acx/api/compute']) {
+    const response = await fetchWorker(path);
 
-  assert.equal(response.status, 200);
-  assert.deepEqual(await response.json(), { ok: true, compute: 'unavailable' });
+    assert.equal(response.status, 404, path);
+    assert.deepEqual(await response.json(), { error: 'not found' }, path);
+  }
 });
 
-test('security headers ride on every response', async () => {
-  const unavailableResponse = await fetchWorker('/api/compute');
-  assert.equal(unavailableResponse.headers.get('x-content-type-options'), 'nosniff');
-  assert.equal(unavailableResponse.headers.get('referrer-policy'), 'no-referrer');
+test('the worker does not serve the canonical root artifact surface', async () => {
+  const response = await fetchWorker('/artifacts/manifest.json');
+
+  assert.equal(response.status, 404);
+  assert.deepEqual(await response.json(), { error: 'not found' });
+});
+
+test('security headers and non-authority marker ride on every response', async () => {
+  const compute = await fetchWorker('/api/compute');
+  assert.equal(compute.headers.get('x-content-type-options'), 'nosniff');
+  assert.equal(compute.headers.get('referrer-policy'), 'strict-origin-when-cross-origin');
+  assert.equal(compute.headers.get('x-acx-compute-authority'), 'unavailable');
 
   const health = await fetchWorker('/api/health');
   assert.equal(health.headers.get('x-content-type-options'), 'nosniff');
-  assert.equal(health.headers.get('referrer-policy'), 'no-referrer');
+  assert.equal(health.headers.get('referrer-policy'), 'strict-origin-when-cross-origin');
+  assert.equal(health.headers.get('x-acx-compute-authority'), 'unavailable');
+
+  const notFound = await fetchWorker('/api/unknown');
+  assert.equal(notFound.headers.get('x-acx-compute-authority'), 'unavailable');
 
   const preflight = await fetchWorker('/api/compute', { method: 'OPTIONS' });
   assert.equal(preflight.headers.get('cache-control'), 'no-store');
   assert.equal(preflight.headers.get('x-content-type-options'), 'nosniff');
+  assert.equal(preflight.headers.get('x-acx-compute-authority'), 'unavailable');
 });

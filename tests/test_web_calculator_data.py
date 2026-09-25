@@ -41,7 +41,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 def test_generated_web_calculator_data_uses_published_evidence() -> None:
     payload = build_payload(generated_at="2026-08-25T00:00:00+00:00")
 
-    assert SCHEMA_VERSION == "acx.web-calculator/1-6-0"
+    assert SCHEMA_VERSION == "acx.web-calculator/1-7-0"
     assert payload["schemaVersion"] == SCHEMA_VERSION
     assert payload["streamId"] == "acx.web-calculator"
     assert payload["generatedAt"] == "2026-08-25T00:00:00+00:00"

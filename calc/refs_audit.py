@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import re
+from dataclasses import dataclass
 from datetime import date, datetime
 from pathlib import Path
 from typing import Mapping, Sequence
@@ -61,9 +62,20 @@ def _review_anniversary(value: datetime) -> date:
         return value.date().replace(year=value.year + 1, day=28)
 
 
-def _resolve_path(stored_as: str) -> Path:
+def _resolve_path(stored_as: str, evidence_root: Path | None = None) -> Path:
+    """Resolve a ledger ``stored_as`` path.
+
+    Raw evidence is never committed; a scheduled full audit materialises the
+    downloaded artifacts somewhere and passes that directory as ``evidence_root``.
+    Relative ledger paths are then resolved against it. Without an explicit root,
+    relative paths keep resolving against the repository root (fail-closed).
+    """
+
     path = Path(stored_as)
-    return path if path.is_absolute() else (REFS_DIR.parent / path).resolve()
+    if path.is_absolute():
+        return path
+    base = evidence_root if evidence_root is not None else REFS_DIR.parent
+    return (base / path).resolve()
 
 
 def _validate_columns(manifest: Sequence[Mapping[str, str]]) -> list[str]:
@@ -170,7 +182,9 @@ def _validate_metadata(
 
 
 def _validate_hashes(
-    manifest: Sequence[Mapping[str, str]], metadata_only: bool = False
+    manifest: Sequence[Mapping[str, str]],
+    metadata_only: bool = False,
+    evidence_root: Path | None = None,
 ) -> list[str]:
     """Validate available evidence bytes; metadata-only intentionally skips I/O."""
 
@@ -183,7 +197,7 @@ def _validate_hashes(
         if not stored_as:
             errors.append(f"Raw evidence path missing for {source_id}")
             continue
-        path = _resolve_path(stored_as)
+        path = _resolve_path(stored_as, evidence_root)
         if not path.is_file():
             errors.append(f"Raw file missing for {source_id}: {path}")
             continue
@@ -199,7 +213,7 @@ def _validate_hashes(
             if not normalized_md or not SHA256_RE.fullmatch(normalized_digest):
                 errors.append(f"Normalized evidence metadata malformed for {source_id}")
             else:
-                normalized_path = _resolve_path(normalized_md)
+                normalized_path = _resolve_path(normalized_md, evidence_root)
                 if not normalized_path.is_file():
                     errors.append(f"Normalized file missing for {source_id}: {normalized_path}")
                 elif hash_file(normalized_path) != normalized_digest:
@@ -207,7 +221,12 @@ def _validate_hashes(
     return errors
 
 
-def run(*, as_of: date, metadata_only: bool = False) -> int:
+def run(
+    *,
+    as_of: date,
+    metadata_only: bool = False,
+    evidence_root: Path | None = None,
+) -> int:
     manifest = load_manifest()
     catalog = load_source_catalog()
     active_ids = load_active_source_ids()
@@ -215,7 +234,9 @@ def run(*, as_of: date, metadata_only: bool = False) -> int:
     errors.extend(_validate_columns(manifest))
     errors.extend(_validate_duplicates(manifest))
     errors.extend(_validate_metadata(manifest, catalog, active_ids, as_of))
-    errors.extend(_validate_hashes(manifest, metadata_only=metadata_only))
+    errors.extend(
+        _validate_hashes(manifest, metadata_only=metadata_only, evidence_root=evidence_root)
+    )
 
     if errors:
         for message in errors:
@@ -223,7 +244,127 @@ def run(*, as_of: date, metadata_only: bool = False) -> int:
         return 1
 
     mode = "metadata" if metadata_only else "metadata and evidence"
-    print(f"Manifest audit passed ({len(manifest)} rows; {mode}; as-of {as_of.isoformat()}).")
+    location = f"; evidence root {evidence_root}" if evidence_root is not None else ""
+    print(
+        f"Manifest audit passed ({len(manifest)} rows; {mode}{location}; "
+        f"as-of {as_of.isoformat()})."
+    )
+    return 0
+
+
+DEFAULT_FRESHNESS_HORIZON_DAYS = 90
+
+
+@dataclass(frozen=True)
+class FreshnessEntry:
+    """A single source review due date relative to the audit clock."""
+
+    source_id: str
+    review_due_at: date
+    days_remaining: int
+
+    @property
+    def overdue(self) -> bool:
+        return self.days_remaining < 0
+
+
+@dataclass(frozen=True)
+class FreshnessReport:
+    """Offline view of overdue and upcoming source reviews."""
+
+    as_of: date
+    horizon_days: int
+    overdue: tuple[FreshnessEntry, ...]
+    upcoming: tuple[FreshnessEntry, ...]
+    unparsable: tuple[str, ...]
+
+    def render(self) -> str:
+        lines = [
+            f"Source review freshness (as of {self.as_of.isoformat()}; "
+            f"horizon {self.horizon_days} days)",
+            f"- Overdue: {len(self.overdue)}",
+        ]
+        for entry in self.overdue:
+            lines.append(
+                f"  - {entry.source_id}: due {entry.review_due_at.isoformat()} "
+                f"(overdue by {abs(entry.days_remaining)} days)"
+            )
+        lines.append(f"- Upcoming: {len(self.upcoming)}")
+        for entry in self.upcoming:
+            lines.append(
+                f"  - {entry.source_id}: due {entry.review_due_at.isoformat()} "
+                f"({entry.days_remaining} days remaining)"
+            )
+        lines.append(f"- Unparsable review_due_at: {len(self.unparsable)}")
+        for source_id in self.unparsable:
+            lines.append(f"  - {source_id}")
+        return "\n".join(lines)
+
+
+def build_freshness_report(
+    catalog: Mapping[str, object],
+    *,
+    as_of: date,
+    horizon_days: int = DEFAULT_FRESHNESS_HORIZON_DAYS,
+) -> FreshnessReport:
+    """Classify registry reviews as overdue or due within ``horizon_days``.
+
+    Purely offline: it reads the already-loaded source catalog and never performs
+    network I/O, so the metadata-only release gate stays network-independent.
+    """
+
+    overdue: list[FreshnessEntry] = []
+    upcoming: list[FreshnessEntry] = []
+    unparsable: list[str] = []
+    for source_id in sorted(catalog):
+        raw = (getattr(catalog[source_id], "review_due_at", None) or "").strip()
+        try:
+            due = date.fromisoformat(raw) if raw else None
+        except ValueError:
+            due = None
+        if due is None:
+            unparsable.append(source_id)
+            continue
+        remaining = (due - as_of).days
+        entry = FreshnessEntry(source_id=source_id, review_due_at=due, days_remaining=remaining)
+        if entry.overdue:
+            overdue.append(entry)
+        elif remaining <= horizon_days:
+            upcoming.append(entry)
+
+    def _sort_key(entry: FreshnessEntry) -> tuple[date, str]:
+        return (entry.review_due_at, entry.source_id)
+
+    return FreshnessReport(
+        as_of=as_of,
+        horizon_days=horizon_days,
+        overdue=tuple(sorted(overdue, key=_sort_key)),
+        upcoming=tuple(sorted(upcoming, key=_sort_key)),
+        unparsable=tuple(unparsable),
+    )
+
+
+def freshness_report(
+    *, as_of: date, horizon_days: int = DEFAULT_FRESHNESS_HORIZON_DAYS
+) -> FreshnessReport:
+    """Build the offline freshness report from the canonical source catalog."""
+
+    return build_freshness_report(load_source_catalog(), as_of=as_of, horizon_days=horizon_days)
+
+
+def run_freshness(
+    *,
+    as_of: date,
+    horizon_days: int = DEFAULT_FRESHNESS_HORIZON_DAYS,
+    gate: bool = False,
+) -> int:
+    """Print the informational freshness report; ``gate`` opts into failure on overdue."""
+
+    report = freshness_report(as_of=as_of, horizon_days=horizon_days)
+    print(report.render())
+    if gate and report.overdue:
+        print(f"::error::{len(report.overdue)} source review(s) are overdue")
+        return 1
     return 0
 
 
@@ -235,13 +376,42 @@ def main() -> int:
         action="store_true",
         help="Validate ledger metadata without claiming to hash unavailable evidence bytes",
     )
+    parser.add_argument(
+        "--evidence-root",
+        type=Path,
+        help=(
+            "Directory containing downloaded evidence; relative stored_as paths resolve "
+            "against it. Required in practice to hash external bytes, which are never committed."
+        ),
+    )
+    parser.add_argument(
+        "--freshness",
+        action="store_true",
+        help="Print the offline overdue/upcoming source-review report instead of auditing",
+    )
+    parser.add_argument(
+        "--horizon-days",
+        type=int,
+        default=DEFAULT_FRESHNESS_HORIZON_DAYS,
+        help="Upcoming-review window for --freshness (default: 90)",
+    )
+    parser.add_argument(
+        "--gate",
+        action="store_true",
+        help="With --freshness, exit non-zero when any review is overdue",
+    )
     args = parser.parse_args()
     try:
         as_of = date.fromisoformat(args.as_of)
     except ValueError as exc:
         parser.error("--as-of must be YYYY-MM-DD")
         raise AssertionError from exc
-    return run(as_of=as_of, metadata_only=args.metadata_only)
+    if args.freshness:
+        return run_freshness(as_of=as_of, horizon_days=args.horizon_days, gate=args.gate)
+    if args.evidence_root is not None and args.metadata_only:
+        parser.error("--evidence-root cannot be combined with --metadata-only")
+    evidence_root = args.evidence_root.resolve() if args.evidence_root is not None else None
+    return run(as_of=as_of, metadata_only=args.metadata_only, evidence_root=evidence_root)
 
 
 if __name__ == "__main__":  # pragma: no cover - CLI entry point

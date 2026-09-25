@@ -1,7 +1,65 @@
 # Cloudflare Pages Configuration
 
-**Branch:** `feature/3d-universe`
 **Framework preset:** None (Custom)
+**Packaging command:** `make package`
+**Pages output directory:** `dist/site`
+**Bundle smoke gate:** `make validate-site`
+
+---
+
+## Overview
+
+The deployable Cloudflare Pages artifact is the **prebuilt bundle** at
+`dist/site`. It is assembled by `make package` and is the *only* Pages output;
+do not point Pages at the raw Next.js build directory
+(`apps/carbon-acx-web/dist`), which lacks the artifact payload and Pages
+metadata.
+
+`make package` runs the repository packaging pipeline:
+
+1. `data-audit` / `build-web` — derives web data and runs the Next.js static
+   export into the intermediate `apps/carbon-acx-web/dist`.
+2. `build` — derives immutable calculation artifacts into `dist/artifacts`.
+3. `scripts.package_artifacts` — packages those artifacts (JSON/CSV/TXT) into
+   `dist/packaged-artifacts` with a `manifest.json`.
+4. `sbom` — writes the CycloneDX SBOM.
+5. `scripts.prepare_pages_bundle` — copies the static app plus packaged
+   artifacts into `dist/site` and emits the Pages metadata.
+
+`ACX_GENERATED_AT=1970-01-01T00:00:00+00:00` is the deterministic build
+sentinel used by CI/release so identical inputs produce identical authority
+bytes. The actual release time is the Git tag and workflow run metadata; the
+sentinel is not a source freshness date.
+
+## Build Output Directory
+
+```
+dist/site
+```
+
+Resulting structure (abridged):
+
+```
+dist/site/
+├── index.html            # static app entrypoint
+├── _headers              # Pages security + cache headers
+├── _redirects            # Pages redirect rules
+├── _next/                # hashed static assets
+├── data/                 # prebuilt web data (calculator, sources, release)
+├── <route>.html / .txt   # prerendered routes
+└── artifacts/
+    ├── index.json        # artifact file index (path + byte size)
+    ├── manifest.json     # collection manifest (figures, references, hashes)
+    ├── figures/          # Plotly figure JSON
+    ├── references/       # IEEE reference text
+    ├── manifests/        # per-figure manifests (sha256 between figure + refs)
+    ├── calc/outputs/     # derived calc tables + dataset manifest
+    └── intensity_matrix.csv
+```
+
+The `_headers` file revalidates `/artifacts/*` so stable aliases and control
+files cannot remain stale across releases. Content hashes still provide
+integrity; raw evidence binaries stay outside Git.
 
 ---
 
@@ -9,210 +67,33 @@
 
 ### Build Command
 ```bash
-pnpm build:web
+make package
 ```
-
-**What this does:**
-1. Installs dependencies for carbon-acx-web workspace
-2. Runs prebuild script (exports CSV data to JSON)
-3. Builds the Vite application
 
 ### Build Output Directory
 ```
-apps/carbon-acx-web/dist
+dist/site
 ```
 
 ### Root Directory
 ```
 /
 ```
-(Leave as repository root)
+(Leave as repository root — the Makefile and Python toolchain live at the repo
+root, and `wrangler.toml` sets `pages_build_output_dir = "dist/site"`.)
 
----
-
-## Environment Variables
-
-### Required
-```
-NODE_VERSION=20.19.4
-```
-
-**Note:** This should now be automatically detected from `.node-version` file.
-
-### Optional (for production)
-```
-NODE_ENV=production
-```
-
----
-
-## Build Configuration Files
-
-### 1. `.node-version`
-```
-20.19.4
-```
-Tells Cloudflare Pages which Node.js version to use.
-
-### 2. `package.json` (root)
-```json
-{
-  "packageManager": "pnpm@10.5.2",
-  "engines": {
-    "node": "20.19.4",
-    "pnpm": "10.5.2"
-  }
-}
-```
-
-### 3. `.nvmrc`
-```
-20.19.4
-```
-For local development with nvm.
-
----
-
-## Troubleshooting
-
-### Error: "an internal error occurred"
-
-**Possible causes:**
-
-1. **Build command incorrect**
-   - ✅ Should be: `pnpm build:web`
-   - ❌ Not: `npm run build` or `pnpm build`
-
-2. **Output directory incorrect**
-   - ✅ Should be: `apps/carbon-acx-web/dist`
-   - ❌ Not: `dist` or `build`
-
-3. **Node version mismatch**
-   - ✅ Fixed by `.node-version` file
-   - Verify in Pages settings: Environment Variables → NODE_VERSION
-
-4. **Missing dependencies during build**
-   - The `build:web` script includes `--frozen-lockfile` to ensure reproducible builds
-   - `pnpm-lock.yaml` must be committed to repo
-
-5. **Out of memory**
-   - Three.js bundle is large (~866KB)
-   - May need to configure Pages build timeout/memory
-
-### Verify Local Build Works
-
-```bash
-# Clean install
-rm -rf node_modules apps/*/node_modules site/node_modules
-pnpm install
-
-# Test build
-pnpm build:web
-
-# Should output to: apps/carbon-acx-web/dist/
-ls -la apps/carbon-acx-web/dist/
-```
-
-### Check Build Output
-
-Expected structure:
-```
-apps/carbon-acx-web/dist/
-├── index.html
-├── assets/
-│   ├── index-*.js (main bundle)
-│   ├── DataUniverse-*.js (lazy loaded)
-│   ├── index-*.css
-│   └── ...
-└── api/ (prebuild exports)
-    ├── sectors.json
-    ├── emission-factors.json
-    └── profiles/
-```
-
----
-
-## Cloudflare Pages Dashboard Configuration
-
-### Step 1: Go to Pages Project Settings
-
-1. Navigate to Cloudflare Dashboard
-2. Select your Pages project
-3. Go to Settings → Builds & deployments
-
-### Step 2: Configure Build Settings
-
-**Framework preset:** None
-
-**Build command:**
-```
-pnpm build:web
-```
-
-**Build output directory:**
-```
-apps/carbon-acx-web/dist
-```
-
-**Root directory (advanced):**
-```
-/
-```
-
-### Step 3: Environment Variables
-
-Add if not automatically detected:
+### Environment Variables
 
 | Variable | Value | Scope |
 |----------|-------|-------|
-| NODE_VERSION | 20.19.4 | Production & Preview |
-| NODE_ENV | production | Production only |
+| `NODE_VERSION` | `20.19.4` | Production & Preview |
+| `NODE_ENV` | `production` | Production only |
 
-### Step 4: Build Configuration
+`NODE_VERSION` should be auto-detected from `.node-version`.
 
-**Node.js version:** Auto-detected from `.node-version` ✅
-
-**Package manager:** pnpm (auto-detected from `package.json` packageManager field)
-
----
-
-## Common Issues
-
-### Issue: "Command not found: pnpm"
-
-**Fix:** Ensure `package.json` has:
-```json
-"packageManager": "pnpm@10.5.2"
-```
-
-Cloudflare Pages will automatically install pnpm based on this field.
-
-### Issue: "Build exceeds time limit"
-
-**Fix:**
-1. Check if prebuild script is taking too long
-2. Consider reducing API export in `apps/carbon-acx-web/scripts/export-data.ts`
-3. Use Pages Pro plan for longer build times
-
-### Issue: "Three.js SSR error"
-
-**Fix:** ✅ Already resolved with React.lazy() + Suspense
-- Pages/CalculatorPage.tsx
-- Pages/ExplorePage.tsx
-- Pages/InsightsPage.tsx
-
-All use lazy loading pattern.
-
-### Issue: "Module not found"
-
-**Fix:** Ensure all imports use correct paths:
-```typescript
-// ✅ Correct
-import { DataUniverse } from '../components/viz/DataUniverse'
-
-// ❌ Wrong
-import { DataUniverse } from '@/components/viz/DataUniverse'
-```
+The Pages toolchain also requires the Python environment used by the Makefile
+(`poetry install`). If Pages cannot provision it, package locally with
+`make package` and deploy the resulting `dist/site` via `wrangler` (below).
 
 ---
 
@@ -220,51 +101,84 @@ import { DataUniverse } from '@/components/viz/DataUniverse'
 
 ### Automatic Deployments
 
-Cloudflare Pages automatically deploys when:
-- ✅ Push to `feature/3d-universe` branch (preview)
-- ✅ Merge to `main` branch (production)
+This repository does not deploy Pages from GitHub Actions. Configure the
+Cloudflare Pages Git integration separately to run `make package` and publish
+`dist/site` for preview branches and `main`. The repository's CI/release jobs
+build and validate the same bundle but do not possess deployment credentials.
 
 ### Manual Deployment
 
-From CLI:
 ```bash
-# Install Wrangler
-npm install -g wrangler
+# Build the canonical bundle (never `pnpm build:web` alone)
+make package
 
-# Build locally
-pnpm build:web
+# Smoke-check the bundle before shipping
+make validate-site
 
-# Deploy manually (if needed)
-wrangler pages deploy apps/carbon-acx-web/dist --project-name=carbon-acx
+# Deploy the prebuilt bundle
+pnpm --filter carbon-acx-web exec wrangler pages deploy dist/site --cwd ../.. --project-name=carbon-acx
+```
+
+The web workspace exposes the same contract:
+
+```bash
+pnpm --filter carbon-acx-web deploy   # runs `make -C ../.. package` then deploys dist/site from the repo-root Wrangler context
+pnpm --filter carbon-acx-web preview  # wrangler pages dev dist/site --cwd ../..
 ```
 
 ---
 
-## Verification Checklist
+## Validation
 
-Before debugging build failures, verify:
+`make validate-site` runs `scripts/validate_pages_bundle.py` against the
+existing `dist/site` bundle (it never rebuilds it) and fails closed unless:
 
-- [ ] `.node-version` file exists with `20.19.4`
-- [ ] `pnpm-lock.yaml` is committed
-- [ ] Local build succeeds: `pnpm build:web`
-- [ ] Output directory exists: `apps/carbon-acx-web/dist/`
-- [ ] `index.html` exists in dist
-- [ ] Cloudflare Pages build command is `pnpm build:web`
-- [ ] Cloudflare Pages output directory is `apps/carbon-acx-web/dist`
-- [ ] No hardcoded `NODE_VERSION` env var (should auto-detect from `.node-version`)
+- the site root contains a non-empty `index.html`;
+- `_headers` exists with the required security directives and the
+  `/*` and `/artifacts/*` blocks;
+- `_redirects` exists and every rule is well formed;
+- `artifacts/index.json` parses, lists at least one file, and every indexed
+  path is safe, present, and byte-size matched;
+- `artifacts/manifest.json` (the collection manifest) parses and lists figures;
+- at least one figure artifact and one reference artifact are present;
+- every manifest/figure/reference path is safe (relative, no traversal,
+  no escaping the artifact root) and its sha256 matches the recorded hash.
 
----
-
-## Support
-
-If build still fails:
-1. Check Cloudflare Pages build logs (Functions tab → Deployment details)
-2. Compare with successful local build
-3. Verify all settings match this document
-4. Check Cloudflare status page for platform issues
+Any unsafe artifact path (absolute, `..`, backslash, or symlink escape) is
+rejected.
 
 ---
 
-**Last Updated:** 2025-10-27
-**Branch:** feature/3d-universe
-**Build Status:** Local ✅ | Pages ⚠️ (pending retry after .node-version fix)
+## Worker Configuration
+
+The Worker uses the dedicated `workers/compute/wrangler.toml` configuration
+(`carbon-acx-compute`). The root `wrangler.toml` is Pages-only; do not combine
+Pages and Worker keys in one config. Deploy the Worker explicitly with
+`pnpm --filter carbon-acx-web exec wrangler deploy --config ../../workers/compute/wrangler.toml` only after its
+fail-closed contract is intentionally changed.
+
+---
+
+## Troubleshooting
+
+### Error: "an internal error occurred"
+- Confirm the build command is `make package` (not `pnpm build:web`, which only
+  produces the raw static export).
+- Confirm the output directory is `dist/site` (not `dist` or
+  `apps/carbon-acx-web/dist`).
+
+### Bundle validation fails
+Run `make validate-site` locally. Typical causes:
+- `make package` did not complete, so `dist/site/artifacts/` is missing;
+- `artifacts/index.json` byte sizes disagree with the copied files;
+- a collection-manifest hash no longer matches its figure/reference file.
+
+### Missing Python toolchain on Pages
+Package locally with `make package` and deploy `dist/site` with `wrangler`
+instead of relying on the Pages build environment.
+
+---
+
+**Canonical packaging command:** `make package`
+**Canonical Pages output:** `dist/site`
+**Smoke gate:** `make validate-site`

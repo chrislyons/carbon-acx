@@ -55,9 +55,15 @@ from ..utils.clock import GENERATED_AT_ENV, datetime, timezone
 from .cli import main
 from .emissions import (
     EmissionDetails,
+    build_grid_intensity_lookup,
     compute_emission,
     compute_emission_details,
     get_grid_intensity,
+    group_factors_by_activity,
+    resolve_grid_region,
+    resolve_grid_row,
+    select_activity_factor,
+    select_factors_by_activity,
 )
 from .formulas import evaluate_functional_unit_formula
 from .io import (
@@ -68,7 +74,9 @@ from .io import (
     FLOAT_QUANTISER,
     INTENSITY_COLUMNS,
     OUTPUT_ROOT_ENV,
+    QUALITY_FIELDS,
     REPO_ROOT,
+    factor_quality_fields,
     is_safe_output_dir,
 )
 from .pipeline import build_intensity_matrix, export_view
@@ -95,9 +103,11 @@ __all__ = [
     "OUTPUT_ROOT_ENV",
     "Profile",
     "REPO_ROOT",
+    "QUALITY_FIELDS",
     "RegionCode",
     "build_collection_index",
     "build_figure_manifest",
+    "build_grid_intensity_lookup",
     "build_intensity_matrix",
     "bundle_manifest_artifacts",
     "citations",
@@ -109,8 +119,10 @@ __all__ = [
     "dependency_metadata",
     "evaluate_functional_unit_formula",
     "export_view",
+    "factor_quality_fields",
     "figures",
     "get_grid_intensity",
+    "group_factors_by_activity",
     "is_safe_output_dir",
     "load_activity_dependencies",
     "load_activity_fu_map",
@@ -123,5 +135,9 @@ __all__ = [
     "schema_load_feedback_loops",
     "schema_load_operations",
     "schema_load_sites",
+    "resolve_grid_region",
+    "resolve_grid_row",
+    "select_activity_factor",
+    "select_factors_by_activity",
     "timezone",
 ]

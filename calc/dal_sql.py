@@ -13,11 +13,13 @@ except ImportError:  # pragma: no cover - handled lazily
 from .schema import (
     Activity,
     ActivityDependency,
+    ActivityFunctionalUnitMap,
     ActivitySchedule,
     Asset,
     FeedbackLoop,
     EmissionFactor,
     Entity,
+    FunctionalUnit,
     GridIntensity,
     Layer,
     Operation,
@@ -100,7 +102,9 @@ class SqlStore:
                    electricity_kwh_per_unit, electricity_kwh_per_unit_low,
                    electricity_kwh_per_unit_high, region, scope_boundary,
                    gwp_horizon, vintage_year, source_id, method_notes,
-                   uncert_low_g_per_unit, uncert_high_g_per_unit
+                   uncert_low_g_per_unit, uncert_high_g_per_unit,
+                   evidence_type, quality_grade, applicability_boundary,
+                   uncertainty_status, uncertainty_reason, claim_locator
             FROM emission_factors
             ORDER BY ef_id
             """
@@ -156,7 +160,13 @@ class SqlStore:
                    g_per_kwh,
                    g_per_kwh_low,
                    g_per_kwh_high,
-                   source_id
+                   source_id,
+                   evidence_type,
+                   quality_grade,
+                   applicability_boundary,
+                   uncertainty_status,
+                   uncertainty_reason,
+                   claim_locator
             FROM grid_intensity
             ORDER BY region_code, COALESCE(vintage_year, 0)
             """
@@ -242,6 +252,26 @@ class SqlStore:
             """
         )
         return [ActivityDependency(**row) for row in rows]
+
+    def load_functional_units(self) -> Sequence[FunctionalUnit]:
+        rows = self._fetch_all(
+            """
+            SELECT functional_unit_id, name, domain, si_equiv, notes
+            FROM functional_units
+            ORDER BY functional_unit_id
+            """
+        )
+        return [FunctionalUnit(**row) for row in rows]
+
+    def load_activity_fu_map(self) -> Sequence[ActivityFunctionalUnitMap]:
+        rows = self._fetch_all(
+            """
+            SELECT activity_id, functional_unit_id, conversion_formula, assumption_notes
+            FROM activity_fu_map
+            ORDER BY activity_id, functional_unit_id
+            """
+        )
+        return [ActivityFunctionalUnitMap(**row) for row in rows]
 
     def _feedback_loops_table_exists(self) -> bool:
         if self._backend == "sqlite":

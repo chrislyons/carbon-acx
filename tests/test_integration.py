@@ -5,11 +5,13 @@ from pathlib import Path
 
 import calc.derive as derive_mod
 import calc.figures as figures
+from calc.dataset import DatasetSnapshot
 from calc.schema import (
     Activity,
     ActivitySchedule,
     EmissionFactor,
     GridIntensity,
+    Layer,
     LayerId,
     Profile,
     RegionCode,
@@ -33,9 +35,30 @@ def _patch_time(monkeypatch):
     monkeypatch.setattr(clock_module, "datetime", FrozenDateTime)
 
 
-class GoldenStore:
-    def load_emission_factors(self):
-        return [
+def golden_snapshot() -> DatasetSnapshot:
+    return DatasetSnapshot(
+        layers=(
+            Layer(layer_id=LayerId.PROFESSIONAL, layer_name="Professional", layer_type="industry"),
+        ),
+        entities=(),
+        sites=(),
+        assets=(),
+        operations=(),
+        activities=(
+            Activity(
+                activity_id="coffee",
+                layer_id=LayerId.PROFESSIONAL,
+                name="Coffee",
+                category="Food",
+            ),
+            Activity(
+                activity_id="stream",
+                layer_id=LayerId.PROFESSIONAL,
+                name="Streaming",
+                category="Digital",
+            ),
+        ),
+        emission_factors=(
             EmissionFactor(
                 activity_id="coffee",
                 value_g_per_unit=2.0,
@@ -49,20 +72,16 @@ class GoldenStore:
                 source_id="SRC.DIMPACT.STREAMING.2022",
                 vintage_year=2023,
             ),
-        ]
-
-    def load_profiles(self):
-        return [
+        ),
+        profiles=(
             Profile(
                 profile_id="p1",
                 layer_id=LayerId.PROFESSIONAL,
                 office_days_per_week=5,
                 default_grid_region=RegionCode.CA_ON,
-            )
-        ]
-
-    def load_activity_schedule(self):
-        return [
+            ),
+        ),
+        activity_schedule=(
             ActivitySchedule(
                 profile_id="p1",
                 activity_id="coffee",
@@ -76,10 +95,8 @@ class GoldenStore:
                 freq_per_day=2,
                 region_override=RegionCode.CA_ON,
             ),
-        ]
-
-    def load_grid_intensity(self):
-        return [
+        ),
+        grid_intensity=(
             GridIntensity(
                 region=RegionCode.CA_ON,
                 intensity_g_per_kwh=100,
@@ -87,24 +104,13 @@ class GoldenStore:
                 intensity_high_g_per_kwh=110,
                 source_id="SRC.IESO.POWERDATA.2025",
                 vintage_year=2025,
-            )
-        ]
-
-    def load_activities(self):
-        return [
-            Activity(
-                activity_id="coffee",
-                layer_id=LayerId.PROFESSIONAL,
-                name="Coffee",
-                category="Food",
             ),
-            Activity(
-                activity_id="stream",
-                layer_id=LayerId.PROFESSIONAL,
-                name="Streaming",
-                category="Digital",
-            ),
-        ]
+        ),
+        activity_dependencies=(),
+        functional_units=(),
+        activity_fu_map=(),
+        feedback_loops=(),
+    )
 
 
 def _normalise(value):
@@ -123,7 +129,7 @@ def test_export_view_matches_golden(monkeypatch, derived_output_dir, derived_out
 
     try:
         out_dir = derived_output_dir
-        derive_mod.export_view(GoldenStore(), output_root=derived_output_root)
+        derive_mod.export_view(snapshot=golden_snapshot(), output_root=derived_output_root)
         payload = json.loads((out_dir / "export_view.json").read_text())
     finally:
         figures.invalidate_cache()

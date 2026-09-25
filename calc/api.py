@@ -9,7 +9,14 @@ import yaml
 
 from . import citations, schema
 from .citations import collect_activity_source_keys
-from .derive.emissions import compute_emission
+from .derive.emissions import (
+    build_grid_intensity_lookup,
+    compute_emission,
+    group_factors_by_activity,
+    resolve_grid_region,
+    resolve_grid_row,
+    select_activity_factor,
+)
 
 
 @dataclass(frozen=True)
@@ -56,35 +63,16 @@ def _resolve_profile_id(
 
 
 def _collect_activity_sources(
-    sched: schema.ActivitySchedule,
-    profile: schema.Profile,
     ef: schema.EmissionFactor,
-    grid_by_region: Dict[str | schema.RegionCode, schema.GridIntensity],
+    grid_row: schema.GridIntensity | None,
 ) -> List[str]:
     sources: List[str] = []
     if ef.source_id:
         sources.append(str(ef.source_id))
     if not ef.is_grid_indexed:
         return sources
-
-    if sched.region_override is not None:
-        region = sched.region_override
-    elif sched.mix_region is not None:
-        region = sched.mix_region
-    elif sched.use_canada_average:
-        region = schema.RegionCode.CA
-    elif profile.default_grid_region is not None:
-        region = profile.default_grid_region
-    else:
-        region = None
-    if region is None:
-        return sources
-    key = region
-    grid = grid_by_region.get(key)
-    if grid is None and hasattr(region, "value"):
-        grid = grid_by_region.get(region.value)
-    if grid and grid.source_id:
-        sources.append(str(grid.source_id))
+    if grid_row is not None and grid_row.source_id:
+        sources.append(str(grid_row.source_id))
     return sources
 
 
@@ -100,19 +88,12 @@ def get_aggregates(data_dir: Path, cfg_path: Path) -> tuple[Aggregates, list[str
         for profile in schema._load_csv(data_dir / "profiles.csv", schema.Profile)
     }
     schedules = list(schema._load_csv(data_dir / "activity_schedule.csv", schema.ActivitySchedule))
-    emission_factors = {
-        ef.activity_id: ef
-        for ef in schema._load_csv(data_dir / "emission_factors.csv", schema.EmissionFactor)
-    }
-    grid_intensities = list(schema._load_csv(data_dir / "grid_intensity.csv", schema.GridIntensity))
-    grid_lookup: Dict[str | schema.RegionCode, float | None] = {}
-    grid_by_region: Dict[str | schema.RegionCode, schema.GridIntensity] = {}
-    for gi in grid_intensities:
-        grid_lookup[gi.region] = gi.intensity_g_per_kwh
-        grid_by_region[gi.region] = gi
-        if hasattr(gi.region, "value"):
-            grid_lookup[gi.region.value] = gi.intensity_g_per_kwh
-            grid_by_region[gi.region.value] = gi
+    emission_factor_rows = list(
+        schema._load_csv(data_dir / "emission_factors.csv", schema.EmissionFactor)
+    )
+    factor_groups = group_factors_by_activity(emission_factor_rows)
+    grid_rows = list(schema._load_csv(data_dir / "grid_intensity.csv", schema.GridIntensity))
+    grid_lookup = build_grid_intensity_lookup(grid_rows)
 
     config = _load_config(cfg_path)
     profile_id = _resolve_profile_id(config, profiles, schedules)
@@ -127,14 +108,26 @@ def get_aggregates(data_dir: Path, cfg_path: Path) -> tuple[Aggregates, list[str
     for sched in schedules:
         if sched.profile_id != profile_id:
             continue
-        ef = emission_factors.get(sched.activity_id)
+        preferred_region = resolve_grid_region(sched, profile)
+        ef = select_activity_factor(
+            factor_groups.get(sched.activity_id, ()), preferred_region=preferred_region
+        )
         if ef is None:
             continue
-        emission = compute_emission(sched, profile, ef, grid_lookup)
+        grid_row: schema.GridIntensity | None = None
+        if ef.is_grid_indexed:
+            grid_row = resolve_grid_row(
+                sched,
+                profile,
+                grid_rows,
+                preferred_region=ef.region,
+                vintage_year=ef.vintage_year,
+            )
+        emission = compute_emission(sched, profile, ef, grid_lookup, grid_row)
         if emission is None:
             continue
         by_activity[sched.activity_id] = by_activity.get(sched.activity_id, 0.0) + emission
-        source_keys.extend(_collect_activity_sources(sched, profile, ef, grid_by_region))
+        source_keys.extend(_collect_activity_sources(ef, grid_row))
 
     activities_payload: List[ActivityAggregate] = []
     for activity_id, total in sorted(by_activity.items(), key=lambda item: item[1], reverse=True):

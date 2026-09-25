@@ -4,10 +4,11 @@ import json
 
 import calc.derive as derive_mod
 from calc import citations
+from calc.dal import CsvStore
 from calc.schema import ActivitySchedule, EmissionFactor, GridIntensity, LayerId, Profile
 
 
-class DynamicStore:
+class DynamicStore(CsvStore):
     def load_emission_factors(self):
         return [
             EmissionFactor(
@@ -46,9 +47,6 @@ class DynamicStore:
                 source_id="SRC.IESO.POWERDATA.2025",
             )
         ]
-
-    def load_activities(self):
-        return []
 
 
 def test_figures_use_dynamic_citations(derived_output_dir, derived_output_root):
