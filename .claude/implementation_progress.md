@@ -192,3 +192,28 @@ Full report and narrative map in `docs/acx/ACX116 Frontend Architecture, Narrati
 - Analyzed the cognitive narrative journey across 6 routes: Intuition (Home trace) → Action (Calculator worksheet) → Systems literacy (Explore Atlas) → Epistemic rules (Learn / Methodology) → Cryptographic trust (Evidence / Web Crypto SHA-256 verifier).
 - Documented viewport real estate allocation: Workspace layouts with contained panel scrolling at >= 60rem versus natural reading document flow for prose pages, supported by responsive breakpoint grids (48rem, 60rem, 72rem) and zero horizontal overflow guarantees.
 - Documented findings and architectural opportunities in ACX116, including a comprehensive 5-domain UI/UX and narrative action plan (Section 6); updated `docs/acx/ACX.md` catalog.
+
+## 2026-09-25 — ACX110 integration and backend robustness review
+
+Integrated `feat/acx110-health-pass` into `main` with current main frontend behavior preserved. The merge restored the `calc/derive/` package boundary, SQL/CSV parity, reproducible generated-at handling, shared OWID snapshot logic, and the scenario-backed LLM calculator card. Conflict resolution also updated the ACX catalog and marked the ACX110 pass as integrated.
+
+### Fixes found during integration
+
+- SQL layer loading now selects `ui_optional`, `icon_slug`, and `example_activities`, restoring CSV/SQLite entity-hierarchy parity.
+- The Home trace filters to published numeric commuter factors before rendering; nullable calculator factors no longer weaken the graph contract.
+- Scenario-backed activity cards are disabled during hydration and open the existing scenario disclosure with the selected AI activity.
+- ACX115 now documents the post-ACX110 deployment, factor-selection, data-quality, schema-drift, and release-smoke recommendations.
+
+### Verification
+
+- `ACX_AUDIT_DATE=2026-09-25 ACX_GENERATED_AT=2026-08-28T04:46:56+00:00 make build` — passed; 23 datasets, 1,285 claims, 108 retrieval-ledger rows, and eight figure manifests.
+- `ACX_AUDIT_DATE=2026-09-25 ACX_GENERATED_AT=2026-08-28T04:46:56+00:00 make build-web` — passed publication audit and Next static export; 14 routes generated.
+- `ACX_AUDIT_DATE=2026-09-25 make validate` — passed Ruff, Black, documentation lint, asset validation, 156 pytest tests with 4 optional skips, and both data audits.
+- `pnpm --filter carbon-acx-web test` — 47 Vitest tests passed.
+- Managed Chromium verification of the calculator scenario flow: Digital → LLM inference scenario → Gemini published scenario → 730 prompts produced `22 g CO₂e/yr`; Playwright Chromium scenario coverage passed 7/7. Firefox/WebKit runtime coverage remains unexecuted on this host because those browser binaries are not installed.
+
+### Next backend work
+
+1. Make `dist/site` the sole Pages deployment artifact and remove the competing `apps/carbon-acx-web/dist` contract.
+2. Replace silent loader fallbacks and reconcile analyst/web factor selection through one policy and selected-factor provenance.
+3. Add factor evidence-quality/applicability fields and claim-level locators; add DDL/Pydantic schema-drift and exact release-bundle smoke gates.

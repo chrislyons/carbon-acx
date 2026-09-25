@@ -11,6 +11,7 @@ Active catalog for Carbon ACX project documents.
 - [ACX112 Landscape Viewport Optimization](./ACX112%20Landscape%20Viewport%20Optimization.md)
 - [ACX111 Canonical Data Stream Contract and Inventory](./ACX111%20Canonical%20Data%20Stream%20Contract%20and%20Inventory.md)
 - [ACX110 Glossary of Surfaces and Choice Points](./ACX110%20Glossary%20of%20Surfaces%20and%20Choice%20Points.md)
+- [ACX110 Codebase Health and Modularization Pass](./ACX110%20Codebase%20Health%20and%20Modularization%20Pass.md)
 - [ACX109 Production Grade Hardening Sprint](./ACX109%20Production%20Grade%20Hardening%20Sprint.md)
 - [ACX108 Dataflow Integrity and Provenance Release Audit](./ACX108%20Dataflow%20Integrity%20and%20Provenance%20Release%20Audit.md)
 - [ACX107 LLM Inference Footprint Audit and Application Data Model](./ACX107%20LLM%20Inference%20Footprint%20Audit%20and%20Application%20Data%20Model.md)
@@ -129,6 +130,7 @@ Active catalog for Carbon ACX project documents.
 - [ACX108 Dataflow Integrity and Provenance Release Audit](./ACX108%20Dataflow%20Integrity%20and%20Provenance%20Release%20Audit.md)
 - [ACX109 Production Grade Hardening Sprint](./ACX109%20Production%20Grade%20Hardening%20Sprint.md)
 - [ACX110 Glossary of Surfaces and Choice Points](./ACX110%20Glossary%20of%20Surfaces%20and%20Choice%20Points.md)
+- [ACX110 Codebase Health and Modularization Pass](./ACX110%20Codebase%20Health%20and%20Modularization%20Pass.md)
 - [ACX111 Canonical Data Stream Contract and Inventory](./ACX111%20Canonical%20Data%20Stream%20Contract%20and%20Inventory.md)
 - [ACX112 Landscape Viewport Optimization](./ACX112%20Landscape%20Viewport%20Optimization.md)
 - [ACX113 Interactive Home Tab and Framed Tab System](./ACX113%20Interactive%20Home%20Tab%20and%20Framed%20Tab%20System.md)
@@ -148,4 +150,4 @@ Active catalog for Carbon ACX project documents.
 
 ---
 
-**Last Updated:** 2026-09-04
+**Last Updated:** 2026-09-25

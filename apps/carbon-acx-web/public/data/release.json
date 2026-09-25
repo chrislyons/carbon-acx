@@ -31,18 +31,18 @@
     "data/sources.csv": "747e0b67bf119916585435c7d7a412bd7f37d1197b7b5f7edebb98766dcb5bdc",
     "data/units.csv": "ac7fc205596b064d60ab410833c1577fa372ce6c8fea296330b47dc126dc7f76",
     "refs/sources_manifest.csv": "e3e6e929833749031be8301f088c000176d9daf2029d1d35e2e9ca558ebccf8d",
-    "scripts/generate_web_calculator_data.py": "79cb785e8580bd3b0596c9043c5b47482091dfaedf9090bd6571cbeb440ec23b"
+    "scripts/generate_web_calculator_data.py": "391444d30bcc9c374b52bbbf5c9826df3998cb4defea246f6d445665eec91fb4"
   },
   "authorities": {
     "calculator": {
       "schemaVersion": "acx.web-calculator/1-6-0",
       "path": "/data/calculator-data.json",
-      "sha256": "f7a518737b537b512004884c129f3af2aeb2b372153e1870ef6f731bb6289e66"
+      "sha256": "65185065de543b0425bbde28cb28e160492410d8d27753d3136fc2fac1ef5c3a"
     },
     "catalog": {
       "schemaVersion": "acx.web-catalog/1-0-0",
       "path": "/data/catalog-data.json",
-      "sha256": "24773318d066ac833ef8f480b8de88182bf45fd6697b931d3032b02719eeae18"
+      "sha256": "c3e4d4381ab331f3d99a259143f6923b3d5b0bc860de1f5da116b7063b348026"
     },
     "sources": {
       "schemaVersion": "acx.web-sources/1-1-0",

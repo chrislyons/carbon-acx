@@ -90,6 +90,7 @@ function CalculatorContent() {
   const summaryRefs = useRef<Record<string, HTMLButtonElement | null>>({})
   const [benchmarkKey, setBenchmarkKey] = useState(DEFAULT_BENCHMARK_KEY)
   const [scenarioGrams, setScenarioGrams] = useState(0)
+  const [scenarioFocusId, setScenarioFocusId] = useState<string | undefined>(undefined)
   const [shared, setShared] = useState(false)
   const [view, setView] = useState<'browse' | 'worksheet'>('browse')
   const [loaded, setLoaded] = useState(false)
@@ -260,6 +261,16 @@ function CalculatorContent() {
     if (evidenceId) evidenceRestoreId.current = evidenceId
     setEvidenceId(null)
   }
+  const chooseScenario = (activity: Activity) => {
+    setView('worksheet')
+    setScenarioFocusId(activity.id)
+    if (scenarioDetailsRef.current) scenarioDetailsRef.current.open = true
+    setScenarioOpen(true)
+    setAnnouncement(`${activity.name} scenario picker opened below the worksheet.`)
+    window.setTimeout(() => {
+      scenarioDetailsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 50)
+  }
 
   return (
     <div className="editorial-page worksheet workspace">
@@ -306,7 +317,7 @@ function CalculatorContent() {
                 </button>
               ))}
             </nav>
-            <ActivityShelf category={activeCategory} activities={activities} selectedIds={selectedIds} onAdd={add} disabled={!loaded} />
+            <ActivityShelf category={activeCategory} activities={activities} selectedIds={selectedIds} onAdd={add} disabled={!loaded} onChooseScenario={chooseScenario} />
           </div>
         </section>
         <section className="calculator__worksheet panel" data-compact-view={view === 'worksheet' ? 'visible' : 'hidden'} aria-label="Worksheet">
@@ -380,7 +391,7 @@ function CalculatorContent() {
               }}
             >
               <summary>Add a documented AI scenario</summary>
-              {scenarioOpen ? <ScenarioPane onPublishedGrams={setScenarioGrams} /> : null}
+              {scenarioOpen ? <ScenarioPane onPublishedGrams={setScenarioGrams} preselectedActivityId={scenarioFocusId} /> : null}
             </details>
             {summary.skipped.length ? (
               <DataState title="Inputs not included">Not available, unknown, invalid, or non-positive quantities are not included in the annual total.</DataState>

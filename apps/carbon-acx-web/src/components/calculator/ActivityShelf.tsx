@@ -11,12 +11,14 @@ export function ActivityShelf({
   selectedIds,
   onAdd,
   disabled = false,
+  onChooseScenario,
 }: {
   category: ActivityCategory
   activities: Activity[]
   selectedIds: string[]
   onAdd: (activity: Activity) => void
   disabled?: boolean
+  onChooseScenario?: (activity: Activity) => void
 }) {
   return (
     <section className="activity-shelf ruled-section" aria-labelledby="activity-shelf-title">
@@ -34,23 +36,43 @@ export function ActivityShelf({
             <article key={activity.id} className={selected ? 'activity-tile is-selected' : 'activity-tile'}>
               <ActivityMark category={activity.category} activityId={activity.id} size={32} />
               <h3>{activity.name}</h3>
-              <p className="activity-tile__unit">per {activity.unitLabel}</p>
-              <p className="activity-tile__cue">
-                {activity.evidence.region ?? 'Region not specified'} · {activity.evidence.vintageYear ?? 'Vintage not specified'}
-              </p>
-              <EvidenceBadge evidence={activity.evidence} />
-              <button
-                type="button"
-                className="activity-tile__add"
-                aria-label={`Add ${activity.name} to the worksheet`}
-                aria-pressed={selected}
-                aria-disabled={selected || disabled}
-                disabled={disabled}
-                onClick={() => onAdd(activity)}
-              >
-                {selected ? <Check aria-hidden="true" size={18} strokeWidth={2.5} /> : <Plus aria-hidden="true" size={18} strokeWidth={2.5} />}
-                <span>{selected ? 'Added' : 'Add to worksheet'}</span>
-              </button>
+              {activity.scenarioBacked ? (
+                <>
+                  <p className="activity-tile__unit">per {activity.unitLabel}</p>
+                  <p className="activity-tile__cue">Exact-match research scenarios · no averaged factor</p>
+                  <button
+                    type="button"
+                    className="activity-tile__add"
+                    aria-label={`Choose an AI scenario for ${activity.name}`}
+                    aria-disabled={disabled}
+                    disabled={disabled}
+                    onClick={() => onChooseScenario?.(activity)}
+                  >
+                    <Plus aria-hidden="true" size={18} strokeWidth={2.5} />
+                    <span>Choose scenario</span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p className="activity-tile__unit">per {activity.unitLabel}</p>
+                  <p className="activity-tile__cue">
+                    {activity.evidence.region ?? 'Region not specified'} · {activity.evidence.vintageYear ?? 'Vintage not specified'}
+                  </p>
+                  <EvidenceBadge evidence={activity.evidence} />
+                  <button
+                    type="button"
+                    className="activity-tile__add"
+                    aria-label={`Add ${activity.name} to the worksheet`}
+                    aria-pressed={selected}
+                    aria-disabled={selected || disabled}
+                    disabled={disabled}
+                    onClick={() => onAdd(activity)}
+                  >
+                    {selected ? <Check aria-hidden="true" size={18} strokeWidth={2.5} /> : <Plus aria-hidden="true" size={18} strokeWidth={2.5} />}
+                    <span>{selected ? 'Added' : 'Add to worksheet'}</span>
+                  </button>
+                </>
+              )}
             </article>
           )
         })}

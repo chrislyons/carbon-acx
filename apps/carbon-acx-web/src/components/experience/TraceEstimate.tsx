@@ -7,12 +7,20 @@ import { EvidenceBadge, EvidenceFacts, SourceList } from '@/components/content'
 import { ImpactTrace } from '@/components/viz/ImpactTrace'
 import { abbreviateUnit } from '@/lib/units'
 import { useGraphKeyboard } from '@/components/viz/useGraphKeyboard'
-import { ACTIVITIES, CATEGORY_INFO, calculateEmissions, encodeCalculatorInputs, formatEmissions, getActivityById } from '@/lib/calculator'
+import { ACTIVITIES, CATEGORY_INFO, calculateEmissions, encodeCalculatorInputs, formatEmissions, getActivityById, type Activity } from '@/lib/calculator'
 
 const MIN_DISTANCE = 10
 const MAX_DISTANCE = 200_000
 const commuterVehicleIds = ['TRAN.SCHOOLRUN.CAR.KM', 'TRAN.TTC.BUS.KM', 'TRAN.TTC.SUBWAY.KM'] as const
-const commuterVehicles = commuterVehicleIds.map((id) => getActivityById(id)!)
+const commuterVehicles = commuterVehicleIds
+  .map((id) => getActivityById(id)!)
+  .filter(
+    (vehicle): vehicle is Activity & { emissionFactor: number } =>
+      vehicle.evidence.publicationStatus === 'published' && typeof vehicle.emissionFactor === 'number',
+  )
+if (commuterVehicles.length === 0) {
+  throw new Error('TraceEstimate requires at least one published commuter activity')
+}
 const defaultVehicle = commuterVehicles[0]
 const publishedActivities = ACTIVITIES.filter((item) => item.evidence.publicationStatus === 'published')
 
@@ -31,7 +39,7 @@ function parseDistance(raw: string): number | null {
 export function TraceEstimate() {
   const [activityId, setActivityId] = useState<string>(defaultVehicle.id)
   const [distanceDraft, setDistanceDraft] = useState('1000')
-  const activity = getActivityById(activityId) ?? defaultVehicle
+  const activity = commuterVehicles.find((vehicle) => vehicle.id === activityId) ?? defaultVehicle
   const distance = parseDistance(distanceDraft.replaceAll(',', ''))
   const result = distance === null
     ? null

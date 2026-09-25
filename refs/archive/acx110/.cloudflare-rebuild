@@ -1,2 +1,3 @@
+# Archived ACX110: SSR fix landed in the Next app; rebuild trigger obsolete; not wired into any build.
 Trigger rebuild: 2025-10-27 09:00:00
 SSR fix should be applied: React.lazy() + Suspense in all pages using DataUniverse

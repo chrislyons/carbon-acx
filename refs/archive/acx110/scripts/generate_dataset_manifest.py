@@ -1,3 +1,4 @@
+# Archived ACX110: superseded by calc/manifest.py + tools/validator manifest pipeline; not wired into any build.
 #!/usr/bin/env python3
 """Build top-level artefact manifests for Carbon ACX figures."""
 

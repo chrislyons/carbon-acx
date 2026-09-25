@@ -70,13 +70,14 @@ OWID_SNAPSHOT_INPUTS := $(wildcard data/owid/manifest.json data/owid/annual-co2-
 DATAFLOW_INPUTS := $(wildcard data/*.csv) $(wildcard refs/sources_manifest.csv)
 
 $(WEB_DATA_OUTPUTS): $(DATAFLOW_INPUTS) $(OWID_SNAPSHOT_INPUTS) scripts/generate_web_calculator_data.py scripts/fetch_owid_context.py tools/citations/scan_claims.py
+	ACX_GENERATED_AT="$${ACX_GENERATED_AT:-$(DEFAULT_GENERATED_AT)}" \
 	python3 scripts/generate_web_calculator_data.py --repo-root "$$PWD" --output-root "$$PWD"
 
 owid-context-update:
 	python3 scripts/fetch_owid_context.py --output-dir data/owid
 
 build-web: data-audit $(WEB_DATA_OUTPUTS) publication-audit
-	pnpm run build:web
+	ACX_GENERATED_AT="$${ACX_GENERATED_AT:-$(DEFAULT_GENERATED_AT)}" pnpm run build:web
 
 $(PACKAGED_MANIFEST): build
 	PYTHONPATH=. poetry run python -m scripts.package_artifacts --src $(DIST_ARTIFACTS_DIR) --dest $(PACKAGED_ARTIFACTS_DIR)

@@ -40,12 +40,18 @@ FLOAT_COLUMNS: dict[str, tuple[str, ...]] = {
     ),
     "activity_schedule": ("freq_per_day", "freq_per_week"),
     "grid_intensity": ("g_per_kwh", "g_per_kwh_low", "g_per_kwh_high"),
+    "sites": ("lat", "lon"),
+    "assets": ("power_rating_kw",),
+    "operations": ("throughput_value",),
+    "dependencies": ("share",),
+    "feedback_loops": ("strength",),
 }
 
 INTEGER_COLUMNS: dict[str, tuple[str, ...]] = {
     "sources": ("year",),
     "emission_factors": ("vintage_year",),
     "grid_intensity": ("vintage_year",),
+    "assets": ("year",),
 }
 
 VALIDATORS: dict[str, type[BaseModel]] = {
@@ -54,16 +60,29 @@ VALIDATORS: dict[str, type[BaseModel]] = {
     "profiles": schema.Profile,
     "activity_schedule": schema.ActivitySchedule,
     "grid_intensity": schema.GridIntensity,
+    "layers": schema.Layer,
+    "entities": schema.Entity,
+    "sites": schema.Site,
+    "assets": schema.Asset,
+    "operations": schema.Operation,
+    "dependencies": schema.ActivityDependency,
+    "feedback_loops": schema.FeedbackLoop,
 }
-
 TABLE_ORDER = [
     "sources",
     "units",
     "sectors",
+    "layers",
+    "entities",
+    "sites",
+    "assets",
     "activities",
+    "operations",
     "profiles",
     "emission_factors",
     "activity_schedule",
+    "dependencies",
+    "feedback_loops",
     "grid_intensity",
 ]
 
@@ -182,6 +201,13 @@ def _clear_tables(conn, backend: str) -> None:
         "activity_schedule",
         "emission_factors",
         "grid_intensity",
+        "feedback_loops",
+        "dependencies",
+        "operations",
+        "assets",
+        "sites",
+        "entities",
+        "layers",
         "profiles",
         "activities",
         "sectors",

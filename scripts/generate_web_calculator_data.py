@@ -21,9 +21,28 @@ if str(SCRIPT_REPO_ROOT) not in sys.path:
 
 from tools.citations.scan_claims import load_manifest_specs  # noqa: E402
 
+try:
+    from ._owid_snapshot import (
+        OWID_CHART_URL,
+        metadata_column,
+        parse_points,
+        validate_manifest,
+    )
+except ImportError:  # direct execution: python3 scripts/generate_web_calculator_data.py
+    from _owid_snapshot import (
+        OWID_CHART_URL,
+        metadata_column,
+        parse_points,
+        validate_manifest,
+    )
+
 SCHEMA_VERSION = "acx.web-calculator/1-6-0"
 CATALOG_SCHEMA_VERSION = "acx.web-catalog/1-0-0"
 AI_SCENARIOS_SCHEMA_VERSION = "acx.ai-scenarios/1-1-0"
+
+# Curated shelf entries whose annual value comes from exact-match AI scenarios
+# rather than a published emission factor row.
+SCENARIO_BACKED_ACTIVITIES = frozenset({"AI.USAGE.LLM.SCENARIO"})
 SOURCES_SCHEMA_VERSION = "acx.web-sources/1-1-0"
 OWID_CONTEXT_SCHEMA_VERSION = "acx.owid-context/1-1-0"
 PUBLIC_RELEASE_SCHEMA_VERSION = "acx.public-release/1-1-0"
@@ -51,13 +70,6 @@ OWID_RAW_FILENAMES = (
     "annual-co2-emissions-per-country.csv",
     "annual-co2-emissions-per-country.metadata.json",
 )
-OWID_DATA_URL = "https://ourworldindata.org/grapher/annual-co2-emissions-per-country.csv"
-OWID_METADATA_URL = (
-    "https://ourworldindata.org/grapher/annual-co2-emissions-per-country.metadata.json"
-)
-OWID_CHART_URL = "https://ourworldindata.org/grapher/annual-co2-emissions-per-country"
-OWID_CHART_ID = "annual-co2-emissions-per-country"
-OWID_METRIC = "Annual CO₂ emissions"
 SOURCE_ID_RE = re.compile(r"\bSRC(?:\.[A-Za-z0-9_-]+)+")
 
 CATEGORY_INFO = {
@@ -94,6 +106,7 @@ SELECTED_ACTIVITIES = [
     ("digital", "MEDIA.STREAM.UHD.HOUR"),
     ("digital", "SOCIAL.INSTAGRAM.HOUR"),
     ("digital", "MUSIC.STREAM.STANDARD.HOUR"),
+    ("digital", "AI.USAGE.LLM.SCENARIO"),
     ("home", "ENERGY.NATGAS.M3"),
     ("home", "MUNI.WATER.POTABLE.M3"),
     ("home", "REFR.APPL.FRIDGE.OP.YEAR"),
@@ -790,6 +803,28 @@ def _build_payload(root: Path, generated_at: str) -> dict[str, Any]:
         activity = activities.get(activity_id)
         if not activity:
             raise ValueError(f"Curated calculator activity is missing: {activity_id}")
+        if activity_id in SCENARIO_BACKED_ACTIVITIES:
+            # Scenario-backed cards carry no emission factor: the annual value
+            # comes from an exact-match AI scenario chosen in the UI (ACX107).
+            activity_payload.append(
+                {
+                    "id": activity_id,
+                    "name": _clean_name(activity["name"]),
+                    "category": category,
+                    "unit": activity["default_unit"],
+                    "unitLabel": _unit_label(activity["default_unit"]),
+                    "emissionFactor": None,
+                    "description": activity.get("description") or "",
+                    "unitDefinition": activity.get("unit_definition") or "",
+                    "unavailabilityReason": (
+                        "No published emission factor: pick an exact AI scenario to value it."
+                    ),
+                    "notes": activity.get("notes") or "",
+                    "evidence": _unavailable_evidence(activity, None),
+                    "scenarioBacked": True,
+                }
+            )
+            continue
         factor = _pick_factor(activity_id, factors)
         value_g_per_unit, evidence = _factor_evidence(activity, factor, sources, grid_rows)
         activity_payload.append(
@@ -850,6 +885,7 @@ def _build_catalog_payload(root: Path, generated_at: str) -> dict[str, Any]:
                 "emissionFactor": value_g_per_unit,
                 "evidence": evidence,
                 "unavailabilityReason": unavailable_reason,
+                **({"scenarioBacked": True} if activity_id in SCENARIO_BACKED_ACTIVITIES else {}),
             }
         )
     ai_scenarios = _build_ai_scenarios(root, sources, generated_at)
@@ -962,133 +998,6 @@ def _sha256_bytes(payload: bytes) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
-def _owid_metadata_column(metadata: dict[str, Any]) -> dict[str, Any]:
-    chart = metadata.get("chart")
-    columns = metadata.get("columns")
-    if not isinstance(chart, dict) or chart.get("originalChartUrl") != OWID_CHART_URL:
-        raise ValueError("OWID metadata chart URL does not match the configured chart")
-    if chart.get("title") != "Annual CO₂ emissions":
-        raise ValueError("OWID metadata chart title does not match the configured chart")
-    if chart.get("citation") != "Global Carbon Budget (2025)":
-        raise ValueError("OWID metadata citation does not match the configured source")
-    if not isinstance(columns, dict) or set(columns) != {OWID_METRIC}:
-        raise ValueError("OWID metadata does not expose the exact configured metric column")
-    column = columns[OWID_METRIC]
-    if not isinstance(column, dict) or column.get("unit") != "tonnes":
-        raise ValueError("OWID metadata metric unit must be tonnes")
-    if not isinstance(column.get("timespan"), str) or not column["timespan"].strip():
-        raise ValueError("OWID metadata is missing an upstream timespan")
-    if not isinstance(column.get("lastUpdated"), str) or not column["lastUpdated"].strip():
-        raise ValueError("OWID metadata is missing an upstream lastUpdated vintage")
-    descriptions = " ".join(
-        str(column.get(key) or "")
-        for key in ("descriptionShort", "descriptionKey", "descriptionProcessing")
-    ).lower()
-    for phrase in ("territorial", "land-use change", "international aviation", "shipping"):
-        if phrase not in descriptions:
-            raise ValueError(
-                f"OWID metadata is missing the required accounting statement: {phrase}"
-            )
-    return column
-
-
-def _owid_points(csv_bytes: bytes) -> list[dict[str, Any]]:
-    try:
-        text = csv_bytes.decode("utf-8-sig")
-    except UnicodeDecodeError as error:
-        raise ValueError("OWID CSV is not valid UTF-8") from error
-    reader = csv.DictReader(text.splitlines())
-    fieldnames = reader.fieldnames or []
-    if not {"Entity", "Code", "Year", OWID_METRIC}.issubset(fieldnames):
-        raise ValueError("OWID CSV is missing a required field")
-    if fieldnames.count(OWID_METRIC) != 1:
-        raise ValueError("OWID CSV does not contain exactly one configured metric column")
-    points: list[dict[str, Any]] = []
-    years: set[int] = set()
-    for row in reader:
-        entity = row.get("Entity")
-        code = row.get("Code")
-        if entity == "Canada" and code != "CAN":
-            raise ValueError("OWID CSV pairs Canada with a code other than CAN")
-        if code == "CAN" and entity != "Canada":
-            raise ValueError("OWID CSV pairs CAN with an entity other than Canada")
-        if entity != "Canada" or code != "CAN":
-            continue
-        raw_year = (row.get("Year") or "").strip()
-        if not raw_year.isdecimal():
-            raise ValueError("OWID Canada row has a non-integer year")
-        year = int(raw_year)
-        try:
-            value = float((row.get(OWID_METRIC) or "").strip())
-        except ValueError as error:
-            raise ValueError("OWID Canada row has a non-numeric value") from error
-        if not math.isfinite(value):
-            raise ValueError("OWID Canada row has a non-finite value")
-        if year in years:
-            raise ValueError("OWID Canada series contains duplicate years")
-        years.add(year)
-        points.append({"year": year, "value": value})
-    if not points:
-        raise ValueError("OWID CSV contains no Canada/CAN rows")
-    return sorted(points, key=lambda point: point["year"])
-
-
-def _validate_owid_manifest(
-    manifest: dict[str, Any], data_bytes: bytes, metadata_bytes: bytes
-) -> None:
-    expected = {
-        "schemaVersion": "acx.owid-source/1-0-0",
-        "provider": "Our World in Data",
-        "sourceId": "SRC.OWID.CO2.2025",
-        "chartId": OWID_CHART_ID,
-        "metric": OWID_METRIC,
-        "dataUrl": OWID_DATA_URL,
-        "metadataUrl": OWID_METADATA_URL,
-        "license": "CC BY 4.0",
-        "accountingBasis": "territorial",
-        "landUseChange": "excluded",
-        "unit": "tonnes",
-        "entity": "Canada",
-        "entityCode": "CAN",
-        "citation": "Global Carbon Budget (2025)",
-    }
-    required = set(expected) | {
-        "resolvedDataUrl",
-        "resolvedMetadataUrl",
-        "retrievedAt",
-        "upstreamTimespan",
-        "upstreamLastUpdated",
-        "dataSha256",
-        "metadataSha256",
-    }
-    if not required.issubset(manifest):
-        raise ValueError("OWID manifest is missing a required selection field")
-    for key, value in expected.items():
-        if manifest.get(key) != value:
-            raise ValueError(f"OWID manifest field {key} does not match the configured contract")
-    if manifest["dataSha256"] != _sha256_bytes(data_bytes):
-        raise ValueError("OWID raw data digest does not match its manifest")
-    if manifest["metadataSha256"] != _sha256_bytes(metadata_bytes):
-        raise ValueError("OWID metadata digest does not match its manifest")
-    for key in (
-        "resolvedDataUrl",
-        "resolvedMetadataUrl",
-        "retrievedAt",
-        "upstreamTimespan",
-        "upstreamLastUpdated",
-    ):
-        if not isinstance(manifest.get(key), str) or not manifest[key].strip():
-            raise ValueError(f"OWID manifest field {key} must be non-empty")
-    for key in ("dataSha256", "metadataSha256"):
-        digest = manifest[key]
-        if (
-            not isinstance(digest, str)
-            or len(digest) != 64
-            or any(character not in "0123456789abcdef" for character in digest)
-        ):
-            raise ValueError(f"OWID manifest field {key} must be a SHA-256 digest")
-
-
 def _build_owid_context_payload(
     root: Path, generated_at: str
 ) -> tuple[dict[str, Any], dict[str, bytes] | None]:
@@ -1124,15 +1033,15 @@ def _build_owid_context_payload(
         raise ValueError("OWID manifest is not valid JSON") from error
     if not isinstance(manifest, dict):
         raise ValueError("OWID manifest is not a JSON object")
-    _validate_owid_manifest(manifest, data_bytes, metadata_bytes)
+    validate_manifest(manifest, data_bytes=data_bytes, metadata_bytes=metadata_bytes)
     try:
         metadata = json.loads(metadata_bytes)
     except json.JSONDecodeError as error:
         raise ValueError("OWID metadata is not valid JSON") from error
     if not isinstance(metadata, dict):
         raise ValueError("OWID metadata is not a JSON object")
-    column = _owid_metadata_column(metadata)
-    points = _owid_points(data_bytes)
+    column = metadata_column(metadata)
+    points = parse_points(data_bytes)
     context = {
         "schemaVersion": OWID_CONTEXT_SCHEMA_VERSION,
         "streamId": OWID_CONTEXT_STREAM_ID,
