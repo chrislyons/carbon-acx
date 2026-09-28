@@ -254,3 +254,16 @@ provenance, and operations.
 - Dependency scans remain intentionally red on the existing baseline: 122
   pnpm advisories and 63 Python advisories. No unrelated dependency upgrades
   were included; remediation requires separate review.
+
+## 2026-09-28 — CI workflow repair
+
+See `docs/acx/ACX117 CI Workflow Repair and Main Green Verification.md`.
+
+- Fixed the unsupported quoted Node test glob in `.github/workflows/ci.yml` by
+  targeting the existing Pages Function test file directly.
+- Corrected the invalid `actions/download-artifact@v4.3.0` SHA against the
+  official Git ref.
+- The corrected Pages Function suite passes 12/12 locally; `make package` and
+  `yamllint -c .yamllint.yml .github/workflows` pass. Packaged-site Playwright
+  E2E passes 494 tests with 4 skips.
+- Main-branch CI will be checked after pushing the repair.

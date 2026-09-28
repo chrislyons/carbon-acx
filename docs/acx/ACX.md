@@ -4,6 +4,7 @@ Active catalog for Carbon ACX project documents.
 
 ## Recent Documents
 
+- [ACX117 CI Workflow Repair and Main Green Verification](./ACX117%20CI%20Workflow%20Repair%20and%20Main%20Green%20Verification.md)
 - [ACX116 Frontend Architecture, Narrative Flow, and Viewport Topology](./ACX116%20Frontend%20Architecture%2C%20Narrative%20Flow%2C%20and%20Viewport%20Topology.md)
 - [ACX115 Backend Architectural Audit and Dataflow Topology](./ACX115%20Backend%20Architectural%20Audit%20and%20Dataflow%20Topology.md)
 - [ACX114 Responsive Information Architecture Superseding Decisions](./ACX114%20Responsive%20Information%20Architecture%20Superseding%20Decisions.md)
@@ -137,6 +138,7 @@ Active catalog for Carbon ACX project documents.
 - [ACX114 Responsive Information Architecture Superseding Decisions](./ACX114%20Responsive%20Information%20Architecture%20Superseding%20Decisions.md)
 - [ACX115 Backend Architectural Audit and Dataflow Topology](./ACX115%20Backend%20Architectural%20Audit%20and%20Dataflow%20Topology.md)
 - [ACX116 Frontend Architecture, Narrative Flow, and Viewport Topology](./ACX116%20Frontend%20Architecture%2C%20Narrative%20Flow%2C%20and%20Viewport%20Topology.md)
+- [ACX117 CI Workflow Repair and Main Green Verification](./ACX117%20CI%20Workflow%20Repair%20and%20Main%20Green%20Verification.md)
 
 ## Navigation
 
@@ -150,4 +152,4 @@ Active catalog for Carbon ACX project documents.
 
 ---
 
-**Last Updated:** 2026-09-25
+**Last Updated:** 2026-09-28
