@@ -1,0 +1,398 @@
+/* Calculator: category rail, activity shelf, worksheet lines. */
+
+/* Calculator: compact category rail, activity shelf, and worksheet lines. */
+.worksheet__groups,
+.mode-switcher {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1px;
+  margin-block: 1.5rem;
+  border: 1px solid var(--rule);
+  background: var(--rule);
+}
+
+.category-button,
+.mode-switcher button {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  flex: 1 1 9rem;
+  min-height: 4.2rem;
+  gap: 0.35rem 0.65rem;
+  border: 0;
+  padding: 0.7rem 0.85rem;
+  background: var(--background-elevated);
+  color: var(--ink);
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.category-button .activity-mark {
+  grid-row: span 2;
+}
+
+.category-button small {
+  color: var(--ink-muted);
+  font-size: 0.72rem;
+}
+
+.category-button.is-selected,
+.mode-switcher button.is-selected,
+.data-matrix button.is-selected {
+  background: var(--oxide);
+  color: var(--paper);
+}
+
+.category-button.is-selected small,
+.mode-switcher button.is-selected span {
+  color: var(--paper);
+}
+
+.activity-mark {
+  display: block;
+  width: 1.75rem;
+  height: 1.75rem;
+  color: var(--category-color, currentColor);
+}
+
+.category-button.is-selected .activity-mark,
+.mode-switcher button.is-selected .activity-mark {
+  color: currentColor;
+}
+
+@supports (color: color-mix(in srgb, black, white)) {
+  [data-theme='dark'] .activity-mark {
+    color: color-mix(in srgb, var(--category-color, currentColor) 72%, white);
+  }
+}
+
+.activity-shelf {
+  padding-block: 1.5rem;
+}
+
+.activity-shelf__heading,
+.worksheet-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.activity-shelf__heading {
+  margin-bottom: 1rem;
+}
+
+.activity-shelf__heading h2,
+.worksheet-header h2 {
+  margin-top: 0.45rem;
+  font: 650 clamp(1.5rem, 2.5vw, 2.25rem)/1 var(--font-display);
+}
+
+.activity-shelf__heading > p,
+.worksheet-header > p {
+  max-width: 28rem;
+  color: var(--ink-muted);
+  font-size: 0.88rem;
+}
+
+.activity-shelf__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 1px;
+  border: 1px solid var(--rule);
+  background: var(--rule);
+}
+
+.activity-tile {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.55rem;
+  min-height: 15rem;
+  padding: 1rem;
+  background: var(--background-elevated);
+}
+
+.activity-tile.is-selected {
+  background: color-mix(in srgb, var(--oxide) 9%, var(--background-elevated));
+}
+
+.activity-tile h3 {
+  max-width: 18ch;
+  font: 650 1.2rem/1 var(--font-display);
+}
+
+.activity-tile__unit,
+.activity-tile__cue {
+  color: var(--ink-muted);
+  font: 0.72rem/1.35 var(--font-mono);
+}
+
+.activity-tile__cue {
+  min-height: 2.1em;
+}
+
+.activity-tile .evidence-badge {
+  margin-top: auto;
+}
+
+.activity-tile__add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--oxide);
+  border-radius: 0;
+  padding: 0.55rem 0.7rem;
+  background: transparent;
+  color: var(--oxide);
+  font-weight: 700;
+  text-align: center;
+}
+
+.activity-tile__add[aria-pressed='true'] {
+  border-color: var(--oxide);
+  background: var(--oxide);
+  color: var(--paper);
+}
+
+.worksheet-header {
+  margin-top: 2rem;
+  padding-block: 1.25rem;
+}
+
+.worksheet-header.ruled-section {
+  border-block: 0;
+}
+
+.worksheet-header > div:first-child {
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.75rem;
+}
+
+
+.worksheet__body {
+  display: grid;
+  align-items: start;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+}
+
+.worksheet__body > * {
+  min-width: 0;
+}
+
+.activity-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(15rem, 0.58fr);
+  gap: 1.5rem;
+  border-bottom: 1px solid var(--rule);
+  padding: 1.5rem 0;
+}
+
+.activity-editor__identity {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  min-width: 0;
+}
+
+.activity-editor__identity > .activity-mark {
+  flex: 0 0 auto;
+  width: 2.2rem;
+  height: 2.2rem;
+  margin-top: 0.15rem;
+  color: var(--oxide);
+}
+
+.activity-editor h2,
+.detail-pane h2 {
+  margin-top: 0.35rem;
+  font: 650 1.75rem/1 var(--font-display);
+}
+
+.activity-editor__identity > div,
+.activity-editor__control {
+  min-width: 0;
+}
+
+.activity-editor__identity > div > p:not(.section-kicker) {
+  color: var(--ink-muted);
+}
+
+.activity-editor__identity .mono {
+  margin-top: 0.75rem;
+  color: var(--ink-muted);
+  font-size: 0.72rem;
+  overflow-wrap: anywhere;
+}
+
+.activity-editor__control {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.55rem;
+}
+
+.activity-editor__control label {
+  margin: 0;
+}
+
+.activity-editor input,
+.activity-editor select,
+select,
+textarea {
+  box-sizing: border-box;
+  width: 100%;
+  border: 1px solid var(--rule);
+  border-radius: 0;
+  padding: 0.6rem;
+  background: var(--background-elevated);
+  color: inherit;
+}
+
+input[type='number'],
+input[type='text'],
+input[type='email'] {
+  border-color: var(--rule);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--focus-ring);
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus-ring) 20%, transparent);
+}
+
+.field-error {
+  margin: 0;
+  font-size: 0.82rem;
+}
+
+.activity-editor__track {
+  position: relative;
+  height: 0.55rem;
+  overflow: hidden;
+  border: 1px solid var(--rule);
+  background: var(--background-hover);
+}
+
+.activity-editor__track span {
+  display: block;
+  height: 100%;
+  min-width: 2px;
+}
+
+.activity-editor__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.1rem;
+}
+
+.activity-editor__actions button,
+.detail-pane > button {
+  min-height: 44px;
+  border: 1px solid var(--rule);
+  border-radius: 0;
+  padding: 0.55rem 0.75rem;
+  background: transparent;
+  color: inherit;
+  font-weight: 650;
+  text-align: left;
+}
+
+.activity-editor__actions button:first-child {
+  color: var(--oxide);
+}
+
+.activity-editor__actions button:hover,
+.detail-pane > button:hover {
+  border-color: var(--oxide);
+  background: var(--background-hover);
+}
+
+.result-composition {
+  position: sticky;
+  top: 6rem;
+  border: 1px solid var(--rule);
+  background: var(--background-elevated);
+  padding: 1.25rem;
+}
+
+.result-composition h2 {
+  margin-top: 0.35rem;
+  font: 500 1rem/1.2 var(--font-mono);
+}
+
+.result-composition__live {
+  margin-top: 0.4rem;
+  color: var(--ink-muted);
+  font-size: 0.74rem;
+}
+
+.composition-bar {
+  display: flex;
+  height: 1rem;
+  margin: 1rem 0;
+  border: 1px solid var(--viz-grid);
+  background: var(--track);
+}
+
+.composition-bar span {
+  min-width: 2px;
+}
+
+.compact-reference-list {
+  list-style: none;
+  padding: 0;
+}
+
+.compact-reference-list li,
+.compact-reference-list > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  border-top: 1px solid var(--rule);
+  padding: 0.5rem 0;
+}
+
+.compact-reference-list dt {
+  color: var(--ink-muted);
+}
+
+.compact-reference-list dd {
+  margin: 0;
+  text-align: right;
+}
+
+.empty-ruled-field {
+  border-block: 1px solid var(--rule);
+  padding: 1rem 0;
+  color: var(--ink-muted);
+}
+
+.detail-pane {
+  border: 1px solid var(--rule);
+  background: var(--background-elevated);
+  padding: 1.25rem;
+}
+
+.detail-pane dl div {
+  display: grid;
+  grid-template-columns: 7rem minmax(0, 1fr);
+  gap: 0.75rem;
+  border-top: 1px solid var(--rule);
+  padding: 0.5rem 0;
+}
+
+.detail-pane dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+

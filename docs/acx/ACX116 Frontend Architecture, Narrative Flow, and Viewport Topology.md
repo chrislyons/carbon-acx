@@ -33,7 +33,7 @@ The Carbon ACX frontend (`apps/carbon-acx-web/`) is an **evidence-first, data-de
 ### 2.1. Technology Stack & Execution Boundary
 - **Framework:** Next.js 15.0.3 using React 19.0.0 and App Router.
 - **Output Target:** Static Export (`output: 'export'`), producing deterministic static HTML, JavaScript, and CSS in `apps/carbon-acx-web/dist`.
-- **CSS Architecture:** Tailwind CSS v4 (`@tailwindcss/postcss` 4.1) using CSS-first tokens (`@theme`) combined with modular unlayered CSS rules in `globals.css`. Crucially, `@tailwind preflight` is omitted so the application's semantic design system directly governs all element defaults without unexpected sitewide resets.
+- **CSS Architecture:** Tailwind CSS v4 (`@tailwindcss/postcss` 4.1) using CSS-first tokens (`@theme`) combined with modular unlayered CSS rules. Crucially, `@tailwind preflight` is omitted so the application's semantic design system directly governs all element defaults without unexpected sitewide resets. Since 2026-09-29 those rules are split across `src/styles/` modules — `fonts`, `tokens`, `base`, `layout`, `content`, `components/{home,calculator,composition,benchmark,atlas}`, and `responsive` — with `src/app/globals.css` reduced to an ordered `@import` entry point.
 - **Visualizations:**
   - Scaled SVG & D3 (`d3-scale`, `d3-sankey`): Responsive mathematical charts (`ImpactTrace`, `ImpactComposition`, `ImpactFlow`, `AtlasCoverageMap`).
   - WebGL / Three.js (`@react-three/fiber`, `@react-three/drei`): Optional 3D spatial exploration (`/explore/3d`), strictly deferred with a zero-loss 2D accessible fallback.
@@ -233,6 +233,7 @@ The UI layout is governed by the superseding decisions in **ACX114**, organizing
    - *Problem:* `apps/carbon-acx-web/src/app/globals.css` has grown to over 3,350 lines in a single file, blending token definitions, typography, route-specific components, and deep responsive overrides.
    - *Decision:* Refactor into modular CSS imports (`styles/tokens.css`, `styles/layout.css`, `styles/components/*.css`, `styles/responsive.css`).
    - *Check:* Zero impact on CSS bundle size; verify PostCSS/Tailwind v4 pipeline bundles correctly without specificity regressions.
+   - *Status:* Delivered 2026-09-29. `globals.css` is a 19-line ordered import entry; all 3,353 lines moved verbatim into 11 modules under `src/styles/`. The emitted production stylesheet is byte-identical (same content hash `3ab99c91a893776a`, SHA-256 `a5d845ca…`), so bundle size and specificity are provably unchanged.
 2. **Automate client-side contrast regression checks:**
    - *Problem:* The site supports light mode, dark mode, `forced-colors: active`, and `prefers-contrast: more`. Theme tokens are defined across two CSS root scopes (`:root` and `[data-theme='dark']`).
    - *Decision:* Add automated Playwright Axe checks specifically verifying contrast ratios for `--viz-unavailable` hatchings and `--ink-muted` labels across all four theme variations.

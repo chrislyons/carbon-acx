@@ -1,0 +1,105 @@
+/* Design tokens: Tailwind theme bridge, light palette, dark palette. */
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-foreground-muted: var(--ink-muted);
+  --font-display: 'Cabinet Grotesk', system-ui, sans-serif;
+  --font-sans: 'General Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+}
+
+/* Carbon ACX public system: paper, ink, oxidized green, signal orange. */
+:root {
+  color-scheme: light;
+  --header-h: 4.5rem;
+  --bar-h: 3.375rem;
+  --content-max: 120rem;
+  --reading-max: 87.5rem;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-full: 9999px;
+  --font-sans: 'General Sans', system-ui, -apple-system, sans-serif;
+  --font-display: 'Cabinet Grotesk', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+
+  --paper: #f4f0e7;
+  --ink: #17221e;
+  --ink-muted: #526058;
+  --rule: #a8afa4;
+  --oxide: #1d6657;
+  --signal: #963b1a;
+  --background: var(--paper);
+  --background-elevated: #fbf8f1;
+  --background-hover: #ebe5d8;
+  --foreground: var(--ink);
+  --foreground-muted: var(--ink-muted);
+  --accent-primary: var(--oxide);
+  --accent-primary-strong: #124b40;
+  --accent-secondary: var(--signal);
+  --accent-secondary-strong: #7d2f15;
+  --accent-warning: var(--signal);
+  --surface-border: var(--rule);
+  --surface-border-strong: #7d887e;
+  --surface-border-focus: var(--signal);
+  --surface-panel: var(--background-elevated);
+  --error: #9b241c;
+  --focus-ring: var(--signal);
+  --focus-ring-offset: 2px;
+  --track: #dfe5dc;
+  --viz-grid: #c6d0c5;
+  --viz-reward: var(--signal);
+  --viz-unavailable: #89958b;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+  --paper: #16201c;
+  --ink: #f2eee5;
+  --ink-muted: #c0c7bd;
+  --rule: #657168;
+  --oxide: #83c6b2;
+  --signal: #ffad80;
+  --background: var(--paper);
+  --background-elevated: #202b26;
+  --background-hover: #2a3932;
+  --foreground: var(--ink);
+  --foreground-muted: var(--ink-muted);
+  --accent-primary: var(--oxide);
+  --accent-primary-strong: #b6e0d1;
+  --accent-secondary: var(--signal);
+  --accent-secondary-strong: #ffc7a8;
+  --accent-warning: var(--signal);
+  --surface-border: var(--rule);
+  --surface-border-strong: #87958a;
+  --surface-border-focus: var(--signal);
+  --surface-panel: var(--background-elevated);
+  --error: #ff9b8f;
+  --focus-ring: var(--signal);
+  --focus-ring-offset: 2px;
+  --track: #2f3d35;
+  --viz-grid: #43554b;
+  --viz-reward: var(--signal);
+  --viz-unavailable: #9da99f;
+}
+

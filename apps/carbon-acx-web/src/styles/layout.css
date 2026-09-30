@@ -1,0 +1,210 @@
+/* Application chrome: shell geometry and masthead. */
+
+/* Shared shell: dense workspaces widen; reading routes keep a readable measure. */
+.site-shell-body {
+  min-width: 320px;
+  margin: 0;
+  overflow-x: clip;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
+
+@supports not (overflow: clip) {
+  html {
+    overflow-x: hidden;
+  }
+
+  .site-shell-body {
+    overflow-x: hidden;
+  }
+}
+
+.site-shell {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+.site-main {
+  flex: 1 0 auto;
+  min-width: 0;
+}
+
+.editorial-page,
+.page-shell {
+  width: min(100% - 2rem, var(--reading-max));
+  margin-inline: auto;
+}
+
+.workspace {
+  width: min(100% - 2rem, var(--content-max));
+  padding-block: clamp(1rem, 2.5vw, 2.5rem) clamp(2rem, 5vw, 5rem);
+}
+
+.reading-page {
+  width: min(100% - 2rem, var(--reading-max));
+  padding-block: clamp(1.5rem, 4vw, 3.5rem);
+}
+
+
+.ruled-section {
+  border-block: 1px solid var(--rule);
+}
+
+.mono,
+.equation,
+.trace-takeaway,
+.working-example__equation,
+.factor-record-details__equation,
+.impact-rank__measure > strong,
+.impact-rank__meta,
+.benchmark-spectrum,
+.impact-trace {
+  font-family: var(--font-mono);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+.section-kicker,
+.eyebrow {
+  color: var(--oxide);
+  font: 650 0.74rem/1 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* The masthead remains opaque and ruled; it joins the flow on compact screens. */
+.site-header {
+  position: relative;
+  z-index: 20;
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper);
+}
+
+.site-header__inner {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: 'brand nav theme';
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  max-width: var(--content-max);
+  padding-inline: 1rem;
+  padding-block: 0.65rem;
+  box-sizing: border-box;
+}
+
+.site-header__brand {
+  grid-area: brand;
+  color: var(--ink);
+  font: 700 1.2rem/1 var(--font-display);
+}
+
+
+.site-header__brand span {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--ink-muted);
+  font: 300 0.63rem/1 var(--font-mono);
+  text-transform: uppercase;
+}
+
+.site-header__nav {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.25rem;
+  grid-area: nav;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--rule) transparent;
+  scroll-snap-type: inline proximity;
+}
+
+.site-header__nav a {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  border-bottom: 2px solid transparent;
+  padding: 0.35rem 0.55rem;
+  font-size: 0.86rem;
+  scroll-snap-align: center;
+}
+
+.site-header__nav a[aria-current='page'],
+.site-header__nav a:hover {
+  border-color: var(--signal);
+}
+
+.mode-switcher__button {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  min-height: 44px;
+  place-items: center;
+  grid-area: theme;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+}
+
+.site-footer {
+  flex: 0 0 auto;
+  border-top: 1px solid var(--rule);
+  background: var(--paper);
+}
+
+.reference-strip {
+  display: flex;
+  min-height: var(--bar-h);
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-inline: 1rem;
+  color: var(--ink-muted);
+  font-size: 0.8rem;
+}
+
+.reference-strip nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.reference-strip a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* A small ruled mark, not a glossy badge. */
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--oxide);
+  background: var(--ink);
+  color: var(--oxide);
+  font: 600 0.75rem var(--font-mono);
+  letter-spacing: 0.12em;
+}
+
