@@ -1,0 +1,344 @@
+/* Ranked impact composition and its optional SVG flow context. */
+
+/* Ranked composition: HTML remains the source of truth; SVG is optional flow context. */
+.impact-composition {
+  margin-top: 2rem;
+  border-top: 1px solid var(--rule);
+  padding-top: 1.25rem;
+}
+
+.impact-composition__heading h3 {
+  margin-top: 0.45rem;
+  font: 650 1.45rem/1 var(--font-display);
+}
+
+.impact-rank {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.impact-rank__row {
+  display: grid;
+  grid-template-columns: minmax(10rem, 1.1fr) minmax(8rem, 1fr) minmax(9rem, 0.8fr);
+  align-items: center;
+
+  gap: 0.75rem;
+  border-top: 1px solid var(--rule);
+  padding-top: 0.75rem;
+}
+ 
+.calculator-view-toggle {
+  display: flex;
+  gap: 0.35rem;
+  margin-block: 1rem;
+}
+
+.calculator-view-toggle button {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid var(--rule);
+  border-radius: 0;
+  padding: 0.55rem 0.75rem;
+  background: transparent;
+  color: inherit;
+  font-weight: 650;
+}
+
+.calculator-view-toggle button[aria-pressed='true'] {
+  border-color: var(--oxide);
+  background: var(--oxide);
+  color: var(--paper);
+}
+
+.calculator__columns {
+  display: grid;
+  gap: var(--gap-panel);
+}
+
+.calculator__columns > [data-compact-view='hidden'] {
+  display: none;
+}
+
+.worksheet-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-block: 0 1rem;
+  padding-block: 0.75rem;
+}
+
+.worksheet-header h2 {
+  margin-top: 0.35rem;
+  font: 650 clamp(1.5rem, 2.5vw, 2.25rem)/1 var(--font-display);
+}
+
+.worksheet-header > div:first-child {
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.75rem;
+}
+
+.activity-editor {
+  align-items: start;
+  gap: var(--gap-panel);
+}
+
+.activity-editor.is-active {
+  border: 1px solid var(--oxide);
+  padding: 1rem;
+}
+
+.activity-editor__evidence {
+  margin-top: 0.4rem;
+}
+
+.activity-editor__evidence summary {
+  min-height: 44px;
+}
+
+.action-complete {
+  border-color: var(--oxide) !important;
+  background: var(--oxide) !important;
+  color: var(--paper) !important;
+}
+
+.activity-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--rule);
+  padding-block: 0.7rem;
+}
+
+.activity-line__summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.activity-line__summary > span {
+  display: grid;
+  min-width: 0;
+  gap: 0.2rem;
+}
+
+.activity-line__summary strong,
+.activity-line__summary small {
+  overflow-wrap: anywhere;
+}
+
+.activity-line__summary small {
+  color: var(--ink-muted);
+  font: 0.68rem/1.35 var(--font-mono);
+}
+
+.activity-line__summary b {
+  color: var(--ink);
+  font: 650 0.82rem var(--font-mono);
+  white-space: nowrap;
+}
+
+.activity-line > .evidence-badge {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.activity-line__actions {
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: 1 / -1;
+  gap: 0.4rem;
+}
+
+.activity-line__actions button {
+  min-height: 44px;
+  border: 1px solid var(--rule);
+  border-radius: 0;
+  padding: 0.45rem 0.65rem;
+  background: transparent;
+  color: inherit;
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.activity-line__actions button:hover {
+  border-color: var(--oxide);
+  background: var(--background-hover);
+}
+
+.category-composition {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.category-composition li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  border-top: 1px solid var(--rule);
+  padding-block: 0.5rem;
+}
+
+.category-composition strong {
+  font-family: var(--font-mono);
+}
+
+.benchmark-selector {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 1rem;
+  color: var(--ink-muted);
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.scenario-disclosure {
+  margin-top: 1.25rem;
+  border-top: 1px solid var(--rule);
+}
+
+.scenario-disclosure > summary {
+  min-height: 44px;
+  padding-block: 0.75rem;
+  color: var(--oxide);
+  cursor: pointer;
+  font-weight: 700;
+}
+.impact-rank__label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.impact-rank__label .activity-mark {
+  flex: 0 0 auto;
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--oxide);
+}
+
+.impact-rank__label strong,
+.impact-rank__label span {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.impact-rank__label span {
+  margin-top: 0.2rem;
+  font-size: 0.7rem;
+}
+
+.impact-rank__measure {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.impact-rank__track {
+  position: relative;
+  height: 0.75rem;
+  border: 1px solid var(--viz-grid);
+  background: var(--track);
+}
+
+.impact-rank__bar,
+.impact-rank__whisker {
+  position: absolute;
+  display: block;
+}
+
+.impact-rank__bar {
+  inset: 0 auto 0 0;
+  min-width: 0;
+}
+
+.impact-rank__whisker {
+  top: 50%;
+  height: 0.2rem;
+  min-width: 2px;
+  transform: translateY(-50%);
+  opacity: 0.9;
+}
+
+.impact-rank__zero-marker {
+  position: absolute;
+  top: -0.2rem;
+  bottom: -0.2rem;
+  left: 0;
+  width: 2px;
+  background: var(--ink);
+}
+
+.impact-rank__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  color: var(--ink-muted);
+  font-size: 0.68rem;
+}
+
+.impact-rank__meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.impact-rank__zero {
+  color: var(--oxide);
+}
+
+.impact-flow-disclosure {
+  margin-top: 1.25rem;
+  border-top: 1px solid var(--rule);
+  padding-top: 0.75rem;
+}
+
+.impact-flow-disclosure summary {
+  min-height: 44px;
+  padding-block: 0.55rem;
+  color: var(--oxide);
+  cursor: pointer;
+  font-weight: 650;
+}
+
+.impact-flow {
+  width: 100%;
+  min-height: 2rem;
+  margin-top: 1.5rem;
+  overflow-x: hidden;
+  border-top: 1px solid var(--viz-grid);
+  padding-top: 1rem;
+}
+
+.impact-flow__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  color: var(--ink-muted);
+  font: 0.68rem var(--font-mono);
+}
+
+.impact-flow__svg rect {
+  opacity: 0.92;
+}
+

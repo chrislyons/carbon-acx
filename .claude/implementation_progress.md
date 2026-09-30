@@ -267,3 +267,39 @@ See `docs/acx/ACX117 CI Workflow Repair and Main Green Verification.md`.
   `yamllint -c .yamllint.yml .github/workflows` pass. Packaged-site Playwright
   E2E passes 494 tests with 4 skips.
 - Main-branch CI will be checked after pushing the repair.
+
+## 2026-09-29 — CSS architecture modularization (ACX116 §6.5.1)
+
+- `apps/carbon-acx-web/src/app/globals.css` is now a 19-line ordered `@import`
+  entry. All 3,353 lines moved verbatim into 11 modules under
+  `apps/carbon-acx-web/src/styles/`: `fonts.css`, `tokens.css` (Tailwind
+  `@theme` bridge plus light/dark palettes), `base.css` (element defaults and
+  accessibility primitives), `layout.css` (shell and masthead), `content.css`
+  (shared content vocabulary), `components/{home,calculator,composition,benchmark,atlas}.css`,
+  and `responsive.css` (breakpoints, contrast, motion).
+- Import order is load-bearing and documented in-file: fonts precede the
+  Tailwind theme/utilities layers, tokens and base follow, route components
+  follow chrome, and `responsive.css` stays last so its overrides still
+  outrank everything. The entry list is append-only.
+- No rule was added, removed, reordered, or respecified. The only new bytes are
+  the eleven module header comments.
+
+### Verification
+
+- Emitted production stylesheet is byte-identical to the pre-refactor build:
+  same content hash `3ab99c91a893776a.css`, SHA-256
+  `a5d845ca2e3b4baa829662c3b0413905763c1cb7968c07ef07c39ede87be0c1e`
+  (60,394 B). Bundle size and specificity are provably unchanged.
+- Web `lint`, `typecheck`, and `vitest` pass; 47 tests across 9 files.
+- `make package` passes, including the Pages bundle gate: 47 indexed files,
+  25 verified hashes, 8 figure artifacts, 8 reference artifacts.
+- Chromium E2E against the packaged `dist/site` bundle passes 166/166.
+
+### Note for the next data-touching change
+
+- `make package` without `ACX_GENERATED_AT` rewrites every generated authority
+  to `DEFAULT_GENERATED_AT` (`1970-01-01T00:00:00+00:00`, Makefile line 11) and
+  re-hashes the release index. That is the intended reproducible-build
+  default, but it dirties twelve tracked data files. Pass
+  `ACX_GENERATED_AT=<RFC 3339 UTC>` and restore the untouched authorities
+  before committing an unrelated change.
